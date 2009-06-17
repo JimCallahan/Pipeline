@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.65 2009/06/02 20:08:37 jlee Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.66 2009/06/17 05:50:14 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3267,20 +3267,25 @@ class JQueueJobViewerPanel
 	  for(NodeID nodeID : pTargets.keySet()) {
 	    master.updatePanelOp(pGroupID, 
 				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
+
+	    /* To implement 1701 iterate though all the jobIDs, not just the first one.  
+	       This way mutliple jobs which have batches can be queued together. */
 	    TreeMap<Long, TreeSet<FileSeq>> targets = pTargets.get(nodeID);
-	    long jobID = targets.firstKey();
-	    if (pSpecial) 
-	      client.resubmitJobs
-	        (nodeID, targets.get(jobID), pBatchSize, pPriority, pRampUp,
-	          pMaxLoad, pMinMemory, pMinDisk,
-	         pSelectionKeys, pLicenseKeys, pHardwareKeys);
-	    else {
-	      QueueJob job = queue.getJob(jobID);
-	      JobReqs reqs = job.getJobRequirements();
-	      client.resubmitJobs
-	        (nodeID, targets.get(jobID), pBatchSize, reqs.getPriority(), reqs.getRampUp(),
-	         reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
-	         reqs.getSelectionKeys(), reqs.getLicenseKeys(), reqs.getHardwareKeys());
+	    for(Long jobID : targets.keySet()) {
+	      if (pSpecial) 
+		client.resubmitJobs
+		  (nodeID, targets.get(jobID), pBatchSize, pPriority, pRampUp,
+	           pMaxLoad, pMinMemory, pMinDisk,
+	           pSelectionKeys, pLicenseKeys, pHardwareKeys);
+	      else {
+		QueueJob job = queue.getJob(jobID);
+		JobReqs reqs = job.getJobRequirements();
+		client.resubmitJobs
+		  (nodeID, targets.get(jobID), pBatchSize, 
+		   reqs.getPriority(), reqs.getRampUp(),
+	           reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
+	           reqs.getSelectionKeys(), reqs.getLicenseKeys(), reqs.getHardwareKeys());
+	      }
 	    }
 	  }
 	}
