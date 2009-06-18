@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.12 2009/06/17 00:00:50 jlee Exp $
+// $Id: JExportPanel.java,v 1.13 2009/06/18 08:42:52 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -531,15 +531,6 @@ class JExportPanel
   /**
    * Update the selection fields.
    */ 
-  public void
-  updateNode
-  (
-   NodeCommon node
-  )
-  {
-    updateNode(node, null);
-  }
-
   public void 
   updateNode
   (
@@ -547,30 +538,6 @@ class JExportPanel
    NodeTreeComp workingSources
   )
   { 
-    /* Since this method has been generalized to use a NodeCommon object 
-       to handle cloning of checked-in nodes (see JCloneDialog), the field 
-       pWorkingVersion contains true if the NodeCommon is a NodeMod, else 
-       false for a NodeVersion.
-       
-       In the case of cloning a checked-in node only sources with a working 
-       version can be exported, so we need to rely on a NodeTreeComp object 
-       to determine if working versions of the sources exist. */
-    {
-      if(node instanceof NodeMod) {
-	pHasWorkingVersion = true;
-	pWorkingSources = null;
-      }
-      else {
-	pHasWorkingVersion = false;
-	pWorkingSources = workingSources;
-      }
-
-      /* The commented code is equivalent to the if-else block above, 
-         but I think it is less clear. */
-      //pHasWorkingVersion = (node instanceof NodeMod);
-      //pWorkingsources = workingSources;
-    }
-
     pExportAllField.setValue(false);
 
     /* properties panel */ 
@@ -805,28 +772,20 @@ class JExportPanel
 		UIFactory.createTitledBooleanField(tpanel, "Export Link:", pTSize-14, 
 						  vpanel, pVSize);
 	      field.setValue(false);
+	      field.setEnabled(false);
 
 	      /* If we are displaying source information from a checked-in node, 
 	         disable the JBooleanField if there is no working version. */
-	      if(!pHasWorkingVersion) {
-		if(pWorkingSources != null) {
-		  NodeTreeComp.State nstate = pWorkingSources.getState(sname);
+	      {
+		NodeTreeComp.State nstate = workingSources.getState(sname);
 
-		  if(nstate != null) {
-		    switch(nstate) {
-		      case WorkingCurrentCheckedInSome:
-		      case WorkingCurrentCheckedInNone:
-			break;
-		      default:
-			field.setEnabled(false);
-		    }
+		if(nstate != null) {
+		  switch(nstate) {
+		    case WorkingCurrentCheckedInSome:
+		    case WorkingCurrentCheckedInNone:
+		      field.setEnabled(true);
+		      break;
 		  }
-		  else {
-		    field.setEnabled(false);
-		  }
-		}
-		else {
-		  field.setEnabled(false);
 		}
 	      }
 
@@ -1310,16 +1269,4 @@ class JExportPanel
    */
   private TreeMap<String,JBooleanField> pVersionAnnotationFields;
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether the NodeCommon passed to updateNode is a NodeMod or a NodeVersion.
-   */
-  private boolean  pHasWorkingVersion;
-
-  /**
-   * If there is no working version of the node, the NodeTreeComp contains 
-     the status of the sources associated with the NodeVersion.
-   */
-  private NodeTreeComp  pWorkingSources;
 }

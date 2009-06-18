@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.11 2009/05/23 03:58:29 jesse Exp $
+// $Id: JExportDialog.java,v 1.12 2009/06/18 08:42:52 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -8,7 +8,9 @@ import java.util.TreeSet;
 
 import javax.swing.*;
 
-import us.temerity.pipeline.NodeMod;
+
+import us.temerity.pipeline.NodeCommon;
+import us.temerity.pipeline.NodeTreeComp;
 import us.temerity.pipeline.ui.JBaseDialog;
 import us.temerity.pipeline.ui.UIFactory;
 
@@ -294,11 +296,12 @@ class JExportDialog
   public void 
   updateNode
   (
-   NodeMod mod
+   NodeCommon node, 
+   NodeTreeComp workingSources
   )
   { 
-    pHeaderLabel.setText("Export:  " + mod);
-    pExportPanel.updateNode(mod);
+    pHeaderLabel.setText("Export:  " + node);
+    pExportPanel.updateNode(node, workingSources);
   }
 
 

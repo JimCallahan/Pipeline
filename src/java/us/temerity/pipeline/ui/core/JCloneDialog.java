@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.24 2009/06/17 00:00:50 jlee Exp $
+// $Id: JCloneDialog.java,v 1.25 2009/06/18 08:42:52 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -232,12 +232,16 @@ class JCloneDialog
   (
    String author, 
    String view, 
-   NodeCommon node
+   NodeCommon node, 
+   NodeTreeComp workingSources, 
+   boolean hasWorkingVersion
   )
   {  
     pAuthor = author; 
     pView   = view; 
     pNode   = node; 
+
+    pHasWorkingVersion = hasWorkingVersion;
 
     synchronized(pRegistered) {
       pRegistered.clear();
@@ -283,48 +287,10 @@ class JCloneDialog
 
     updateFileSeq(pNode.getPrimarySequence());
 
-    /* If the NodeCommon is an instance of NodeMod proceeed as normal.  
-       Else, there is no working version of the node and need to obtain a 
-       NodeTreeComp to determine the status of the sources. */
-    if(pNode instanceof NodeMod) {
-      pCopyFilesField.setValue(true);
-      pExportPanel.updateNode(pNode);
-    }
-    else {
-      pCopyFilesField.setValue(false);
-      pCopyFilesField.setEnabled(false);
+    pCopyFilesField.setValue(pHasWorkingVersion);
+    pCopyFilesField.setEnabled(pHasWorkingVersion);
 
-      UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.acquireMasterMgrClient();
-
-      NodeTreeComp workingSources = null;
-      try {
-	TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
-	for(String sname : pNode.getSourceNames())
-	  paths.put(sname, false);
-
-	workingSources = client.updatePaths(pAuthor, pView, paths);
-      }
-      catch(PipelineException ex) {
-	/* Handling an error from updatePaths could be better.  Since the clone 
-	   operation actually performs the clone, rather than let JNodeViewerPanel, 
-	   how to let JNodeViewerPanel know of an error and cancel the setVisible call. */
-	showErrorDialog
-	  ("Error:", 
-	   "Unable to determine the status of the sources of node " + 
-	   "(" + pNode.getName() + ").  " + 
-	   "Please report this error to the Pipeline forum: " + 
-	   Exceptions.getFullMessage(ex));
-	
-	workingSources = null;
-	return;
-      }
-      finally {
-	master.releaseMasterMgrClient(client);
-      }
-
-      pExportPanel.updateNode(pNode, workingSources);
-    }
+    pExportPanel.updateNode(pNode, workingSources);
 
     pack();
   }
@@ -642,29 +608,41 @@ class JCloneDialog
 
       /* upstream links */ 
       {
+	TreeMap<String,LinkCommon> upstreamLinks = new TreeMap<String,LinkCommon>();
+	{
+	  for(String source : pNode.getSourceNames()) {
+	    if(pExportPanel.exportSource(source)) {
+	      LinkCommon link = null;
+	      {
+		if(pHasWorkingVersion) {
+		  NodeMod node = (NodeMod) pNode;
+		  link = node.getSource(source);
+		}
+		else {
+		  NodeVersion node = (NodeVersion) pNode;
+		  link = node.getSource(source);
+		}
+	      }
+
+	      if(link == null) {
+		throw new PipelineException
+		  ("The source (" + source + ") for node " + 
+		   "(" + pNode.getName() + ") is null!");
+	      }
+
+	      upstreamLinks.put(source, link);
+	    }
+	  }
+	}
+
         boolean addedLinks = false;
-        for(String source : pNode.getSourceNames()) {
-          if(pExportPanel.exportSource(source)) {
-	    LinkCommon link = null;
+	for(String source : upstreamLinks.keySet()) {
+	  LinkCommon link = upstreamLinks.get(source);
 
-	    if(pNode instanceof NodeMod) {
-	      NodeMod node = (NodeMod) pNode;
-
-	      link = node.getSource(source);
-	    }
-	    else if(pNode instanceof NodeVersion) {
-	      NodeVersion node = (NodeVersion) pNode;
-
-	      link = node.getSource(source);
-	    }
-
-	    if(link != null) {
-	      client.link(pAuthor, pView, name, source, 
-                          link.getPolicy(), link.getRelationship(), 
-                          link.getFrameOffset());
-	      addedLinks = true;
-	    }
-          }
+	  client.link(pAuthor, pView, name, source, 
+                      link.getPolicy(), link.getRelationship(), 
+                      link.getFrameOffset());
+	  addedLinks = true;
         }
 
         /* update the links if we need them for per-source action parameters below */
@@ -1006,5 +984,13 @@ class JCloneDialog
    * The file sequences dialog.
    */ 
   private JFileSeqSelectDialog  pFileSeqDialog;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the NodeCommon passed to updateNode is a NodeMod or a NodeVersion.
+   */
+  private boolean  pHasWorkingVersion;
 
 }

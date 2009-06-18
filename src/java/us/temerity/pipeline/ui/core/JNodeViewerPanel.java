@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.134 2009/06/17 00:00:50 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.135 2009/06/18 08:42:52 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4085,11 +4085,38 @@ class JNodeViewerPanel
 	if(!targets.isEmpty()) {
 	  NodeMod mod = details.getWorkingVersion();
 	  if(mod != null) {
+	    NodeTreeComp workingSources = null;
+	    {
+	      UIMaster master = UIMaster.getInstance();
+	      MasterMgrClient client = master.acquireMasterMgrClient();
+
+	      try {
+		TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+		for(String sname : mod.getSourceNames())
+		  paths.put(sname, false);
+
+		workingSources = client.updatePaths(pAuthor, pView, paths);
+
+		if(workingSources == null) {
+		  throw new PipelineException
+		    ("Unable to obtain a NodeTreeComp for the sources of " + 
+		     "(" + mod.getName() + ")!");
+		}
+	      }
+	      catch(PipelineException ex) {
+		master.showErrorDialog(ex);
+		return;
+	      }
+	      finally {
+		master.releaseMasterMgrClient(client);
+	      }
+	    }
+
 	    if(pExportDialog == null) 
 	      pExportDialog = new JExportDialog(pGroupID, getTopFrame());
 
 	    synchronized(pExportDialog) {
-	      pExportDialog.updateNode(mod);
+	      pExportDialog.updateNode(mod, workingSources);
 	      pExportDialog.setVisible(true);
 	    }
 	    
@@ -4207,17 +4234,47 @@ class JNodeViewerPanel
 
       if(details != null) {
 	NodeCommon node = details.getWorkingVersion();
-	
+	boolean hasWorkingVersion = false;
+
 	if(node == null)
 	  node = details.getLatestVersion();
+	else
+	  hasWorkingVersion = true;
 
 	if(node == null)
 	  return;
 
+	NodeTreeComp workingSources = null;
+	{
+	  UIMaster master = UIMaster.getInstance();
+	  MasterMgrClient client = master.acquireMasterMgrClient();
+
+	  try {
+	    TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+	    for(String sname : node.getSourceNames())
+	      paths.put(sname, false);
+
+	    workingSources = client.updatePaths(pAuthor, pView, paths);
+
+	    if(workingSources == null) {
+	      throw new PipelineException
+		("Unable to obtain a NodeTreeComp for the sources of " + 
+		 "(" + node.getName() + ")!");
+	    }
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.releaseMasterMgrClient(client);
+	  }
+	}
+
 	if(pCloneDialog == null) 
 	  pCloneDialog = new JCloneDialog(pGroupID, getTopFrame());
 
-	pCloneDialog.updateNode(pAuthor, pView, node);
+	pCloneDialog.updateNode(pAuthor, pView, node, workingSources, hasWorkingVersion);
 	pCloneDialog.setVisible(true);
 
 	TreeSet<String> names = pCloneDialog.getRegistered();
