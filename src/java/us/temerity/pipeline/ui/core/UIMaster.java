@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.107 2009/06/02 20:08:37 jlee Exp $
+// $Id: UIMaster.java,v 1.108 2009/06/18 20:32:47 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3358,8 +3358,12 @@ class UIMaster
         (LogMgr.Kind.Ops, LogMgr.Level.Finer,
          "Viewing Checked-In Version: " + name + " (v" + vsn.getVersionID() + ")"); 
 
-        EditTask task = new EditTask(0, vsn, false, null, null, false);
-        task.start();
+        /* Adding PackageInfo.sUser for the author matches the behavior of a user 
+	   right clicking a checked-in node and selecting one of the View menu items. */
+	{
+	  EditTask task = new EditTask(0, vsn, false, PackageInfo.sUser, null, false);
+	  task.start();
+	}
       }
       finally {
         releaseMasterMgrClient(client);
