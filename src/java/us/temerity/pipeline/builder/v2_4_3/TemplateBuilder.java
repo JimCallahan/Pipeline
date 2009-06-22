@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.22 2009/06/15 20:55:54 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.23 2009/06/22 15:41:54 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -674,18 +674,19 @@ class TemplateBuilder
         }
         
         TreeSet<String> nodesMade = new TreeSet<String>();
+        TreeSet<String> allNodes  = new TreeSet<String>();
         if (contexts.size() == 0) { //no contexts, just do a straight build
           makeNode(mod, pReplacements, pContexts, range, ignoreableProducts, 
-                   conditionalBuild, checkpoint, aoeOverrides, external, nodesMade);
+                   conditionalBuild, checkpoint, aoeOverrides, external, nodesMade, allNodes);
         }
         else { //uh-oh, there are contexts!
           contextLoop(toBuild, mod, contexts, pReplacements, pContexts, 
                       range, ignoreableProducts, conditionalBuild, checkpoint, 
-                      aoeOverrides, external, nodesMade);
+                      aoeOverrides, external, nodesMade, allNodes);
         }
         
         if (vouchable) {
-          for (String node : nodesMade)
+          for (String node : allNodes)
             addToVouchableList(node);
         }
 
@@ -745,7 +746,8 @@ class TemplateBuilder
       boolean checkpoint, 
       TreeMap<String,ActionOnExistence> aoeOverrides, 
       String external, 
-      TreeSet<String> nodesMade
+      TreeSet<String> nodesMade, 
+      TreeSet<String> allNodes
     )
       throws PipelineException
     {
@@ -763,13 +765,14 @@ class TemplateBuilder
             new TreeMap<String, ArrayList<TreeMap<String,String>>>(contexts);
           if (contextList.isEmpty()) {  //bottom of the recursion
             makeNode(mod, newReplace, newMaps, range, ignorableProducts, 
-                     conditionalBuild, checkpoint, aoeOverrides, external, nodesMade);
+                     conditionalBuild, checkpoint, aoeOverrides, external, 
+                     nodesMade, allNodes);
           }
           else {
             contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
               newReplace, newMaps, range, ignorableProducts, conditionalBuild, 
-              checkpoint, aoeOverrides, external, nodesMade);
+              checkpoint, aoeOverrides, external, nodesMade, allNodes);
           }
           return;
         }
@@ -791,13 +794,14 @@ class TemplateBuilder
         
         if (contextList.isEmpty()) {  //bottom of the recursion
           makeNode(mod, newReplace, newMaps, range, ignorableProducts,
-                   conditionalBuild, checkpoint, aoeOverrides, external, nodesMade);
+                   conditionalBuild, checkpoint, aoeOverrides, external, 
+                   nodesMade, allNodes);
         }
         else {
           contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
              newReplace, newMaps, range, ignorableProducts, conditionalBuild, 
-             checkpoint, aoeOverrides, external, nodesMade);
+             checkpoint, aoeOverrides, external, nodesMade, allNodes);
         }
       }
     }
@@ -814,7 +818,8 @@ class TemplateBuilder
       boolean checkpoint, 
       TreeMap<String,ActionOnExistence> aoeOverrides, 
       String external, 
-      TreeSet<String> nodesMade
+      TreeSet<String> nodesMade, 
+      TreeSet<String> allNodes
     )
       throws PipelineException
     {
@@ -862,6 +867,8 @@ class TemplateBuilder
            pSkippedNodes, pIgnoredNodes, ignorableProducts, 
            pInhibitCopyFiles, pAllowZeroContexts, exD, pAnnotCache);
 
+      allNodes.add(stage.getNodeName());
+      
       if (stage.build()) {
         if (stage.needsFinalization()) {
           if (checkpoint)
