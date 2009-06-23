@@ -684,6 +684,24 @@
   <bind style="SmallLeftArrowButton" type="name" key="SmallLeftArrowButton"/>
 
 
+  <!--  M E D   L E F T   A R R O W   B U T T O N  -->
+
+  <style id="MedLeftArrowButton"> 
+    <state>
+      <imagePainter path="MedLeftArrowButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="MedLeftArrowButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="MedLeftArrowButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="MedLeftArrowButton" type="name" key="MedLeftArrowButton"/>
+
 
   <!--  L E F T   A R R O W   B U T T O N  -->
 
@@ -703,6 +721,24 @@
   </style>
   <bind style="LeftArrowButton" type="name" key="LeftArrowButton"/>
 
+
+  <!--  M E D   R I G H T   A R R O W   B U T T O N  -->
+
+  <style id="MedRightArrowButton"> 
+    <state>
+      <imagePainter path="MedRightArrowButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="MedRightArrowButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="MedRightArrowButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="MedRightArrowButton" type="name" key="MedRightArrowButton"/>
 
 
   <!--  R I G H T   A R R O W   B U T T O N  -->
