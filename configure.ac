@@ -393,18 +393,18 @@ AC_MSG_RESULT([$CUSTOMER_PROFILE])
 AC_MSG_CHECKING([CryptoApp Directory])
 
 AC_ARG_WITH([crypto-app], 
-            [  --with-crypto-app=DIR          The directory containing "CryptoApp.class".])
+            [  --with-crypto-app=DIR          The directory containing "CryptoApp.jar".])
 
 AC_SUBST(CRYPTO_APP_DIR)
 CRYPTO_APP_DIR=
 
 if test "$with_crypto_app" 
 then
-  if test -f $with_crypto_app/CryptoApp.class 
+  if test -f $with_crypto_app/CryptoApp.jar 
   then 
     CRYPTO_APP_DIR=$with_crypto_app
   else 
-    AC_MSG_ERROR([the directory "$with_crypto_app" does not contain "CryptoApp.class".])
+    AC_MSG_ERROR([the directory "$with_crypto_app" does not contain "CryptoApp.jar".])
   fi
 else 
   AC_MSG_ERROR([the --with-crypto-app option is required.])
@@ -422,7 +422,7 @@ PLCONFIG_VERSION=
 crypto_version=`"$JAVA" -classpath $CRYPTO_APP_DIR CryptoApp --version`
 
 function crypto_lookup {
-  "$JAVA" -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE --lookup $*
+  "$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp $CUSTOMER_PROFILE --lookup $*
 }
 
 profile_version=`crypto_lookup PlConfigVersion`
