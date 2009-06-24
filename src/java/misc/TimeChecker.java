@@ -1,4 +1,4 @@
-// $Id: TimeChecker.java,v 1.1 2005/01/14 16:01:57 jim Exp $
+// $Id: TimeChecker.java,v 1.2 2009/06/24 02:42:36 jim Exp $
 
 import java.io.*;
 import java.util.*;
@@ -153,7 +153,7 @@ class TimeChecker
     for(wk=0; wk<8; wk++) {
       double base = Math.pow(2, (3-wk)*8);
       buf[idx+wk] = (byte) (dstamp / base);
-      dstamp = dstamp - (double) (ubyteToShort(buf[idx+wk]) * base);
+      dstamp = dstamp - (ubyteToShort(buf[idx+wk]) * base);
     }
 		
     buf[idx+7] = (byte) (Math.random()*255.0);

@@ -419,7 +419,7 @@ AC_MSG_CHECKING([Customer Profile Version Check])
 AC_SUBST(PLCONFIG_VERSION)
 PLCONFIG_VERSION=
 
-crypto_version=`"$JAVA" -classpath $CRYPTO_APP_DIR CryptoApp --version`
+crypto_version=`"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp --version`
 
 function crypto_lookup {
   "$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp $CUSTOMER_PROFILE --lookup $*
@@ -1942,6 +1942,8 @@ AC_CONFIG_FILES([
 
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
+
+  src/java/misc/Makefile
 
   src/java/jogl/Makefile
   src/java/jogl/MacOS-UnivBin-Opt/Makefile
