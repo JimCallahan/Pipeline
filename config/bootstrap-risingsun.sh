@@ -34,7 +34,7 @@ popd
 
 
 
-mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
+mac_support=`java -classpath $plsrcdir/plconfig/CryptoApp.jar CryptoApp $plprofile --lookup MacSupport`
 if [ "x$mac_support" == "xtrue" ]
 then
   MAC_HOSTNAME=tadpole
@@ -50,7 +50,7 @@ then
 fi
 
 
-win_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup WinSupport`
+win_support=`java -classpath $plsrcdir/plconfig/CryptoApp.jar CryptoApp $plprofile --lookup WinSupport`
 if [ "x$win_support" == "xtrue" ]
 then
   WIN_HOSTNAME=lizard
