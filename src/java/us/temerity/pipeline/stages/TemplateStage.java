@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.15 2009/06/13 22:59:29 jesse Exp $
+// $Id: TemplateStage.java,v 1.16 2009/06/25 22:11:35 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -529,14 +529,19 @@ class TemplateStage
         FrameRange srcRange = pSourceMod.getPrimarySequence().getFrameRange();
         FrameRange tgtRange = pRegisteredNodeMod.getPrimarySequence().getFrameRange();
         
-        for (int frame : tgtRange.getFrameNumbers()) {
-          if (!srcRange.isValid(frame))
-            throw new PipelineException
+        if (tgtRange != null && srcRange != null) {
+          for (int frame : tgtRange.getFrameNumbers()) {
+            if (!srcRange.isValid(frame))
+              throw new PipelineException
               ("The target frame range (" + tgtRange + ") contains frames that are not in " +
-               "the source frame range (" + srcRange + ").  Clone files cannot continue.");
+                "the source frame range (" + srcRange + ").  Clone files cannot continue.");
+          }
+
+          pClient.cloneFiles(src, tar, pSecSeqs, tgtRange, tgtRange);
         }
-        
-        pClient.cloneFiles(src, tar, pSecSeqs, tgtRange, tgtRange);
+        else {
+          pClient.cloneFiles(src, tar, pSecSeqs);
+        }
       }
       if (pTouchFiles) {
         LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
