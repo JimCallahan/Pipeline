@@ -1,0 +1,17 @@
+#!/bin/bash
+
+java -cp ../../CryptoApp.jar CryptoApp $1 --usage-stats
+
+if [ -f daily-users.glue ]
+then
+  mv daily-users.glue $1-users.glue
+fi
+
+if [ -f user-days.glue ]
+then
+  mv user-days.glue $1-days.glue
+fi
+
+java -cp ../../CryptoApp.jar CryptoApp $1 --params > $1.txt
+
+cat $1.txt
