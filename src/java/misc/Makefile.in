@@ -348,7 +348,7 @@ all: GraphUsageStats.jar
 
 
 GraphUsageStats.jar: java-all
-	$(JAR) -cvf $@ GraphUsageStats.class
+	$(JAR) -cvf $@ GraphUsageStats*.class
 
 
 .PHONY: java-all

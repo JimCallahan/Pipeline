@@ -1,17 +1,70 @@
 #!/bin/bash
 
-java -cp ../../CryptoApp.jar CryptoApp $1 --usage-stats
+function usage
+{
+  echo "usage: unpack-site-profile [--cvs] site-profile"
+  exit 1
+}
 
-if [ -f daily-users.glue ]
+cvs=0
+case $# in 
+  (1) 
+    profile=$1;;
+
+  (2) 
+    if [ $1 != "--cvs" ]; then usage; fi;
+    cvs=1;
+    profile=$2;;
+
+  (*) 
+    usage;;
+esac 
+
+echo "Extracting Usage Statistics..."
+java -cp ../../CryptoApp.jar CryptoApp $profile --usage-stats
+
+if [ -f daily-users.glue -a -f user-days.glue ]
 then
-  mv daily-users.glue $1-users.glue
+  echo "Generating Raw Data for Plots..."
+  java -cp ../../../../../build/pipeline/debug/src/java/us/temerity/pipeline/api.jar:../../../../../build/pipeline/debug/src/java/misc/GraphUsageStats.jar GraphUsageStats daily-users.glue user-days.glue 
+  
+  mv daily-users.glue $profile-users.glue
+  mv user-days.glue $profile-days.glue
+
+  echo "Plotting Users..."
+  gnuplot ../../users.gnuplot
+  mv usage.jpg $profile-users.jpg
+  rm daily-users.raw 
+
+  echo "Plotting Days..."
+  gnuplot ../../days.gnuplot
+  mv days.jpg $profile-days.jpg
+  rm user-days.raw 
+fi 
+
+echo "Saving Parameter Values in Plain Text..."
+java -cp ../../CryptoApp.jar CryptoApp $profile --params > $profile.txt
+
+if [ $cvs -eq 1 ]
+then 
+  echo "Adding to CVS..."
+  cvs add -kb $profile $profile.txt 
+  if [ -f $profile-users.glue ]
+  then
+    cvs add -kb $profile-users.glue
+  fi
+  if [ -f $profile-users.jpg ]
+  then
+    cvs add -kb $profile-users.jpg
+  fi
+  if [ -f $profile-days.glue ]
+  then
+    cvs add -kb $profile-days.glue
+  fi
+  if [ -f $profile-days.jpg ]
+  then
+    cvs add -kb $profile-days.jpg
+  fi
 fi
 
-if [ -f user-days.glue ]
-then
-  mv user-days.glue $1-days.glue
-fi
-
-java -cp ../../CryptoApp.jar CryptoApp $1 --params > $1.txt
-
-cat $1.txt
+echo "ALL DONE."

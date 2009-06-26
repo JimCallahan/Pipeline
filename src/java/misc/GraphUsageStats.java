@@ -1,4 +1,4 @@
-// $Id: GraphUsageStats.java,v 1.1 2009/06/24 02:42:36 jim Exp $
+// $Id: GraphUsageStats.java,v 1.2 2009/06/26 04:21:29 jim Exp $
 
 import java.io.*; 
 import java.util.*; 
@@ -29,60 +29,257 @@ class GraphUsageStats
   )
   {
     try {
-      if(args.length != 1) {
-	System.out.print("usage: GraphUsageStats usage-stats.glue\n\n"); 
+      if(args.length != 2) {
+	System.out.print("usage: GraphUsageStats *-users.glue *-days.glue\n\n"); 
 	System.exit(1);
       }
 
-      File sfile = new File(args[0]);
-
-      TreeMap<Long,TreeMap<String,Integer>> stats = 
-        (TreeMap<Long,TreeMap<String,Integer>>) 
-          GlueDecoderImpl.decodeFile("UsageStats", sfile);
-      
-      FileWriter ecounts = new FileWriter("./event-counts.raw"); 
-      FileWriter ucounts = new FileWriter("./user-counts.raw"); 
-      TreeMap<String,FileWriter> uecounts = new TreeMap<String,FileWriter>(); 
-
-      GregorianCalendar cal = new GregorianCalendar();
-      for(Map.Entry<Long,TreeMap<String,Integer>> entry : stats.entrySet()) {
-        Long stamp = entry.getKey(); 
-        cal.setTimeInMillis(stamp);
-        
-        int year = cal.get(Calendar.YEAR);
-        int day  = cal.get(Calendar.DAY_OF_YEAR);
-
-        double when = year + (((double) day) / 365.0);
-
-        long total = 0L;
-        TreeMap<String,Integer> userCounts = entry.getValue();         
-        for(String uname : userCounts.keySet()) {
-          FileWriter out = uecounts.get(uname);
-          if(out == null) {
-            out = new FileWriter("./" + uname + ".raw");
-            uecounts.put(uname, out);
-          }
-
-          int num = userCounts.get(uname);
-          total += num;
-
-          out.write(when + "\t" + num + "\n");
-        }
-
-        ecounts.write(when + "\t" + total + "\n");          
-        ucounts.write(when + "\t" + userCounts.size() + "\n");          
-      }
-      
-      for(FileWriter out : uecounts.values()) 
-        out.close(); 
-      
-      ecounts.close();
-      ucounts.close();
+      new GraphUsageStats(new File(args[0]), new File(args[1])); 
     }
     catch(Exception ex) {
       System.out.print("INTERNAL-ERROR:\n");
       ex.printStackTrace(System.out);
       System.exit(1);
     }
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  public
+  GraphUsageStats
+  (
+   File ufile, 
+   File dfile
+  ) 
+    throws GlueException, IOException 
+  {
+    GregorianCalendar cal = new GregorianCalendar();
+
+    {
+      TreeMap<Long,Integer> table = 
+        (TreeMap<Long,Integer>) GlueDecoderImpl.decodeFile("DailyUsers", ufile);
+
+      TripleMap<Integer,Integer,Integer,Integer> dailyUsers = 
+        new TripleMap<Integer,Integer,Integer,Integer>();
+      Integer lastYear  = null; 
+      Integer lastMonth = null; 
+      Integer lastDay   = null;
+      {
+        Long firstStamp = table.firstKey(); 
+        Long lastStamp  = table.lastKey(); 
+          
+        cal.setTimeInMillis(firstStamp); 
+        while(cal.getTimeInMillis() <= lastStamp) {
+          lastYear  = cal.get(Calendar.YEAR);
+          lastMonth = cal.get(Calendar.MONTH); 
+          lastDay   = cal.get(Calendar.DAY_OF_MONTH);             
+          dailyUsers.put(lastYear, lastMonth, lastDay, 0); 
+          cal.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+
+        for(Long stamp : table.keySet()) {
+          Integer numUsers = table.get(stamp); 
+
+          cal.setTimeInMillis(stamp);        
+          int year  = cal.get(Calendar.YEAR);
+          int month = cal.get(Calendar.MONTH); 
+          int day   = cal.get(Calendar.DAY_OF_MONTH); 
+            
+          dailyUsers.put(year, month, day, numUsers); 
+        }
+      }
+
+      TripleMap<Integer,Integer,Integer,Double> weeklyUsers = 
+        rollingAverage(dailyUsers, 8); 
+
+      TripleMap<Integer,Integer,Integer,Double> monthlyUsers = 
+        rollingAverage(dailyUsers, 30); 
+
+      TripleMap<Integer,Integer,Integer,Double> quarterlyUsers = 
+        rollingAverage(dailyUsers, 90); 
+
+      FileWriter out = new FileWriter("./daily-users.raw"); 
+
+      boolean first = true;
+      for(Integer year : dailyUsers.keySet()) {
+        for(Integer month : dailyUsers.keySet(year)) {
+          for(Integer day : dailyUsers.keySet(year, month)) {
+            Integer numUsers = dailyUsers.get(year, month, day); 
+            Double wavg = weeklyUsers.get(year, month, day); 
+            Double mavg = monthlyUsers.get(year, month, day); 
+            Double qavg = quarterlyUsers.get(year, month, day); 
+
+            cal.set(year, month, day); 
+            Long stamp = cal.getTimeInMillis(); 
+
+            out.write(stamp + "\t" + numUsers + "\t" + wavg + "\t" + mavg + "\t" + qavg); 
+
+            if(first || 
+               (day == 1) || 
+               (lastYear.equals(year) && lastMonth.equals(month) && lastDay.equals(day))) {
+              out.write("\t\"" + (month+1) + "-" + day + "-" + year + "\"");
+              first = false;
+            }
+
+            out.write("\n"); 
+          }
+        }
+      }
+
+      out.close(); 
+    }
+
+    {
+      TreeMap<String,Integer> table = 
+        (TreeMap<String,Integer>) GlueDecoderImpl.decodeFile("UserDays", dfile);
+
+      UserDays[] userDays = new UserDays[table.size()]; 
+      {
+        int i = 0;
+        for(String uname : table.keySet()) {
+          userDays[i] = new UserDays(uname, table.get(uname));
+          i++;
+        }
+
+        Arrays.sort(userDays); 
+      }
+
+      FileWriter out = new FileWriter("./user-days.raw"); 
+
+      int i = 0; 
+      out.write(i + "\t0\t\"\"\t\n"); 
+      i++;
+
+      for(UserDays ud : userDays) {
+        out.write(i + "\t" + ud + "\n"); 
+        i++;
+      }
+
+      out.write(i + "\t0\t\"\"\t\n"); 
+
+      out.close(); 
+    }      
+  }
+
+  private TripleMap<Integer,Integer,Integer,Double>
+  rollingAverage
+  (
+   TripleMap<Integer,Integer,Integer,Integer> dailyUsers, 
+   int window
+  ) 
+  {
+    GregorianCalendar cal = new GregorianCalendar();
+
+    TripleMap<Integer,Integer,Integer,Double> averageUsers = 
+      new TripleMap<Integer,Integer,Integer,Double>();
+
+    ArrayDeque<Integer> fifo = new ArrayDeque<Integer>(window); 
+
+    int cnt = 0;
+    for(Integer year : dailyUsers.keySet()) {
+      for(Integer month : dailyUsers.keySet(year)) {
+        for(Integer day : dailyUsers.keySet(year, month)) {
+          Integer numUsers = dailyUsers.get(year, month, day); 
+          
+          if(cnt >= window) 
+            fifo.remove(); 
+          fifo.add(numUsers); 
+          
+          Double avg = 0.0;
+          {
+            int nz = 0;
+            for(Integer n : fifo) {
+              if(n > 0) 
+                nz++;
+              avg += n;
+            }
+            avg /= nz; 
+          }
+          
+          cal.set(year, month, day); 
+          cal.add(Calendar.DAY_OF_MONTH, -window/2); 
+          
+          averageUsers.put(cal.get(Calendar.YEAR), 
+                           cal.get(Calendar.MONTH), 
+                           cal.get(Calendar.DAY_OF_MONTH), avg); 
+          
+          cnt++;
+        }
+      }
+    }
+    
+    while(fifo.size() > 0) {
+      fifo.remove(); 
+      
+      Double avg = 0.0;
+      {
+        int nz = 0;
+        for(Integer n : fifo) {
+          if(n > 0) 
+            nz++;
+          avg += n;
+        }
+        avg /= nz; 
+      }
+      
+      averageUsers.put(cal.get(Calendar.YEAR), 
+                       cal.get(Calendar.MONTH), 
+                       cal.get(Calendar.DAY_OF_MONTH), avg); 
+      
+      cal.add(Calendar.DAY_OF_MONTH, 1); 
+    }
+
+    return averageUsers; 
+  }
+
+  private class
+  UserDays
+    implements Comparable<UserDays>   
+  {
+    public
+    UserDays
+    (
+     String name, 
+     int numDays
+    ) 
+    {
+      pName = name; 
+      pNumDays = numDays;
+    }
+
+    public String
+    toString()
+    {
+      return (pNumDays + "\t\"" + pName + "\"");
+    }
+
+    public boolean
+    equals
+    (
+     Object obj
+    )
+    {
+      if((obj != null) && (obj instanceof UserDays)) {
+        UserDays ud = (UserDays) obj;
+        return pNumDays.equals(ud.pNumDays); 
+      }
+      return false;
+    }
+
+    public int
+    compareTo
+    (
+     UserDays ud
+    )
+    {
+      return pNumDays.compareTo(ud.pNumDays);
+    }
+
+    private String  pName; 
+    private Integer pNumDays; 
   }
 }
