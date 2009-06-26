@@ -1,5 +1,6 @@
-%_topdir	@RPM_ROOT@
-%_signature 	gpg
-%_gpg_path 	/home/jim/code/src/temerity/gnupg
-%_gpg_name 	Temerity Software <support@temerity.us>
-%_gpgbin 	/usr/bin/gpg
+%_topdir                @RPM_ROOT@
+%_signature             gpg
+%_gpg_path              /home/jim/code/src/temerity/gnupg
+%_gpg_name              Temerity Software <support@temerity.us>
+%_gpgbin                /usr/bin/gpg
+%_binary_payload        w9.gzdio
