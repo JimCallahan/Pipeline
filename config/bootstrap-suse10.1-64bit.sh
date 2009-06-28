@@ -10,7 +10,7 @@ customer=$1
 sitep=$2
 debug_base=$3
 prof_base=$4
-config_extra=$5
+shift 4
 
 
 echo "---------------------------------------------------------------------------------------"
@@ -48,7 +48,7 @@ pushd debug
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=$customer \
     --with-customer-profile=$plprofile \
-    ${config_extra}
+    $*
 popd
 
 

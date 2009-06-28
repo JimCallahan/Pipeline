@@ -22,6 +22,41 @@ dnl ----------------------------------------------------------------------------
 dnl   Configuration options.
 dnl ------------------------------------------------------------------------------------------
 
+AC_MSG_CHECKING([Number of Authorized Licenses])
+
+AC_ARG_WITH([auth-licenses], 
+            [  --with-auth-licenses=NUM       The number of authorized licenses.])
+
+AC_SUBST(AUTH_LICENSES)
+AUTH_LICENSES=0
+
+if test "x" != "x$with_auth_licenses"
+then 
+  AUTH_LICENSES=$with_auth_licenses
+fi
+
+AC_MSG_RESULT([$AUTH_LICENSES])
+
+
+AC_MSG_CHECKING([Number of Extra Licenses])
+
+AC_ARG_WITH([extra-licenses], 
+            [  --with-extra-licenses=NUM      The number of extra licenses.])
+
+AC_SUBST(EXTRA_LICENSES)
+EXTRA_LICENSES=0
+
+if test "x" != "x$with_extra_licenses"
+then 
+  EXTRA_LICENSES=$with_extra_licenses
+fi
+
+AC_MSG_RESULT([$EXTRA_LICENSES])
+AC_MSG_RESULT([ ])
+
+
+dnl ------------------------------------------------------------------------------------------
+
 AC_MSG_CHECKING([Build User])
 
 AC_SUBST(BUILD_USER)
@@ -1935,6 +1970,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/PackageInfo.java.src
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
   src/java/us/temerity/pipeline/core/VerifiedApp.java
+  src/java/us/temerity/pipeline/core/LicenseInfo.java
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
   src/java/us/temerity/pipeline/laf/scripts/radial-menu

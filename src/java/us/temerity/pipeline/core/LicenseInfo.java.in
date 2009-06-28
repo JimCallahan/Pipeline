@@ -1,0 +1,39 @@
+// $Id: LicenseInfo.java.in,v 1.1 2009/06/28 19:25:08 jim Exp $
+
+package us.temerity.pipeline.core;
+
+import java.io.*;
+import java.util.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   L I C E N S E   I N F O                                                                */
+/*------------------------------------------------------------------------------------------*/
+
+/**
+ * Information about the number of client connections allowed by the Master Manager.
+ * 
+ * The static fields of this class are initialized by <I>autoconf(1)</I> during the 
+ * build of this release to contain site specific information.
+ */
+public
+class LicenseInfo
+{ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P U B L I C   F I E L D S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The number of simultaneous client connections autorized for the site.
+   */ 
+  public static final int sAuthLicenses = @AUTH_LICENSES@;
+
+  /**
+   * An additional number of simultaneous client connections beyond the authorized number
+   * that will still be allowed but will cause warning messages to be generated.
+   */
+  public static final int sExtraLicenses = @EXTRA_LICENSES@;
+
+}
+
+
+
