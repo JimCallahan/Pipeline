@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.26 2009/03/25 22:02:23 jim Exp $
+// $Id: NodeVersion.java,v 1.27 2009/06/29 00:05:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -447,7 +447,7 @@ class NodeVersion
    * Modify the node version to make it suitable for transfer to a remote site.<P> 
    * 
    * This method should only be used internallly to implement the 
-   * {@link MssterMgrClient#extractSiteVersion} method and never in user code!<P> 
+   * {@link MasterMgrClient#extractSiteVersion} method and never in user code!<P> 
    * 
    * This method will go away when true multi-site support is added to Pipeline.<P> 
    * 
