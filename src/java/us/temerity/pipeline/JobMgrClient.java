@@ -1,4 +1,4 @@
-// $Id: JobMgrClient.java,v 1.12 2009/02/17 00:36:10 jlee Exp $
+// $Id: JobMgrClient.java,v 1.13 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -98,7 +98,7 @@ class JobMgrClient
     verifyConnection();
     
     JobGetExecDetailsReq req = new JobGetExecDetailsReq(jobID);
-    Object obj = performTransaction(JobRequest.GetExecDetails, req);
+    Object obj = performTransaction(JobRequest.GetExecDetails, req, 2000);
     if(obj instanceof JobGetExecDetailsRsp) {
       JobGetExecDetailsRsp rsp = (JobGetExecDetailsRsp) obj;
       return rsp.getExecDetails();
@@ -134,7 +134,7 @@ class JobMgrClient
     verifyConnection();
     
     JobGetNumStdOutLinesReq req = new JobGetNumStdOutLinesReq(jobID);
-    Object obj = performTransaction(JobRequest.GetNumStdOutLines, req);
+    Object obj = performTransaction(JobRequest.GetNumStdOutLines, req, 3000);
     if(obj instanceof JobGetNumLinesRsp) {
       JobGetNumLinesRsp rsp = (JobGetNumLinesRsp) obj;
       return rsp.getNumLines();
@@ -172,7 +172,7 @@ class JobMgrClient
     verifyConnection();
 
     JobGetStdOutLinesReq req = new JobGetStdOutLinesReq(jobID, start, lines);
-    Object obj = performTransaction(JobRequest.GetStdOutLines, req);
+    Object obj = performTransaction(JobRequest.GetStdOutLines, req, 3000);
     if(obj instanceof JobOutputRsp) {
       JobOutputRsp rsp = (JobOutputRsp) obj;
       return rsp.getLines();
@@ -203,7 +203,7 @@ class JobMgrClient
     verifyConnection();
     
     JobCloseStdOutReq req = new JobCloseStdOutReq(jobID);
-    Object obj = performTransaction(JobRequest.CloseStdOut, req);
+    Object obj = performTransaction(JobRequest.CloseStdOut, req, 3000);
     handleSimpleResponse(obj);    
   }
   
@@ -230,7 +230,7 @@ class JobMgrClient
     verifyConnection();
     
     JobGetNumStdErrLinesReq req = new JobGetNumStdErrLinesReq(jobID);
-    Object obj = performTransaction(JobRequest.GetNumStdErrLines, req);
+    Object obj = performTransaction(JobRequest.GetNumStdErrLines, req, 3000);
     if(obj instanceof JobGetNumLinesRsp) {
       JobGetNumLinesRsp rsp = (JobGetNumLinesRsp) obj;
       return rsp.getNumLines();
@@ -268,7 +268,7 @@ class JobMgrClient
     verifyConnection();
 
     JobGetStdErrLinesReq req = new JobGetStdErrLinesReq(jobID, start, lines);
-    Object obj = performTransaction(JobRequest.GetStdErrLines, req);
+    Object obj = performTransaction(JobRequest.GetStdErrLines, req, 3000);
     if(obj instanceof JobOutputRsp) {
       JobOutputRsp rsp = (JobOutputRsp) obj;
       return rsp.getLines();
@@ -299,7 +299,7 @@ class JobMgrClient
     verifyConnection();
     
     JobCloseStdErrReq req = new JobCloseStdErrReq(jobID);
-    Object obj = performTransaction(JobRequest.CloseStdErr, req);
+    Object obj = performTransaction(JobRequest.CloseStdErr, req, 3000);
     handleSimpleResponse(obj);    
   }
 

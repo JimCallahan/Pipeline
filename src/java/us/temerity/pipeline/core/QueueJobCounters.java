@@ -1,4 +1,4 @@
-// $Id: QueueJobCounters.java,v 1.4 2009/06/04 09:45:12 jim Exp $
+// $Id: QueueJobCounters.java,v 1.5 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13,7 +13,7 @@ import java.util.concurrent.locks.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Maintains a count of the Running, Finished and total number of jobs in each job group.
+ * Maintains a count of the number of jobs in each state which share the same job group.
  */
 public
 class QueueJobCounters
@@ -149,7 +149,7 @@ class QueueJobCounters
 
   /**
    * Get the percentage of jobs in the job group owning the given job which are currently 
-   * Running or Finished.
+   * Running, Limbo or Finished.
    */ 
   public double 
   percentEngaged
@@ -168,10 +168,10 @@ class QueueJobCounters
     if(counters != null) {
       double percent = counters.percentEngaged();
       
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-           "Percent Engaged [" + jobID + "]: " + percent);	      
+//       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+//         LogMgr.getInstance().log
+//           (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+//            "Percent Engaged [" + jobID + "]: " + String.format("%1$.4f", percent));
 
       return percent;
     }
@@ -204,10 +204,10 @@ class QueueJobCounters
     if(counters != null) {
       double percent = counters.percentPending();
 
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-           "Percent Pending [" + jobID + "]: " + percent);
+//       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+//         LogMgr.getInstance().log
+//           (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+//            "Percent Pending [" + jobID + "]: " + String.format("%1$.4f", percent));
 
       return percent;
     }
@@ -239,13 +239,13 @@ class QueueJobCounters
     if(counters != null) {
       double dist[] = counters.distribution();
 
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
-        StringBuilder buf = new StringBuilder(); 
-        buf.append("Job Group Distribution [" + groupID + "]:"); 
-        for(JobState js : JobState.all()) 
-          buf.append("\n" + js + " = " + dist[js.ordinal()]);
-	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
-      }
+//       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+//         StringBuilder buf = new StringBuilder(); 
+//         buf.append("Job Group Distribution [" + groupID + "]:\n  "); 
+//         for(JobState js : JobState.all()) 
+//           buf.append(js + "[" + String.format("%1$.4f", dist[js.ordinal()]) + "] ");
+// 	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
+//       }
 
       return dist;
     }
@@ -285,13 +285,20 @@ class QueueJobCounters
     ) 
     {
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
-        StringBuilder buf = new StringBuilder(); 
-        buf.append("Job Pre-Counts [" + info.getJobID() + "]: " + 
-                   prevState + " -> " + info.getState()); 
-        for(JobState js : JobState.all()) 
-          buf.append("\n" + js + " = " + pCounts[js.ordinal()]);
-        LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+           "Job Count Update [" + info.getJobID() + "]: " + 
+           prevState + " -> " + info.getState()); 
       }
+
+ //      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+//         StringBuilder buf = new StringBuilder(); 
+//         buf.append("Job Pre-Counts [" + info.getJobID() + "]: " + 
+//                    prevState + " -> " + info.getState() + "\n  "); 
+//         for(JobState js : JobState.all()) 
+//           buf.append(js + "[" + pCounts[js.ordinal()] + "] ");
+//         LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
+//       }
       
       if(prevState != null) {
         if(pCounts[prevState.ordinal()] > 0) {
@@ -308,20 +315,21 @@ class QueueJobCounters
 
       pCounts[info.getState().ordinal()]++;
       
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
-        StringBuilder buf = new StringBuilder(); 
-        buf.append("Job Post-Counts [" + info.getJobID() + "]: " + 
-                   prevState + " -> " + info.getState()); 
-        for(JobState js : JobState.all()) 
-          buf.append("\n" + js + " = " + pCounts[js.ordinal()]);
-        LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
-      }
+  //     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+//         StringBuilder buf = new StringBuilder(); 
+//         buf.append("Job Post-Counts [" + info.getJobID() + "]: " + 
+//                    prevState + " -> " + info.getState() + "\n  "); 
+//         for(JobState js : JobState.all()) 
+//           buf.append(js + "[" + pCounts[js.ordinal()] + "] ");
+//         LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
+//       }
     }
     
     public synchronized double 
     percentEngaged() 
     {
       return ((double) (pCounts[JobState.Running.ordinal()] + 
+                        pCounts[JobState.Limbo.ordinal()] + 
                         pCounts[JobState.Finished.ordinal()])) / pTotal;
     }
 

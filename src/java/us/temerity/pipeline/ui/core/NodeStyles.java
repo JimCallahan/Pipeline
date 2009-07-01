@@ -1,4 +1,4 @@
-// $Id: NodeStyles.java,v 1.5 2008/05/04 00:40:22 jim Exp $
+// $Id: NodeStyles.java,v 1.6 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -114,12 +114,79 @@ class NodeStyles
   }
  
   /**
+   * Gets the color associated with the given queue state.
+   */ 
+  public static Color3d
+  getQueueColor3d
+  (
+   QueueState state
+  ) 
+  { 
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    if(state == null) 
+      return prefs.getUndefinedCoreColor();
+
+    switch(state) {
+    case Undefined:
+      return prefs.getUndefinedCoreColor();
+          
+    case Finished:
+      return prefs.getFinishedCoreColor();
+      
+    case Stale:
+      return prefs.getStaleCoreColor();
+      
+    case Queued:
+      return prefs.getQueuedCoreColor();
+      
+    case Paused:
+      return prefs.getPausedCoreColor();
+          
+    case Running:
+      return prefs.getRunningCoreColor();
+          
+    case Limbo:
+      return prefs.getLimboCoreColor();
+          
+    case Aborted:
+      return prefs.getAbortedCoreColor();
+          
+    case Failed:
+      return prefs.getFailedCoreColor();
+
+    case Dubious:
+      return prefs.getDubiousCoreColor();
+
+    default:
+      assert(false) : ("Somehow the QueueState (" + state + ") was not handled!");
+      return null;
+    }
+  }
+ 
+  /**
    * Gets the color associated with the given overall queue state.
    */ 
   public static Color
   getQueueColor
   (
    OverallQueueState state
+  ) 
+  {
+    Color3d color = getQueueColor3d(state);
+    if(color == null) 
+      return null;
+    
+    return new Color((float) color.r(), (float) color.g(), (float) color.b());
+  }
+ 
+  /**
+   * Gets the color associated with the given queue state.
+   */ 
+  public static Color
+  getQueueColor
+  (
+   QueueState state
   ) 
   {
     Color3d color = getQueueColor3d(state);
@@ -175,6 +242,9 @@ class NodeStyles
       
     case Running:
       return prefs.getRunningCoreColor();
+      
+    case Limbo:
+      return prefs.getLimboCoreColor();
       
     case Aborted:
       return prefs.getAbortedCoreColor();

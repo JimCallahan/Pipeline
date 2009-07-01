@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.9 2008/08/02 23:43:24 jim Exp $
+// $Id: QueueJobResults.java,v 1.10 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -32,16 +32,19 @@ class QueueJobResults
   {}
 
   /**
-   * Construct a special job results in the event of an exception during job preparation.
+   * Construct a special job results in the event of an error during job preparation
+   * or when results are missing due to a Job Manager failure.
+   * 
+   * @param exitCode
+   *   A fake exit code to give for the subprocess.
    */ 
   public
   QueueJobResults
   (
-   Throwable ex
+   int exitCode
   )
   {
-    pTimeStamp = new Date(); 
-    pExitCode  = 666;
+    this(exitCode, null, null, null, null, null, null); 
   }
 
   /**

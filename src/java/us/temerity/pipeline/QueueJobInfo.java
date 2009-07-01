@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.23 2009/06/04 08:58:55 jim Exp $
+// $Id: QueueJobInfo.java,v 1.24 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -279,6 +279,36 @@ class QueueJobInfo
     return prev;
   }
   
+  /**
+   * Records that contact has been lost with the job server running the job after it 
+   * was started but before it completed.
+   * 
+   * @return
+   *   The previous job state.
+   */ 
+  public synchronized JobState
+  limbo() 
+  {
+    JobState prev = pState;
+    pState = JobState.Limbo;
+    return prev;
+  }
+
+  /**
+   * Records that contact has been reestablished with the job server running the job 
+   * and the state returned to Running.
+   * 
+   * @return
+   *   The previous job state.
+   */ 
+  public synchronized JobState
+  restarted() 
+  {
+    JobState prev = pState;
+    pState = JobState.Running;
+    return prev;
+  }
+
   /**
    * Records that the job was aborted, but then resubmitted. 
    * 

@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorJobOutputDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JBaseMonitorJobOutputDialog.java,v 1.7 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -181,6 +181,7 @@ class JBaseMonitorJobOutputDialog
     throws PipelineException;
   
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -312,7 +313,8 @@ class JBaseMonitorJobOutputDialog
     {
       super();
 
-      pLock = new Object();
+      pJobID = new AtomicLong(0L);
+      pClient = new AtomicReference<JobMgrClient>(); 
     }
 
     public void
@@ -322,29 +324,30 @@ class JBaseMonitorJobOutputDialog
      JobMgrClient client
     ) 
     {
-      synchronized(pLock) {
-	pJobID  = jobID; 
-	pClient = client;
-      }
+      pJobID.set(jobID); 
+      pClient.set(client); 
     }    
 
     /** 
      * Get the current number of lines which may potentially be viewed.
+     * 
+     * @return 
+     *   The number of lines or <CODE>null</CODE> if unable to determine the number of lines.
      */
-    protected int 
+    protected Integer
     getNumLines()
     {
-      synchronized(pLock) {
-	try {
-	  if(pClient != null)
-	    return getNumLinesMonitor(pClient, pJobID);
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
+      long jobID = pJobID.get(); 
+      JobMgrClient client = pClient.get();
+      if((jobID > 0L) && (client != null)) {
+        try {
+          return getNumLinesMonitor(client, jobID);
+        }
+        catch(PipelineException ex) {
+        }
       }
 
-      return 0;
+      return null;
     }
     
     /** 
@@ -355,6 +358,9 @@ class JBaseMonitorJobOutputDialog
      * 
      * @param lines
      *   The number of lines of text to retrieve. 
+     * 
+     * @return 
+     *   The text or <CODE>null</CODE> if unable to retreive the text. 
      */
     protected String
     getLines
@@ -363,24 +369,23 @@ class JBaseMonitorJobOutputDialog
      int lines
     )
     {
-      synchronized(pLock) {
+      long jobID = pJobID.get(); 
+      JobMgrClient client = pClient.get();
+      if((jobID > 0L) && (client != null)) {
 	try {
-	  if(pClient != null)
-	    return getLinesMonitor(pClient, pJobID, start, lines);
+          return getLinesMonitor(client, jobID, start, lines);
 	}
 	catch(PipelineException ex) {
-	  showErrorDialog(ex);
 	}
       }
-      
+
       return null;
     } 
 
     private static final long serialVersionUID = 6630563414902079487L;
 
-    private Object        pLock;
-    private long          pJobID; 
-    private JobMgrClient  pClient; 
+    private AtomicLong pJobID; 
+    private AtomicReference<JobMgrClient> pClient; 
   }
 
 
@@ -420,8 +425,7 @@ class JBaseMonitorJobOutputDialog
 	  }
 	}
       }
-      catch (Exception ex) {
-	showErrorDialog(ex);	
+      catch (Exception ex) {	
       }
       finally {
 	if(client != null) {
@@ -429,7 +433,6 @@ class JBaseMonitorJobOutputDialog
 	    closeMonitor(client, pJobID);
 	  }
 	  catch(PipelineException ex) {
-	    showErrorDialog(ex);
 	  }
 
 	  client.disconnect();
@@ -477,7 +480,22 @@ class JBaseMonitorJobOutputDialog
 	out.close();
       }
       catch (Exception ex) {
-	showErrorDialog(ex);	
+        if(ex.getCause() instanceof IOException) {
+          showErrorDialog
+            ("Communication Error:", 
+             "Unable to contact the Job Manager on (" + pHostname + ") where the " + 
+             "job (" + pJobID + ") was originally executed to retrieve the job output!\n" + 
+             "\n" +
+             "The most likely cause is that the Job Manager is not currently " + 
+             "running.  If running, it may also become unresponsive due to the " + 
+             "host running the Job Manager experiencing extremely high system " + 
+             "load or heavy virtual memory swapping.  The cause might also be some " + 
+             "more fundamental networking failure or misconfiguration.  Please " + 
+             "contact your IT staff to correct this problem."); 
+        }
+        else {
+          showErrorDialog(ex);	
+        }
       }
       finally {
 	if(client != null) {

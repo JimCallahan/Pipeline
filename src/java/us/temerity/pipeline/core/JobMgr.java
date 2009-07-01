@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.47 2009/06/09 14:12:03 jim Exp $
+// $Id: JobMgr.java,v 1.48 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -411,24 +411,37 @@ class JobMgr
 	}
       }
 
-      /* job server may have been restarted, see if a results file exists */ 
+      /* job server may have been restarted... */ 
       else {
-	File file = new File(pJobDir, req.getJobID() + "/results");
-	if(file.isFile()) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Finer,
-	     "Reading Job Results: " + req.getJobID());
-
+        /* if a results file exists, return its contents */ 
+        File rfile = new File(pJobDir, req.getJobID() + "/results");
+        if(rfile.isFile()) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+             "Reading Job Results: " + req.getJobID());
+          
           try {
-            results = (QueueJobResults) GlueDecoderImpl.decodeFile("Results", file);
+            results = (QueueJobResults) GlueDecoderImpl.decodeFile("Results", rfile);
           }	
           catch(GlueException ex) {
             throw new PipelineException(ex);
           }
-	}
+        }
+        
 	else {
-	  throw new PipelineException
-	    ("No job (" + req.getJobID() + ") exists on the server!");
+          /* nothing is known, so fabricate some failure results */ 
+          results = new QueueJobResults(666);
+
+          /* if there are job details, then save the results to disk */ 
+          File dfile = new File(pJobDir, req.getJobID() + "/details");
+          if(dfile.isFile()) {
+            try {
+              GlueEncoderImpl.encodeFile("Results", results, rfile);
+            }
+            catch(GlueException ex) {
+              throw new PipelineException(ex);
+            }
+          }
 	}
       }
       
@@ -1152,7 +1165,7 @@ class JobMgr
 	    }
 	  }
 
-	  recordResults(new QueueJobResults(ex), dir);
+	  recordResults(new QueueJobResults(666), dir);
 	    	  
 	  return;
 	}

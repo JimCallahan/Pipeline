@@ -1,4 +1,4 @@
-// $Id: BaseQueueExt.java,v 1.4 2007/03/28 19:08:03 jim Exp $
+// $Id: BaseQueueExt.java,v 1.5 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -369,8 +369,8 @@ class BaseQueueExt
    *
    * A host may be modified either manually by users or automatically by the queue
    * manager itself.  Automatic modifications include marking unresponsive servers as 
-   * Hung (or Disabled), re-Enabling servers which start responding again and changes
-   * to the Selection Group caused by a Selection Schedule. <P> 
+   * Unknown, re-Enabling servers which start responding again and changes to the 
+   * Selection Group caused by a Selection Schedule. <P> 
    *
    * The modified host information will not include any dynamic resource information such 
    * as the available memory, disk or system load.  This information can be obtained using
@@ -471,8 +471,8 @@ class BaseQueueExt
    * The task to perform if a job is unable to start (balked). <P> 
    * 
    * A job is considered to be balked if the particular job manager assigned to the job is
-   * unable to be contacted by the queue manager in a timely manner (Hung).  The job will be 
-   * automatically requeued after a balk similar to how a preempted job is handled. 
+   * unable to be contacted by the queue manager in a timely manner (Unknown).  The job 
+   * will be automatically requeued after a balk similar to how a preempted job is handled. 
    * 
    * @param job
    *   The job specification.

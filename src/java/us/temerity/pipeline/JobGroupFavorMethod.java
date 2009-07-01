@@ -1,4 +1,4 @@
-// $Id: JobGroupFavorMethod.java,v 1.1 2006/12/14 02:39:05 jim Exp $
+// $Id: JobGroupFavorMethod.java,v 1.2 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,8 +21,8 @@ enum JobGroupFavorMethod
   None, 
   
   /**
-   * Prefer jobs which are members of job groups with the highest percentage of Finished
-   * or Running jobs.
+   * Prefer jobs which are members of job groups with the highest percentage of Finished,
+   * Running or Limbo jobs.
    */
   MostEngaged, 
   

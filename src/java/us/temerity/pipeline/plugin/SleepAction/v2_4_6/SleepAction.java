@@ -1,4 +1,4 @@
-// $Id: SleepAction.java,v 1.1 2009/05/25 01:19:42 jesse Exp $
+// $Id: SleepAction.java,v 1.2 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.plugin.SleepAction.v2_4_6;
 
@@ -14,7 +14,7 @@ import us.temerity.pipeline.plugin.*;
 
 /** 
  * Creates an empty file for all of the primary and secondary file sequences associated with 
- * the target node and then sleeps for 15 seconds.
+ * the target node and then sleeps for 2 minutes. 
  */
 public
 class SleepAction
@@ -127,7 +127,7 @@ class SleepAction
             out.write(file.toString() + " ");
         }
         out.write("\n");
-        out.write("sleep 15");
+        out.write("sleep 120");
         
         out.close();
 

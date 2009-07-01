@@ -1,4 +1,4 @@
-// $Id: QueueHostStatus.java,v 1.2 2007/11/30 20:14:23 jesse Exp $
+// $Id: QueueHostStatus.java,v 1.3 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,25 +15,25 @@ public
 enum QueueHostStatus
 {  
   /**
-   * Indicates that the <B>pljobmgr</B>(1) daemon is in the process of being enabled.
+   * Indicates that the Job Manager is in the process of being enabled.
    */
   Enabling, 
 
   /**
-   * A <B>pljobmgr</B>(1) daemon is currently running on the host and is available to 
-   * run new jobs which meet the selection criteria for the host.
+   * Communication is currenty established with the Job Manager running on the host and 
+   * is available to run any new jobs which meet the selection criteria for the host.
    */ 
   Enabled, 
 
 
   /**
-   * Indicates that the <B>pljobmgr</B>(1) daemon is in the process of being disabled.
+   * Indicates that the Job Manager is in the process of being disabled.
    */
   Disabling, 
 
   /**
-   * A <B>pljobmgr</B>(1) daemon is currently running on the host, but the host has 
-   * been temporarily disabled. <P> 
+   * Communication is currenty established with the Job Manager running on the host but
+   * it has been temporarily disabled from starting new jobs. <P> 
    * 
    * Jobs previously assigned to the host may continue running until they complete, but no 
    * new jobs will be assigned to this host.  The host will respond to requests to kill 
@@ -43,14 +43,20 @@ enum QueueHostStatus
 
 
   /**
-   * Indicates that a shutdown of the <B>pljobmgr</B>(1) daemon is underway.
+   * Indicates that a shutdown of the Job Manager is underway.<P> 
+   * 
+   * If communication can be establshed, the Job Manager will be instructed to peform a 
+   * clean Shutodown operation and exit.  However, even if the Job Manager cannot be 
+   * contacted it will become marked as Offline.
    */
   Terminating, 
 
   /**
-   * No <B>pljobmgr</B>(1) daemon is currently running on the host.  <P> 
+   * There is no communication currently established with the Job Manager on this host 
+   * nor will any effort be made to reestablish communication.<P> 
    * 
-   * No jobs will be assigned to this host until the <B>pljobmgr</B>(1) daemon is restarted.
+   * Note that this state only indicates that the Queue Manager will ignore this host
+   * and not whether a Job Manager is actually running on the host.
    */ 
   Shutdown,
 
@@ -58,14 +64,23 @@ enum QueueHostStatus
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * A <B>pljobmgr</B>(1) daemon is currently running on the host, but is not responding
-   * to network connections from clients. <P> 
+   * Communication with the Job Manager has unexpectedly been lost and it has become
+   * unresponsive to requests for network communication. <P> 
+   *  
+   * The Queue Manager will periodically attempt to restore communication and if successful
+   * the Job Manager will return to an Enabled state.  Users may also manually attempt
+   * to restore contact by Enabling the host. <P> 
    * 
-   * This is probably an indication that something has gone wrong with the daemon or the 
-   * host running the daemon.  No jobs will be assigned to this host while it is in this 
-   * state.
+   * Note that there are a variety of reasons for while a Job Manager may become Limbo
+   * including: <P> 
+   * <DIV style="margin-left: 40px;">
+   *   The host is not powered on. <P> 
+   *   There is some network communication failure or misconfiguration.<P> 
+   *   The host operating system has gone down or is under extremely high load.<P> 
+   *   The Job Manager has been killed and has not been restarted.<P> 
+   * </DIV>
    */ 
-  Hung;
+  Limbo;
 
 
 

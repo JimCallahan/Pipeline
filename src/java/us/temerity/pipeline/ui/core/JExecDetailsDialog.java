@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.6 2007/09/07 18:52:38 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.7 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -218,7 +218,7 @@ class JExecDetailsDialog
     
     String hostname = "";
     if(info.getHostname() != null)
-      hostname = ("    [" + info.getHostname() + "]");
+      hostname = (" [" + info.getHostname() + "]");
 
     String command = "-";
     if(details != null) 
@@ -227,7 +227,6 @@ class JExecDetailsDialog
     TreeMap<String,String> env = new TreeMap<String,String>();
     if(details != null) 
       env = details.getEnvironment();
-    
     
 
     pHeaderLabel.setText("Execution Details -" + jheader + hostname);
@@ -252,7 +251,7 @@ class JExecDetailsDialog
 	      
 	    JTextField field = 
 	      UIFactory.createTitledTextField(tpanel, key + ":", sTSize, 
-					     vpanel, value, sVSize);
+                                              vpanel, value, sVSize);
 	    field.setHorizontalAlignment(JLabel.LEFT);
 	    
 	    if(!key.equals(last))

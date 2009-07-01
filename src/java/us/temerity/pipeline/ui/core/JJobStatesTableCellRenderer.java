@@ -1,4 +1,4 @@
-// $Id: JJobStatesTableCellRenderer.java,v 1.4 2009/05/14 23:30:43 jim Exp $
+// $Id: JJobStatesTableCellRenderer.java,v 1.5 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -83,6 +83,7 @@ class JJobStatesTableCellRenderer
         colorCast(prefs.getPausedCoreColor()), 
         colorCast(prefs.getAbortedCoreColor()), 
         colorCast(prefs.getRunningCoreColor()), 
+        colorCast(prefs.getLimboCoreColor()), 
         colorCast(prefs.getFinishedCoreColor()), 
         colorCast(prefs.getFailedCoreColor())
       };

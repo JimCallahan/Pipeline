@@ -1,4 +1,4 @@
-// $Id: QueueHostMod.java,v 1.5 2009/05/12 05:57:32 jim Exp $
+// $Id: QueueHostMod.java,v 1.6 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -461,10 +461,10 @@ class QueueHostMod
       QueueHostStatus sch = sched.getScheduledStatus(sname);
       if (sch != null) {
 	if (current != sch &&
-	  !(current == QueueHostStatus.Hung || current == QueueHostStatus.Shutdown || 
+	  !(current == QueueHostStatus.Limbo || current == QueueHostStatus.Shutdown || 
 	    current == QueueHostStatus.Terminating)) 
 	  changedStatus = sch.toQueueHostStatusChange();
-	else if (current == QueueHostStatus.Hung || current == QueueHostStatus.Shutdown || 
+	else if (current == QueueHostStatus.Limbo || current == QueueHostStatus.Shutdown || 
 	  current == QueueHostStatus.Terminating)
 	  allowedStatus = sch.toQueueHostStatusChange();
       }

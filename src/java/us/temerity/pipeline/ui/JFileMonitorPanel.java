@@ -1,4 +1,4 @@
-// $Id: JFileMonitorPanel.java,v 1.3 2005/01/22 21:55:12 jim Exp $
+// $Id: JFileMonitorPanel.java,v 1.4 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -47,15 +47,18 @@ class JFileMonitorPanel
 
   /** 
    * Get the current number of lines which may potentially be viewed.
+   * 
+   * @return 
+   *   The number of lines or <CODE>null</CODE> if unable to determine the number of lines.
    */
-  protected int 
+  protected Integer
   getNumLines()
   {
     try {
       return pFileMonitor.getNumLines();
     }
     catch(IOException ex) {
-      return 0;
+      return null;
     }
   }
 
@@ -67,6 +70,9 @@ class JFileMonitorPanel
    * 
    * @param lines
    *   The number of lines of text to retrieve. 
+   * 
+   * @return 
+   *   The text or <CODE>null</CODE> if unable to retreive the text. 
    */
   protected String
   getLines

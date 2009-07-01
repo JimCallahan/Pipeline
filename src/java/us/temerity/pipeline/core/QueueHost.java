@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.11 2009/06/04 09:45:12 jim Exp $
+// $Id: QueueHost.java,v 1.12 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -124,8 +124,8 @@ class QueueHost
     case Shutdown:
       return QueueHostStatus.Shutdown;
       
-    case Hung:
-      return QueueHostStatus.Hung;
+    case Limbo:
+      return QueueHostStatus.Limbo;
 
     default:
       throw new IllegalStateException();
@@ -159,8 +159,8 @@ class QueueHost
       pNumJobs = null;
       break;
 
-    case Hung:
-      pLastHung = pLastModified;
+    case Limbo:
+      pLastLimbo = pLastModified;
     }
   }
 
@@ -176,13 +176,13 @@ class QueueHost
 
   /**
    * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
-   * status was last changed to Hung or <CODE>null</CODE> if the state has never been Hung 
+   * status was last changed to Limbo or <CODE>null</CODE> if the state has never been Limbo 
    * since the server was started.
    */ 
   public synchronized Long
-  getLastHung()
+  getLastLimbo()
   {
-    return pLastHung; 
+    return pLastLimbo; 
   }
 
 
@@ -624,67 +624,6 @@ class QueueHost
   ) 
   {
     pSample = sample; 
-
-    if(pNumJobs == null) 
-      pNumJobs = pSample.getNumJobs();
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Increment the number of running jobs.
-   */ 
-  public synchronized void 
-  jobStarted()
-  {
-    /* if the job counts are known and valid, increment number of jobs */ 
-    if((pNumJobs != null) && (pNumJobs >= 0)) {
-      pNumJobs++;
-    }
-    /* if not, reset the job count so that it will be reaquired from the job server */ 
-    else {
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-         "Job Count Reset [" + getName() + "]:  Jobs = " +
-         ((pNumJobs != null) ? pNumJobs : "<unknown>"));
-
-      pNumJobs = null;  
-    }
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Job Started [" + getName() + "]:  Jobs = " + 
-       ((pNumJobs != null) ? pNumJobs : "<unknown>"));
-    LogMgr.getInstance().flush();
-  }
-
-  /**
-   * Decrement the number of running jobs.
-   */ 
-  public synchronized void 
-  jobFinished()
-  {
-    /* if the job counts are known and valid, decrement number of jobs */ 
-    if(pNumJobs != null) 
-      pNumJobs--;
-    
-    /* if the job counts are uknown or invalid, 
-         reset the job count so that it will be reaquired from the job server */ 
-    if((pNumJobs == null) || (pNumJobs < 0)) {
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-         "Job Count Reset [" + getName() + "]:  Jobs = " +
-         ((pNumJobs != null) ? pNumJobs : "<unknown>"));
-
-      pNumJobs = null;  
-    }
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Job Finished [" + getName() + "]:  Jobs = " + 
-       ((pNumJobs != null) ? pNumJobs : "<unknown>"));
-    LogMgr.getInstance().flush();
   }
 
 
@@ -773,6 +712,24 @@ class QueueHost
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Set the count of currently running jobs on the host.<P> 
+   * 
+   * This method is called by the dispatcher each cycle which determines the number of 
+   * running jobs by counting the number of MonitorTask threads registered to each host.
+   * Since only a single job is dispatched to a host each cycle, keeping this internal
+   * count will always be high enough to prevent too many jobs from being started while
+   * reducing lock contention on the table of MonitorTask threads.
+   */ 
+  public synchronized void 
+  setRunningJobs
+  (
+   int numJobs
+  ) 
+  {
+    pNumJobs = numJobs;
+  }
+
   /** 
    * Get the number of slots currently available. <P> 
    * 
@@ -781,46 +738,58 @@ class QueueHost
    * <DIV style="margin-left: 40px;">
    *   There are no system resource samples newer than the sample interval.<P>
    *   If the server is currently on hold due to job run-up. <P>
-   *   If the number of running jobs is unknown due to network communication problems.
    * </DIV>
    */
   public synchronized int 
   getAvailableSlots() 
   {
+    LogMgr lmgr = LogMgr.getInstance();
+
     ResourceSample sample = getLatestSample();
     if(sample == null) {
-      LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Available Slots [" + getName() + "]:  No Samples Yet.  Jobs = " + pNumJobs);      
+      if(lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+        lmgr.log(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+                 "Available Slots [" + getName() + "]:  No Samples Yet.  " + 
+                 "Jobs = " + pNumJobs);      
+      }
 
       return 0;
     }
 
     long now = TimeStamps.now();
-    if(((now - sample.getTimeStamp()) > PackageInfo.sCollectorInterval) || 
-       (getHold() > now)) {
-      LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Available Slots [" + getName() + "]:  On Hold.  Jobs = " + pNumJobs);      
+    if((now - sample.getTimeStamp()) > PackageInfo.sCollectorInterval) {
+      if(lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+        lmgr.log(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+                 "Available Slots [" + getName() + "]:  Old Sample.  " + 
+                 "Jobs = " + pNumJobs);      
+      }
 
       return 0;
     }
     
-    if(pNumJobs == null) {
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-         "Available Slots [" + getName() + "]:  Unknown Status!"); 
+    if(getHold() > now) { 
+      if(lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+        lmgr.log(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+                 "Available Slots [" + getName() + "]:  On Hold.  " + 
+                 "Jobs = " + pNumJobs);  
+      }
 
+      return 0;
+    }
+    
+    if(pNumJobs == null) { 
+      lmgr.log(LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               "Available Slots [" + getName() + "]:  Unknown!"); 
       return 0; 
     }
 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Available Slots [" + getName() + "]:  " + 
-       "Jobs = " + pNumJobs + "  " + 
-       "Slots = " + pJobSlots + "  " + 
-       "Free = " + (pJobSlots - pNumJobs));
-    LogMgr.getInstance().flush();
+    if(lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+      lmgr.logAndFlush(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+                       "Available Slots [" + getName() + "]:  " + 
+                       "Jobs = " + pNumJobs + "  " + 
+                       "Slots = " + pJobSlots + "  " + 
+                       "Free = " + (pJobSlots - pNumJobs));
+    }
 
     return Math.max(pJobSlots - pNumJobs, 0);
   }
@@ -912,14 +881,14 @@ class QueueHost
   enum Status 
   {
     /**
-     * A <B>pljobmgr</B>(1) daemon is currently running on the host and is available to 
-     * run new jobs which meet the selection criteria for the host.
+     * Communication is currenty established with the Job Manager running on the host and 
+     * is available to run any new jobs which meet the selection criteria for the host.
      */ 
     Enabled, 
 
     /**
-     * A <B>pljobmgr</B>(1) daemon is currently running on the host, but the host has 
-     * been temporarily disabled. <P> 
+     * Communication is currenty established with the Job Manager running on the host but
+     * it has been temporarily disabled from starting new jobs. <P> 
      * 
      * Jobs previously assigned to the host may continue running until they complete, but no 
      * new jobs will be assigned to this host.  The host will respond to requests to kill 
@@ -928,21 +897,32 @@ class QueueHost
     Disabled, 
 
     /**
-     * No <B>pljobmgr</B>(1) daemon is currently running on the host.  <P> 
+     * There is no communication currently established with the Job Manager on this host 
+     * nor will any effort be made to reestablish communication.<P> 
      * 
-     * No jobs will be assigned to this host until the <B>pljobmgr</B>(1) daemon is restarted.
+     * Note that this state only indicates that the Queue Manager will ignore this host
+     * and not whether a Job Manager is actually running on the host.
      */ 
     Shutdown, 
 
     /**
-     * A <B>pljobmgr</B>(1) daemon is currently running on the host, but is not responding
-     * to network connections from clients. <P> 
+     * Communication with the Job Manager has unexpectedly been lost and it has become
+     * unresponsive to requests for network communication. <P> 
      * 
-     * This is probably an indication that something has gone wrong with daemon and it 
-     * should be killed and restarted.  No jobs will be assigned to this host while it is
-     * in this state.
+     * The Queue Manager will periodically attempt to restore communication and if successful
+     * the Job Manager will return to an Enabled state.  Users may also manually attempt
+     * to restore contact by Enabling the host. <P> 
+     * 
+     * Note that there are a variety of reasons for while a Job Manager may become Unknown
+     * including: <P> 
+     * <DIV style="margin-left: 40px;">
+     *   The host is not powered on. <P> 
+     *   There is some network communication failure or misconfiguration.<P> 
+     *   The host operating system has gone down or is under extremely high load.<P> 
+     *   The Job Manager has been killed and has not been restarted.<P> 
+     * </DIV>
      */ 
-    Hung;
+    Limbo;
 
 
     /**
@@ -993,10 +973,10 @@ class QueueHost
 
   /**
    * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the status 
-   * was last changed to Hung or <CODE>null</CODE> if the state has never been Hung since 
+   * was last changed to Limbo or <CODE>null</CODE> if the state has never been Limbo since 
    * the server was started.
    */ 
-  private Long  pLastHung; 
+  private Long  pLastLimbo; 
 
   /**
    * The name of the reserving user or <CODE>null</CODE> if the host is not reserved.

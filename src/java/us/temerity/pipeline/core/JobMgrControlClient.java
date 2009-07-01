@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.23 2009/02/17 00:44:18 jlee Exp $
+// $Id: JobMgrControlClient.java,v 1.24 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -62,7 +62,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetResources, null, 15000);
+    Object obj = performTransaction(JobRequest.GetResources, null, 10000);
     if(obj instanceof JobGetResourcesRsp) {
       JobGetResourcesRsp rsp = (JobGetResourcesRsp) obj;
       return rsp.getSample();
@@ -85,7 +85,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetOsType, null, 15000);
+    Object obj = performTransaction(JobRequest.GetOsType, null, 10000);
     if(obj instanceof JobGetOsTypeRsp) {
       JobGetOsTypeRsp rsp = (JobGetOsTypeRsp) obj;
       return rsp.getOsType();
@@ -108,7 +108,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetNumProcessors, null, 15000);
+    Object obj = performTransaction(JobRequest.GetNumProcessors, null, 10000);
     if(obj instanceof JobGetNumProcessorsRsp) {
       JobGetNumProcessorsRsp rsp = (JobGetNumProcessorsRsp) obj;
       return rsp.getProcessors();
@@ -131,7 +131,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetTotalMemory, null, 15000);
+    Object obj = performTransaction(JobRequest.GetTotalMemory, null, 10000);
     if(obj instanceof JobGetTotalMemoryRsp) {
       JobGetTotalMemoryRsp rsp = (JobGetTotalMemoryRsp) obj;
       return rsp.getMemory();
@@ -154,7 +154,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetTotalDisk, null, 15000);
+    Object obj = performTransaction(JobRequest.GetTotalDisk, null, 10000);
     if(obj instanceof JobGetTotalDiskRsp) {
       JobGetTotalDiskRsp rsp = (JobGetTotalDiskRsp) obj;
       return rsp.getDisk();
@@ -291,13 +291,13 @@ class JobMgrControlClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * When the server is no longer reachable, communication should no longer be attempted.<P>
+   * Whether to abort repeated attempts to reach the server after a timeout.<P>
    * 
-   * Subclasses which wish to force performLongTransaction() to give up before receiving
-   * a response should override this method to return <CODE>true</CODE>.
+   * Will return true for requests which were already underway when serverUnreachable() 
+   * was last called at the first timeout.
    */ 
   protected boolean 
-  isServerUnreachable() 
+  abortOnTimeout() 
   {
     Date stamp = sUnreachableServers.lastUnreachable(pHostname);
     return ((stamp != null) && (pLongTransactionStart != null) && 
@@ -305,7 +305,8 @@ class JobMgrControlClient
   }
 
   /**
-   * Mark a server has being unreachable().
+   * Mark the time at which a server becomes unreachable so that requests which are already
+   * underway which use longPerformTransaction() will abort at the first timeout.
    * 
    * @param hostname
    *   The fully resolved name of the server host.

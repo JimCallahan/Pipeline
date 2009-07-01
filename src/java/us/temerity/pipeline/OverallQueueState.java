@@ -1,4 +1,4 @@
-// $Id: OverallQueueState.java,v 1.13 2008/05/04 00:40:16 jim Exp $
+// $Id: OverallQueueState.java,v 1.14 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -60,7 +60,7 @@ enum OverallQueueState
 
   /**
    * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
-   * {@link QueueState#Running Running}. <P> 
+   * {@link QueueState#Running Running} or {@link QueueState#Limbo Limbo}. <P> 
    * 
    * This state has precedence over the <CODE>Finished</CODE>, <CODE>Stale</CODE>,
    * <CODE>Queued</CODE> and <CODE>Paused</CODE> states.

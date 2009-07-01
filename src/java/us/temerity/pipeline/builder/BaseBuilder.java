@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.74 2009/06/15 21:08:23 jesse Exp $
+// $Id: BaseBuilder.java,v 1.75 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1823,6 +1823,11 @@ class BaseBuilder
 	  break;
 	case Running:
 	  pLog.log(Kind.Ops, Level.Finest, "\tThe Job is still running."); 
+	  done = false;
+	  running++;
+	  break;
+	case Limbo:
+	  pLog.log(Kind.Ops, Level.Warning, "\tThe Job is in limbo."); // FIX THIS!!!
 	  done = false;
 	  running++;
 	  break;

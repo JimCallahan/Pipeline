@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.96 2009/05/29 07:21:02 jim Exp $
+// $Id: ScriptApp.java,v 1.97 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3444,6 +3444,7 @@ class ScriptApp
 	  case Preempted:
 	  case Paused:
 	  case Running:
+	  case Limbo:
 	    done = false;
 	    break;
 

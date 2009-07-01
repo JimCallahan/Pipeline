@@ -1,4 +1,4 @@
-// $Id: QueueStatsExt.java,v 1.2 2008/02/14 20:26:29 jim Exp $
+// $Id: QueueStatsExt.java,v 1.3 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.plugin.QueueStatsExt.v2_1_1;
 
@@ -316,7 +316,7 @@ QueueStatsExt
    *
    * A host may be modified either manually by users or automatically by the queue
    * manager itself.  Automatic modifications include marking unresponsive servers as 
-   * Hung (or Disabled), re-Enabling servers which start responding again and changes
+   * Limbo (or Disabled), re-Enabling servers which start responding again and changes
    * to the Selection Group caused by a Selection Schedule. <P> 
    *
    * The modified host information will not include any dynamic resource information such 

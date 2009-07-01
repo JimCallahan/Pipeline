@@ -1,10 +1,11 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.20 2009/06/02 20:08:37 jlee Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.21 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.io.*;
 
 import javax.swing.*;
 
@@ -628,7 +629,7 @@ class JQueueJobDetailsPanel
       addMouseListener(this); 
     }
 
-    updateJob(null, null, null, null, null, null);
+    updateJob(null, null, null, null, null);
   }
 
   /**
@@ -774,9 +775,6 @@ class JQueueJobDetailsPanel
    * @param info
    *   The current job status information. 
    * 
-   * @param details
-   *   The job execution details.
-   * 
    * @param licenseKeys
    *   The current license keys.
    * 
@@ -790,7 +788,6 @@ class JQueueJobDetailsPanel
    String view,
    QueueJob job,
    QueueJobInfo info, 
-   SubProcessExecDetails details,
    ArrayList<LicenseKey> licenseKeys, 
    ArrayList<SelectionKey> selectionKeys,
    ArrayList<HardwareKey> hardwareKeys
@@ -799,7 +796,7 @@ class JQueueJobDetailsPanel
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
-    updateJob(job, info, details, licenseKeys, selectionKeys, hardwareKeys);
+    updateJob(job, info, licenseKeys, selectionKeys, hardwareKeys);
   }
 
 
@@ -814,9 +811,6 @@ class JQueueJobDetailsPanel
    * @param info
    *   The current job status information. 
    * 
-   * @param details
-   *   The job execution details.
-   * 
    * @param licenseKeys
    *   The current license keys.
    * 
@@ -828,7 +822,6 @@ class JQueueJobDetailsPanel
   (
    QueueJob job,
    QueueJobInfo info, 
-   SubProcessExecDetails details, 
    ArrayList<LicenseKey> licenseKeys, 
    ArrayList<SelectionKey> selectionKeys,
    ArrayList<HardwareKey> hardwareKeys
@@ -840,7 +833,6 @@ class JQueueJobDetailsPanel
 
     pJob           = job;
     pJobInfo       = info;
-    pExecDetails   = details; 
     pLicenseKeys   = licenseKeys; 
     pSelectionKeys = selectionKeys;
     pHardwareKeys  = hardwareKeys;
@@ -950,9 +942,6 @@ class JQueueJobDetailsPanel
 
     /* process details panel */ 
     {
-      pExecDetailsButton.setEnabled
-	((pJob != null) && (pJobInfo != null) && (pExecDetails != null));
-
       {
 	String text = "-";
 	if((pJobInfo != null) && (pJobInfo.getHostname() != null)) {
@@ -986,7 +975,7 @@ class JQueueJobDetailsPanel
       
       {
 	boolean enabled = false;
-	if(pJobInfo != null) {
+	if((pJob != null) && (pJobInfo != null)) {
 	  switch(pJobInfo.getState()) {
 	  case Running:
 	  case Finished:
@@ -994,7 +983,8 @@ class JQueueJobDetailsPanel
 	    enabled = true;
 	  }
 	}
-	
+
+	pExecDetailsButton.setEnabled(enabled);
 	pOutputButton.setEnabled(enabled);
 	pErrorButton.setEnabled(enabled);
       }
@@ -1885,11 +1875,9 @@ class JQueueJobDetailsPanel
   doShowExecDetails() 
   {
     if((pJob != null) && (pJobInfo != null)) {
-      if((pExecDetailsDialog == null) || !pExecDetailsDialog.isVisible())
-	pExecDetailsDialog = new JExecDetailsDialog();
-
-      pExecDetailsDialog.updateContents(pHeaderLabel.getText(), pJob, pJobInfo, pExecDetails);
-      pExecDetailsDialog.setVisible(true);
+      GetExecDetailsTask task = 
+        new GetExecDetailsTask(pHeaderLabel.getText(), pJob, pJobInfo); 
+      task.start();
     }
   }
 
@@ -1929,6 +1917,154 @@ class JQueueJobDetailsPanel
   {
     pViewSourceParamsDialog.setVisible(true);
   }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Get the execution details for the job from the job manager where its running.
+   */ 
+  private
+  class GetExecDetailsTask
+    extends Thread
+  {
+    public 
+    GetExecDetailsTask
+    (
+     String header,
+     QueueJob job,
+     QueueJobInfo info
+    ) 
+    {
+      super("JQueueJobDetailsPanel:GetExecDetailsTask"); 
+
+      pDetailsHeader = header;
+      pDetailsJob    = job; 
+      pDetailsInfo   = info; 
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance(); 
+      SubProcessExecDetails details = null;
+      if(pDetailsInfo != null) {
+        String hostname = pDetailsInfo.getHostname();
+        switch(pDetailsInfo.getState()) {
+        case Running:
+        case Finished:
+        case Failed:
+          {
+            JobMgrClient jclient = null; 
+            try {
+              jclient = new JobMgrClient(hostname);
+              details = jclient.getExecDetails(pDetailsJob.getJobID());
+            }
+            catch(PipelineException ex) { 
+              if(ex.getCause() instanceof IOException) {
+                master.showErrorDialog
+                  ("Communication Error:", 
+                   "Unable to contact the Job Manager on (" + hostname + ") where the " + 
+                   "job (" + pDetailsJob.getJobID() + ") was originally executed to " + 
+                   "retrieve the execution details!\n" + 
+                   "\n" +
+                   "The most likely cause is that the Job Manager is not currently " + 
+                   "running.  If running, it may also become unresponsive due to the " + 
+                   "host running the Job Manager experiencing extremely high system " + 
+                   "load or heavy virtual memory swapping.  The cause might also be some " + 
+                   "more fundamental networking failure or misconfiguration.  Please " + 
+                   "contact your IT staff to correct this problem."); 
+              }
+              else {
+                UIMaster.getInstance().showErrorDialog(ex);
+              }
+            }
+            finally {
+              if(jclient != null) 
+                jclient.disconnect();
+            }
+          }
+          break;
+            
+        case Limbo:
+          master.showErrorDialog
+            ("Error:", 
+             "No execution details are available for job " + 
+             "(" + pDetailsJob.getJobID() + ") while it is in a Limbo state.  Enable the " + 
+             "Job Manager running on (" + hostname + ") in order to resolve the state of " + 
+             "the job."); 
+          break;
+          
+        default:
+          master.showErrorDialog
+            ("Error:", 
+             "No execution details are available for job " + 
+             "(" + pDetailsJob.getJobID() + ") while it is in a " + 
+             pDetailsInfo.getState() + " state."); 
+        }
+      }
+      else {
+        master.showErrorDialog
+          ("Internal Error:", 
+           "No execution details can be retrieved without a specific job!"); 
+      }
+
+      if(details != null) {
+        UpdateExecDetailsTask task = 
+          new UpdateExecDetailsTask(pDetailsHeader, pDetailsJob, pDetailsInfo, details);
+        SwingUtilities.invokeLater(task);   
+      }
+    }
+
+    private String        pDetailsHeader;
+    private QueueJob      pDetailsJob;
+    private QueueJobInfo  pDetailsInfo;
+  }
+
+  /** 
+   * Update the execution details dialog and show it.
+   */ 
+  private
+  class UpdateExecDetailsTask
+    extends Thread
+  {
+    public 
+    UpdateExecDetailsTask
+    (
+     String header,
+     QueueJob job,
+     QueueJobInfo info,
+     SubProcessExecDetails details
+    ) 
+    {
+      super("JQueueJobDetailsPanel:UpdateExecDetailsTask"); 
+
+      pDetailsHeader = header;
+      pDetailsJob    = job; 
+      pDetailsInfo   = info; 
+      pDetails       = details;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      if((pExecDetailsDialog == null) || !pExecDetailsDialog.isVisible())
+	pExecDetailsDialog = new JExecDetailsDialog();
+
+      pExecDetailsDialog.updateContents(pDetailsHeader, pDetailsJob, pDetailsInfo, pDetails);
+      pExecDetailsDialog.setVisible(true);
+    }
+
+    private String                pDetailsHeader;
+    private QueueJob              pDetailsJob;
+    private QueueJobInfo          pDetailsInfo;
+    private SubProcessExecDetails pDetails;
+  }
+
 
 
 
@@ -2059,11 +2195,6 @@ class JQueueJobDetailsPanel
    * The job status information.
    */ 
   private QueueJobInfo  pJobInfo; 
-
-  /** 
-   * The job execution details.
-   */ 
-  private SubProcessExecDetails  pExecDetails; 
 
   /**
    * The current license keys.

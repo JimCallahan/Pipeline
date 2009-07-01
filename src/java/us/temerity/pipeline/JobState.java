@@ -1,4 +1,4 @@
-// $Id: JobState.java,v 1.3 2005/12/31 20:42:58 jim Exp $
+// $Id: JobState.java,v 1.4 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,6 +40,12 @@ enum JobState
    * The queue job is currently running on one of the job servers. 
    */
   Running,
+
+  /**
+   * The last known state of the queue job was Running before contact with the job server
+   * on which it was executing was lost.
+   */
+  Limbo,
 
   /**
    * The queue job has completed successfully.  

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.280 2009/06/13 22:59:29 jesse Exp $
+// $Id: MasterMgr.java,v 1.281 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1382,8 +1382,12 @@ class MasterMgr
 	    (LogMgr.Kind.Net, LogMgr.Level.Info,
 	     "Waiting on Offline Cache Rebuild...");
 	  LogMgr.getInstance().flush();
-
           pRebuildOfflinedCacheTask.join();
+
+          LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Writing Offline Cache...");
+          LogMgr.getInstance().flush(); 
           writeOfflined();
         }
         catch(InterruptedException ex) {
@@ -13676,6 +13680,7 @@ class MasterMgr
 	      break;
 	      
 	    case Running:
+            case Limbo:
 	    case Queued:
 	    case Paused:
 	      finished = false;
@@ -13742,6 +13747,7 @@ class MasterMgr
 		break;
 
 	      case Running:
+              case Limbo:
 	      case Queued:
 	      case Paused:
 		{
@@ -14490,6 +14496,7 @@ class MasterMgr
 	case Preempted:
 	case Paused:
 	case Running:
+        case Limbo:
 	  return true;
 	}
       }
@@ -14685,6 +14692,7 @@ class MasterMgr
 	   "nodes in working areas owned by another user!");
 
       TreeSet<Long> activeIDs = new TreeSet<Long>();
+      boolean hasLimbo = false;
       TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
       
       timer.aquire();
@@ -14715,6 +14723,10 @@ class MasterMgr
 	      case Paused:
 	      case Running:
 		activeIDs.add(jobID);
+                break;
+
+              case Limbo:
+                hasLimbo = true;
 	      }
 	    }
 	    
@@ -14734,6 +14746,10 @@ class MasterMgr
 	      case Paused:
 	      case Running:
 		activeIDs.add(jobID);
+                break;
+
+              case Limbo:
+                hasLimbo = true;
 	      }
 	    }
 	  }
@@ -14748,6 +14764,13 @@ class MasterMgr
 	lock.readLock().unlock();
       }    
       
+      if(hasLimbo) 
+        throw new PipelineException
+          ("Some files associated with node (" + nodeID + ") cannot be removed because " + 
+           "there are jobs in a Limbo state associated with these files!  You will need " + 
+           "to either Enable or Terminate the job servers in Limbo where these jobs are " + 
+           "running before the state of these jobs can be reliably determined."); 
+
       if(!activeIDs.isEmpty()) 
 	pQueueMgrClient.killJobs(activeIDs);
 
@@ -14757,7 +14780,7 @@ class MasterMgr
 	  fclient.removeAll(nodeID, fseqs);
 	}
 	finally {
-	    releaseFileMgrClient(fclient);
+          releaseFileMgrClient(fclient);
 	}
       }
       
@@ -18217,6 +18240,10 @@ class MasterMgr
                     queueStates[wk] = QueueState.Running;
                     break;
 
+                  case Limbo:
+                    queueStates[wk] = QueueState.Limbo;
+                    break;
+
                   case Failed:
                     queueStates[wk] = QueueState.Failed;
                   }
@@ -18357,6 +18384,7 @@ class MasterMgr
               break;
 
             case Running:
+            case Limbo:
               anyRunning = true;
               break;
 

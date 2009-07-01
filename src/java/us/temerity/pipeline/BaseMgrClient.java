@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.31 2009/03/02 05:15:56 jim Exp $
+// $Id: BaseMgrClient.java,v 1.32 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -569,7 +569,7 @@ class BaseMgrClient
 	     "Socket Timeout [" + pSocket.getInetAddress() + "]: " + kind.toString() + "\n" +
 	     " " + timer); 
 
-	  if(isServerUnreachable() || (ex.bytesTransferred > 0)) 
+	  if(abortOnTimeout() || (ex.bytesTransferred > 0)) 
 	    throw ex;
 	}
       }
@@ -600,13 +600,14 @@ class BaseMgrClient
   }
 
   /**
-   * Whether the server is no longer reachable communication should no longer be attempted.<P>
+   * Whether to abort repeated attempts to reach the server after a timeout.<P>
    * 
-   * Subclasses which wish to force performLongTransaction() to give up before receiving
-   * a response should override this method to return <CODE>true</CODE>.
+   * Subclasses which wish to force performLongTransaction() to give up early after a 
+   * timeout but before ever receiving a response should override this method to 
+   * return <CODE>true</CODE>.
    */ 
   protected boolean 
-  isServerUnreachable() 
+  abortOnTimeout() 
   {
     return false;
   }

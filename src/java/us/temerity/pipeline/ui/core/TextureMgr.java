@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.11 2009/05/16 02:06:19 jim Exp $
+// $Id: TextureMgr.java,v 1.12 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -591,6 +591,8 @@ class TextureMgr
        pPausedCoreColor.equiv(prefs.getPausedCoreColor()) &&
        (pRunningCoreColor != null) && 
        pRunningCoreColor.equiv(prefs.getRunningCoreColor()) &&
+       (pLimboCoreColor != null) && 
+       pLimboCoreColor.equiv(prefs.getLimboCoreColor()) &&
        (pAbortedCoreColor != null) && 
        pAbortedCoreColor.equiv(prefs.getAbortedCoreColor()) &&
        (pFailedCoreColor != null) && 
@@ -637,6 +639,7 @@ class TextureMgr
     pQueuedCoreColor      = prefs.getQueuedCoreColor();      
     pPausedCoreColor      = prefs.getPausedCoreColor();      
     pRunningCoreColor     = prefs.getRunningCoreColor();     
+    pLimboCoreColor       = prefs.getLimboCoreColor();     
     pAbortedCoreColor     = prefs.getAbortedCoreColor();     
     pFailedCoreColor      = prefs.getFailedCoreColor();      
     pPreemptedCoreColor   = prefs.getPreemptedCoreColor();   
@@ -667,15 +670,15 @@ class TextureMgr
       BufferedImage coreImgs[] = pIconImages.get("Node-Core");
 
       /* 
-       * 21x21: <OverallNodeState>-<OverallQueueState>-Normal
-       *        <OverallNodeState>-<OverallQueueState>-Selected
+       * 21x21: <OverallNodeState>-<QueueState>-Normal
+       *        <OverallNodeState>-<QueueState>-Selected
        * 
-       * 32x32: <OverallNodeState>-<OverallQueueState>-Normal             
+       * 32x32: <OverallNodeState>-<QueueState>-Normal             
        */ 
       for(OverallNodeState nstate : OverallNodeState.all()) {
         BufferedImage nodeStateImgs[] = pIconImages.get("Node-" + nstate);
 
-        for(OverallQueueState qstate : OverallQueueState.all()) {
+        for(QueueState qstate : QueueState.all()) {
           Color3d coreColor = NodeStyles.getQueueColor3d(qstate);
 
           int idx;
@@ -737,7 +740,7 @@ class TextureMgr
                       
                       {
                         Color3d frozen = pFrozenFinishedColor; 
-                        if(qstate == OverallQueueState.Stale)
+                        if(qstate == QueueState.Stale)
                           frozen = pFrozenStaleColor; 
 
                         BufferedImage result = 
@@ -829,8 +832,8 @@ class TextureMgr
       }
 
       /**
-       * 32x32: NeedsCheckOutMajor-<OverallQueueState>-Normal
-       *        NeedsCheckOutMicro-<OverallQueueState>-Normal
+       * 32x32: NeedsCheckOutMajor-<QueueState>-Normal
+       *        NeedsCheckOutMicro-<QueueState>-Normal
        */
       {
         String[] prefix = { "NeedsCheckOutMajor", "NeedsCheckOutMicro" };
@@ -844,7 +847,7 @@ class TextureMgr
         for(wk=0; wk<prefix.length; wk++) {
           BufferedImage nodeStateImgs[] = pIconImages.get("Node-" + prefix[wk]);
 
-          for(OverallQueueState qstate : OverallQueueState.all()) {
+          for(QueueState qstate : QueueState.all()) {
             Color3d coreColor = NodeStyles.getQueueColor3d(qstate);
             
             {
@@ -890,7 +893,7 @@ class TextureMgr
                 
                 {
                   Color3d frozen = pFrozenFinishedColor; 
-                  if(qstate == OverallQueueState.Stale)
+                  if(qstate == QueueState.Stale)
                     frozen = pFrozenStaleColor; 
 
                   BufferedImage result = 
@@ -907,8 +910,8 @@ class TextureMgr
       }
 
       /**
-       * 21x21: <FileState>-<OverallQueueState>-Normal             
-       *        <FileState>-<OverallQueueState>-Selected            
+       * 21x21: <FileState>-<QueueState>-Normal             
+       *        <FileState>-<QueueState>-Selected            
        */
       {
         String[] prefix = { "Added", "Obsolete" };
@@ -919,7 +922,7 @@ class TextureMgr
         for(wk=0; wk<prefix.length; wk++) {
           BufferedImage nodeStateImgs[] = pIconImages.get("Node-" + prefix[wk]);
           
-          for(OverallQueueState qstate : OverallQueueState.all()) {
+          for(QueueState qstate : QueueState.all()) {
             Color3d coreColor = NodeStyles.getQueueColor3d(qstate);
             
             for(SelectionMode mode : modes) {
@@ -969,7 +972,7 @@ class TextureMgr
                   
                   {
                     Color3d frozen = pFrozenFinishedColor; 
-                    if(qstate == OverallQueueState.Stale)
+                    if(qstate == QueueState.Stale)
                       frozen = pFrozenStaleColor; 
 
                     BufferedImage result = 
@@ -1001,7 +1004,7 @@ class TextureMgr
         };
 
         Color3d ringColor = NodeStyles.getSelectionColor3d(SelectionMode.Normal); 
-        Color3d coreColor = NodeStyles.getQueueColor3d(OverallQueueState.Finished);
+        Color3d coreColor = NodeStyles.getQueueColor3d(QueueState.Finished);
 
         int size = sIconRes[0];  // 32x32
 
@@ -1555,7 +1558,7 @@ class TextureMgr
    * pIconImages with user defined colors for each layer.  The resulting icons are indexed
    * by a name which includes descriptive components for each of these layers.  For example, 
    * a icon for a node might be called "Pending-Finished-Selected" to describe the combination
-   * of OverallNodeState, OverallQueueState and SelectionMode for the icon. <P> 
+   * of OverallNodeState, QueueState and SelectionMode for the icon. <P> 
    */ 
   private TreeMap<String,ImageIcon[]>  pIcons;
   
@@ -1575,6 +1578,7 @@ class TextureMgr
   private Color3d  pQueuedCoreColor;      
   private Color3d  pPausedCoreColor;      
   private Color3d  pRunningCoreColor;     
+  private Color3d  pLimboCoreColor;     
   private Color3d  pAbortedCoreColor;     
   private Color3d  pFailedCoreColor;      
   private Color3d  pPreemptedCoreColor;   

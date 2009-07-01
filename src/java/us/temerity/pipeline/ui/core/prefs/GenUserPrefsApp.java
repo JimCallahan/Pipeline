@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.74 2009/06/06 01:15:22 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.75 2009/07/01 16:43:14 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -595,6 +595,10 @@ class GenUserPrefsApp
 	new ColorPref
 	("The color to use for the core of nodes/jobs with a Queue State of Running.", 
 	 "RunningCoreColor", "Running Core Color:", new Color(0.0f, 0.75f, 0.0f)), 
+
+	new ColorPref
+	("The color to use for the core of node/jobs with a Queue State of Limbo.", 
+	 "LimboCoreColor", "Limbo Core Color:", new Color(0.7f, 0.7f, 0.7f)), 
 
 	new ColorPref
 	("The color to use for the core of nodes/jobs with a Queue State of Aborted.", 
@@ -2749,7 +2753,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.74 2009/06/06 01:15:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.75 2009/07/01 16:43:14 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3004,7 +3008,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.74 2009/06/06 01:15:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.75 2009/07/01 16:43:14 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4372,7 +4376,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.74 2009/06/06 01:15:22 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.75 2009/07/01 16:43:14 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

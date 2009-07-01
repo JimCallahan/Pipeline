@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorPanel.java,v 1.5 2007/09/07 18:52:38 jim Exp $
+// $Id: JBaseMonitorPanel.java,v 1.6 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -102,13 +102,16 @@ class JBaseMonitorPanel
    int pos
   ) 
   {
-    int lines = getNumLines() - 1;
-    if(lines != pScrollBar.getMaximum())
-      pScrollBar.setMaximum(lines);
+    Integer numLines = getNumLines();
+    if(numLines != null) {
+      int lines = numLines - 1;
+      if(lines != pScrollBar.getMaximum())
+        pScrollBar.setMaximum(lines);
 
-    pScrollBar.setValue(pos);
+      pScrollBar.setValue(pos);
 
-    updateContents();
+      updateContents();
+    }
   }
 
   
@@ -119,13 +122,18 @@ class JBaseMonitorPanel
 
   /**
    * Update the scroll bar maximum to match the number of lines which may potentially 
-   * be viewed.
+   * be viewed.<P> 
+   *
+   * This may block for network communiation.
    */ 
   public void 
   updateScrollBar() 
   {
-    GetScrollBarMaxTask task = new GetScrollBarMaxTask();
-    task.start();
+    Integer numLines = getNumLines();
+    if(numLines != null) {
+      pFirstUpdate.set(true);
+      SwingUtilities.invokeLater(new UpdateScrollBarTask(numLines));
+    }
   }
 
   /**
@@ -135,22 +143,15 @@ class JBaseMonitorPanel
   updateContents() 
   {
     if(!pFirstUpdate.get()) {
-      pTextArea.setText("(Loading...)");
+      pTextArea.setText("(Contacting Job Manager...)");
     }
     else if(!pTextArea.isVisible() || (pTextArea.getVisibleRows() < 1)) {
       pTextArea.setText(null);
     }
     else {
-      String lines = getLines(pScrollBar.getValue(), pTextArea.getVisibleRows());
-      if(lines != null) {
-	if(lines.length() == 0) 
-	  pTextArea.setText("(Nothing Output)");
-	else 
-	  pTextArea.setText(lines);
-      }
-      else {
-	pTextArea.setText("(Nothing Yet...)");			
-      }
+      GetLinesTask task = 
+        new GetLinesTask(pScrollBar.getValue(), pTextArea.getVisibleRows()); 
+      task.start(); 
     }
   }
   
@@ -159,8 +160,11 @@ class JBaseMonitorPanel
 
   /** 
    * Get the current number of lines which may potentially be viewed.
+   * 
+   * @return 
+   *   The number of lines or <CODE>null</CODE> if unable to determine the number of lines.
    */
-  protected abstract int 
+  protected abstract Integer 
   getNumLines();
 
   /** 
@@ -171,6 +175,9 @@ class JBaseMonitorPanel
    * 
    * @param lines
    *   The number of lines of text to retrieve. 
+   * 
+   * @return 
+   *   The text or <CODE>null</CODE> if unable to retreive the text. 
    */
   protected abstract String
   getLines
@@ -281,28 +288,6 @@ class JBaseMonitorPanel
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the maximum value for the scroll bar components.
-   */
-  private
-  class GetScrollBarMaxTask
-    extends Thread
-  {
-    public 
-    GetScrollBarMaxTask() 
-    {
-      super("JBaseMonitorPanel:GetScrollBarMaxTask");
-    }
-
-    public void 
-    run()
-    {
-      int numLines = getNumLines();
-      pFirstUpdate.set(true);
-      SwingUtilities.invokeLater(new UpdateScrollBarTask(numLines));
-    }
-  }
-
-  /** 
    * Update the scroll bar components.
    */
   private
@@ -330,10 +315,82 @@ class JBaseMonitorPanel
       pScrollBar.setVisibleAmount(pTextArea.getVisibleRows());
 
       if(updated && ((pScrollBar.getValue() + pTextArea.getVisibleRows()) > lines))
-	 updateContents(); 
+        updateContents(); 
     }
 
     private int pNumLines; 
+  }
+
+  /**
+   * Get the lines to display in the text area from the Job Manager.
+   */ 
+  private
+  class GetLinesTask
+    extends Thread
+  {
+    public 
+    GetLinesTask
+    (
+     int start, 
+     int lines
+    ) 
+    {
+      super("JBaseMonitorPanel:GetLinesTask");
+
+      pStartNum = start; 
+      pNumLines = lines; 
+    }
+
+    public void 
+    run()
+    {
+      String lines = null;
+      try {
+        lines = getLines(pStartNum, pNumLines); 
+      }
+      catch(Exception ex) {
+      }
+
+      if(lines != null) 
+        SwingUtilities.invokeLater(new UpdateLinesTask(lines));       
+    }
+
+    private int pStartNum; 
+    private int pNumLines; 
+  }
+
+  /**
+   * Update the text area contents.
+   */ 
+  private
+  class UpdateLinesTask
+    extends Thread
+  {
+    public 
+    UpdateLinesTask
+    (
+     String lines
+    ) 
+    {
+      super("JBaseMonitorPanel:UpdateLinesTask");
+      pLines = lines; 
+    }
+
+    public void 
+    run()
+    {
+      if(pLines != null) {
+	if(pLines.length() == 0) 
+	  pTextArea.setText("(Nothing Output)");
+	else 
+	  pTextArea.setText(pLines);
+      }
+      else {
+	pTextArea.setText("(Nothing Yet...)");			
+      }
+    }
+
+    private String pLines; 
   }
 
 

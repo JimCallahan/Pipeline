@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.38 2009/05/26 09:45:12 jesse Exp $
+// $Id: PanelUpdater.java,v 1.39 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -739,14 +739,6 @@ class PanelUpdater
 		
 		if(pDetailedJobInfo == null) 
 		  pDetailedJobInfo = qclient.getJobInfo(pDetailedJobID);
-
-		if(pDetailedJobInfo != null) {
-		  String hostname = pDetailedJobInfo.getHostname();
-		  if(hostname != null) {
-		    JobMgrClient jclient = new JobMgrClient(hostname);
-		    pDetailedJobExecDetails = jclient.getExecDetails(pDetailedJobID);
-		  }
-		}
 	      }
 	      catch(PipelineException ex) {
 		// ignore jobs which may no longer exist...
@@ -918,7 +910,7 @@ class PanelUpdater
 	/* job details */ 
 	if(pQueueJobDetailsPanel != null) 
 	  pQueueJobDetailsPanel.applyPanelUpdates
-	    (pAuthor, pView, pDetailedJob, pDetailedJobInfo, pDetailedJobExecDetails, 
+	    (pAuthor, pView, pDetailedJob, pDetailedJobInfo, 
 	     pLicenseKeys, pSelectionKeys, pHardwareKeys);
       }
     }
@@ -1247,10 +1239,6 @@ class PanelUpdater
    */ 
   private QueueJobInfo  pDetailedJobInfo; 
 
-  /**
-   * The full execution details of a job subprocess displayed in the job details panel.
-   */ 
-  private SubProcessExecDetails  pDetailedJobExecDetails;
 
 
 }

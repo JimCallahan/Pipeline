@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.11 2008/06/20 22:44:58 jesse Exp $
+// $Id: QueueSlotsTableModel.java,v 1.12 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -263,15 +263,16 @@ class QueueSlotsTableModel
       switch(host.getStatus()) {
       case Enabled:
       case Disabled:
+      case Limbo:
 	cnt += host.getJobSlots();
       }
     }
 
-    pIsEnabled = new boolean[cnt];
-    pHostnames = new String[cnt];
-    pJobInfo   = new QueueJobInfo[cnt];
-    pJobStatus = new JobStatus[cnt];
-    pOnHold    = new Long[cnt];
+    pHostStatus = new QueueHostStatus[cnt];
+    pHostnames  = new String[cnt];
+    pJobInfo    = new QueueJobInfo[cnt];
+    pJobStatus  = new JobStatus[cnt];
+    pOnHold     = new Long[cnt];
     
     long now = TimeStamps.now();
 
@@ -281,6 +282,7 @@ class QueueSlotsTableModel
       switch(host.getStatus()) {
       case Enabled:
       case Disabled:
+      case Limbo:
 	{
 	  int slots = host.getJobSlots();
 
@@ -303,7 +305,7 @@ class QueueSlotsTableModel
 	  
 	  int sk;
 	  for(sk=0; sk<host.getJobSlots(); sk++) {
-	    pIsEnabled[wk] = (host.getStatus() == QueueHostStatus.Enabled);
+	    pHostStatus[wk] = host.getStatus(); 
 
             if(prefs.getShowFullHostnames())   
               pHostnames[wk] = hostname;
@@ -340,7 +342,7 @@ class QueueSlotsTableModel
    int row
   ) 
   {
-    return pIsEnabled[pRowToIndex[row]];
+    return (pHostStatus[pRowToIndex[row]] == QueueHostStatus.Enabled); 
   }
 
 
@@ -389,6 +391,13 @@ class QueueSlotsTableModel
     JobStatus status = pJobStatus[irow];
     Long onHold = pOnHold[irow];
 
+    boolean isLive = false;
+    switch(pHostStatus[irow]) {
+    case Enabled:
+    case Disabled:
+      isLive = true;
+    }
+
     switch(col) {
     case 0:
       return hostname;
@@ -418,8 +427,8 @@ class QueueSlotsTableModel
 	return null;
 
     case 5:
-      if(info != null) 
- 	return TimeStamps.formatInterval(now - info.getStartedStamp());
+      if((info != null) && isLive) 
+        return TimeStamps.formatInterval(now - info.getStartedStamp());
       else 
 	return null;
       
@@ -463,9 +472,9 @@ class QueueSlotsTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether the host owning each slot is Enabled.
+   * The status of the host owning the slots.
    */ 
-  private boolean[] pIsEnabled; 
+  private QueueHostStatus[] pHostStatus;
 
   /**
    * The per-slot hostnames.

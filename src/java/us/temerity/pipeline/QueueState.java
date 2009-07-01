@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.14 2008/05/16 01:11:40 jim Exp $
+// $Id: QueueState.java,v 1.15 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -69,6 +69,21 @@ enum QueueState
   Paused,
 
   /**
+   * A queue job is currently running which will regenerate these primary/secondary files.<P> 
+   * 
+   * This state has precedence over the <CODE>Stale</CODE> state.
+   */
+  Running,
+
+  /**
+   * The last known state of the queue job which will regenerate these primary/secondary 
+   * files was Running before contact with the job server on which it was executing was lost.
+   * 
+   * This state has precedence over the <CODE>Stale</CODE> state.
+   */
+  Limbo,
+
+  /**
    * The last queue job submitted which would have regenerated these primary/secondary files 
    * was aborted (cancelled) by the user before it began execution. <P> 
    * 
@@ -80,13 +95,6 @@ enum QueueState
    * time of the job that was aborted.
    */
   Aborted,
-
-  /**
-   * A queue job is currently running which will regenerate these primary/secondary files.<P> 
-   * 
-   * This state has precedence over the <CODE>Stale</CODE> state.
-   */
-  Running,
 
   /**
    * The file associated with the working node exists and is up-to-date. <P>

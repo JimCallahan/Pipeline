@@ -1,4 +1,4 @@
-// $Id: SelectionRulesTableModel.java,v 1.4 2008/06/26 20:41:13 jesse Exp $
+// $Id: SelectionRulesTableModel.java,v 1.5 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -162,7 +162,7 @@ class SelectionRulesTableModel
       case 1:
 	value = rule.getServerStatus();
 	if (value == null)
-	  value = QueueHostStatus.Hung;
+	  value = QueueHostStatus.Limbo;
 	break;
 	
       case 2:

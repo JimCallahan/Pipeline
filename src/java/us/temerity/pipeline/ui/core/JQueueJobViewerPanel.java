@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.66 2009/06/17 05:50:14 jlee Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.67 2009/07/01 16:43:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2771,8 +2771,7 @@ class JQueueJobViewerPanel
     TreeSet<Long> preempt = new TreeSet<Long>();
     for(ViewerJob vjob : pSelected.values()) {
       JobStatus status = vjob.getJobStatus();
-      if (status.getState() == JobState.Running)
-	preempt.add(status.getJobID());
+      preempt.add(status.getJobID());
     }
 
     if(!preempt.isEmpty()) {
