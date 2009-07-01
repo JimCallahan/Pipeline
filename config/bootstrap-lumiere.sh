@@ -1,4 +1,6 @@
 #!/bin/sh
 
 time ../../src/pipeline/config/bootstrap-suse10.2-64bit.sh \
-  lumiere 090601 43000 43100
+  lumiere 090625 43000 43100 \
+  --with-auth-licenses=30 \
+  --with-extra-licenses=10
