@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.118 2009/07/02 01:23:06 jesse Exp $
+// $Id: QueueMgr.java,v 1.119 2009/07/02 13:37:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3188,12 +3188,8 @@ class QueueMgr
 	}
 
 	/* cancel holds on non-enabled servers */ 
-        // IS THIS CORRECT?  SHOULDN'T WE ONLY BE DOING THIS WHEN WE CAN VERIFY THAT THE
-        // JOB COMPLETED OR WHEN WE KILL IT?
 	for(QueueHost host : pHosts.values()) {
 	  switch(host.getStatus()) {
-	  case Disabled:
-	  case Limbo:      
 	  case Shutdown:
 	    host.cancelHolds();
 	  }
@@ -4529,8 +4525,6 @@ class QueueMgr
     QueueJobReqsReq req
   )
   {
-    // THIS SHOULD NOT BE ALLOWED TO CHANGE THE KEYS FOR RUNNINNG OR FINISHED JOBS!!!
-
     TaskTimer timer = new TaskTimer("QueueMgr.changeJobReqs()");
     ArrayList<String> exceptions = new ArrayList<String>();
 
@@ -4660,8 +4654,6 @@ class QueueMgr
     QueueJobsReq req
   )
   {
-    // THIS SHOULD NOT BE ALLOWED TO CHANGE THE KEYS FOR RUNNINNG OR FINISHED JOBS!!!
-
     TaskTimer timer = new TaskTimer("QueueMgr.updateJobKeys()");
     ArrayList<String> exceptions = new ArrayList<String>();
     
