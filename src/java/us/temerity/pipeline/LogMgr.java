@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.11 2007/05/15 06:25:07 jesse Exp $
+// $Id: LogMgr.java,v 1.12 2009/07/02 00:23:21 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -674,6 +674,12 @@ class LogMgr
     Dsp, 
 
     /**
+     * Details about the criteria used to select individual jobs to run on specific 
+     * Job Managers.
+     */ 
+    Sel, 
+
+    /**
      * Activity of the Queue Manager collector thread.
      */ 
     Col, 
@@ -789,6 +795,7 @@ class LogMgr
     "SUB", 
     "TEX", 
     "DSP", 
+    "SEL", 
     "COL",
     "SCH", 
     "EXT", 

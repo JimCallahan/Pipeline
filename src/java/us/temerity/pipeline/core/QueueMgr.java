@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.116 2009/07/01 16:43:14 jim Exp $
+// $Id: QueueMgr.java,v 1.117 2009/07/02 00:23:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -749,6 +749,7 @@ class QueueMgr
       lc.setLevel(LogMgr.Kind.Net, mgr.getLevel(LogMgr.Kind.Net));
       lc.setLevel(LogMgr.Kind.Plg, mgr.getLevel(LogMgr.Kind.Plg));
       lc.setLevel(LogMgr.Kind.Dsp, mgr.getLevel(LogMgr.Kind.Dsp));
+      lc.setLevel(LogMgr.Kind.Sel, mgr.getLevel(LogMgr.Kind.Sel));
       lc.setLevel(LogMgr.Kind.Job, mgr.getLevel(LogMgr.Kind.Job));
       lc.setLevel(LogMgr.Kind.Col, mgr.getLevel(LogMgr.Kind.Col));
       lc.setLevel(LogMgr.Kind.Sch, mgr.getLevel(LogMgr.Kind.Sch));
@@ -819,6 +820,12 @@ class QueueMgr
 	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Dsp);
 	  if(level != null) 
 	    mgr.setLevel(LogMgr.Kind.Dsp, level);
+	}
+
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sel);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Sel, level);
 	}
 
 	{
@@ -6353,14 +6360,14 @@ class QueueMgr
         if(slots > 0) {
 
           /* fill the pJobRanks array with entries for all jobs which qualify */
-          int jobCnt = dsptQualifyJobs(stm, host, slots); 
+          int jobCnt = dsptQualifyJobs(stm, host); 
 
           /* rank the jobs by sorting the portion of the rank array just populated */ 
-          dsptRankJobs(stm, hostname, slots, jobCnt); 
+          dsptRankJobs(stm, hostname, jobCnt); 
           
           /* attempt to dispatch a job to the slot:
              in order of selection score, favor pending/engaged, job priority and age */ 
-          dsptAssignJob(stm, host, slots, jobCnt); 
+          dsptAssignJob(stm, host, jobCnt); 
           slotCnt++;
 
           LogMgr.getInstance().logAndFlush
@@ -6721,9 +6728,6 @@ class QueueMgr
    * @param host
    *   The current host.
    * 
-   * @param slotID
-   *   The index of slots being processed.
-   * 
    * @return 
    *   The number of jobs which qualify for the slot.
    */ 
@@ -6731,13 +6735,20 @@ class QueueMgr
   dsptQualifyJobs
   (
    TaskTimer stm, 
-   QueueHost host, 
-   int slotID
+   QueueHost host
   ) 
   {
+    LogMgr lmgr = LogMgr.getInstance(); 
+    boolean selFine  = lmgr.isLoggable(LogMgr.Kind.Sel, LogMgr.Level.Fine);
+    boolean selFiner = lmgr.isLoggable(LogMgr.Kind.Sel, LogMgr.Level.Finer);
+
+    String hostMsg = null;
+    if(selFine) 
+      hostMsg = ("[" + host.getName() + "]"); 
+
     stm.suspend();
     TaskTimer tm = new TaskTimer
-      ("Dispatcher [Qualify Jobs - " + host.getName() + ":" + slotID + "]");
+      ("Dispatcher [Qualify Jobs - " + host.getName() + "]");
 
     /* the number of jobs that qualify */ 
     int jobCnt = 0; 
@@ -6754,72 +6765,122 @@ class QueueMgr
     /* cache latest resource samples */ 
     ResourceSample sample = host.getLatestSample();
     if(sample != null) {
-      
+     
+      if(selFine) 
+        lmgr.logAndFlush
+          (LogMgr.Kind.Sel, LogMgr.Level.Fine, 
+           hostMsg + ": Qualifying Jobs..."); 
+
       /* cache other per-hosts information */ 
       String reservation = host.getReservation(); 
       OsType os = host.getOsType();
 
       /* process all ready jobs */ 
       for(Map.Entry<Long,JobProfile> entry : pReady.entrySet()) {
-              
-        /* skip those without a profile */ 
         Long jobID = entry.getKey();
         JobProfile profile = entry.getValue();
+
+        String jobMsg = null;
+        if(selFine) 
+          jobMsg = (" - " + hostMsg + jobID + ": "); 
+
+        /* skip those without a profile */ 
         if(profile != null) {
         
           /* make sure the slot provides the required hardware keys */ 
           String hwGroup = host.getHardwareGroup();
           HardwareProfile hwProfile = profile.getHardwareProfile();
-          if((hwProfile != null) && hwProfile.isEligible(hwGroup)) {
+          if(hwProfile != null) {
+            if(hwProfile.isEligible(hwGroup)) {
           
-            /* lookup the selection score */ 
-            String selGroup = host.getSelectionGroup();
-            SelectionProfile selProfile = profile.getSelectionProfile();
-            Integer score = selProfile.getScore(selGroup); 
-            if(score != null) {
+              /* lookup the selection score */ 
+              String selGroup = host.getSelectionGroup();
+              SelectionProfile selProfile = profile.getSelectionProfile();
+              if(selProfile != null) {
+                Integer score = selProfile.getScore(selGroup); 
+                if(score != null) {
 
-              /* make sure the host provides the type of operating system, reservation and 
-                 dynamic resources required by the job */                
-              if(profile.isEligible(sample, os, reservation, pAdminPrivileges)) {
-          
-                /* compute the percentage of jobs within the job group
-                   which are engaged/pending according to the policy of 
-                   the slots selection group (if any) */ 
-                double percent = 0.0;
-                {
-                  String gname = host.getSelectionGroup();
-                  if(gname != null) {
-                    JobGroupFavorMethod favor = favors.get(gname); 
-                    if(favor != null) {
-                      switch(favor) {
-                      case MostEngaged:
-                        percent = pJobCounters.percentEngaged(tm, jobID);
-                        break;
-                      
-                      case MostPending:
-                        percent = pJobCounters.percentPending(tm, jobID);
+                  /* make sure the host provides the type of operating system, reservation and 
+                     dynamic resources required by the job */                
+                  if(profile.isEligible(sample, os, reservation, pAdminPrivileges)) {
+                    
+                    /* compute the percentage of jobs within the job group
+                       which are engaged/pending according to the policy of 
+                       the slots selection group (if any) */ 
+                    double percent = 0.0;
+                    {
+                      String gname = host.getSelectionGroup();
+                      if(gname != null) {
+                        JobGroupFavorMethod favor = favors.get(gname); 
+                        if(favor != null) {
+                          switch(favor) {
+                          case MostEngaged:
+                            percent = pJobCounters.percentEngaged(tm, jobID);
+                            break;
+                            
+                          case MostPending:
+                            percent = pJobCounters.percentPending(tm, jobID);
+                          }
+                        }
                       }
                     }
+                    
+                    /* create a new rank entry for the job */ 
+                    {
+                      if(pJobRanks[jobCnt] == null) 
+                        pJobRanks[jobCnt] = new JobRank();
+                      
+                      pJobRanks[jobCnt].update(jobID, score, percent, 
+                                               profile.getPriority(), 
+                                               profile.getTimeStamp()); 
+                      jobCnt++; 
+                    }
+                  }
+
+                  if(selFiner) {
+                    lmgr.log(LogMgr.Kind.Sel, LogMgr.Level.Finer, 
+                             jobMsg + profile.getEligibilityMsg
+                                        (sample, os, reservation, pAdminPrivileges)); 
                   }
                 }
-              
-                /* create a new rank entry for the job */ 
-                {
-                  if(pJobRanks[jobCnt] == null) 
-                    pJobRanks[jobCnt] = new JobRank();
-                
-                  pJobRanks[jobCnt].update(jobID, score, percent, 
-                                           profile.getPriority(), 
-                                           profile.getTimeStamp()); 
-                  jobCnt++; 
+                else if(selFiner) {
+                  lmgr.logAndFlush
+                    (LogMgr.Kind.Sel, LogMgr.Level.Finer, 
+                     jobMsg + "Selection group (" + selGroup + ") did not provide required " + 
+                     "keys.");
                 }
               }
+              else if(selFiner) {
+                lmgr.logAndFlush
+                  (LogMgr.Kind.Sel, LogMgr.Level.Finer, 
+                   jobMsg + "No selection profile generated yet."); 
+              }
+            }
+            else if(selFiner) {
+              lmgr.logAndFlush
+                (LogMgr.Kind.Sel, LogMgr.Level.Finer, 
+                 jobMsg + "Hardware group (" + hwGroup + ") did not provide required keys.");
             }
           }
+          else if(selFiner) {
+            lmgr.logAndFlush
+              (LogMgr.Kind.Sel, LogMgr.Level.Finer, 
+               jobMsg + "No hardware profile generated yet."); 
+          }              
+        }
+        else if(selFiner) {
+          lmgr.logAndFlush
+            (LogMgr.Kind.Sel, LogMgr.Level.Finer, 
+             jobMsg + "No job profile generated yet."); 
         }
       }
     }
-            
+    else if(selFine) {
+      lmgr.logAndFlush
+        (LogMgr.Kind.Sel, LogMgr.Level.Fine, 
+         hostMsg + ": No resource samples collected yet."); 
+    }
+
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
        tm, stm);
@@ -6842,9 +6903,6 @@ class QueueMgr
    * @param hostname
    *   The name of the current host.
    * 
-   * @param slotID
-   *   The index of slots being processed.
-   *
    * @param jobCnt
    *   The number of jobs which qualify for the slot.
    */ 
@@ -6853,19 +6911,37 @@ class QueueMgr
   (
    TaskTimer stm, 
    String hostname, 
-   int slotID, 
    int jobCnt
   ) 
   {
     stm.suspend();
     TaskTimer tm = new TaskTimer
-      ("Dispatcher [Rank Jobs - " + hostname + ":" + slotID + "]");
+      ("Dispatcher [Rank Jobs - " + hostname + "]");
     
     Arrays.sort(pJobRanks, 0, jobCnt);
-    
+
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
        tm, stm);
+
+    /* selection logging... */       
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sel, LogMgr.Level.Finest)) {
+      StringBuilder buf = new StringBuilder(); 
+
+      buf.append("[" + hostname + "]: Ranking Jobs...\n" +
+                 "  JobID(Rank): Score Percent Priority Date Time"); 
+
+      int wk; 
+      for(wk=0; wk<jobCnt; wk++) 
+        buf.append("\n  " + pJobRanks[wk].selectionLogMsg(wk)); 
+
+      LogMgr.getInstance().logAndFlush(LogMgr.Kind.Sel, LogMgr.Level.Finest, buf.toString()); 
+    }
+    else if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sel, LogMgr.Level.Fine)) {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Sel, LogMgr.Level.Fine, 
+         "[" + hostname + "]: Ranking Jobs..."); 
+    }
   }
 
   /**
@@ -6880,9 +6956,6 @@ class QueueMgr
    * @param host
    *   The current host.
    * 
-   * @param slotID
-   *   The index of slots being processed.
-   * 
    * @param jobCnt
    *   The number of jobs which qualify for the slot.
    */ 
@@ -6891,13 +6964,19 @@ class QueueMgr
   (
    TaskTimer stm, 
    QueueHost host, 
-   int slotID,
    int jobCnt
   ) 
   {
+    LogMgr lmgr = LogMgr.getInstance(); 
+    boolean selFiner = lmgr.isLoggable(LogMgr.Kind.Sel, LogMgr.Level.Finer);
+
+    String hostMsg = null;
+    if(selFiner) 
+      hostMsg = ("[" + host.getName() + "] - "); 
+
     stm.suspend();
     TaskTimer tm = new TaskTimer
-      ("Dispatcher [Assign Job - " + host.getName() + ":" + slotID + "]");
+      ("Dispatcher [Assign Job - " + host.getName() + "]");
     
     TreeSet<Long> notReady = new TreeSet<Long>();
 
@@ -6972,6 +7051,11 @@ class QueueMgr
           }
         }
       }
+
+      if(selFiner && jobDispatched) 
+        lmgr.logAndFlush
+          (LogMgr.Kind.Sel, LogMgr.Level.Finer, 
+           hostMsg + jobID + "(" + jk + "): DISPATCHED!");
     }
 
     for(Long jobID : notReady) 
@@ -7020,6 +7104,9 @@ class QueueMgr
    TaskTimer timer
   ) 
   {
+    LogMgr lmgr = LogMgr.getInstance(); 
+    boolean selFiner = lmgr.isLoggable(LogMgr.Kind.Sel, LogMgr.Level.Finer);
+
     JobReqs jreqs = job.getJobRequirements();
     
     /* aquire the jobs license keys, 
@@ -7048,6 +7135,13 @@ class QueueMgr
 	    if(key != null) 
 	      key.release(host.getName());
 	  }
+
+          if(selFiner) {
+            lmgr.logAndFlush
+              (LogMgr.Kind.Sel, LogMgr.Level.Finer,
+               "[" + host.getName() + "] - " + job.getJobID() + ": " + 
+               "Unable to acquire all license keys needed by job."); 
+          }
 
  	  return false;
  	}

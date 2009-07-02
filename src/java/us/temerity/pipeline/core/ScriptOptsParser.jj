@@ -1452,6 +1452,7 @@ TOKEN :
 | <LOG_SUB: 	     "sub">        
 | <LOG_TEX: 	     "tex">        
 | <LOG_DSP: 	     "dsp">        
+| <LOG_SEL: 	     "sel">        
 | <LOG_COL: 	     "col">        
 | <LOG_SCH: 	     "sch">        
 | <LOG_EXT: 	     "ext">
@@ -1500,6 +1501,7 @@ TOKEN :
 | <REMOTE_LOG_SUB: 	     "sub">        
 | <REMOTE_LOG_TEX: 	     "tex">        
 | <REMOTE_LOG_DSP: 	     "dsp">        
+| <REMOTE_LOG_SEL: 	     "sel">        
 | <REMOTE_LOG_COL: 	     "col">        
 | <REMOTE_LOG_SCH: 	     "sch">        
 | <REMOTE_LOG_EXT: 	     "ext">
@@ -2252,8 +2254,8 @@ LogMgr.Kind LogKind() :
 }
 {
   (g=ArgKind() | g=SumKind() | g=GluKind() | g=JobKind() | g=MemKind() | g=NetKind() | 
-   g=OpsKind() | g=PlgKind() | g=SubKind() | g=TexKind() | g=DspKind() | g=ColKind() | 
-   g=SchKind() | g=ExtKind() | g=BldKind())
+   g=OpsKind() | g=PlgKind() | g=SubKind() | g=TexKind() | g=DspKind() | g=SelKind() | 
+   g=ColKind() | g=SchKind() | g=ExtKind() | g=BldKind())
   {
     return g;
   }
@@ -2355,6 +2357,15 @@ LogMgr.Kind DspKind() :
   (<LOG_DSP> | <REMOTE_LOG_DSP>)
   {
     return LogMgr.Kind.Dsp;
+  }
+}
+
+LogMgr.Kind SelKind() : 
+{}
+{
+  (<LOG_SEL> | <REMOTE_LOG_SEL>)
+  {
+    return LogMgr.Kind.Sel;
   }
 }
 

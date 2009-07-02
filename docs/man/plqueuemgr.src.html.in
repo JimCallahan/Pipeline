@@ -155,12 +155,18 @@ command-line options.<br>
 </span>
 <div style="margin-left: 40px;">Logs activity and timing statistics for
 the job server dynamics resources collector thread.<br>
-<br>
 </div>
+<br>
 <span style="font-weight: bold;">dsp<br>
 </span>
 <div style="margin-left: 40px;">Logs activity and timing statistics for
 the job dispatcher thread.<br>
+</div>
+<br>
+<span style="font-weight: bold;">sel<br>
+</span>
+<div style="margin-left: 40px;">Logs details about the criteria used to
+select individual jobs to run on specific Job Managers.<br>
 <br>
 </div>
 <span style="font-weight: bold;">ext<br>

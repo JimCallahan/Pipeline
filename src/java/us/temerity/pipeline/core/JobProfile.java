@@ -1,4 +1,4 @@
-// $Id: JobProfile.java,v 1.2 2009/06/07 23:21:06 jim Exp $
+// $Id: JobProfile.java,v 1.3 2009/07/02 00:23:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -97,6 +97,7 @@ JobProfile
   }
 
   
+
   /*----------------------------------------------------------------------------------------*/
   /*   P R E D I C A T E S                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -141,6 +142,70 @@ JobProfile
     return true;
   }
 
+  /**
+   * Generate a messages suitable for the SEL logger which explains the reason why a 
+   * job is eligible or not under this profile.
+   */ 
+  public String
+  getEligibilityMsg
+  ( 
+   ResourceSample sample, 
+   OsType os, 
+   String reservation, 
+   AdminPrivileges privs
+  )
+  {
+    boolean badToolset = false;
+    boolean badAction  = false; 
+    switch(os) {
+    case Unix:
+      if(!pHasUnixToolset) 
+        badToolset = true;
+      else if(!pHasUnixAction) 
+        badAction = true;
+      break;
+
+    case Windows:
+      if(!pHasWindowsToolset) 
+        badToolset = true;
+      else if(!pHasWindowsAction) 
+        badAction = true;
+      break;
+
+    case MacOS:
+      if(!pHasMacOSToolset) 
+        badToolset = true;
+      else if(!pHasMacOSAction) 
+        badAction = true;
+    }      
+
+    if(badToolset) 
+      return ("Host OS (" + os + ") not supported by job's toolset."); 
+
+    if(badAction) 
+      return ("Host OS (" + os + ") not supported by job's action."); 
+
+    if(sample.getLoad() > pMaxLoad) 
+      return ("System load (" + formatFloat(sample.getLoad()) + ") is greater than " +
+              "required maximum (" + formatFloat(pMaxLoad) + ")."); 
+
+    if(sample.getMemory() < pMinMemory) 
+      return ("Free memory (" + formatLong(sample.getMemory()) + ") is less than required " + 
+              "minimum (" +  formatLong(pMinMemory) + ")."); 
+
+    if(sample.getDisk() < pMinDisk) 
+      return ("Local disk space (" + formatLong(sample.getDisk()) + ") is less than " + 
+              "required minimum (" +  formatLong(pMinDisk) + ")."); 
+
+     if((reservation != null) &&
+        !(pAuthor.equals(reservation) || privs.isWorkGroupMember(pAuthor, reservation))) 
+       return ("Reservation (" + reservation + ") did not match job owner " + 
+               "(" + pAuthor + ")."); 
+
+     return "QUALIFIED!"; 
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -183,6 +248,51 @@ JobProfile
   }
 
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generates a formatted string representation of a floating point number.
+   */ 
+  private String
+  formatFloat
+  (
+   float value
+  ) 
+  {
+    return String.format("%1$.4f ", value);
+  }
+
+  
+  /**
+   * Generates a formatted string representation of a large integer number.
+   */ 
+  private String
+  formatLong
+  (
+   Long value
+  ) 
+  {
+    if(value < 1024) {
+      return value.toString();
+    }
+    else if(value < 1048576) {
+      double k = ((double) value) / 1024.0;
+      return String.format("%1$.1fK", k);
+    }
+    else if(value < 1073741824) {
+      double m = ((double) value) / 1048576.0;
+      return String.format("%1$.1fM", m);
+    }
+    else {
+      double g = ((double) value) / 1073741824.0;
+      return String.format("%1$.1fG", g);
+    }
+  }
+
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

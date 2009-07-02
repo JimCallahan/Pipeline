@@ -1,4 +1,4 @@
-// $Id: JobRank.java,v 1.1 2009/06/04 09:45:12 jim Exp $
+// $Id: JobRank.java,v 1.2 2009/07/02 00:23:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -113,6 +113,20 @@ JobRank
     return false;
   }
 
+  /**
+   * Generate selection logging message.
+   */
+  public String
+  selectionLogMsg
+  (
+   int rank
+  ) 
+  {
+    return (pJobID + "(" + rank + "): " + pScore + " " + 
+            String.format("%1$.4f", pPercent) + " " + pPriority + " " + 
+            TimeStamps.format(pTimeStamp)); 
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -173,7 +187,6 @@ JobRank
   private static final double sEpsilon = 0.000001;
 
   
-
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
