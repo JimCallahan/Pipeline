@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.117 2009/07/02 00:23:21 jim Exp $
+// $Id: QueueMgr.java,v 1.118 2009/07/02 01:23:06 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4669,6 +4669,8 @@ class QueueMgr
     TreeSet<Long> ids = req.getJobIDs();
     TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
     
+    TreeMap<String, Boolean> privileges = new TreeMap<String, Boolean>();
+    
     timer.aquire();
     synchronized(pJobs) {
       timer.resume();
@@ -4677,7 +4679,11 @@ class QueueMgr
         if (job != null) {
           QueueJob copy = job.queryOnlyCopy(); 
           jobs.put(id, copy);
-          nodeIDs.add(copy.getNodeID());
+          NodeID nodeID = copy.getNodeID();
+          nodeIDs.add(nodeID);
+          String author = nodeID.getAuthor();
+          if (!privileges.containsKey(author))
+            privileges.put(author, pAdminPrivileges.isQueueManaged(req, author));
         }
       }
     }
@@ -4715,7 +4721,7 @@ class QueueMgr
       for(Entry<Long, QueueJob> entry : jobs.entrySet()) {
         QueueJob job = entry.getValue();
         String author = job.getNodeID().getAuthor();
-        if(pAdminPrivileges.isQueueManaged(req, author)) {
+        if(privileges.get(author)) {
           JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
           try {
             TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
@@ -4763,7 +4769,6 @@ class QueueMgr
     }     
   }
   
-  
   /**
    * Change the given job requirements so that they are correct based on the
    * plugins that are contained in the selection, hardware, and license keys.
@@ -4783,7 +4788,7 @@ class QueueMgr
    *   
    * @param annots
    *   The list of annotations associated with the nodeID of the current job.  
-   *   Shoulld NEVER be <code>null</code>
+   *   Should NEVER be <code>null</code>
    *   
    * @param selectionKeys
    *   A map of the selection key choosers indexed by the selection key name.
@@ -4810,14 +4815,8 @@ class QueueMgr
   )
     throws PipelineException
   {
-    // THIS SHOULD NOT BE ALLOWED TO CHANGE THE KEYS FOR RUNNINNG OR FINISHED JOBS!!!
-
     ArrayList<String> toReturn = new ArrayList<String>();
     
-    /* Lazily evaluate this only if necessary*/
-    PipelineException toThrow = null;
-    NodeID nodeID = job.getNodeID();
-
     /* Selection Keys */
     {
       TreeSet<String> finalKeys = new TreeSet<String>();
