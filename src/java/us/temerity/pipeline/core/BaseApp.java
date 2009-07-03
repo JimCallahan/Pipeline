@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.28 2009/03/02 00:23:08 jlee Exp $
+// $Id: BaseApp.java,v 1.29 2009/07/03 02:15:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -355,6 +355,8 @@ class BaseApp
     return (buf.toString());
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Generate a string consisting the the given character repeated N number of times.
