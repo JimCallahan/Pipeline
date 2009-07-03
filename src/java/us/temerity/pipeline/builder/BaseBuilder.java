@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.75 2009/07/01 16:43:14 jim Exp $
+// $Id: BaseBuilder.java,v 1.76 2009/07/03 21:56:05 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1697,7 +1697,13 @@ class BaseBuilder
   {
     LinkedList<QueueJobGroup> groups = 
       queueNodes(toQueue);
-    waitForJobs(groups);
+    JobProgress state = waitForJobs(groups);
+    if (state == JobProgress.Problem) {
+      collectNamesAndKill(toQueue, groups);
+      throw new PipelineException
+        ("The queue jobs in pass (" + getName() + ") did not finish correctly.  " +
+         "All remaining jobs have been killed.");
+    }
     /* Sleep for 3 seconds to give nfs caching a chance to catch up */
     try {
       Thread.sleep(5000);
@@ -1710,10 +1716,9 @@ class BaseBuilder
     if (!areAllFinished(toQueue)) {
       TreeSet<String> badNodes = collectNamesAndKill(toQueue, groups);
       throw new PipelineException
-        ("The queue jobs in pass (" + toString() + ") did not " + 
-         "finish correctly.\n" +
-         "The following nodes reported failure: " + badNodes.toString() + "\n" +
-         "All remaining jobs have been terminated.");
+        ("The queue jobs in pass (" + getName() + ") finished but the nodes are not in the " +
+         "Finished state.\n  The following nodes reported failure: " + badNodes.toString() + 
+         "\n All remaining jobs have been terminated.");
     }
   }
 
@@ -1795,6 +1800,7 @@ class BaseBuilder
   {
     boolean done = true;
     int finished = 0;
+    int failed = 0;
     int waiting = 0;
     int running = 0;
     int total = 0;
@@ -1804,16 +1810,18 @@ class BaseBuilder
       TreeMap<Long, JobStatus> statuses = pQueue.getJobStatus(stuff);
       for(JobStatus status : statuses.values()) {
 	total++;
+	long jobID = status.getJobID();
 	String nodeName = status.getNodeID().getName();
 	pLog.log(Kind.Ops, Level.Finest, 
-	  "Checking the status of Job (" + status.getJobID() + ") " +
+	  "Checking the status of Job (" + jobID + ") " +
 	  "for node (" + nodeName + ").");
 	JobState state = status.getState();
 	switch(state) {
 	case Failed:
 	case Aborted:
-	  pLog.log(Kind.Ops, Level.Finest, "\tThe Job did not completely successfully"); 
-	  return JobProgress.Problem;
+	  pLog.log(Kind.Ops, Level.Warning, "\tThe Job (" + jobID + ") did not completely successfully");
+	  failed++;
+	  break;
 	case Paused:
 	case Preempted:
 	case Queued:
@@ -1827,7 +1835,7 @@ class BaseBuilder
 	  running++;
 	  break;
 	case Limbo:
-	  pLog.log(Kind.Ops, Level.Warning, "\tThe Job is in limbo."); // FIX THIS!!!
+	  pLog.log(Kind.Ops, Level.Warning, "\tThe Job (" + jobID + ") is currently in limbo"); 
 	  done = false;
 	  running++;
 	  break;
@@ -1837,9 +1845,21 @@ class BaseBuilder
 	}
       }
     }
-    pLog.log(Kind.Ops, Level.Fine, 
-      "Out of (" + total + ") total jobs, (" + finished + ") are finished, " +
-      "(" + running + ") are running, and (" + waiting + ") are waiting.");
+    if (failed > 0)
+      pLog.log(Kind.Ops, Level.Fine, 
+        "Out of (" + total + ") total jobs, (" + failed +") are failed, " +
+        "(" + finished + ") are finished, " +
+        "(" + running + ") are running, and " +
+        "(" + waiting + ") are waiting.");
+    else
+      pLog.log(Kind.Ops, Level.Fine, 
+        "Out of (" + total + ") total jobs, " +
+        "(" + finished + ") are finished, " +
+        "(" + running + ") are running, and " +
+        "(" + waiting + ") are waiting.");
+    
+    if (failed > 0)
+      return JobProgress.Problem;
     if (!done)
 	return JobProgress.InProgress;
     return JobProgress.Complete;
@@ -1856,7 +1876,7 @@ class BaseBuilder
    * @param jobGroups
    *   The list of job groups to wait on.
    */
-  public final void
+  public final JobProgress
   waitForJobs
   (
     LinkedList<QueueJobGroup> jobGroups
@@ -1864,8 +1884,9 @@ class BaseBuilder
     throws PipelineException
   {
     pLog.log(Kind.Ops, Level.Fine, "Waiting for the jobs to finish");
+    JobProgress state = null;
     do {
-      JobProgress state = getJobProgress(jobGroups);
+      state = getJobProgress(jobGroups);
       if(state.equals(JobProgress.InProgress)) {
         try {
           pLog.log(Kind.Ops, Level.Finer, 
@@ -1881,6 +1902,7 @@ class BaseBuilder
       else
 	break;
     } while(true);
+    return state;
   } 
   
 
