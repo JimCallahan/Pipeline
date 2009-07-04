@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.76 2009/07/03 21:56:05 jesse Exp $
+// $Id: BaseBuilder.java,v 1.77 2009/07/04 02:23:46 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1819,7 +1819,8 @@ class BaseBuilder
 	switch(state) {
 	case Failed:
 	case Aborted:
-	  pLog.log(Kind.Ops, Level.Warning, "\tThe Job (" + jobID + ") did not completely successfully");
+	  pLog.log(Kind.Ops, Level.Warning, 
+                   "\tThe Job (" + jobID + ") did not completely successfully");
 	  failed++;
 	  break;
 	case Paused:
@@ -1835,7 +1836,8 @@ class BaseBuilder
 	  running++;
 	  break;
 	case Limbo:
-	  pLog.log(Kind.Ops, Level.Warning, "\tThe Job (" + jobID + ") is currently in limbo"); 
+	  pLog.log(Kind.Ops, Level.Warning, 
+                   "\tThe Job (" + jobID + ") is currently in limbo."); 
 	  done = false;
 	  running++;
 	  break;
