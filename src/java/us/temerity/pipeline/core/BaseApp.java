@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.29 2009/07/03 02:15:58 jim Exp $
+// $Id: BaseApp.java,v 1.30 2009/07/04 21:54:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -27,10 +27,7 @@ class BaseApp
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct an application with the given name and command-line arguments.
-   * 
-   * @param name 
-   *   The name of the application executable.
+   * Construct an application with the given name.
    */ 
   protected
   BaseApp
