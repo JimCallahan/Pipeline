@@ -1,13 +1,15 @@
-// $Id: PluginApp.java,v 1.23 2009/05/11 17:46:56 jlee Exp $
+// $Id: PluginApp.java,v 1.24 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
+import java.net.URL;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   A P P                                                                    */
@@ -20,6 +22,7 @@ import java.text.*;
 public
 class PluginApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -34,9 +37,10 @@ class PluginApp
     super("plplugin");
   }
 
+
   
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -56,8 +60,7 @@ class PluginApp
 
     boolean success = false;
     try {
-      PluginOptsParser parser = 
-	new PluginOptsParser(new StringReader(pPackedArgs));
+      PluginOptsParser parser = new PluginOptsParser(getPackagedArgsReader()); 
       
       parser.setApp(this);
       parser.CommandLine();

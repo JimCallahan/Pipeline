@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.48 2009/07/01 16:43:14 jim Exp $
+// $Id: JobMgr.java,v 1.49 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -18,6 +18,7 @@ import java.util.concurrent.locks.*;
  * The manager of queue job execution on a specific host. <P> 
  */
 class JobMgr
+  extends BaseMgr
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -29,10 +30,11 @@ class JobMgr
   public
   JobMgr()
   {
-    LogMgr.getInstance().log
+    super(true); 
+
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Initializing [JobMgr]...");
-    LogMgr.getInstance().flush();
 
     /* initialize the fields */ 
     {

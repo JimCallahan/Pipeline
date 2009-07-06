@@ -1035,8 +1035,9 @@ plugin class and JAR files.<br>
 </div>
 </div>
 <h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
+<div style="margin-left: 40px;">Originally created by <span
+ style="font-weight: bold;">Jim Callahan</span>, but extended and now
+maintained by <span style="font-weight: bold;">John Lee</span> of <a
  href="http://temerity.us/"><span style="font-weight: bold;">Temerity
 Software, Inc</span></a>.</div>
 <span style="font-weight: bold;">

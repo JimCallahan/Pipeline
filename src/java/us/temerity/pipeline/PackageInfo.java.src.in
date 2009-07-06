@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.52 2009/03/25 22:02:23 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.53 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -231,6 +231,27 @@ class PackageInfo
       
       sUseJava2dGLPipeline = 
         ((java2dogl != null) && (java2dogl.compareToIgnoreCase("true") == 0));
+    } 
+
+    /* compute the license end string */ 
+    {
+      TimeZone tz = new SimpleTimeZone(0, "GMT");
+      Locale lc = Locale.getDefault();
+      Calendar cal = new GregorianCalendar(tz, lc); 
+
+      cal.setTimeInMillis(@LICENSE_START_STAMP@L); 
+      sLicenseStart = 
+        (cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, lc) + ", " + 
+         cal.getDisplayName(Calendar.MONTH, Calendar.LONG, lc) + " " + 
+         cal.get(Calendar.DAY_OF_MONTH) + ", " + cal.get(Calendar.YEAR) + " at " + 
+         cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + " (GMT)"); 
+
+      cal.setTimeInMillis(@LICENSE_END_STAMP@L); 
+      sLicenseEnd = 
+        (cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, lc) + ", " + 
+         cal.getDisplayName(Calendar.MONTH, Calendar.LONG, lc) + " " + 
+         cal.get(Calendar.DAY_OF_MONTH) + ", " + cal.get(Calendar.YEAR) + " at " + 
+         cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + " (GMT)"); 
     }
   } 
 
@@ -735,9 +756,10 @@ class PackageInfo
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The date and time the license expires.
+   * A string representations of the license period.
    */ 
-  public static final String sLicenseEnd = "@LICENSE_END@";  
+  public static final String sLicenseStart;  
+  public static final String sLicenseEnd;  
 
   /**
    * The hostnames of the Pipeline servers. <P> 
@@ -1043,20 +1065,23 @@ class PackageInfo
   public static final String sLocalVendor = "@PL_LOCAL_VENDOR@"; 
 
   /** 
-   * The abstract pathname of where plpluginmgr saves plugin information that persists between Pipeline upgrades. <P>
+   * The abstract pathname of where plpluginmgr saves plugin information that persists 
+   * between Pipeline upgrades. <P>
    *
    * Set by the PluginDirectory customer profile entry.
    */
   public static final Path sPluginMgrPath = new Path("@PL_PLUGIN_DIRECTORY@"); 
 
   /** 
-   * The root directory where plpluginmgr saves plugin information that persists between Pipeline upgrades. <P>
+   * The root directory where plpluginmgr saves plugin information that persists between 
+   * Pipeline upgrades. <P>
    *
    * Set by the PluginDirectory customer profile entry.
    * 
    * @deprecated 
-   *   This field is not properly initialized on Windows systems.  Use {@link #sPluginMgrPath} 
-   *   instead for an operating system independent abstract pathname.
+   *   This field is not properly initialized on Windows systems.  Use 
+   *   {@link #sPluginMgrPath} instead for an operating system independent abstract 
+   *   pathname.
    */
   @Deprecated
   public static final File sPluginMgrDir = new File("@PL_PLUGIN_DIRECTORY@"); 

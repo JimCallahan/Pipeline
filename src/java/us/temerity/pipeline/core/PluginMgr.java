@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.42 2009/06/04 09:26:58 jim Exp $
+// $Id: PluginMgr.java,v 1.43 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -25,6 +25,7 @@ import us.temerity.pipeline.message.*;
  * The manager of Pipeline plugin classes. <P> 
  */
 class PluginMgr
+  extends BaseMgr
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -43,15 +44,16 @@ class PluginMgr
    File bootstrapDir
   ) 
   {
+    super(true); 
+
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
 
     pTempDir = PackageInfo.sTempPath.toFile();
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Initializing [PluginMgr]...");
-    LogMgr.getInstance().flush();
 
     pMakeDirLock = new Object();
 

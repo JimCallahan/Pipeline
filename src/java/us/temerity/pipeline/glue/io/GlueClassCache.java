@@ -1,8 +1,10 @@
-// $Id: GlueClassCache.java,v 1.2 2009/05/16 02:06:19 jim Exp $
+// $Id: GlueClassCache.java,v 1.3 2009/07/06 10:25:27 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
+
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.*;
 

@@ -1,17 +1,19 @@
-// $Id: VersionApp.java,v 1.8 2008/09/29 19:02:18 jim Exp $
+// $Id: VersionApp.java,v 1.9 2009/07/06 10:25:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.laf.LookAndFeelLoader;
+import us.temerity.pipeline.parser.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.ui.core.*;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*; 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
+import java.net.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -29,6 +31,7 @@ import javax.swing.plaf.synth.*;
 public
 class VersionApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,8 +47,9 @@ class VersionApp
   }
 
   
+  
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -64,8 +68,7 @@ class VersionApp
     packageArguments(args);
 
     try {
-      VersionOptsParser parser = 
-	new VersionOptsParser(new StringReader(pPackedArgs));
+      VersionOptsParser parser = new VersionOptsParser(getPackagedArgsReader()); 
       
       parser.setApp(this);
       parser.CommandLine();

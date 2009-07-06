@@ -7,10 +7,10 @@ PARSER_BEGIN(RemoteOptsParser)
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
 import us.temerity.pipeline.ui.core.*;
 
 import java.util.*;
-import java.text.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/

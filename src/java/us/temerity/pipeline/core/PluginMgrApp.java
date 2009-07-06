@@ -1,13 +1,14 @@
-// $Id: PluginMgrApp.java,v 1.10 2009/02/13 16:01:03 jim Exp $
+// $Id: PluginMgrApp.java,v 1.11 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M G R   A P P                                                            */
@@ -20,6 +21,7 @@ import java.text.*;
 public
 class PluginMgrApp
   extends VerifiedApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -45,8 +47,9 @@ class PluginMgrApp
   }
 
   
+
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -71,9 +74,8 @@ class PluginMgrApp
 	  ("The plpluginmgr(1) daemon may only be run by the " +
 	   "(" + PackageInfo.sPipelineUser + ") user!");
 
-      PluginMgrOptsParser parser = 
-	new PluginMgrOptsParser(new StringReader(pPackedArgs));
-      
+      PluginMgrOptsParser parser = new PluginMgrOptsParser(getPackagedArgsReader()); 
+
       parser.setApp(this);
       PluginMgrServer server = parser.CommandLine();
       if(server != null) {

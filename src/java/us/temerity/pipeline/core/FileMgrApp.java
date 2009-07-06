@@ -1,13 +1,14 @@
-// $Id: FileMgrApp.java,v 1.20 2009/04/01 21:17:58 jim Exp $
+// $Id: FileMgrApp.java,v 1.21 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   M G R   A P P                                                                */
@@ -20,6 +21,7 @@ import java.text.*;
 public
 class FileMgrApp
   extends VerifiedApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -45,8 +47,9 @@ class FileMgrApp
   }
 
   
+
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -71,8 +74,7 @@ class FileMgrApp
 	  ("The plfilemgr(1) daemon may only be run by the " +
 	   "(" + PackageInfo.sPipelineUser + ") user!");
 
-      FileMgrOptsParser parser = 
-	new FileMgrOptsParser(new StringReader(pPackedArgs));
+      FileMgrOptsParser parser = new FileMgrOptsParser(getPackagedArgsReader()); 
       
       parser.setApp(this);
       FileMgrServer server = parser.CommandLine();

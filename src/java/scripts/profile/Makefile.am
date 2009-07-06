@@ -4,6 +4,7 @@ instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Profile/bin
 instbin_SCRIPTS = \
   plbrowse \
   plbuilder \
+  pljava \
   plplugin \
   plpython \
   plremote \

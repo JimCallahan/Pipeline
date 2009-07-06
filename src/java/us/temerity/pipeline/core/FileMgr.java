@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.90 2009/06/01 22:17:23 jim Exp $
+// $Id: FileMgr.java,v 1.91 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -151,6 +151,7 @@ import java.util.regex.*;
  * the 128-bit MD5 message digest algorithm generates all checksums. <P> 
  */
 class FileMgr
+  extends BaseMgr
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -158,6 +159,9 @@ class FileMgr
 
   /** 
    * Construct a new file manager.
+   * 
+   * @param banner
+   *   Whether to log a startup banner.
    * 
    * @param fileStatDir
    *   An alternative root production directory accessed via a different NFS mount point
@@ -172,14 +176,16 @@ class FileMgr
   public
   FileMgr
   (
+   boolean banner, 
    Path fileStatDir, 
    Path checksumDir
   )
   {
-    LogMgr.getInstance().log
+    super(banner); 
+
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Initializing [FileMgr]...");
-    LogMgr.getInstance().flush();
 
     /* init common back-end directories */ 
     if(PackageInfo.sOsType != OsType.Unix)

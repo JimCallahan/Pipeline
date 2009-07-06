@@ -1,8 +1,10 @@
-// $Id: TestNativeProcessHeavyApp.java,v 1.6 2008/02/14 20:26:29 jim Exp $
+// $Id: TestNativeProcessHeavyApp.java,v 1.7 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
 
 import java.io.*; 
 import java.net.*; 
@@ -19,6 +21,7 @@ import java.text.*;
 public
 class TestNativeProcessHeavyApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -33,9 +36,10 @@ class TestNativeProcessHeavyApp
     super("pltestheavy");
   }
 
+
   
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**

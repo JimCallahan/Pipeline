@@ -25,6 +25,7 @@
 @ROOT_INST_DIR@/share/docs/man/plbrowse.html
 @ROOT_INST_DIR@/share/docs/man/plbuilder.html
 @ROOT_INST_DIR@/share/docs/man/plfilemgr.html 
+@ROOT_INST_DIR@/share/docs/man/pljava.html 
 @ROOT_INST_DIR@/share/docs/man/pljobmgr.html 
 @ROOT_INST_DIR@/share/docs/man/plmaster.html 
 @ROOT_INST_DIR@/share/docs/man/plplugin.html 

@@ -1,4 +1,4 @@
-// $Id: Main.java,v 1.7 2008/03/28 21:09:46 jim Exp $
+// $Id: Main.java,v 1.8 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -42,7 +42,7 @@ class Main
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  private void 
+  private 
   Main()
   {} 
 
@@ -86,7 +86,7 @@ class Main
       try {
         BootStrapLoader loader = new BootStrapLoader();
         Class cls = loader.loadClass(args[0]);
-        BootApp app = (BootApp) cls.newInstance();
+        BootableApp app = (BootableApp) cls.newInstance();
         app.run(appArgs);
       }
       catch(LicenseException ex) {

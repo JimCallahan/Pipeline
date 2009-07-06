@@ -1,16 +1,15 @@
-// $Id: ValidateApp.java,v 1.2 2008/02/14 20:26:29 jim Exp $
+// $Id: ValidateApp.java,v 1.3 2009/07/06 10:25:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 
-import java.security.*;
 import java.io.*; 
-import java.nio.*;
-import java.nio.channels.*;
-import java.net.*; 
 import java.util.*;
-import java.text.*;
+import java.security.MessageDigest; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   V A L I D A T E   A P P                                                                */
@@ -22,6 +21,7 @@ import java.text.*;
 public
 class ValidateApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -37,8 +37,9 @@ class ValidateApp
   }
 
   
+
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -64,7 +65,8 @@ class ValidateApp
 	  ("The plvalidate(1) program may only be run by the " +
 	   "(" + PackageInfo.sPipelineUser + ") user!");
       
-      ValidateOptsParser parser = new ValidateOptsParser(new StringReader(pPackedArgs));
+      ValidateOptsParser parser = new ValidateOptsParser(getPackagedArgsReader()); 
+
       parser.setApp(this);
       parser.CommandLine();   
 

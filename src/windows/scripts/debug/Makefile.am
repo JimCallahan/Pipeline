@@ -4,16 +4,17 @@ instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/bin
 instbin_SCRIPTS = \
   plbrowse.bat \
   plbuilder.bat \
+  pljava.bat \
   plplugin.bat \
   plpython.bat \
   plremote.bat \
-  plscript.bat \
   plscript-splash.bat \
+  plscript.bat \
   pltestheavy.bat \
   pltestlight.bat \
   pltestnative.bat \
-  plui2.bat \
   plui2-j2dgl.bat \
+  plui2.bat \
   plversion.bat 
 
 

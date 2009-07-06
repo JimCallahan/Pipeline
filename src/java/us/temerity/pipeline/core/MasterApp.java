@@ -1,13 +1,14 @@
-// $Id: MasterApp.java,v 1.23 2009/04/01 21:17:59 jim Exp $
+// $Id: MasterApp.java,v 1.24 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R   A P P                                                                    */
@@ -20,6 +21,7 @@ import java.text.*;
 public
 class MasterApp
   extends VerifiedApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -45,8 +47,9 @@ class MasterApp
   }
 
   
+
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -71,8 +74,7 @@ class MasterApp
 	  ("The plmaster(1) daemon may only be run by the " +
 	   "(" + PackageInfo.sPipelineUser + ") user!");
 
-      MasterOptsParser parser = 
-	new MasterOptsParser(new StringReader(pPackedArgs));
+      MasterOptsParser parser = new MasterOptsParser(getPackagedArgsReader()); 
       
       parser.setApp(this);
       MasterMgrServer server = parser.CommandLine();   

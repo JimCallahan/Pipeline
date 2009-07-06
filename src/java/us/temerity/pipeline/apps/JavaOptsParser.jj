@@ -2,24 +2,24 @@ options {
   STATIC = false;
 }
 
-PARSER_BEGIN(PythonOptsParser)
+PARSER_BEGIN(JavaOptsParser)
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline.apps;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
 
 import java.util.*;
-import java.text.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P Y T H O N   O P T S   P A R S E R                                                    */
+/*   J A V A   O P T S   P A R S E R                                                        */
 /*                                                                                          */
-/*    The parser for the plpython(1) tool.                                                  */
+/*    The parser for the pljava(1) tool.                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 class 
-PythonOptsParser
+JavaOptsParser
 {
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -31,7 +31,7 @@ PythonOptsParser
   public void 
   setApp
   (
-   PythonApp app  
+   JavaApp app  
   ) 
   {
     if(app == null) 
@@ -48,7 +48,8 @@ PythonOptsParser
   init()
   {
     pLogBackups = 10;
-    pPythonArgs = new ArrayList<String>();
+    pClassPaths = new TreeSet<Path>(); 
+    pJavaArgs = new ArrayList<String>();
   }
  
 
@@ -60,7 +61,7 @@ PythonOptsParser
   /**
    * The application instance. 
    */
-  private PythonApp  pApp;
+  private JavaApp  pApp;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -84,24 +85,34 @@ PythonOptsParser
   private boolean  pHasCommands; 
 
   /**
-   * The path to a Python script to interpret.
+   * The path to the JAR archive containing the program to load and run.
    */ 
-  private Path  pScriptPath; 
+  private Path  pJarPath; 
 
   /**
-   * Whether to read the Python source code from STDIN.
+   * The class loading directory paths. 
    */ 
-  private boolean  pReadFromStdin; 
+  private TreeSet<Path>  pClassPaths;
 
   /**
-   * The Python command line arguments. 
+   * The path to the Java source file containing the program to load and run.
    */ 
-  private ArrayList<String>  pPythonArgs; 
+  private Path  pSourcePath; 
+
+  /**
+   * The name of the entry point class with the main(String[]) method. 
+   */ 
+  private String  pMainClassName; 
+
+  /**
+   * The command line arguments to pass to the loaded program.
+   */ 
+  private ArrayList<String>  pJavaArgs; 
 
 }
 
 
-PARSER_END(PythonOptsParser)
+PARSER_END(JavaOptsParser)
 
 <DEFAULT> 
 TOKEN :
@@ -115,17 +126,19 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */
-| <LOG_FILE:          "--log-file">             : PATH_SEP
+| <LOG_FILE:          "--log-file">            : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
-| <LOG_BACKUPS:       "--log-backups">          : INTEGER_SEP
-| <LOG:               "--log">                  : LOG_SEP
+| <LOG_BACKUPS:       "--log-backups">         : INTEGER_SEP
+| <LOG:               "--log">                 : LOG_SEP
 
   /* action options */	
-| <FILE:   "--file">                            : PATH_SEP
-| <STDIN:  "--stdin">    
+| <JAR:        "--jar">                        : PATH_SEP
+| <CLASSPATH:  "--classpath">                  : PATH_SEP
+| <SOURCE:     "--source">                     : PATH_SEP
+| <MAIN:       "--main">                       : STRING_SEP 
 
-  /* python command line arguments */ 
-| <PYTHON_SEP: "--">                            : PYTHON_ARGS_STATE
+  /* java command line arguments */ 
+| <ARGS_SEP: "--">                             : JAVA_ARGS_STATE
 
   /* seperators */ 
 | <AE1: (["\0"])+>
@@ -155,11 +168,26 @@ TOKEN :
 <INTEGER_STATE> 
 TOKEN :
 {
-  <INTEGER:         (["0"-"9"])+>    : DEFAULT
-| <MISSING_INTEGER: ["\0"]>      : IGNORE_STATE
-| <ILLEGAL_INTEGER: (~["\0"])+>  : IGNORE_STATE
+  <INTEGER:         (["0"-"9"])+> : DEFAULT
+| <MISSING_INTEGER: ["\0"]>       : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~["\0"])+>   : IGNORE_STATE
 }
 
+
+/* string arguments */   
+<STRING_SEP> 
+TOKEN :
+{
+  <EQ4:                  "=">   : STRING_STATE
+| <MISSING_STRING_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<STRING_STATE>
+TOKEN :
+{
+  <STRING:         (~["\0"])*> : DEFAULT
+| <EMPTY_STRING:   "\0">       : IGNORE_STATE
+}
 
 /* filesystem path arguments */ 
 <PATH_SEP> 
@@ -217,10 +245,10 @@ TOKEN :
 
 
 /* -- args ... */ 
-<PYTHON_ARGS_STATE> 
+<JAVA_ARGS_STATE> 
 TOKEN :
 {
-  <PYTHON_ARG:  (~["\0"])+>       
+  <JAVA_ARG:  (~["\0"])+>       
 | <AE3:         (["\0"])+>
 }
 
@@ -251,17 +279,37 @@ CommandLine()
         }
       }
       
-      /* execute Python code */ 
-      if((pScriptPath != null) && pReadFromStdin)
-        throw new ParseException
-          ("The --file and --stdin options are mutually exclusive!");
+      if(pJarPath != null) {
+        if(!pClassPaths.isEmpty()) 
+          throw new PipelineException
+            ("The --jar and --classpath options are mutially exclusive!"); 
 
-      if(pScriptPath != null) 
-        pApp.executeScript(pScriptPath, pPythonArgs);
-      else if(pReadFromStdin) 
-        pApp.readScriptFromStdIn(pPythonArgs);
-      else
-        pApp.interactive();
+        if(pSourcePath != null) 
+          throw new PipelineException
+            ("The --jar and --source options are mutially exclusive!"); 
+        
+        pApp.loadFromJar(pJarPath, pMainClassName); 
+      }
+      else if(!pClassPaths.isEmpty()) {
+        if(pSourcePath != null) 
+          throw new PipelineException
+            ("The --classpath and --source options are mutially exclusive!"); 
+
+        if(pMainClassName == null) 
+          throw new PipelineException
+            ("The --main option must be given with the --classpath option!"); 
+          
+        pApp.loadFromClassPaths(pClassPaths, pMainClassName); 
+      }
+      else if(pSourcePath != null) {
+        pApp.compileAndLoad(pSourcePath); 
+      }
+      else {
+        throw new PipelineException
+          ("One of --jar, --classpath or --source must be specified!"); 
+      }
+
+      pApp.runProgram(pJavaArgs); 
     }
   }
 }
@@ -270,46 +318,79 @@ CommandLine()
 void
 Commands()
   throws PipelineException :
-{}
+{
+  pJarPath = null;
+  pClassPaths.clear(); 
+  pSourcePath = null;
+  pMainClassName = null;
+  pJavaArgs.clear(); 
+}
 {
   (GlobalOpts() AE())* 
-    ((File() | Stdin()) (<PYTHON_SEP> AE() (PythonArg())+)?)?
+    ((JarPath() | ClassPath() | SourcePath() | MainClass())+ 
+     (<ARGS_SEP> AE() (JavaArg())+)?)?
   { 
     pHasCommands = true;
   }
 }
-    
+
 void
-File() :
+JarPath() :
 {
   Token t;
 }
 {
-  <FILE> EQ() t=<PATH_ARG> AE() 
+  <JAR> EQ() t=<PATH_ARG> AE() 
   { 
-    pScriptPath = new Path(t.image);
+    pJarPath = new Path(t.image);
   }
 }
 
 void
-Stdin() :
-{}
-{
-  <STDIN> AE() 
-  { 
-    pReadFromStdin = true; 
-  }
-}
-
-void
-PythonArg() :
+ClassPath() :
 {
   Token t;
 }
 {
-  t=<PYTHON_ARG> AE()
+  <CLASSPATH> EQ() t=<PATH_ARG> AE() 
   { 
-    pPythonArgs.add(t.image);
+    pClassPaths.add(new Path(t.image)); 
+  }
+}
+
+void
+SourcePath() :
+{
+  Token t;
+}
+{
+  <SOURCE> EQ() t=<PATH_ARG> AE() 
+  { 
+    pSourcePath = new Path(t.image);
+  }
+}
+
+void
+MainClass() :
+{
+  Token t;
+}
+{
+  <MAIN> EQ() t=<STRING> AE() 
+  { 
+    pMainClassName = new String(t.image); 
+  }
+}
+
+void
+JavaArg() :
+{
+  Token t;
+}
+{
+  t=<JAVA_ARG> AE()
+  { 
+    pJavaArgs.add(t.image);
   }
 }
 
@@ -633,7 +714,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3>)  
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)  
   { 
     return t; 
   }

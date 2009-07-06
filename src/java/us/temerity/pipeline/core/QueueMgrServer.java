@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.66 2009/07/02 01:23:06 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.67 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -87,10 +87,9 @@ class QueueMgrServer
       InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sQueuePort);
       server.bind(saddr, 100);
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sQueuePort);
-      LogMgr.getInstance().flush();
 
       CollectorTask collector = new CollectorTask();
       DispatcherTask dispatcher = new DispatcherTask();

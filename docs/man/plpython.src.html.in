@@ -27,7 +27,7 @@ the Pipeline Java API<br>
 <h3><a name="Description"></a>Description</h3>
 <blockquote>This tool uses <a style="font-weight: bold;"
  href="http://www.jython.org/Project">Jython</a>
-to provide full access to Pipeline's Java API for Python programs.<br>
+to provide a Python binding for Pipeline's Java API.<br>
 </blockquote>
 <div style="margin-left: 40px;">There are three ways that the Python
 source code to execute can be
@@ -73,23 +73,18 @@ client.getDefaultToolsetName()</span><br style="font-family: monospace;">
   <br>
   </span></code></div>
   <span style="font-family: monospace;"></span><span class="postbody"><span
- style="color: rgb(184, 17, 45);">Its
-important to stress that Jython was not created by Temerity Software
-nor are we one of its maintainers.&nbsp; If you choose to use Jython,
-you
-will need to address any problems you may encounter with it to the
-creators of Jython.&nbsp; Of course, we do fully support the underlying
-Pipeline Java API accessible from Jython. However, we offer no official
-support
-for any issues you may encounter accessing this API via Jython or
-coding issues writing Python programs in this hybrid environment.</span>
-  <br>
-  <br>
-  </span><span class="postbody">We still recommend that you write
+ style="color: rgb(0, 0, 0);">Its
+important to note that Jython was not created by Temerity Software
+nor are we one of its maintainers.&nbsp; Although we have provided this
+tool to aid writing Python programs which utilize Pipeline's API, we
+still recommend that you </span></span><span class="postbody">write
 standalone
-tools for Pipeline using the official supported Java API, but provide
-this Python API binding for those Python enthusiasts capable of
-handling any Jython related problems themselves.</span><br>
+tools for Pipeline using native Java code.&nbsp; We fully support
+Pipeline's underlying Java API, but cannot make any guarantees about
+the functionality or stability of Jython which is outside our
+control.&nbsp; Its best to consider this tool as a convenience for
+those Python enthusiasts capable of
+who are willing to deal with any Jython related problems themselves.</span><br>
   <span class="postbody"><br>
   </span><span style="font-family: monospace;"></span>
   <div style="margin-left: 40px;"><span style="font-family: monospace;">
@@ -226,8 +221,8 @@ command-line options.<br>
 </div>
 <div style="margin-left: 120px;"><span style="font-weight: bold;">ops</span><br>
 <span style="font-weight: bold;"></span></div>
-<div style="margin-left: 160px;">Logs node operations initiated by the
-user interface.<br>
+<div style="margin-left: 160px;">Logs the main operations performed by
+the program.<br>
 <br>
 </div>
 <div style="margin-left: 120px;"><span style="font-weight: bold;">net</span><br>
@@ -237,8 +232,9 @@ user interface.<br>
 </div>
 <div style="margin-left: 120px;"><span style="font-weight: bold;">plg</span><br>
 <span style="font-weight: bold;"></span></div>
-<div style="margin-left: 160px;">Logs the loading and initialization of
-Action, Editor and Tool plugins.<br>
+<div style="margin-left: 160px;">Logs the loading and initialization
+of&nbsp;
+Pipeline plugins.<br>
 </div>
 <div style="margin-left: 120px;"><span style="font-weight: bold;"></span><br>
 <span style="font-weight: bold;">sub</span><br>
@@ -266,7 +262,7 @@ messages and advisory information.<br>
 <span style="font-weight: bold;">info</span><br>
 </div>
 <div style="margin-left: 160px;">This is the default output level for
-all loggers and is used for normal output from <b>pui</b>(1). <br>
+all loggers. <br>
 </div>
 <div style="margin-left: 120px;"><br style="font-weight: bold;">
 <span style="font-weight: bold;">fine</span><br>
@@ -319,7 +315,7 @@ API</span></a><span style="font-weight: bold;"></span><span
 </blockquote>
 <h3><a name="Author"></a>Author</h3>
 <div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
+ style="font-weight: bold;">Jim Callahan</span> of&nbsp; <a
  href="http://temerity.us/"><span style="font-weight: bold;">Temerity
 Software, Inc</span></a>.<br>
 </div>

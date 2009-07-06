@@ -42,9 +42,9 @@ Note that you can also run builders using the <a
 API</span></a> either in a native Java application or through <a
  href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1).&nbsp;
 See the&nbsp;<a
- href="http://temerity.us/products/pipeline/docs/javadoc/us/temerity/pipeline/builder/BaseBuilderCollection.html#instantiateBuilder%28java.lang.String,%20us.temerity.pipeline.MasterMgrClient,%20us.temerity.pipeline.QueueMgrClient,%20boolean,%20boolean%29"><a
+ href="http://temerity.us/products/pipeline/docs/javadoc/us/temerity/pipeline/builder/BaseBuilderCollection.html#instantiateBuilder%28java.lang.String,%20us.temerity.pipeline.MasterMgrClient,%20us.temerity.pipeline.QueueMgrClient,%20boolean,%20boolean%29"></a><a
  href="http://temerity.us/products/pipeline/docs/javadoc/us/temerity/pipeline/BasePluginMgrClient.html#newBuilderCollection%28us.temerity.pipeline.PluginID%29"><span
- style="font-weight: bold;"></span></a></a><a
+ style="font-weight: bold;"></span></a><a
  href="http://temerity.us/products/pipeline/docs/javadoc/us/temerity/pipeline/builder/BaseBuilderCollection.html#instantiateBuilder%28java.lang.String,%20us.temerity.pipeline.MasterMgrClient,%20us.temerity.pipeline.QueueMgrClient,%20boolean,%20boolean%29"><span
  style="font-weight: bold;">BaseBuilderCollection.instantiateBuilder</span></a>
 method for details.<br>
@@ -287,8 +287,8 @@ passed in actually have meaning.<br>
 <blockquote>These options specify which builder <span
  style="font-weight: bold;">plbuilder</span>(1) should
 execute or specify a search pattern which will be used to return a list
-of availible builders matching the criteria. &nbsp;At a miniumum,
-  <span style="font-weight: bold;">--collection</span> and <span
+of availible builders matching the criteria. &nbsp;At a miniumum, <span
+ style="font-weight: bold;">--collection</span> and <span
  style="font-weight: bold;">--builder-name</span> need to be specified
 to actually invoke
 a builder. &nbsp;If one or both of those are missing, then a search
@@ -480,7 +480,7 @@ Java API</span></a><span style="font-weight: bold;"></span></div>
 </blockquote>
 <h3><a name="Author"></a>Author</h3>
 <div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
+ style="font-weight: bold;">Jesse Clemens</span> of&nbsp; <a
  href="http://temerity.us/"><span style="font-weight: bold;">Temerity
 Software, Inc</span></a>.<br>
 </div>

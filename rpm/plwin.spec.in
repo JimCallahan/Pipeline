@@ -25,6 +25,7 @@ plconfig(1) during Pipeline configuration process.
 %defattr(555,root,root)
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plbrowse.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plbuilder.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/pljava.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plplugin.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plpython.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plremote.bat
@@ -40,6 +41,7 @@ plconfig(1) during Pipeline configuration process.
 
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plbrowse.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plbuilder.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/pljava.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plplugin.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plpython.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plremote.bat

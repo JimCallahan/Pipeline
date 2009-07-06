@@ -1,9 +1,10 @@
-// $Id: GlueDecoderImpl.java,v 1.4 2009/05/14 22:51:32 jim Exp $
+// $Id: GlueDecoderImpl.java,v 1.5 2009/07/06 10:25:27 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.parser.*;
 
 import java.lang.reflect.*;
 import java.util.*;

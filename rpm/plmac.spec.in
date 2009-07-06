@@ -31,6 +31,7 @@ Pipeline configuration process.
 
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plbrowse
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plbuilder
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/pljava
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plplugin
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plremote
@@ -42,6 +43,7 @@ Pipeline configuration process.
 
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plbrowse
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plbuilder
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pljava
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plplugin
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plremote
@@ -56,6 +58,7 @@ Pipeline configuration process.
 
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plbrowse
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plbuilder
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/pljava
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plplugin
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plremote

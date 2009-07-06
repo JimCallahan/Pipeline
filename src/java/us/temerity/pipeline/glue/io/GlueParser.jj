@@ -11,6 +11,7 @@ package us.temerity.pipeline.glue.io;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.parser.*;
 
 import java.util.*;
 import java.lang.reflect.Array;

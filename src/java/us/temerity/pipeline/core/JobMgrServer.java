@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.40 2009/06/04 09:19:05 jim Exp $
+// $Id: JobMgrServer.java,v 1.41 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -68,15 +68,14 @@ class JobMgrServer
       InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sJobPort);
       server.bind(saddr, 100);
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sJobPort);
       pTimer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.\n" + 
 	 "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();
       pTimer = new TaskTimer();
 
       CollectorTask collector = null;

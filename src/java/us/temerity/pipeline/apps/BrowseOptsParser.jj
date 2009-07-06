@@ -4,12 +4,12 @@ options {
 
 PARSER_BEGIN(BrowseOptsParser)
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline.apps;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
 
 import java.util.*;
-import java.text.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/

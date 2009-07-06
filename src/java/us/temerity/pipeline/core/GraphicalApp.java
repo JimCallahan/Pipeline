@@ -1,14 +1,15 @@
-// $Id: GraphicalApp.java,v 1.13 2008/01/16 21:15:00 jim Exp $
+// $Id: GraphicalApp.java,v 1.14 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 import us.temerity.pipeline.ui.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R   A P P                                                                    */
@@ -21,6 +22,7 @@ import java.text.*;
 public
 class GraphicalApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -35,9 +37,9 @@ class GraphicalApp
     super("plui");
   }
 
-  
+   
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -56,8 +58,7 @@ class GraphicalApp
     packageArguments(args);
 
     try {
-      GraphicalOptsParser parser = 
-	new GraphicalOptsParser(new StringReader(pPackedArgs));
+      GraphicalOptsParser parser = new GraphicalOptsParser(getPackagedArgsReader()); 
       
       parser.setApp(this);
       parser.CommandLine();

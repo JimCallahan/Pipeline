@@ -1,13 +1,14 @@
-// $Id: QueueMgrApp.java,v 1.14 2008/02/14 20:26:29 jim Exp $
+// $Id: QueueMgrApp.java,v 1.15 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R   A P P                                                              */
@@ -20,6 +21,7 @@ import java.text.*;
 public
 class QueueMgrApp
   extends VerifiedApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -34,9 +36,10 @@ class QueueMgrApp
     super("plqueuemgr");
   }
 
+
   
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -61,8 +64,7 @@ class QueueMgrApp
 	  ("The plqueuemgr(1) daemon may only be run by the " +
 	   "(" + PackageInfo.sPipelineUser + ") user!");
 
-      QueueMgrOptsParser parser = 
-	new QueueMgrOptsParser(new StringReader(pPackedArgs));
+      QueueMgrOptsParser parser = new QueueMgrOptsParser(getPackagedArgsReader()); 
       
       parser.setApp(this);
       QueueMgrServer server = parser.CommandLine();      

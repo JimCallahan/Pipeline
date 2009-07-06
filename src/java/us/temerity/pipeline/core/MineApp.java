@@ -1,11 +1,14 @@
-// $Id: MineApp.java,v 1.1 2008/08/09 20:07:46 jim Exp $
+// $Id: MineApp.java,v 1.2 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
 import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.glue.io.*;
+import us.temerity.pipeline.parser.*;
 
 import java.io.*; 
 import java.util.*;
@@ -21,6 +24,7 @@ import java.util.regex.*;
 public
 class MineApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -52,7 +56,7 @@ class MineApp
   
   
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -73,7 +77,7 @@ class MineApp
     /* parse the command line */ 
     boolean success = false;
     try {   
-      MineOptsParser parser = new MineOptsParser(new StringReader(pPackedArgs));
+      MineOptsParser parser = new MineOptsParser(getPackagedArgsReader()); 
       parser.setApp(this);
       parser.CommandLine();   
 

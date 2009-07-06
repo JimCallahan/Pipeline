@@ -1,13 +1,14 @@
-// $Id: JobMgrApp.java,v 1.11 2008/02/14 20:26:29 jim Exp $
+// $Id: JobMgrApp.java,v 1.12 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   J O B   M G R   A P P                                                                  */
@@ -20,6 +21,7 @@ import java.text.*;
 public
 class JobMgrApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -34,11 +36,11 @@ class JobMgrApp
     super("pljobmgr");
   }
 
-  
+   
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
-
+ 
   /**
    * Run the application with the given command-line arguments.
    * 
@@ -61,8 +63,7 @@ class JobMgrApp
 	  ("The pljobmgr(1) daemon may only be run by the " +
 	   "(" + PackageInfo.sPipelineUser + ") user!");
 
-      JobMgrOptsParser parser = 
-	new JobMgrOptsParser(new StringReader(pPackedArgs));
+      JobMgrOptsParser parser = new JobMgrOptsParser(getPackagedArgsReader()); 
       
       parser.setApp(this);
       JobMgrServer server = parser.CommandLine();     

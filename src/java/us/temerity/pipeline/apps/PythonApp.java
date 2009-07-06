@@ -1,17 +1,15 @@
-// $Id: PythonApp.java,v 1.3 2008/02/14 20:26:29 jim Exp $
+// $Id: PythonApp.java,v 1.1 2009/07/06 10:25:26 jim Exp $
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline.apps;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.*;
+import us.temerity.pipeline.parser.*;
 
 import org.python.core.*; 
 import org.python.util.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P Y T H O N   A P P                                                                    */
@@ -40,7 +38,7 @@ class PythonApp
 
   
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   M A I N                                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -49,27 +47,25 @@ class PythonApp
    * @param args 
    *   The command-line arguments.
    */ 
-  public
-  void 
-  run
+  public static void 
+  main 
   (
    String[] args
   )
   {
-    packageArguments(args);
+    PythonApp app = new PythonApp();
+    app.packageArguments(args);
 
     boolean success = false;
     try {
-      PythonOptsParser parser = 
-	new PythonOptsParser(new StringReader(pPackedArgs));
-      
-      parser.setApp(this);
+      PythonOptsParser parser = new PythonOptsParser(app.getPackagedArgsReader()); 
+      parser.setApp(app);
       parser.CommandLine();
 
       success = true;
     }
     catch(ParseException ex) {
-      handleParseException(ex);
+      app.handleParseException(ex);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log

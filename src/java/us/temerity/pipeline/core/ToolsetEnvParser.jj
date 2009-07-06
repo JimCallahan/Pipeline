@@ -5,6 +5,7 @@ options {
 PARSER_BEGIN(ToolsetEnvParser)
 
 package us.temerity.pipeline.core;
+import us.temerity.pipeline.parser.*;
 
 import java.util.*;
 

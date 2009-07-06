@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.15 2009/04/02 03:03:18 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.16 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -48,7 +48,7 @@ class FileMgrDirectClient
    Path checksumDir
   ) 
   {
-    pFileMgr = new FileMgr(fileStatDir, checksumDir);
+    pFileMgr = new FileMgr(false, fileStatDir, checksumDir);
   }
 
 

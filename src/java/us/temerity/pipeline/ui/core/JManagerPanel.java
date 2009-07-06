@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.62 2009/06/02 20:08:37 jlee Exp $
+// $Id: JManagerPanel.java,v 1.63 2009/07/06 10:25:28 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -11,6 +11,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.glue.*;

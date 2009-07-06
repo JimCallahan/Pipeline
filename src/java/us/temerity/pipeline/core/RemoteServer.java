@@ -1,8 +1,9 @@
-// $Id: RemoteServer.java,v 1.8 2009/06/04 23:32:36 jim Exp $
+// $Id: RemoteServer.java,v 1.9 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
 import us.temerity.pipeline.ui.core.*;
 
 import java.io.*;

@@ -1,26 +1,24 @@
-// $Id: BaseApp.java,v 1.30 2009/07/04 21:54:14 jim Exp $
+// $Id: BaseApp.java,v 1.1 2009/07/06 10:25:26 jim Exp $
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline.apps;
 
-import java.io.File;
-import java.io.FileReader;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
+
+import java.io.*;
 import java.util.*;
 import java.awt.Desktop;
 import java.net.URI; 
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   A P P                                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The abstract base class for all Pipeline applications. 
+ * The abstract base class for all standard Pipeline applications. 
  */ 
 public abstract 
 class BaseApp
-  extends BootApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -42,6 +40,30 @@ class BaseApp
     /* init common support classes */     
     FileCleaner.init();
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S O R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the application.
+   */ 
+  public String 
+  getName()
+  {
+    return pName;
+  }
+
+  /**
+   * Get the previously packaged command-line as a StringReader.
+   */ 
+  public StringReader
+  getPackagedArgsReader() 
+  {
+    return new StringReader(pPackagedArgs); 
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -172,35 +194,7 @@ class BaseApp
         buf.append(args[wk] + "\0");
     }
     
-    pPackedArgs = buf.toString();
-  }
-
-  /**
-   * Reads the given file containing command-line arguments and generates lines of input
-   * suitable for parsing by the command-line parser of the application subclass. <P> 
-   * 
-   * The whitespace in the file is replaced by (\0) characters to seperate 
-   * command-line arguments.  Each command-line of input from the file in converted into 
-   * one of the Strings returned by this method.  Command lines in the file may continue
-   * over multiple lines by escaping the newline with (\) characters.
-   * 
-   * @param file
-   *   The arguments file.
-   */
-  public ArrayList<String>
-  packageFile
-  (
-   File file
-  )
-    throws PipelineException
-  {
-    try {
-      BatchParser parser = new BatchParser(new FileReader(file));
-      return (ArrayList<String>) parser.Contents();
-    }
-    catch(Exception ex) {
-      throw new PipelineException(ex);
-    }    
+    pPackagedArgs = buf.toString();
   }
 
 
@@ -556,12 +550,12 @@ class BaseApp
   /**
    * The name of the application.
    */ 
-  protected String pName;        
+  private String pName;        
 
   /**
    * The single concatenated command-line argument string.
    */
-  protected String pPackedArgs;  
+  private String pPackagedArgs;  
 
 }
 

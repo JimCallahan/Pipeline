@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.50 2009/06/04 09:19:05 jim Exp $
+// $Id: FileMgrServer.java,v 1.51 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -55,7 +55,7 @@ class FileMgrServer
   { 
     super("FileMgrServer");
 
-    pFileMgr = new FileMgr(fileStatDir, checksumDir);
+    pFileMgr = new FileMgr(true, fileStatDir, checksumDir);
     pTasks   = new TreeSet<HandlerTask>();    
   }
   
@@ -80,13 +80,12 @@ class FileMgrServer
       InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sFilePort);
       server.bind(saddr, 100);
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sFilePort);
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.");
-      LogMgr.getInstance().flush();
    
       while(!pShutdown.get()) {
         try {

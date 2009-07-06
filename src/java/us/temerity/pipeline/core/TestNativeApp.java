@@ -1,13 +1,14 @@
-// $Id: TestNativeApp.java,v 1.2 2008/02/14 20:26:29 jim Exp $
+// $Id: TestNativeApp.java,v 1.3 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.parser.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   N A T I V E   A P P                                                          */
@@ -19,6 +20,7 @@ import java.text.*;
 public
 class TestNativeApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -34,8 +36,9 @@ class TestNativeApp
   }
 
   
+  
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -55,9 +58,8 @@ class TestNativeApp
 
     boolean success = false;
     try {
-      TestNativeOptsParser parser = 
-	new TestNativeOptsParser(new StringReader(pPackedArgs));
-      
+      TestNativeOptsParser parser = new TestNativeOptsParser(getPackagedArgsReader()); 
+
       parser.setApp(this);
       parser.CommandLine();     
 

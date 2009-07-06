@@ -5,19 +5,20 @@ html_DATA = \
   plbrowse.html \
   plbuilder.html \
   plfilemgr.html \
+  pljava.html \
   pljobmgr.html \
   plmaster.html \
   plplugin.html \
   plpluginmgr.html \
   plpython.html \
   plqueuemgr.html \
-  plrestore.html \
   plremote.html \
+  plrestore.html \
   pls.html \
   plscript.html \
   plui.html \
-  plversion.html \
   plvalidate.html \
+  plversion.html \
   realpath.html
 
 

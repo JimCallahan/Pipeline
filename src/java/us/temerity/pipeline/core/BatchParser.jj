@@ -7,13 +7,10 @@ PARSER_BEGIN(BatchParser)
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.parser.*;
 
 import java.util.*;
-import java.text.*;
 import java.io.*;
-import java.util.logging.*;
-import javax.swing.*;        
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A T C H   P A R S E R                                                                */

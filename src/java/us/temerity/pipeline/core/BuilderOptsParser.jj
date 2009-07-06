@@ -6,13 +6,12 @@ PARSER_BEGIN(BuilderOptsParser)
 
 package us.temerity.pipeline.core;
 
-import java.util.*;
-import java.util.logging.*;
-import java.text.*;
-import java.io.*;
-import java.net.*;
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
 import us.temerity.pipeline.builder.*;
+
+import java.util.*;
+import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   O P T S   P A R S E R                                                  */

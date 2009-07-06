@@ -1,13 +1,15 @@
-// $Id: BuilderApp.java,v 1.30 2008/07/21 17:25:53 jim Exp $
+// $Id: BuilderApp.java,v 1.31 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.parser.*;
+
 import java.io.*;
 import java.util.*;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.*;
-import us.temerity.pipeline.builder.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   A P P                                                                  */
@@ -19,6 +21,7 @@ import us.temerity.pipeline.builder.*;
  */
 public class BuilderApp
   extends BaseApp
+  implements BootableApp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -43,7 +46,7 @@ public class BuilderApp
   
 
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -69,16 +72,17 @@ public class BuilderApp
     }
     catch (PipelineException ex)
     {
-      LogMgr.getInstance().log(Kind.Ops, Level.Severe, 
-	"Unable to Initialize the plugin Manager.  Builder Aborting.\n" + ex.getMessage());
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+         "Unable to Initialize the plugin Manager.  Builder Aborting.\n" + ex.getMessage());
       return;
     }
     
-    LogMgr.getInstance().log(Kind.Ops, Level.Info, "Starting Builder Execution!");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info, "Starting Builder Execution!");
     
     try {
-      BuilderOptsParser parser = 
-	new BuilderOptsParser(new StringReader(pPackedArgs));
+      BuilderOptsParser parser = new BuilderOptsParser(getPackagedArgsReader()); 
       parser.setApp(this);
       
       parser.CommandLine();
@@ -367,17 +371,19 @@ public class BuilderApp
   {
     if (builder == null) {
       pNullParams.put(keys, value);
-      LogMgr.getInstance().log(Kind.Arg, Level.Finest, 
-	"Reading command line arg for Parent Builder.\n" +
-	"Keys are (" + keys + ").\n" +
-	"Value is (" + value + ").");
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Arg, LogMgr.Level.Finest, 
+         "Reading command line arg for Parent Builder.\n" +
+         "Keys are (" + keys + ").\n" +
+         "Value is (" + value + ").");
       return;
     }
     builder = builder.replaceAll("-", " - ");
-    LogMgr.getInstance().log(Kind.Arg, Level.Finest, 
-      "Reading command line arg for Builder (" + builder + ").\n" +
-      "Keys are (" + keys + ").\n" +
-      "Value is (" + value + ").");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Arg, LogMgr.Level.Finest, 
+       "Reading command line arg for Builder (" + builder + ").\n" +
+       "Keys are (" + keys + ").\n" +
+       "Value is (" + value + ").");
     LinkedList<String> list;
       list = new LinkedList<String>(keys);
     list.addFirst(builder);

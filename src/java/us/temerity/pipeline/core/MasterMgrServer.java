@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.103 2009/06/04 09:19:05 jim Exp $
+// $Id: MasterMgrServer.java,v 1.104 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -132,15 +132,14 @@ class MasterMgrServer
       InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sMasterPort);
       server.bind(saddr, 100);
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sMasterPort);
       pTimer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.\n" + 
 	 "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();
       pTimer = new TaskTimer();
 
       NodeGCTask nodeGC = new NodeGCTask();
@@ -149,8 +148,8 @@ class MasterMgrServer
       EventWriterTask ewriter = new EventWriterTask();
       ewriter.start();
 
-//    LicenseTask lic = new LicenseTask();
-//    lic.start();
+      LicenseTask lic = new LicenseTask();
+      lic.start();
 
       while(!pShutdown.get()) {
         try {
@@ -167,8 +166,15 @@ class MasterMgrServer
       }
 
       try {
-// 	lic.interrupt();
-// 	lic.join();
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on License Validator...");
+	  LogMgr.getInstance().flush();
+          
+          lic.interrupt();
+          lic.join();
+	}
 
 	{
 	  LogMgr.getInstance().log
@@ -179,8 +185,15 @@ class MasterMgrServer
 	  ewriter.join();
 	}
 
-	nodeGC.interrupt();
-	nodeGC.join();
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Node Garbage Collector...");
+	  LogMgr.getInstance().flush();
+          
+          nodeGC.interrupt();
+          nodeGC.join();
+        }
 
 	{
 	  LogMgr.getInstance().log
@@ -511,7 +524,8 @@ class MasterMgrServer
 
               case GetToolsetPackage:
                 {
-                  MiscGetToolsetPackageReq req = (MiscGetToolsetPackageReq) objIn.readObject();
+                  MiscGetToolsetPackageReq req = 
+                    (MiscGetToolsetPackageReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getToolsetPackage(req));
                   objOut.flush(); 
                 }
@@ -1804,10 +1818,9 @@ class MasterMgrServer
                 }
 
               case Shutdown:
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
-                LogMgr.getInstance().flush();
                 shutdown(); 
                 break;	    
 
@@ -2020,24 +2033,27 @@ class MasterMgrServer
     public void 
     run() 
     {
-      /* check once a day */ 
       while(!pShutdown.get()) {
-	try {
-	  Thread.sleep(86400000L); 
-	}
-	catch(InterruptedException ex) {
-	}	
-
-        // put message in here warning when licenses is about to expire... 
-
 	if(!pMasterApp.isLicenseValid()) {	  
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
 	     "License Expired Shutdown.");
 	  LogMgr.getInstance().flush();
 
+          pMasterMgr.setShutdownOptions(true, true); 
           shutdown();
+          return;
 	}
+
+	try {
+          Long interval = pMasterApp.warnLicenseExpiration(); 
+	  if(interval == null) 
+            return;
+          else 
+            Thread.sleep(interval); 
+	}
+	catch(InterruptedException ex) {
+	}	
       }
     }
   }

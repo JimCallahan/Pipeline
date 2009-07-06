@@ -1517,6 +1517,16 @@ AC_SUBST(PLPYTHON_GC_OPTS)
 PLPYTHON_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
 AC_MSG_RESULT([$PLPYTHON_GC_OPTS])
 
+AC_MSG_CHECKING([pljava])
+AC_SUBST(PLJAVA_GC_OPTS)
+PLJAVA_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
+AC_MSG_RESULT([$PLJAVA_GC_OPTS])
+
+AC_MSG_CHECKING([plscala])
+AC_SUBST(PLSCALA_GC_OPTS)
+PLSCALA_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
+AC_MSG_RESULT([$PLSCALA_GC_OPTS])
+
 AC_MSG_RESULT([ ])
 
 
@@ -1640,6 +1650,20 @@ AC_SUBST(PLPYTHON_DEBUG_BASE)
 PLPYTHON_DEBUG_BASE=$(($debug_base+140))
 AC_MSG_RESULT([$PLPYTHON_DEBUG_OPTS])
 
+AC_MSG_CHECKING([pljava])
+AC_SUBST(PLJAVA_DEBUG_OPTS)
+PLJAVA_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLJAVA_DEBUG_BASE)
+PLJAVA_DEBUG_BASE=$(($debug_base+140))
+AC_MSG_RESULT([$PLJAVA_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plscala])
+AC_SUBST(PLSCALA_DEBUG_OPTS)
+PLSCALA_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLSCALA_DEBUG_BASE)
+PLSCALA_DEBUG_BASE=$(($debug_base+140))
+AC_MSG_RESULT([$PLSCALA_DEBUG_OPTS])
+
 AC_MSG_RESULT([ ])
 
 
@@ -1748,6 +1772,20 @@ PLPYTHON_PROFILE_OPTS=${java_prof_opts}"plpython"
 AC_SUBST(PLPYTHON_PROFILE_BASE)
 PLPYTHON_PROFILE_BASE=$(($prof_base+140))
 AC_MSG_RESULT([$PLPYTHON_PROFILE_OPTS])
+
+AC_MSG_CHECKING([pljava])
+AC_SUBST(PLJAVA_PROFILE_OPTS)
+PLJAVA_PROFILE_OPTS=${java_prof_opts}"pljava"
+AC_SUBST(PLJAVA_PROFILE_BASE)
+PLJAVA_PROFILE_BASE=$(($prof_base+140))
+AC_MSG_RESULT([$PLJAVA_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plscala])
+AC_SUBST(PLSCALA_PROFILE_OPTS)
+PLSCALA_PROFILE_OPTS=${java_prof_opts}"plscala"
+AC_SUBST(PLSCALA_PROFILE_BASE)
+PLSCALA_PROFILE_BASE=$(($prof_base+140))
+AC_MSG_RESULT([$PLSCALA_PROFILE_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1948,6 +1986,7 @@ AC_CONFIG_FILES([
   docs/man/Makefile
   docs/man/plbuilder.src.html
   docs/man/plfilemgr.src.html
+  docs/man/pljava.src.html
   docs/man/pljobmgr.src.html
   docs/man/plmaster.src.html
   docs/man/plplugin.src.html
@@ -1955,6 +1994,7 @@ AC_CONFIG_FILES([
   docs/man/plqueuemgr.src.html
   docs/man/plremote.src.html
   docs/man/plrestore.src.html
+  docs/man/plscala.src.html
   docs/man/plscript.src.html  
   docs/man/plpython.src.html
   docs/man/plui.src.html  
@@ -2002,7 +2042,8 @@ AC_CONFIG_FILES([
   src/java/scripts/Makefile
   src/java/scripts/plbrowse
   src/java/scripts/plbuilder
-  src/java/scripts/plfilemgr
+  src/java/scripts/plfilemgr  
+  src/java/scripts/pljava
   src/java/scripts/pljobmgr
   src/java/scripts/plmaster
   src/java/scripts/plmine
@@ -2010,6 +2051,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plpluginmgr
   src/java/scripts/plqueuemgr
   src/java/scripts/plremote
+  src/java/scripts/plscala
   src/java/scripts/plscript
   src/java/scripts/plscript-splash
   src/java/scripts/plpython
@@ -2025,6 +2067,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plbrowse
   src/java/scripts/debug/plbuilder
   src/java/scripts/debug/plfilemgr
+  src/java/scripts/debug/pljava
   src/java/scripts/debug/pljobmgr  
   src/java/scripts/debug/plmaster
   src/java/scripts/debug/plmine
@@ -2032,6 +2075,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plpluginmgr
   src/java/scripts/debug/plqueuemgr
   src/java/scripts/debug/plremote
+  src/java/scripts/debug/plscala
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plscript-splash
   src/java/scripts/debug/plpython
@@ -2047,12 +2091,14 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plbrowse
   src/java/scripts/profile/plbuilder
   src/java/scripts/profile/plfilemgr
+  src/java/scripts/profile/pljava
   src/java/scripts/profile/pljobmgr
   src/java/scripts/profile/plmaster
   src/java/scripts/profile/plplugin
   src/java/scripts/profile/plpluginmgr
   src/java/scripts/profile/plqueuemgr
   src/java/scripts/profile/plremote
+  src/java/scripts/profile/plscala
   src/java/scripts/profile/plscript
   src/java/scripts/profile/plscript-splash
   src/java/scripts/profile/plpython
@@ -2106,32 +2152,36 @@ AC_CONFIG_FILES([
   src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h
 
   src/windows/scripts/Makefile
-  src/windows/scripts/plplugin.bat.src
-  src/windows/scripts/plremote.bat.src
-  src/windows/scripts/plscript.bat.src
-  src/windows/scripts/plscript-splash.bat.src
-  src/windows/scripts/plpython.bat.src
   src/windows/scripts/plbrowse.bat.src
   src/windows/scripts/plbuilder.bat.src
+  src/windows/scripts/pljava.bat.src
   src/windows/scripts/pljobmgr.bat.src  
-  src/windows/scripts/plui2.bat.src
+  src/windows/scripts/plplugin.bat.src
+  src/windows/scripts/plpython.bat.src
+  src/windows/scripts/plremote.bat.src
+  src/windows/scripts/plscala.bat.src
+  src/windows/scripts/plscript-splash.bat.src
+  src/windows/scripts/plscript.bat.src
   src/windows/scripts/plui2-j2dgl.bat.src
+  src/windows/scripts/plui2.bat.src
   src/windows/scripts/plversion.bat.src
 
   src/windows/scripts/debug/Makefile
+  src/windows/scripts/debug/plbrowse.bat.src
+  src/windows/scripts/debug/plbuilder.bat.src
+  src/windows/scripts/debug/pljava.bat.src
+  src/windows/scripts/debug/pljobmgr.bat.src
   src/windows/scripts/debug/plplugin.bat.src
+  src/windows/scripts/debug/plpython.bat.src
+  src/windows/scripts/debug/plremote.bat.src
+  src/windows/scripts/debug/plscala.bat.src
+  src/windows/scripts/debug/plscript-splash.bat.src
+  src/windows/scripts/debug/plscript.bat.src
   src/windows/scripts/debug/pltestheavy.bat.src
   src/windows/scripts/debug/pltestlight.bat.src
   src/windows/scripts/debug/pltestnative.bat.src
-  src/windows/scripts/debug/plremote.bat.src
-  src/windows/scripts/debug/plscript.bat.src
-  src/windows/scripts/debug/plscript-splash.bat.src
-  src/windows/scripts/debug/plpython.bat.src
-  src/windows/scripts/debug/plbrowse.bat.src
-  src/windows/scripts/debug/plbuilder.bat.src
-  src/windows/scripts/debug/plui2.bat.src
   src/windows/scripts/debug/plui2-j2dgl.bat.src
-  src/windows/scripts/debug/pljobmgr.bat.src
+  src/windows/scripts/debug/plui2.bat.src
   src/windows/scripts/debug/plversion.bat.src
 
   src/windows/launchers/Makefile

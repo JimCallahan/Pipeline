@@ -1,22 +1,11 @@
-// $Id: BrowseApp.java,v 1.2 2009/06/04 09:02:00 jim Exp $
+// $Id: BrowseApp.java,v 1.1 2009/07/06 10:25:26 jim Exp $
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline.apps;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.ui.core.*;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
+import us.temerity.pipeline.parser.*;
 
-import java.awt.*; 
-import java.io.*; 
-import java.net.*; 
-import java.util.*;
-import java.text.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.plaf.basic.*;
-import javax.swing.plaf.synth.*;
+import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B R O W S E   A P P                                                                    */
@@ -45,7 +34,7 @@ class BrowseApp
 
   
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   M A I N                                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -54,31 +43,32 @@ class BrowseApp
    * @param args 
    *   The command-line arguments.
    */ 
-  public
-  void 
-  run
+  public static void 
+  main 
   (
    String[] args
   )
   {
-    packageArguments(args);
+    BrowseApp app = new BrowseApp();
+    app.packageArguments(args);
 
     try {
-      BrowseOptsParser parser = 
-	new BrowseOptsParser(new StringReader(pPackedArgs));
-      
-      parser.setApp(this);
+      BrowseOptsParser parser = new BrowseOptsParser(app.getPackagedArgsReader());
+      parser.setApp(app); 
       parser.CommandLine();
+
+      System.exit(0);
     }
     catch(ParseException ex) {
-      handleParseException(ex);
-      System.exit(1);
+      app.handleParseException(ex);
     }
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 Exceptions.getFullMessage(ex));
     }
+
+    System.exit(1);
   }
 
 

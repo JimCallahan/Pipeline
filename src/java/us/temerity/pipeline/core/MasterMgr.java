@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.281 2009/07/01 16:43:14 jim Exp $
+// $Id: MasterMgr.java,v 1.282 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -189,6 +189,7 @@ import us.temerity.pipeline.toolset.*;
  * </DIV>
  */
 class MasterMgr
+  extends BaseMgr
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -254,6 +255,8 @@ class MasterMgr
   )
     throws PipelineException 
   { 
+    super(true); 
+
     pRebuildCache          = rebuildCache;
     pPreserveOfflinedCache = preserveOfflinedCache;
     pInternalFileMgr       = internalFileMgr;
@@ -328,10 +331,9 @@ class MasterMgr
       pQueueMgrClient.waitForConnection(1000, 5000);
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Initializing [MasterMgr]...");
-    LogMgr.getInstance().flush();
 
     /* Make sure that the root node directories exist. */ 
     makeRootDirs();

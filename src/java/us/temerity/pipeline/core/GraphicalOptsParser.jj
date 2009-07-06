@@ -7,12 +7,11 @@ PARSER_BEGIN(GraphicalOptsParser)
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
 import us.temerity.pipeline.ui.core.*;
 
 import java.util.*;
-import java.text.*;
-import java.io.*;
-import javax.swing.*;        
+import java.io.*;     
 
 /*------------------------------------------------------------------------------------------*/
 /*   G R A P H I C A L   O P T S   P A R S E R                                              */

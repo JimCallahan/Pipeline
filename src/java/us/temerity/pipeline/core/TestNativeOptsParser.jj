@@ -7,11 +7,10 @@ PARSER_BEGIN(TestNativeOptsParser)
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
 
 import java.util.*;
-import java.text.*;
 import java.io.*;
-import java.net.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T  N A T I V E   O P T S   P A R S E R                                           */

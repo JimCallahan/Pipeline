@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.119 2009/07/02 13:37:20 jim Exp $
+// $Id: QueueMgr.java,v 1.120 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -23,6 +23,7 @@ import us.temerity.pipeline.toolset.Toolset;
  * The manager of queue jobs. <P>
  */
 class QueueMgr
+  extends BaseMgr
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -59,6 +60,8 @@ class QueueMgr
    long nfsCacheInterval
   ) 
   { 
+    super(true); 
+
     pServer = server;
     pRebuild = rebuild;
 
@@ -73,8 +76,8 @@ class QueueMgr
     pShutdownJobMgrs = new AtomicBoolean(false);
 
     LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Initializing [QueueMgr]..."); 
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Initializing [MasterMgr]...");
 
     init();
   }

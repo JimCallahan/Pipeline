@@ -7,9 +7,9 @@ PARSER_BEGIN(JobMgrOptsParser)
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.parser.*;
 
 import java.util.*;
-import java.text.*;
 import java.io.*;
 import java.net.*;
 

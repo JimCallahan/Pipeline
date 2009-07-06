@@ -1,16 +1,17 @@
-// $Id: ScriptApp.java,v 1.97 2009/07/01 16:43:14 jim Exp $
+// $Id: ScriptApp.java,v 1.98 2009/07/06 10:25:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.toolset.*;
+import us.temerity.pipeline.apps.BaseApp; 
+import us.temerity.pipeline.bootstrap.BootableApp; 
 import us.temerity.pipeline.event.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.parser.*;
+import us.temerity.pipeline.toolset.*;
 
 import java.io.*; 
-import java.net.*; 
 import java.util.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S C R I P T   A P P                                                                    */
@@ -23,6 +24,7 @@ import java.text.*;
 public
 class ScriptApp
   extends BaseApp
+  implements BootableApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -38,8 +40,9 @@ class ScriptApp
   }
 
   
+  
   /*----------------------------------------------------------------------------------------*/
-  /*   R U N                                                                                */
+  /*   B O O T A B L E   A P P                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -61,7 +64,7 @@ class ScriptApp
     boolean success = false;
     ScriptOptsParser parser = null;
     try {
-      parser = new ScriptOptsParser(new StringReader(pPackedArgs));
+      parser = new ScriptOptsParser(getPackagedArgsReader()); 
       parser.setApp(this);
       parser.CommandLine();   
       
@@ -4710,6 +4713,37 @@ class ScriptApp
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Reads the given file containing command-line arguments and generates lines of input
+   * suitable for parsing by the command-line parser of the application subclass. <P> 
+   * 
+   * The whitespace in the file is replaced by (\0) characters to seperate 
+   * command-line arguments.  Each command-line of input from the file in converted into 
+   * one of the Strings returned by this method.  Command lines in the file may continue
+   * over multiple lines by escaping the newline with (\) characters.
+   * 
+   * @param file
+   *   The arguments file.
+   */
+  public ArrayList<String>
+  packageFile
+  (
+   File file
+  )
+    throws PipelineException
+  {
+    try {
+      BatchParser parser = new BatchParser(new FileReader(file));
+      return (ArrayList<String>) parser.Contents();
+    }
+    catch(Exception ex) {
+      throw new PipelineException(ex);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Convert the given byte size String to a Long value.
    * 

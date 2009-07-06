@@ -1,8 +1,9 @@
-// $Id: VerifiedApp.java.in,v 1.13 2008/12/02 21:03:01 jim Exp $
+// $Id: VerifiedApp.java.in,v 1.14 2009/07/06 10:25:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.apps.*;
 
 import java.io.*; 
 import java.net.*; 
@@ -102,23 +103,22 @@ class VerifiedApp
 	if(!TimeService.isValid(sLicenseStart, sLicenseEnd)) {
 	  SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd"); 
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Severe,  
-	     "The current " + sLicenseType + " license is only valid from: " + 
-	     fmt.format(new Date(sLicenseStart)) + " until " + 
-	     fmt.format(new Date(sLicenseEnd)) + ".\n" + 
-	     "Contact <support@temerity.us> to renew the license.\n");
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,  
+	     "The current site license is only valid until: " + 
+             PackageInfo.sLicenseEnd + "\n" + 
+	     "Please contact <support@temerity.us> to renew your license.");
 	  
 	  return false; 
 	}
       }
       catch(IOException ex) {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,  
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,  
 	   "Unable to reliably determine the time!\n" +
 	   "Pipeline was unable to contact any well known Network Time Servers via the " +
-	   "InterNet in order to determine whether the current license has expired.\n" + 
+	   "Internet in order to determine whether the current license has expired.\n" + 
 	   "Contact your system administrator to verify that your connection to the " + 
-	   "InterNet is functioning properly and that NTP packets are not being " + 
+	   "Internet is functioning properly and that NTP packets are not being " + 
 	   "filtered by your firewall.");
 	
 	return false;
@@ -126,6 +126,77 @@ class VerifiedApp
     }
 
     return true; 
+  }
+
+  /**
+   * Log a warning message about when the licenses will expire.
+   * 
+   * @return 
+   *   The time interval (in msec) until the next message should be issued or 
+   *   <CODE>null</CODE> if its a Perpetual license.
+   */ 
+  public Long
+  warnLicenseExpiration() 
+  {
+    if(sLicenseEnd < Long.MAX_VALUE) {
+      try {
+        long aMinute = 60000L;
+        long anHour  = 60L * aMinute; 
+        long aDay    = 24L * anHour; 
+        long aWeek   = 7L * aDay;
+        long aMonth  = 4L * aWeek;
+        
+        long now = TimeService.getTime(); 
+        long timeLeft = sLicenseEnd - now;
+        
+        String extra = "";
+        if(timeLeft < aMonth) {
+          String until = "";
+          if(timeLeft < (2L * aDay)) {
+            long t = timeLeft;
+            long d = t / aDay; 
+            t -= d * aDay; 
+            long h = t / anHour; 
+            t -= h * anHour;
+            long m = t / aMinute; 
+
+            until = ("\n  The server will shutdown in less than "); 
+            if(d > 0) 
+              until += d + "-days."; 
+            else if(h > 0) 
+              until += h + "-hours.";
+            else if(m > 0) 
+              until += m + "-min.";
+          }
+
+          extra = (until + 
+                   "\n  Please contact <support@temerity.us> to renew your license.");
+        }
+
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Warning,  
+           "****************************************************************************\n" + 
+           "  The current site license expires on: " + PackageInfo.sLicenseEnd + 
+           extra + "\n" +
+           "****************************************************************************"); 
+        
+        if(timeLeft < (2L * aDay))
+          return Math.min(timeLeft, anHour);
+        else if(timeLeft < (2L * aWeek)) 
+          return aDay; 
+        else if(timeLeft < (2L * aMonth)) 
+          return aWeek;
+        else 
+          return aMonth; 
+      }
+      catch(IOException ex) {
+        /* if we can't determine the time, force an immediate license recheck */ 
+        return 0L;
+      }
+    }
+    else {
+      return null;
+    }
   }
 
   /**
@@ -234,8 +305,6 @@ class VerifiedApp
   private static final String[] sHostIDs = {
     @PIPELINE_HOST_IDS@
   };
-
-  private static final String sLicenseType = "@LICENSE_TYPE@";
 
   private static final long sLicenseStart = @LICENSE_START_STAMP@L;
   private static final long sLicenseEnd   = @LICENSE_END_STAMP@L;

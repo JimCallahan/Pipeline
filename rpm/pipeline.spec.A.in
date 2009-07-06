@@ -37,6 +37,7 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plbrowse
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plbuilder
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pljava
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plplugin
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plpython
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plremote
@@ -51,6 +52,7 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plbrowse
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plbuilder
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/pljava
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plplugin
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plpython
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plremote
@@ -62,6 +64,7 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plbrowse
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plbuilder
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/pljava
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plplugin
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plpython
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plremote
