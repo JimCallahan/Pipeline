@@ -1994,7 +1994,6 @@ AC_CONFIG_FILES([
   docs/man/plqueuemgr.src.html
   docs/man/plremote.src.html
   docs/man/plrestore.src.html
-  docs/man/plscala.src.html
   docs/man/plscript.src.html  
   docs/man/plpython.src.html
   docs/man/plui.src.html  
@@ -2051,7 +2050,6 @@ AC_CONFIG_FILES([
   src/java/scripts/plpluginmgr
   src/java/scripts/plqueuemgr
   src/java/scripts/plremote
-  src/java/scripts/plscala
   src/java/scripts/plscript
   src/java/scripts/plscript-splash
   src/java/scripts/plpython
@@ -2075,7 +2073,6 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plpluginmgr
   src/java/scripts/debug/plqueuemgr
   src/java/scripts/debug/plremote
-  src/java/scripts/debug/plscala
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plscript-splash
   src/java/scripts/debug/plpython
@@ -2098,7 +2095,6 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plpluginmgr
   src/java/scripts/profile/plqueuemgr
   src/java/scripts/profile/plremote
-  src/java/scripts/profile/plscala
   src/java/scripts/profile/plscript
   src/java/scripts/profile/plscript-splash
   src/java/scripts/profile/plpython
@@ -2159,7 +2155,6 @@ AC_CONFIG_FILES([
   src/windows/scripts/plplugin.bat.src
   src/windows/scripts/plpython.bat.src
   src/windows/scripts/plremote.bat.src
-  src/windows/scripts/plscala.bat.src
   src/windows/scripts/plscript-splash.bat.src
   src/windows/scripts/plscript.bat.src
   src/windows/scripts/plui2-j2dgl.bat.src
@@ -2174,7 +2169,6 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plplugin.bat.src
   src/windows/scripts/debug/plpython.bat.src
   src/windows/scripts/debug/plremote.bat.src
-  src/windows/scripts/debug/plscala.bat.src
   src/windows/scripts/debug/plscript-splash.bat.src
   src/windows/scripts/debug/plscript.bat.src
   src/windows/scripts/debug/pltestheavy.bat.src
