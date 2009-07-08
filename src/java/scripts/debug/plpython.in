@@ -53,5 +53,5 @@ exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLPYTHON_DEBUG_OPTS@ \
   @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug \
   -cp @PIPELINE_JAR@:@JYTHON_JAR@ \
-  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.PythonApp "$@"
+  us/temerity/pipeline/apps/PythonApp "$@"
 
