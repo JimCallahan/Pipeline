@@ -165,30 +165,9 @@ This option is silently ignored if <a href="#--file-mgr"><span
  style="font-weight: bold;">--file-mgr</span></a> is not also specified.<br>
 </div>
 <span class="postbody"><span style="font-weight: normal;"><span
- style="font-style: italic;"><br>
-</span><span style="font-weight: bold;"><a name="--file-stat-method"></a>--file-stat-method</span>=realpath|inode<br>
-</span></span>
-<div style="margin-left: 40px;"><br>
-Traditionally, Pipeline used the system call realpath(2) to disabiguate
-paths to working area and repository files in order to determine
-whether through symlinks these paths actually specified the same
-literal file on the file server.&nbsp; This method is well tested and
-reliable, however it can generate a large amount of NFS traffic.&nbsp;
-There is a newer method for comparing working and repository files
-which uses i-node numbers to avoid most of this NFS traffic and
-includes some other optimizations as well.&nbsp; This "inode" method
-should be much faster than the traditional "realpath" method, but is
-not currently well tested and therefore should be used with
-caution.&nbsp;&nbsp; We are providing this control now to allow studios
-to experiement with this new faster method with the understanding that
-there is some inherent risk involved in this less tested method.&nbsp; <br>
-<br>
-If not provided, the slower but well tested realpath method will be
-used. <br>
-<br>
-This option is silently ignored if <a href="#--file-mgr"><span
- style="font-weight: bold;">--file-mgr</span></a> is not also specified.</div>
-<span class="postbody"><span style="font-weight: normal;"><span
+ style="font-style: italic;">
+</span><span style="font-weight: bold;"></span></span></span><span
+ class="postbody"><span style="font-weight: normal;"><span
  style="font-weight: bold;"><br>
 <a name="--checksum-dir"></a>--checksum-dir</span>=<span
  style="font-style: italic;">dir</span><br>
@@ -220,25 +199,8 @@ If not provided, the default root production directory is used instead.
 This option is silently ignored if <a href="#--file-mgr"><span
  style="font-weight: bold;">--file-mgr</span></a> is not also specified.</div>
 <span class="postbody"><span style="font-weight: normal;"><span
- style="font-weight: bold;"><br>
-<a name="--checksum-method"></a>--checksum-method</span>=java|native<br>
-<br>
-</span></span>
-<div style="margin-left: 40px;">Traditionally, Pipeline computed MD5
-checksums entirely with Java based methods.&nbsp; However, since
-checksum generation is a very I/O intensive process, we've recently
-added an alternative entirely native C++ based method which appears to
-be about twice as fast.&nbsp;&nbsp; We are providing
-this control now to allow studios to experiement with this new faster
-method with the understanding that there is some inherent risk
-involved in this less tested method.&nbsp; <br>
-<br>
-If not provided, the slower but well tested Java based method will be
-used. <br>
-<br>
-This option is silently ignored if <a href="#--file-mgr"><span
- style="font-weight: bold;">--file-mgr</span></a> is not also specified.</div>
-<br>
+ style="font-weight: bold;">
+</span></span></span><br>
 <span style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span
  style="font-style: italic;">filename<br>
 <br>
