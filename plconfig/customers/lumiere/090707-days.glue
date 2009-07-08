@@ -1,0 +1,174 @@
+UserDays <TreeMap> #1 {
+  {
+    Key <String> #2 { "alexandrep" }
+    Val <Integer> #3 { 10 }
+  }
+  {
+    Key <String> #4 { "andreia" }
+    Val <Integer> #5 { 72 }
+  }
+  {
+    Key <String> #6 { "bobbys" }
+    Val <Integer> #7 { 31 }
+  }
+  {
+    Key <String> #8 { "christinel" }
+    Val <Integer> #9 { 20 }
+  }
+  {
+    Key <String> #10 { "davidf" }
+    Val <Integer> #11 { 41 }
+  }
+  {
+    Key <String> #12 { "davidl" }
+    Val <Integer> #13 { 14 }
+  }
+  {
+    Key <String> #14 { "davidla" }
+    Val <Integer> #15 { 42 }
+  }
+  {
+    Key <String> #16 { "dominicgu" }
+    Val <Integer> #17 { 91 }
+  }
+  {
+    Key <String> #18 { "eloib" }
+    Val <Integer> #19 { 4 }
+  }
+  {
+    Key <String> #20 { "emmanueld" }
+    Val <Integer> #21 { 177 }
+  }
+  {
+    Key <String> #22 { "ericm" }
+    Val <Integer> #23 { 101 }
+  }
+  {
+    Key <String> #24 { "etienned" }
+    Val <REF> #7
+  }
+  {
+    Key <String> #25 { "etiennep" }
+    Val <Integer> #26 { 40 }
+  }
+  {
+    Key <String> #27 { "fredericp" }
+    Val <Integer> #28 { 51 }
+  }
+  {
+    Key <String> #29 { "fuse" }
+    Val <Integer> #30 { 11 }
+  }
+  {
+    Key <String> #31 { "iana" }
+    Val <Integer> #32 { 85 }
+  }
+  {
+    Key <String> #33 { "jeanfm" }
+    Val <Integer> #34 { 75 }
+  }
+  {
+    Key <String> #35 { "jeremye" }
+    Val <Integer> #36 { 7 }
+  }
+  {
+    Key <String> #37 { "jeremyl" }
+    Val <Integer> #38 { 38 }
+  }
+  {
+    Key <String> #39 { "jessec" }
+    Val <REF> #30
+  }
+  {
+    Key <String> #40 { "jonathanpd" }
+    Val <Integer> #41 { 22 }
+  }
+  {
+    Key <String> #42 { "juliena" }
+    Val <Integer> #43 { 26 }
+  }
+  {
+    Key <String> #44 { "kevins" }
+    Val <Integer> #45 { 81 }
+  }
+  {
+    Key <String> #46 { "kimw" }
+    Val <Integer> #47 { 9 }
+  }
+  {
+    Key <String> #48 { "ludovicl" }
+    Val <REF> #30
+  }
+  {
+    Key <String> #49 { "magnoliak" }
+    Val <Integer> #50 { 66 }
+  }
+  {
+    Key <String> #51 { "marktest1" }
+    Val <Integer> #52 { 8 }
+  }
+  {
+    Key <String> #53 { "markv" }
+    Val <Integer> #54 { 156 }
+  }
+  {
+    Key <String> #55 { "mathieube" }
+    Val <Integer> #56 { 3 }
+  }
+  {
+    Key <String> #57 { "matthieuf" }
+    Val <Integer> #58 { 105 }
+  }
+  {
+    Key <String> #59 { "maximeg" }
+    Val <Integer> #60 { 96 }
+  }
+  {
+    Key <String> #61 { "mikaeld" }
+    Val <Integer> #62 { 128 }
+  }
+  {
+    Key <String> #63 { "mikeb" }
+    Val <Integer> #64 { 39 }
+  }
+  {
+    Key <String> #65 { "nestorb" }
+    Val <REF> #28
+  }
+  {
+    Key <String> #66 { "nicolasd" }
+    Val <Integer> #67 { 15 }
+  }
+  {
+    Key <String> #68 { "philipm" }
+    Val <Integer> #69 { 49 }
+  }
+  {
+    Key <String> #70 { "pipeline" }
+    Val <REF> #36
+  }
+  {
+    Key <String> #71 { "renem" }
+    Val <Integer> #72 { 94 }
+  }
+  {
+    Key <String> #73 { "robertp" }
+    Val <Integer> #74 { 35 }
+  }
+  {
+    Key <String> #75 { "sebastienl" }
+    Val <Integer> #76 { 78 }
+  }
+  {
+    Key <String> #77 { "sergueil" }
+    Val <Integer> #78 { 12 }
+  }
+  {
+    Key <String> #79 { "shotgun" }
+    Val <Integer> #80 { 24 }
+  }
+  {
+    Key <String> #81 { "sylvaina" }
+    Val <Integer> #82 { 87 }
+  }
+}
