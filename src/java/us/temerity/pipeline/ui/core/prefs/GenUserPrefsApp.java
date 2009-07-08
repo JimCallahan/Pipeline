@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.76 2009/07/06 18:42:04 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.77 2009/07/08 13:55:01 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -976,6 +976,11 @@ class GenUserPrefsApp
       looks.add("Rounded");
       looks.add("Square");
 
+      LinkedList<String> warn = new LinkedList();
+      warn.add("None");
+      warn.add("Beep");
+      warn.add("Message");
+
       LinkedList<String> dmodes = new LinkedList();
       dmodes.add("None");          
       dmodes.add("Working Only");
@@ -1029,6 +1034,19 @@ class GenUserPrefsApp
 	("Whether to automatically reframe nodes after toggling the display of downstream " + 
          "nodes.", 
 	 "AutoFrameDownstream", "Auto-Frame Downstream:", true), 
+
+	new BasePref(),
+
+        new BooleanPref
+	("Whether to use automatic expand/collapse for nodes in networks associated " + 
+         "with newly added root nodes.", 
+	 "AutoExpandNew", "Automatic Expand New:", true), 
+
+        new ChoicePref
+	("The amount of user feedback to give when an excessive number of visible nodes " + 
+         "reachable from a given root node forces all subsequently displayed nodes to be " + 
+         "automaticly collapsed.", 
+	 "CollapseWarnings", "Collapse Warnings:", warn, "Message"), 
 
 	new BasePref(),
 
@@ -1782,7 +1800,7 @@ class GenUserPrefsApp
 	("The amount of user feedback to give when an excessive number of visible jobs " + 
          "within a job group forces all subsequently displayed jobs to be automaticly " +
          "collapsed.", 
-	 "CollapseWarnings", "Collapse Warnings:", warn, "Message"), 
+	 "JobCollapseWarnings", "Collapse Warnings:", warn, "Message"), 
 
 	new BasePref(),
 
@@ -2753,7 +2771,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.76 2009/07/06 18:42:04 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.77 2009/07/08 13:55:01 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3008,7 +3026,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.76 2009/07/06 18:42:04 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.77 2009/07/08 13:55:01 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4376,7 +4394,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.76 2009/07/06 18:42:04 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.77 2009/07/08 13:55:01 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
