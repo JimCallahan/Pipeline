@@ -33,6 +33,14 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
 
 /*
  * Class:     us_temerity_pipeline_NativeFileSys
+ * Method:    symlinkNative
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     us_temerity_pipeline_NativeFileSys
  * Method:    realpathNative
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.55 2009/06/02 20:08:37 jlee Exp $
+// $Id: JNodeFilesPanel.java,v 1.56 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -726,7 +726,7 @@ class JNodeFilesPanel
 	      boolean isActive = enabled.contains(sfseq);
 
 	      JFilePanel fpanel = 
-		new JFilePanel(sfseq.toString(), fseq, idx, isActive, 
+		new JFilePanel(sfseq.getFile(0).toString(), fseq, idx, isActive, 
 			       fstate, qstate, isFrozen, this);
 
 	      if(idx != null) 
@@ -774,7 +774,7 @@ class JNodeFilesPanel
 	    boolean hasWorking = enabled.contains(sfseq);
 
 	    JFileArrow arrow = new JFileArrow(hasNovel && hasWorking && !isFrozen);
-	    pFileArrows.put(sfseq.toString(), arrow);
+	    pFileArrows.put(sfseq.getFile(0).toString(), arrow);
 
 	    vbox.add(arrow);
 	  }

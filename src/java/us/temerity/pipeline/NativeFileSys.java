@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.18 2008/12/18 00:46:24 jim Exp $
+// $Id: NativeFileSys.java,v 1.19 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -136,6 +136,39 @@ class NativeFileSys
     }
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Is the given path a symbolic link? <P> 
+   * 
+   * @param path 
+   *   The file system path to test.
+   * 
+   * @throws IOException 
+   *   If the given path is illegal, does not exist or some other I/O problem was encountered.
+   */
+  public static boolean 
+  isSymlink
+  (
+   File path
+  ) 
+    throws IOException
+  {
+    switch(PackageInfo.sOsType) {
+    case Unix: 
+    case MacOS:
+      loadLibrary();
+      return isSymlinkNative(path.getPath()); 
+
+    case Windows:
+      throw new IOException
+	("Not supported on Windows systems!");
+    }
+    
+    return false;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -406,6 +439,19 @@ class NativeFileSys
   (
    String file, 
    String link
+  ) 
+    throws IOException;
+
+  /** 
+   * Is the given path a symbolic link? <P> 
+   * 
+   * @param path 
+   *   The file system path to test.
+   */
+  private static native boolean
+  isSymlinkNative
+  (
+   String path
   ) 
     throws IOException;
 

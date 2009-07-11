@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.91 2009/07/06 10:25:26 jim Exp $
+// $Id: FileMgr.java,v 1.92 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -887,8 +887,9 @@ class FileMgr
 	VersionID rvid = req.getVersionID();
 	File rdir  = null;
 	File crdir = null;
+        File rpath = null;
 	{
-	  File rpath = req.getNodeID().getCheckedInPath(rvid).toFile();
+          rpath = req.getNodeID().getCheckedInPath(rvid).toFile();
 	  rdir  = new File(pProdDir, rpath.getPath());
 	  crdir = new File(pProdDir, "checksum/" + rpath);
 
@@ -899,12 +900,11 @@ class FileMgr
 	    if(rdir.exists()) {
 	      if(rdir.isDirectory()) 
 		throw new PipelineException
-		  ("Somehow the repository directory (" + rdir + 
-		   ") already exists!");
+		  ("Somehow the repository directory (" + rdir + ") already exists!");
 	      else 
 		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + rdir + 
-		   ") in the location of the repository directory!");
+		  ("Somehow there exists a non-directory (" + rdir + ") in the location " + 
+                   "of the repository directory!");
 	    }
 	    
 	    try {
@@ -920,12 +920,12 @@ class FileMgr
 	    if(crdir.exists()) {
 	      if(crdir.isDirectory()) 
 		throw new PipelineException
-		  ("Somehow the repository checksum directory (" + crdir + 
-		   ") already exists!");
+		  ("Somehow the repository checksum directory (" + crdir + ") already " + 
+                   "exists!");
 	      else 
 		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + crdir + 
-		   ") in the location of the repository checksum directory!");
+		  ("Somehow there exists a non-directory (" + crdir + ") in the location " + 
+                   "of the repository checksum directory!");
 	    }
 	    
 	    try {
@@ -958,8 +958,9 @@ class FileMgr
 	/* the working file and checksum directories */ 
 	File wdir  = null;
 	File cwdir = null;
+        File wpath = null;
 	{
-	  File wpath = req.getNodeID().getWorkingParent().toFile();
+          wpath = req.getNodeID().getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	}
@@ -1007,36 +1008,112 @@ class FileMgr
 	try {
 	  Map<String,String> env = System.getenv();
 
-	  /* copy the files */ 
-	  if(!copies.isEmpty()) {	    
-	    ArrayList<String> preOpts = new ArrayList<String>();
-	    preOpts.add("--target-directory=" + rdir);
-	    
-	    ArrayList<String> args = new ArrayList<String>();
-	    for(File file : copies) 
-	      args.add(file.getPath());
+          /* for files that are unique for this version, we copy or move them... */ 
+	  if(!copies.isEmpty()) {
+            
+            /* if the files are procedurally generated, 
+                move instead of copying and then create symlinks to the repository location */
+            if(req.hasEnabledAction()) {
+              Path instsbin = 
+                new Path(PackageInfo.sInstPath, 
+                         PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Opt"); 
+              
+              /* rename the working files into repository ones, 
+                 the underlying "mv" falls back to copying if the working and repository
+                 directories are not on same filesystem */ 
+              {
+                Path plmv = new Path(instsbin, "/sbin/plmv");
+                
+                ArrayList<String> preOpts = new ArrayList<String>();
+                preOpts.add(rdir.getPath());
+              
+                ArrayList<String> args = new ArrayList<String>();
+                for(File file : copies) 
+                  args.add(file.getPath());
+              
+                LinkedList<SubProcessLight> procs = 
+                  SubProcessLight.createMultiSubProcess
+                  ("CheckIn-Move", plmv.toOsString(), preOpts, args, env, wdir);
+              
+                try {	    
+                  for(SubProcessLight proc : procs) {
+                    proc.start();
+                    proc.join();
+                    if(!proc.wasSuccessful()) 
+                      throw new PipelineException
+                        ("Unable to copy files for working version " + 
+                         "(" + req.getNodeID() + ") into the file repository:\n" +
+                         proc.getStdErr());
+                  }
+                }
+                catch(InterruptedException ex) {
+                  throw new PipelineException
+                    ("Interrupted while copying files for working version " +
+                     "(" + req.getNodeID() + ") into the file repository!");
+                }
+              }
 
-	    LinkedList<SubProcessLight> procs = 
-	      SubProcessLight.createMultiSubProcess
+              /* change the ownership of the newly moved files to the "pipeline" admin user */ 
+              { 
+                Path plchown = new Path(instsbin, "/sbin/plchown");
+
+                ArrayList<String> args = new ArrayList<String>();
+                args.add(rdir.getPath()); 
+
+                SubProcessLight proc = 
+                  new SubProcessLight("CheckIn-Chown", plchown.toOsString(), args, env, wdir); 
+
+                try {  
+                  proc.start();
+                  proc.join();
+                  if(!proc.wasSuccessful()) 
+                    throw new PipelineException
+                      ("Unable to change the ownership of files newly moved to the " +
+                       "repository directory (" + rdir + "):\n" +
+                       proc.getStdErr());
+                }
+                catch(InterruptedException ex) {
+                  throw new PipelineException
+                    ("Interrupted while change the ownership of files newly moved to the " +
+                     "repository directory (" + rdir + ")!");
+                }	    
+              }
+            }
+
+            /* if this is a hand-edited node, 
+                 just copy the working area files into the repository */ 
+            else {
+              ArrayList<String> preOpts = new ArrayList<String>();
+              preOpts.add("--target-directory=" + rdir);
+	    
+              ArrayList<String> args = new ArrayList<String>();
+              for(File file : copies) 
+                args.add(file.getPath());
+              
+              LinkedList<SubProcessLight> procs = 
+                SubProcessLight.createMultiSubProcess
 	        ("CheckIn-Copy", "cp", preOpts, args, env, wdir);
+              
+              try {	    
+                for(SubProcessLight proc : procs) {
+                  proc.start();
+                  proc.join();
+                  if(!proc.wasSuccessful()) 
+                    throw new PipelineException
+                      ("Unable to copy files for working version (" + req.getNodeID() + ") " + 
+                       "into the file repository:\n" +
+                       proc.getStdErr());
+                }
+              }
+              catch(InterruptedException ex) {
+                throw new PipelineException
+                  ("Interrupted while copying files for working version " + 
+                   "(" + req.getNodeID() + ") into the file repository!");
+              }
+            }
 
-	    try {	    
-	      for(SubProcessLight proc : procs) {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to copy files for working version (" + req.getNodeID() + ") " + 
-		     "into the file repository:\n" +
-		     proc.getStdErr());
-	      }
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while copying files for working version (" + req.getNodeID() + 
-		 ") into the file repository!");
-	    }
-	    
+            /* post process the moved/copied files */ 
+            ArrayList<File> relinks = new ArrayList<File>();
 	    for(File file : copies) {
 	      File work = new File(wdir, file.getPath());
 	      File repo = new File(rdir, file.getPath());
@@ -1046,23 +1123,83 @@ class FileMgr
 		  ("The newly created repository file (" + repo + ") was missing!\n\n" + 
 		   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
 		   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+           
+              /* if its still in the working area then it got copied, 
+                   so make sure it was copied completely */ 
+              if(work.isFile()) {
+                long repoSize = repo.length();
+                long workSize = work.length();
+                if(repoSize != workSize) 
+                  throw new PipelineException
+                    ("The newly created repository file (" + repo + ") was NOT the same " + 
+                     "size as the working area file (" + work + ") being checked-in!  The " + 
+                     "repository file size was (" + repoSize + ") bytes compared to the " + 
+                     "working file size of (" + workSize + ") bytes.\n\n" + 
+                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+              }
 
-	      long repoSize = repo.length();
-	      long workSize = work.length();
-	      if(repoSize != workSize) 
-		throw new PipelineException
-		  ("The newly created repository file (" + repo + ") was NOT the same " + 
-		   "size as the working area file (" + work + ") being checked-in!  The " + 
-		   "repository file size was (" + repoSize + ") bytes compared to the " + 
-		   "working file size of (" + workSize + ") bytes.\n\n" + 
-		   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-		   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+              /* if it got moved into the repository it will now be missing from the 
+                 working area, so we need to create symlinks from the working area to 
+                 the new repository location */ 
+              else {
+                relinks.add(file); 
+              }
 
+              /* either way, make the repository file is now read-only! */ 
 	      repo.setReadOnly();
 	    }
+            
+            /* for each file that was moved instead of copied to the repository, 
+                 create relative symlinks from the working files to these checked-in files */ 
+            if(!relinks.isEmpty()) {
+              ArrayList<String> preOpts = new ArrayList<String>();
+              preOpts.add("--symbolic-link");
+              preOpts.add("--remove-destination");
+
+              ArrayList<String> args = new ArrayList<String>();
+              {
+                StringBuilder buf = new StringBuilder();
+                String comps[] = wpath.getPath().split("/");
+                int wk;
+                for(wk=1; wk<comps.length; wk++) 
+                  buf.append("../");
+                buf.append(rpath.getPath().substring(1));
+                String path = buf.toString();
+                
+                for(File file : relinks) 
+                  args.add(path + "/" + file);
+              }
+              
+              ArrayList<String> postOpts = new ArrayList<String>();
+              postOpts.add(".");
+              
+              LinkedList<SubProcessLight> procs = 
+                SubProcessLight.createMultiSubProcess
+                (req.getNodeID().getAuthor(), 
+                 "CheckIn-Relink", "cp", preOpts, args, postOpts, env, wdir);
+              
+              try {
+                for(SubProcessLight proc : procs) {
+                  proc.start();
+                  proc.join();
+                  if(!proc.wasSuccessful()) 
+                    throw new PipelineException
+                      ("Unable to create symbolic links to the repository for the " +
+                       "working version (" + req.getNodeID() + "):\n\n" + 
+                       proc.getStdErr());
+                }	
+              }
+              catch(InterruptedException ex) {
+                throw new PipelineException
+                  ("Interrupted while creating symbolic links to the repository for the " +
+                   "working version (" + req.getNodeID() + ")!");
+              }
+            }
 	  }
 
-	  /* create the symbolic links */ 
+	  /* for files that are the same as another repository version, we just create the 
+             symbolic links between the new and existing repository version files */ 
 	  if(!links.isEmpty()) {
 	    for(File source : links) {
 	      try {
@@ -1071,8 +1208,8 @@ class FileMgr
 	      }
 	      catch(IOException ex) {
 		throw new PipelineException
-		 ("Unable to create symbolic links for working version (" + req.getNodeID() + 
-		 ") in the file repository:\n" +  
+		 ("Unable to create symbolic links for working version " + 
+                  "(" + req.getNodeID() + ") in the file repository:\n" +  
 		  ex.getMessage());
 	      }
 	    }
@@ -1228,8 +1365,8 @@ class FileMgr
 	    if(wdir.exists()) {
 	      if(!wdir.isDirectory()) 
 		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + wdir + 
-		   ") in the location of the working directory!");
+		  ("Somehow there exists a non-directory (" + wdir + ") in the location " + 
+                   "of the working directory!");
 	    }
 	    else {
 	      dirs.add(wdir);
@@ -1238,8 +1375,8 @@ class FileMgr
 	    if(cwdir.exists()) {
 	      if(!cwdir.isDirectory()) 
 		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + cwdir + 
-		   ") in the location of the working checksum directory!");
+		  ("Somehow there exists a non-directory (" + cwdir + ") in the location " + 
+                   "of the working checksum directory!");
 	    }
 	    else {
 	      if(!cwdir.mkdirs())
@@ -1268,15 +1405,15 @@ class FileMgr
 		  proc.join();
 		  if(!proc.wasSuccessful()) 
 		    throw new PipelineException
-		      ("Unable to create directories for working version (" + 
-		       req.getNodeID() + "):\n\n" + 
+		      ("Unable to create directories for working version " + 
+                       "(" + req.getNodeID() + "):\n\n" + 
 		       proc.getStdErr());	
 		}
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
-		  ("Interrupted while creating directories for working version (" + 
-		   req.getNodeID() + ")!");
+		  ("Interrupted while creating directories for working version " + 
+                   "(" + req.getNodeID() + ")!");
 	      }
 	    }
 	  }
@@ -1295,12 +1432,33 @@ class FileMgr
 
 	/* build the list of files to copy */ 
 	ArrayList<File> files = new ArrayList<File>();
-	for(FileSeq fseq : req.getFileSequences()) 
-	  files.addAll(fseq.getFiles());
+        {
+          /* if ignoring existing, we should only proceed if the working are file is either
+             a symlink or is missing altogether leaving regular working area files as-is */ 
+          if(req.ignoreExisting()) {
+            for(FileSeq fseq : req.getFileSequences()) {
+              for(File file : fseq.getFiles()) {
+                File wfile = new File(wdir, file.getPath()); 
+                try {
+                  if(!wfile.isFile() || NativeFileSys.isSymlink(wfile))
+                    files.add(file); 
+                }
+                catch(IOException ex2) {
+                  files.add(file); 
+                }
+              }
+            }
+          }
+
+          /* check-out everything */ 
+          else {
+            for(FileSeq fseq : req.getFileSequences()) 
+              files.addAll(fseq.getFiles());
+          }
+        }
 	
-	/* if frozen, create relative symlinks from the working files to the 
-	   checked-in files */ 
-	if(req.isFrozen()) {
+	/* create relative symlinks from the working files to the checked-in files */ 
+	if(req.isLinked()) {
 	  ArrayList<String> preOpts = new ArrayList<String>();
 	  preOpts.add("--symbolic-link");
 	  preOpts.add("--remove-destination");
@@ -1378,8 +1536,8 @@ class FileMgr
 	  }
 	}
 
-	/* if frozen, remove the working checksums */ 
-	if(req.isFrozen()) {
+	/* remove the working checksums */ 
+	if(req.isLinked()) {
 	  ArrayList<String> preOpts = new ArrayList<String>();
 	  preOpts.add("--force");
 
@@ -1441,8 +1599,8 @@ class FileMgr
 	  }
 	}
 
-	/* if not frozen, add write permission to the working files and checksums */ 
-        if(!req.isFrozen()) {
+	/* if not symlinks, add write permission to the working files and checksums */ 
+        if(!req.isLinked()) {
 	  ArrayList<String> preOpts = new ArrayList<String>();
 	  preOpts.add("u+w");
 
@@ -1463,7 +1621,7 @@ class FileMgr
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
 		    ("Unable to add write access permission to the files for " + 
-		   "the working version (" + req.getNodeID() + "):\n\n" + 
+                     "the working version (" + req.getNodeID() + "):\n\n" + 
 		     proc.getStdErr());	
 	      }
 	    }
@@ -1497,7 +1655,7 @@ class FileMgr
 	    }
 	  }
 	}
-	  
+        
 	return new SuccessRsp(timer);
       }
     }
@@ -1547,8 +1705,9 @@ class FileMgr
 	/* verify (or create) the working area file and checksum directories */ 
 	File wdir  = null;
 	File cwdir = null;
+        File wpath = null;
 	{
-	  File wpath = req.getNodeID().getWorkingParent().toFile();
+	  wpath = req.getNodeID().getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 
@@ -1617,8 +1776,53 @@ class FileMgr
 	for(String file : req.getFiles().keySet()) 
 	  rfiles.add(req.getFiles().get(file) + "/" + file);
 
+	/* create relative symlinks from the working files to the checked-in files */ 
+	if(req.isLinked()) {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--symbolic-link");
+	  preOpts.add("--remove-destination");
+
+	  ArrayList<String> args = new ArrayList<String>();
+          {
+	    StringBuilder buf = new StringBuilder();
+	    String comps[] = wpath.getPath().split("/");
+	    int wk;
+	    for(wk=1; wk<comps.length; wk++) 
+	      buf.append("../");
+	    String path = buf.toString();
+            
+	    for(String rfile : rfiles) 
+	      args.add(path + "repository" + req.getNodeID().getName() + "/" + rfile); 
+	  }
+
+	  ArrayList<String> postOpts = new ArrayList<String>();
+	  postOpts.add(".");
+
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	    (req.getNodeID().getAuthor(), 
+	     "Revert-Symlink", "cp", preOpts, args, postOpts, env, wdir);
+
+	  try {
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to create symbolic links to the repository for the " +
+		   "working version (" + req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());
+	    }
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while creating symbolic links to the repository for the " +
+	       "working version (" + req.getNodeID() + ")!");
+	  }
+        }
+
 	/* copy the checked-in files to the working directory */ 
-	{
+        else {
 	  ArrayList<String> preOpts = new ArrayList<String>();
 	  preOpts.add("--remove-destination");
 	  preOpts.add("--target-directory=" + wdir);
@@ -1692,7 +1896,7 @@ class FileMgr
 	  ArrayList<String> args = new ArrayList<String>();
 	  args.addAll(req.getFiles().keySet());
 
-	  if(req.getWritable()) {
+	  if(!req.isLinked()) {
 	    LinkedList<SubProcessLight> procs = 
 	      SubProcessLight.createMultiSubProcess
 	      (req.getNodeID().getAuthor(), 

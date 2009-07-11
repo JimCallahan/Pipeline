@@ -1,4 +1,4 @@
-// $Id: NativeFileStat.cc,v 1.1 2008/12/18 00:46:25 jim Exp $
+// $Id: NativeFileStat.cc,v 1.2 2009/07/11 10:54:21 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -136,9 +136,25 @@ JNICALL Java_us_temerity_pipeline_NativeFileStat_statNative
       env->SetLongField(obj, pINodeNumber, ((jlong) buf.st_ino));
       env->SetIntField(obj,  pMode,        ((jint)  buf.st_mode));
       env->SetLongField(obj, pFileSize,    ((jlong) buf.st_size));
-      env->SetLongField(obj, pLastAccess,  ((jlong) buf.st_atime) * 1000L);
-      env->SetLongField(obj, pLastMod,     ((jlong) buf.st_mtime) * 1000L);
-      env->SetLongField(obj, pLastChange,  ((jlong) buf.st_ctime) * 1000L);
+
+      jlong linkAccess = ((jlong) buf.st_atime) * 1000L;
+      jlong linkMod    = ((jlong) buf.st_mtime) * 1000L;
+      jlong linkChange = ((jlong) buf.st_ctime) * 1000L;
+      {
+        struct stat lbuf;
+        switch(lstat(path, &lbuf)) {
+        case 0:
+          /* if its a symlink, use its timestamps instead of the target file */ 
+          if((lbuf.st_mode & S_IFMT) == S_IFLNK) {
+            linkAccess = ((jlong) lbuf.st_atime) * 1000L;
+            linkMod    = ((jlong) lbuf.st_mtime) * 1000L;
+            linkChange = ((jlong) lbuf.st_ctime) * 1000L;
+          }
+        }
+      }
+      env->SetLongField(obj, pLastAccess, linkAccess); 
+      env->SetLongField(obj, pLastMod,    linkMod);  
+      env->SetLongField(obj, pLastChange, linkChange); 
     }
   }
 

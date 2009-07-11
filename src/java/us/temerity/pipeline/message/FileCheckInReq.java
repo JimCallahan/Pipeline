@@ -1,4 +1,4 @@
-// $Id: FileCheckInReq.java,v 1.6 2004/07/07 13:21:45 jim Exp $
+// $Id: FileCheckInReq.java,v 1.7 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,6 +51,9 @@ class FileCheckInReq
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
+   * @param hasEnabledAction
+   *   Whether the working version being checked-in has an enabled action.
+   * 
    * @param fseqs 
    *   The primary and secondary file sequences associated with the working version.
    * 
@@ -64,6 +67,7 @@ class FileCheckInReq
    NodeID id, 
    VersionID vid, 
    VersionID latest, 
+   boolean hasEnabledAction, 
    TreeSet<FileSeq> fseqs, 
    TreeMap<FileSeq,boolean[]> isNovel
   )
@@ -77,6 +81,7 @@ class FileCheckInReq
     pVersionID = vid;
 
     pLatestVersionID = latest;
+    pHasEnabledAction = hasEnabledAction;
 
     if(fseqs == null) 
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
@@ -117,6 +122,15 @@ class FileCheckInReq
   getLatestVersionID() 
   {
     return pLatestVersionID;
+  }
+  
+  /**
+   * Whether the working version being checked-in has an enabled action.
+   */
+  public boolean
+  hasEnabledAction() 
+  {
+    return pHasEnabledAction; 
   }
   
   /**
@@ -165,6 +179,11 @@ class FileCheckInReq
    * The revision number of the latest checked-in version.  
    */
   private VersionID  pLatestVersionID;
+  
+  /**
+   * Whether the working version being checked-in has an enabled action.
+   */
+  private boolean pHasEnabledAction; 
 
   /** 
    * The primary and secondary file sequences associated with the working version. 

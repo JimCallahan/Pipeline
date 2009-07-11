@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.19 2009/04/02 03:03:10 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.20 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -289,7 +289,7 @@ class FileMgrNetClient
     verifyConnection();
 
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
+      new FileCheckInReq(id, vid, latest, mod.isActionEnabled(), mod.getSequences(), isNovel); 
 
     Object obj = performLongTransaction(FileRequest.CheckIn, req, 15000, 60000);  
     handleSimpleResponse(obj);
@@ -305,7 +305,7 @@ class FileMgrNetClient
    * @param vsn 
    *   The checked-in version to check-out.
    * 
-   * @param isFrozen
+   * @param isLinked
    *   Whether the files associated with the working version should be symlinks to the 
    *   checked-in files instead of copies.
    * 
@@ -317,7 +317,7 @@ class FileMgrNetClient
   (
    NodeID id, 
    NodeVersion vsn, 
-   boolean isFrozen
+   boolean isLinked
   ) 
     throws PipelineException 
   {
@@ -325,7 +325,38 @@ class FileMgrNetClient
 
     FileCheckOutReq req = 
       new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
-			  isFrozen, !vsn.isActionEnabled());
+			  isLinked, !vsn.isActionEnabled(), false);
+
+    Object obj = performLongTransaction(FileRequest.CheckOut, req, 15000, 60000);  
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Overwrite any files associated with the given working version of the node which are 
+   * currently symlinks or are missing with corresponding files associated with the given 
+   * checked-in version. <P> 
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param vsn 
+   *   The checked-in version to check-out.
+   * 
+   * @throws PipelineException
+   *   If unable to check-out the files.
+   */ 
+  public void 
+  checkOutPrelinked
+  (
+   NodeID id, 
+   NodeVersion vsn
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    FileCheckOutReq req = 
+      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), false, true, true);
 
     Object obj = performLongTransaction(FileRequest.CheckOut, req, 15000, 60000);  
     handleSimpleResponse(obj);
@@ -343,8 +374,9 @@ class FileMgrNetClient
    * @param files
    *   The table of checked-in file revision numbers indexed by file name.
    * 
-   * @param writeable
-   *   Whether the reverted working area files should be made writable.
+   * @param isLinked
+   *   Whether the files associated with the working version should be symlinks to the 
+   *   checked-in files instead of copies.
    * 
    * @throws PipelineException
    *   If unable to revert the files.
@@ -354,13 +386,13 @@ class FileMgrNetClient
   (
    NodeID id, 
    TreeMap<String,VersionID> files, 
-   boolean writeable   
+   boolean isLinked  
   )
     throws PipelineException
   {
     verifyConnection();
 
-    FileRevertReq req = new FileRevertReq(id, files, writeable);
+    FileRevertReq req = new FileRevertReq(id, files, isLinked);
     
     Object obj = performLongTransaction(FileRequest.Revert, req, 15000, 60000);  
     handleSimpleResponse(obj);

@@ -1,4 +1,4 @@
-// $Id: NativeFileStat.java,v 1.1 2008/12/18 00:46:24 jim Exp $
+// $Id: NativeFileStat.java,v 1.2 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -144,6 +144,9 @@ class NativeFileStat
    * 
    * The modification time (mtime) is changed by file modifications, e.g. by mknod(2), 
    * truncate(2), utime(2) and write(2). <P> 
+   * 
+   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * and not the eventual target of the symlink.
    */ 
   public long
   lastAccess() 
@@ -156,6 +159,9 @@ class NativeFileStat
    * 
    * The modification time (mtime) is changed by file modifications, e.g. by mknod(2), 
    * truncate(2), utime(2) and write(2). <P> 
+   * 
+   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * and not the eventual target of the symlink.
    */ 
   public long
   lastModification() 
@@ -168,6 +174,9 @@ class NativeFileStat
    * 
    * The change time (ctime) is changed by writing or by setting inode information 
    * (owner, group, link count, mode, etc.). <P> 
+   * 
+   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * and not the eventual target of the symlink.
    */ 
   public long
   lastChange() 
@@ -182,6 +191,9 @@ class NativeFileStat
    * The modification time (mtime) is changed by file modifications, e.g. by mknod(2), 
    * truncate(2), utime(2) and write(2). The change time (ctime) changed by writing or 
    * by setting inode information (owner, group, link count, mode, etc.). <P> 
+   * 
+   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * and not the eventual target of the symlink.
    */ 
   public long
   lastModOrChange() 
@@ -207,7 +219,10 @@ class NativeFileStat
    * this timestamp is older (less-than) than the files current ctime, then the newest of 
    * the ctime mtime is returned.  Otherwise, just the mtime is returned. <P> 
    * 
-   * All times are measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).
+   * All times are measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).<P>
+   * 
+   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * and not the eventual target of the symlink.
    * 
    * @param critical
    *   The last legitimate change time (ctime) of the file.

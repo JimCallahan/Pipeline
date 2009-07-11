@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.16 2006/12/21 10:37:41 jim Exp $
+// $Id: PackageInfo.hh,v 1.17 2009/07/11 10:54:21 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -64,6 +64,15 @@ public:
    * The OS specific home directory.
    */ 
   static const char* sNativeHomeDir; 
+
+
+  /** 
+   * The root directory of the file repository for the current operating system. <P>
+   * 
+   * Set by appending "/repository" to value of the ProductionDirectory customer 
+   * profile entry.
+   */ 
+  static const char* sRepoDir; 
 
 
   /** 	

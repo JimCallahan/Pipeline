@@ -1,4 +1,4 @@
-// $Id: FileRevertReq.java,v 1.2 2004/11/03 18:16:31 jim Exp $
+// $Id: FileRevertReq.java,v 1.3 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -35,15 +35,16 @@ class FileRevertReq
    * @param files
    *   The table of checked-in file revision numbers indexed by file name.
    * 
-   * @param writeable
-   *   Whether the reverted working area files should be made writable.
+   * @param isLinked
+   *   Whether the files associated with the working version should be symlinks to the 
+   *   checked-in files instead of copies.
    */
   public
   FileRevertReq
   (
    NodeID id, 
    TreeMap<String,VersionID> files, 
-   boolean writeable   
+   boolean isLinked
   )
   { 
     if(id == null) 
@@ -56,7 +57,7 @@ class FileRevertReq
 	("The files to revert cannot be (null)!");
     pFiles = files;
 
-    pWritable = writeable;
+    pIsLinked = isLinked;
   }
 
 
@@ -84,12 +85,13 @@ class FileRevertReq
   }
 
   /**
-   * Get whether the reverted working area files should be made writable.
+   * Get whether the files associated with the working version should be symlinks to the 
+   * checked-in files instead of copies.
    */ 
   public boolean 
-  getWritable() 
+  isLinked() 
   {
-    return pWritable;
+    return pIsLinked; 
   }
 
 
@@ -117,9 +119,10 @@ class FileRevertReq
   private TreeMap<String,VersionID>  pFiles;
 
   /**
-   * Whether the reverted working area files should be made writable.
+   * Whether the files associated with the working version should be symlinks to the 
+   * checked-in files instead of copies.
    */ 
-  private boolean  pWritable; 
+  private boolean pIsLinked; 
 
 }
   

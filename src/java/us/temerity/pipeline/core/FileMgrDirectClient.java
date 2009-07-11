@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.16 2009/07/06 10:25:26 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.17 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -283,7 +283,7 @@ class FileMgrDirectClient
     throws PipelineException 
   {
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
+      new FileCheckInReq(id, vid, latest, mod.isActionEnabled(), mod.getSequences(), isNovel); 
 
     Object obj = pFileMgr.checkIn(req);
     handleSimpleResponse(obj);
@@ -299,9 +299,10 @@ class FileMgrDirectClient
    * @param vsn 
    *   The checked-in version to check-out.
    * 
-   * @param isFrozen
+   * @param isLinked
    *   Whether the files associated with the working version should be symlinks to the 
    *   checked-in files instead of copies.
+   * 
    * 
    * @throws PipelineException
    *   If unable to check-out the files.
@@ -311,14 +312,43 @@ class FileMgrDirectClient
   (
    NodeID id, 
    NodeVersion vsn, 
-   boolean isFrozen
+   boolean isLinked
   ) 
     throws PipelineException 
   {
     FileCheckOutReq req = 
       new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
-			  isFrozen, !vsn.isActionEnabled());
+			  isLinked, !vsn.isActionEnabled(), false);
 
+    Object obj = pFileMgr.checkOut(req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Overwrite any files associated with the given working version of the node which are 
+   * currently symlinks or are missing with corresponding files associated with the given 
+   * checked-in version. <P> 
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param vsn 
+   *   The checked-in version to check-out.
+   * 
+   * @throws PipelineException
+   *   If unable to check-out the files.
+   */ 
+  public void 
+  checkOutPrelinked
+  (
+   NodeID id, 
+   NodeVersion vsn
+  ) 
+    throws PipelineException
+  {
+    FileCheckOutReq req = 
+      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), false, true, true);
+    
     Object obj = pFileMgr.checkOut(req); 
     handleSimpleResponse(obj);
   }
@@ -335,8 +365,9 @@ class FileMgrDirectClient
    * @param files
    *   The table of checked-in file revision numbers indexed by file name.
    * 
-   * @param writeable
-   *   Whether the reverted working area files should be made writable.
+   * @param isLinked
+   *   Whether the files associated with the working version should be symlinks to the 
+   *   checked-in files instead of copies.
    * 
    * @throws PipelineException
    *   If unable to revert the files.
@@ -346,11 +377,11 @@ class FileMgrDirectClient
   (
    NodeID id, 
    TreeMap<String,VersionID> files, 
-   boolean writeable   
+   boolean isLinked  
   )
     throws PipelineException
   {
-    FileRevertReq req = new FileRevertReq(id, files, writeable);
+    FileRevertReq req = new FileRevertReq(id, files, isLinked);
     
     Object obj = pFileMgr.revert(req);
     handleSimpleResponse(obj);

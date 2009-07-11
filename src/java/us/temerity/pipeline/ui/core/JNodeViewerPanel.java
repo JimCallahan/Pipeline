@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.136 2009/07/08 13:55:01 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.137 2009/07/11 10:54:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1836,12 +1836,15 @@ class JNodeViewerPanel
     /* determine the number of unique nodes reachable from each root node */ 
     TreeMap<String,Integer> uniqueCounts = new TreeMap<String,Integer>();
     if(!pRoots.isEmpty()) {
-      TreeSet<String> seen = new TreeSet<String>();
       for(String name : pRoots.keySet()) {
+        TreeSet<String> seen = new TreeSet<String>();
+
         NodeStatus status = pRoots.get(name);
-        getUniqueNodeNames(status, true, seen); 
-        if(pDownstreamMode != DownstreamMode.None)
-          getUniqueNodeNames(status, false, seen); 
+        if(status != null) {
+          getUniqueNodeNames(status, true, seen); 
+          if(pDownstreamMode != DownstreamMode.None)
+            getUniqueNodeNames(status, false, seen); 
+        }
         
         uniqueCounts.put(name, seen.size());
         seen.clear();

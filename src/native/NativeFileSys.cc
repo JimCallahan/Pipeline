@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.8 2008/12/18 00:46:25 jim Exp $
+// $Id: NativeFileSys.cc,v 1.9 2009/07/11 10:54:21 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -171,6 +171,48 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
 
   env->ReleaseStringUTFChars(jfile, file); 
   env->ReleaseStringUTFChars(jlink, link); 
+}
+
+/* Is the given path a symbolic link? */ 
+extern "C" 
+JNIEXPORT jboolean 
+JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jstring jfile
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeFileSys.isSymlinkNative(), unable to lookup \"java/lang/IOException\"");
+    return JNI_FALSE;
+  }
+
+  /* repackage the arguments */ 
+  const char* file = env->GetStringUTFChars(jfile, 0);
+  if((file == NULL) || (strlen(file) == 0)) {
+    env->ThrowNew(IOException,"empty file argument");
+    return JNI_FALSE;
+  }
+  
+  /* get the file status */ 
+  struct stat sb;
+  if(lstat(file, &sb) == -1) {
+    sprintf(msg, "unable to determine if the file system path (%s) is a symlink: %s\n", 
+	    file, strerror(errno));
+    env->ReleaseStringUTFChars(jfile, file); 
+    env->ThrowNew(IOException, msg);  
+  }
+  
+  env->ReleaseStringUTFChars(jfile, file); 
+  if(sb.st_mode & S_IFLNK)
+    return JNI_TRUE;
+  else 
+    return JNI_FALSE;
 }
 
 /* Determine the canonicalized absolute pathname of the given path. */  

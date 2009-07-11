@@ -36,9 +36,15 @@ endif
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin
 
+if IS_UNIX
 instsbin_PROGRAMS = \
-  plrun
-
+  plrun \
+  plchown \
+  plmv
+else 
+instsbin_PROGRAMS = \
+  plrun 
+endif
 
 plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 
@@ -50,6 +56,11 @@ if IS_MAC_OS
   plrun_LDFLAGS = \
     -Wl,-syslibroot,@MAC_SDK@ \
     -arch ppc -arch i386 -arch x86_64
+endif
+
+if IS_UNIX
+plchown_SOURCES = FB.cc PackageInfo.cc PlChown.cc 
+plmv_SOURCES = FB.cc PackageInfo.cc PlMv.cc 
 endif
 
 

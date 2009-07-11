@@ -1,4 +1,6 @@
 %defattr(4550,root,@PIPELINE_GROUP@)
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plchown
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plmv
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plrun
 
 %defattr(500,@PIPELINE_USER@,@PIPELINE_GROUP@)
