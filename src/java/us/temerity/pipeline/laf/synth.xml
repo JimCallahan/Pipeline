@@ -324,6 +324,22 @@
 
 
 
+  <!--  R E L O A D   B U T T O N  -->
+
+  <style id="ReloadButton"> 
+    <state>
+      <imagePainter path="ReloadButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ReloadButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="ReloadButton" type="name" key="ReloadButton"/>
+
+
+
   <!--  S T A T   B U T T O N  -->
 
   <style id="StatButton"> 

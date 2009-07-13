@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.9 2009/06/02 21:22:36 jlee Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.10 2009/07/13 17:29:47 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -267,6 +267,10 @@ class JFileSeqSelectDialog
 	return;
       }
     }
+
+    /* store the current directory for refreshing */
+    if(target != null && target != pCurrentDirectory)
+      pCurrentDirectory = target;
   }
 
 
@@ -374,6 +378,16 @@ class JFileSeqSelectDialog
     }
   }
 
+  /**
+   * Create a new directory under the current working directory and jump to it.
+   */
+  protected void
+  doRefreshDirectory()
+  {
+    if(pCurrentDirectory != null)
+      updateTarget(pCurrentDirectory);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -397,4 +411,5 @@ class JFileSeqSelectDialog
    * The renderer of list cells.
    */ 
   private JFileSeqListCellRenderer pRenderer;
+
 }

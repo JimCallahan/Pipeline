@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.15 2007/10/23 02:29:59 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.16 2009/07/13 17:29:47 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -136,6 +136,25 @@ class JBaseFileSelectDialog
 
 	  hbox.add(field);
 	}
+
+	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	
+	{
+	  JButton btn = new JButton();
+	  btn.setName("ReloadButton");
+	  
+	  Dimension size = new Dimension(24, 19);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	  
+	  btn.setActionCommand("refresh-directory");
+	  btn.addActionListener(this);
+
+	  btn.setToolTipText(UIFactory.formatToolTip("Refresh current directory."));
+
+	  hbox.add(btn);
+	} 
 	
 	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
 	
@@ -532,6 +551,8 @@ class JBaseFileSelectDialog
       doJumpHome();
     else if(e.getActionCommand().equals("new-folder")) 
       doNewFolder();
+    else if(e.getActionCommand().equals("refresh-directory")) 
+      doRefreshDirectory();
     else 
       super.actionPerformed(e);
   }
@@ -569,6 +590,12 @@ class JBaseFileSelectDialog
   protected abstract void 
   doNewFolder();
 
+  /**
+   * Refresh the current directory.
+   */
+  protected abstract void
+  doRefreshDirectory();
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -597,5 +624,10 @@ class JBaseFileSelectDialog
    * May be <CODE>null</CODE> if this a directory only dialog.
    */ 
   protected JTextField  pFileField;
+
+  /**
+   * The current target directory.
+   */
+  protected File  pCurrentDirectory;
 
 }

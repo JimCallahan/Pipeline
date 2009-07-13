@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.11 2009/06/02 21:22:36 jlee Exp $
+// $Id: JFileSelectDialog.java,v 1.12 2009/07/13 17:29:47 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -351,6 +351,10 @@ class JFileSelectDialog
 
     if((pFileField != null) && (name != null))
       pFileField.setText(name);
+
+    /* store the current directory for refreshing */
+    if(target != null && target != pCurrentDirectory)
+      pCurrentDirectory = target;
   }
 
 
@@ -458,6 +462,16 @@ class JFileSelectDialog
       if(UIFactory.getBeepPreference())
 	Toolkit.getDefaultToolkit().beep();
     }
+  }
+
+  /**
+   * Create a new directory under the current working directory and jump to it.
+   */
+  protected void
+  doRefreshDirectory()
+  {
+    if(pCurrentDirectory != null)
+      updateTargetFile(pCurrentDirectory);
   }
 
 
