@@ -1,4 +1,4 @@
-// $Id: JActiveToolsetListCellRenderer.java,v 1.1 2005/06/13 16:05:01 jim Exp $
+// $Id: JActiveToolsetListCellRenderer.java,v 1.2 2009/07/13 17:16:23 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -66,7 +66,9 @@ class JActiveToolsetListCellRenderer
     String name = (String) value;
     pLabel.setText(name);
     pExtraLabel.setText(pDialog.isDefaultToolset(name) ? "(default)" : null);
-    
+
+    revalidate();
+
     return this;
   }
 

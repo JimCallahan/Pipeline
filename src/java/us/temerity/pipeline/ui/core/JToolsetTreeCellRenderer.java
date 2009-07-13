@@ -1,4 +1,4 @@
-// $Id: JToolsetTreeCellRenderer.java,v 1.3 2005/06/16 00:26:41 jim Exp $
+// $Id: JToolsetTreeCellRenderer.java,v 1.4 2009/07/13 17:16:23 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -61,12 +61,6 @@ class JToolsetTreeCellRenderer
 
       add(pExtraLabel);
     }
-
-    
-    Dimension size = new Dimension(175, 16);
-    setMinimumSize(size);
-    setPreferredSize(size);
-    setMaximumSize(size);
 
     pDialog = dialog; 
   }

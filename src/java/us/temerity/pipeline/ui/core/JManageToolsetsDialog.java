@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.36 2009/03/24 01:21:21 jesse Exp $
+// $Id: JManageToolsetsDialog.java,v 1.37 2009/07/13 17:16:23 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -279,12 +279,57 @@ class JManageToolsetsDialog
 	left.add(Box.createRigidArea(new Dimension(20, 0)));
 
 	{
-	  Dimension size = new Dimension(sLWidth, sLHeight);
-	  JList lst = UIFactory.createListComponents(left, "Active Toolsets:", size);
-	  pActiveToolsetsList = lst;
-	  lst.setCellRenderer(new JActiveToolsetListCellRenderer(this));
-	  lst.addListSelectionListener(this);
-	  lst.addMouseListener(this);
+	  Box vbox = new Box(BoxLayout.Y_AXIS);	
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+
+	  {
+	    Box hbox = new Box(BoxLayout.X_AXIS);
+	
+	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+    
+	    {
+	      JLabel label = new JLabel("Active Toolsets:");
+	      label.setName("PanelLabel");
+	      
+	      hbox.add(label);
+	    }
+	    
+	    hbox.add(Box.createHorizontalGlue());
+	    
+	    vbox.add(hbox);
+	  }
+
+	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+
+	  {
+	    JList lst = new JList(new DefaultListModel());
+	    pActiveToolsetsList = lst;
+
+	    lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    lst.setCellRenderer(new JActiveToolsetListCellRenderer(this));
+	    
+	    lst.addListSelectionListener(this);
+	    lst.addMouseListener(this);
+	    lst.addMouseMotionListener(this);
+
+	    {
+	      Dimension size = new Dimension(sLWidth, sLHeight);
+	      
+	      JScrollPane scroll = 
+                UIFactory.createScrollPane
+                (lst, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
+                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                 new Dimension(150, 150), new Dimension(sLWidth, sLHeight), null);
+
+	      vbox.add(scroll);
+	    }
+	  }
+
+	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+	  
+	  left.add(vbox);
 	}
 
 	left.add(Box.createRigidArea(new Dimension(4, 0)));
@@ -367,7 +412,7 @@ class JManageToolsetsDialog
 	      JScrollPane scroll =
                 UIFactory.createScrollPane
                 (tree, 
-                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
                  ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
                  size, size, null);
                  
@@ -429,7 +474,7 @@ class JManageToolsetsDialog
 	      JScrollPane scroll = 
                 UIFactory.createScrollPane
                 (lst, 
-                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
                  ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
                  new Dimension(150, 150), new Dimension(sLWidth, sLHeight), null);	      
 	      
@@ -522,7 +567,7 @@ class JManageToolsetsDialog
 	      JScrollPane scroll =
                 UIFactory.createScrollPane
                 (tree, 
-                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
                  ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
                  size, size, null);
 	      

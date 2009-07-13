@@ -1,4 +1,4 @@
-// $Id: JPackageListCellRenderer.java,v 1.2 2005/06/28 20:50:45 jim Exp $
+// $Id: JPackageListCellRenderer.java,v 1.3 2009/07/13 17:16:23 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -95,6 +95,8 @@ class JPackageListCellRenderer
 	pExtraLabel.setIcon(isSelected ? sCheckSelectedIcon : sCheckIcon);
       }
     }
+
+    revalidate();
 
     return this;
   }
