@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.16 2008/05/08 22:46:42 jim Exp $
+// $Id: JBaseDialog.java,v 1.17 2009/07/13 17:26:02 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -117,6 +117,15 @@ class JBaseDialog
 	pHeaderLabel = label;
 
 	label.setName("DialogHeaderLabel");
+
+	/* Specify a minimum and maximum size for the label, so that long header strings 
+	   will be displayed with trailing "..." */
+	{
+	  int height = label.getPreferredSize().height;
+
+	  label.setMinimumSize(new Dimension(1, height));
+	  label.setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
+	}
 
 	panel.add(label);	  
       }

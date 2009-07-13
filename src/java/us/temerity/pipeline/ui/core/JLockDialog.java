@@ -1,4 +1,4 @@
-// $Id: JLockDialog.java,v 1.6 2009/03/01 20:52:42 jim Exp $
+// $Id: JLockDialog.java,v 1.7 2009/07/13 17:26:02 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -182,8 +182,11 @@ class JLockDialog
 
 	    pVersionFields.put(name, field);
 	  }
-	  
-	  JDrawer drawer = new JDrawer(name + ":", (JComponent) comps[2], true);
+
+	  /* The 3rd parameter to the JDrawer constructor is the preferred width, 
+	     which is set to the width of the title + value panels. */
+	  JDrawer drawer = new JDrawer(name + ":", (JComponent) comps[2], 
+	                               sTSize+3 + sVSize, true);
 	  pVersionBox.add(drawer);
 	}
       }

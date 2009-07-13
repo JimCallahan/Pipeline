@@ -1,4 +1,4 @@
-// $Id: JDrawer.java,v 1.4 2004/11/21 18:39:56 jim Exp $
+// $Id: JDrawer.java,v 1.5 2009/07/13 17:26:02 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,7 +36,7 @@ class JDrawer
   ) 
   {
     super();
-    initUI(title, null, false);
+    initUI(title, null, 0, false);
   }
 
   /**
@@ -60,7 +60,35 @@ class JDrawer
   ) 
   {
     super();
-    initUI(title, contents, isOpen);
+    initUI(title, contents, 0, isOpen);
+  }
+
+  /**
+   * Construct a drawer with the given contents.
+   * 
+   * @param title
+   *   The header text.
+   * 
+   * @param contents
+   *   The contents of the drawer.
+   *
+   * @param width
+   *   The preferred width of the drawer.
+   * 
+   * @param isOpen
+   *   Whether the drawer is initially open.
+   */ 
+  public 
+  JDrawer
+  (
+   String title,
+   JComponent contents, 
+   int width, 
+   boolean isOpen
+  ) 
+  {
+    super();
+    initUI(title, contents, width, isOpen);
   }
 
 
@@ -74,6 +102,9 @@ class JDrawer
    * 
    * @param contents
    *   The contents of the drawer.
+   *
+   * @param width
+   *   The preferred width of the drawer.
    * 
    * @param isOpen
    *   Whether the drawer is initially open.
@@ -83,6 +114,7 @@ class JDrawer
   (
    String title,
    JComponent contents, 
+   int width, 
    boolean isOpen
   ) 
   {  
@@ -96,7 +128,21 @@ class JDrawer
 
       cbox.setName("DrawerHeader");
 
-      cbox.setMaximumSize(new Dimension(Integer.MAX_VALUE, cbox.getPreferredSize().height)); 
+      int height = cbox.getPreferredSize().height;
+      cbox.setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
+
+      /* Set the preferred width of the JCheckBox to the value passed to the constrcutor, 
+         this the checkbox can display long titles with trailing "..." */
+      if(width > 0) {
+	cbox.setPreferredSize(new Dimension(width, height));
+
+	int len = title.length();
+	if(title.charAt(len - 1) == ':') {
+	  String tooltip = title.substring(0, len - 1);
+	  cbox.setToolTipText(UIFactory.formatToolTip(tooltip));
+	}
+      }
+
       cbox.setAlignmentX(0.5f);
 
       cbox.setActionCommand("collapse");

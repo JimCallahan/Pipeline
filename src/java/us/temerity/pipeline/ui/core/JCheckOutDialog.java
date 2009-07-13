@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.11 2009/06/17 00:00:50 jlee Exp $
+// $Id: JCheckOutDialog.java,v 1.12 2009/07/13 17:26:02 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -326,8 +326,12 @@ class JCheckOutDialog
 
 	    pMethodFields.put(name, field);
 	  }
-	  
-	  JDrawer drawer = new JDrawer(name + ":", (JComponent) comps[2], true);
+
+	  /* The 3rd parameter to the JDrawer constructor is the preferred width, 
+	     which is set to the width of the title + value panels. */
+	  JDrawer drawer = new JDrawer(name + ":", (JComponent) comps[2], 
+	                               sTSize+3 + sVSize, true);
+
 	  pVersionBox.add(drawer);
 	}
       }

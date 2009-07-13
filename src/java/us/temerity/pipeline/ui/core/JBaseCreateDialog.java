@@ -1,4 +1,4 @@
-// $Id: JBaseCreateDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
+// $Id: JBaseCreateDialog.java,v 1.5 2009/07/13 17:26:02 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -270,7 +270,17 @@ class JBaseCreateDialog
    boolean multiple
   )
   { 
+    pHeaderLabel.setToolTipText(null);
     pHeaderLabel.setText(header);
+
+    /* Set a tooltip for cases where the header contains a node name. 
+       This assumes that the header string is (dialog type): (node name) */
+    if(!multiple) {
+      String[] parts = header.split(":");
+      if(parts.length > 1 && parts[1].trim().length() > 0) {
+	pHeaderLabel.setToolTipText(UIFactory.formatToolTip(parts[1].trim()));
+      }
+    }
 
     if(latest == null) 
       pLatestVersionField.setText("-");

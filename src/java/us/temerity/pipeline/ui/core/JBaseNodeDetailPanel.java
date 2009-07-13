@@ -1,4 +1,4 @@
-// $Id: JBaseNodeDetailPanel.java,v 1.1 2008/07/21 17:31:10 jim Exp $
+// $Id: JBaseNodeDetailPanel.java,v 1.2 2009/07/13 17:26:02 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -80,10 +80,24 @@ class JBaseNodeDetailPanel
     panel.add(Box.createRigidArea(new Dimension(3, 0)));
     
     {
-      pHeaderLabel = new JLabel("X");
-      pHeaderLabel.setName("DialogHeaderLabel");	       
-      panel.add(pHeaderLabel);	  
+      JLabel label = new JLabel("X");
+      pHeaderLabel = label;
+
+      label.setName("DialogHeaderLabel");
+
+      /* Specify a minimum and maximum size for the label, so that long header strings 
+	 will be displayed with trailing "..." */
+      {
+	int height = label.getPreferredSize().height;
+
+	label.setMinimumSize(new Dimension(1, height));
+	label.setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
+      }
+
+      panel.add(label);	  
     }
+
+    panel.add(Box.createRigidArea(new Dimension(3, 0)));
   }
 
   /**
@@ -177,13 +191,17 @@ class JBaseNodeDetailPanel
         }
 
         pHeaderLabel.setText(pStatus.toString());
+	pHeaderLabel.setToolTipText(UIFactory.formatToolTip(pStatus.toString()));
+
         pNodeNameField.setText(pStatus.getName());
       }
       else {
         pHeaderLabel.setText(null);
+	pHeaderLabel.setToolTipText(null);
+
         pNodeNameField.setText(null);
       }
-      
+
       try {
         pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon32(iname));
       }
