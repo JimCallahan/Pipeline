@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.59 2009/06/02 20:08:37 jlee Exp $
+// $Id: JNodeDetailsPanel.java,v 1.60 2009/07/13 17:12:13 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -85,10 +85,7 @@ class JNodeDetailsPanel
       pActionParamComponents = new TreeMap<String,Component[]>();
       pActionParamGroupsOpen = new TreeMap<String,Boolean>();
 
-      pDocToParamName = new ListMap<Document, String>();
-
-      pLinkActionParamValues    = new ArrayList<String>();
-      pLinkActionParamNodeNames = new ArrayList<String>();
+      pDocToParamName = new ListMap<Document,String>();
 
       pSelectionKeyComponents = new TreeMap<String,Component[]>();
       pLicenseKeyComponents   = new TreeMap<String,Component[]>();
@@ -96,7 +93,19 @@ class JNodeDetailsPanel
 
       pAnnotations       = new TreeMap<String,BaseAnnotation[]>();
       pAnnotationsPanels = new TreeMap<String,JAnnotationPanel>(); 
-      pDocToAnnotName    = new ListMap<Document, String>();
+      pDocToAnnotName    = new ListMap<Document,String>();
+
+      /* separate the sources for working and checked-in nodes */
+      {
+	pWorkingLinkActionParamValues    = new ArrayList<String>();
+	pWorkingLinkActionParamNodeNames = new ArrayList<String>();
+
+	pCheckedInLinkActionParamValues    = new ArrayList<String>();
+	pCheckedInLinkActionParamNodeNames = new ArrayList<String>();
+
+	pWorkingSources   = new TreeMap<String,NodeCommon>();
+	pCheckedInSources = new DoubleMap<String,VersionID,NodeCommon>();
+      }
     }
 
     /* initialize the popup menus */ 
@@ -1631,6 +1640,14 @@ class JNodeDetailsPanel
 	  try {
 	    vsn = client.getCheckedInVersion(pStatus.getName(), vid);
 	    pCheckedInVersions.put(vid, vsn);
+
+	    /* cache the sources for a checked-in version */
+	    for(LinkVersion link : vsn.getSources()) {
+	      String sname = link.getName();
+	      VersionID svid = link.getVersionID();
+	      NodeVersion node = client.getCheckedInVersion(sname, svid);
+	      pCheckedInSources.put(sname, svid, node);
+	    }
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -1799,13 +1816,15 @@ class JNodeDetailsPanel
 	pCheckedInVersions.put(latest.getVersionID(), latest);
     }
 
-    /* frozen node? */
+    /* frozen node?  locked node? */
     {
       pIsFrozen = false;
+      pIsLocked = false;
       if((details != null) && (details.getWorkingVersion() != null)) {
 	NodeMod mod = details.getWorkingVersion();
 	pIsFrozen = mod.isFrozen();
-	pFrozenLabel.setIcon(mod.isLocked() ? sLockedIcon : sFrozenIcon);
+	pIsLocked = mod.isLocked();
+	pFrozenLabel.setIcon(pIsLocked ? sLockedIcon : sFrozenIcon);
       }
       
       pFrozenLabel.setVisible(pIsFrozen);
@@ -1999,6 +2018,70 @@ class JNodeDetailsPanel
 	  pCheckedInActionEnabledField.setText(latest.isActionEnabled() ? "YES" : "no");
 	else 
 	  pCheckedInActionEnabledField.setText("-");
+      }
+
+      /* get the sources of the working version and checked-in version it is based upon */
+      {
+	pWorkingSources.clear();
+	pCheckedInSources.clear();
+
+	if(pStatus != null) {
+	  UIMaster master = UIMaster.getInstance();
+	  MasterMgrClient client = master.acquireMasterMgrClient();
+
+	  try {
+	    if(work != null) {
+	      if(pIsLocked) {
+		for(LinkVersion link : base.getSources()) {
+		  String sname = link.getName();
+		  VersionID svid = link.getVersionID();
+
+		  NodeVersion node = client.getCheckedInVersion(sname, svid);
+		  pWorkingSources.put(sname, node);
+		  pCheckedInSources.put(sname, svid, node);
+		}
+	      }
+	      else {
+		for(String sname : pStatus.getSourceNames()) {
+		  NodeMod node = 
+		    pStatus.getSource(sname).getLightDetails().getWorkingVersion();
+
+		  pWorkingSources.put(sname, node);
+		}
+	      }
+	    }
+
+	    if(latest != null) {
+	      for(LinkVersion link : latest.getSources()) {
+		String sname = link.getName();
+		VersionID svid = link.getVersionID();
+
+		if(!pCheckedInSources.containsKey(sname, svid)) {
+		  NodeVersion node = client.getCheckedInVersion(sname, svid);
+		  pCheckedInSources.put(sname, svid, node);
+		}
+	      }
+	    }
+
+	    if(base != null) {
+	      for(LinkVersion link : base.getSources()) {
+		String sname = link.getName();
+		VersionID svid = link.getVersionID();
+
+		if(!pCheckedInSources.containsKey(sname, svid)) {
+		  NodeVersion node = client.getCheckedInVersion(sname, svid);
+		  pCheckedInSources.put(sname, svid, node);
+		}
+	      }
+	    }
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	  finally {
+	    master.releaseMasterMgrClient(client);
+	  }
+	}
       }
 
       pActionParamComponents.clear();
@@ -2405,17 +2488,17 @@ class JNodeDetailsPanel
 	    ArrayList<String> stitles = new ArrayList<String>();
 	    ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
 	    
-	    for(String sname : pStatus.getSourceNames()) {
-	      NodeMod lmod = pStatus.getSource(sname).getLightDetails().getWorkingVersion();
+	    for(String sname : pWorkingSources.keySet()) {
+	      NodeCommon lcom = pWorkingSources.get(sname);
 
-	      FileSeq primary = lmod.getPrimarySequence();
+	      FileSeq primary = lcom.getPrimarySequence();
 	      String stitle = primary.toString();
 
 	      snames.add(sname);
 	      stitles.add(stitle);
 	      sfseqs.add(null);
 
-	      for(FileSeq fseq : lmod.getSecondarySequences()) {
+	      for(FileSeq fseq : lcom.getSecondarySequences()) {
 		snames.add(sname);
 		stitles.add(stitle);
 		sfseqs.add(fseq);
@@ -2480,19 +2563,16 @@ class JNodeDetailsPanel
 	  {
 	    NodeVersion vsn = getCheckedInVersion();
 	    String title = (pStatus.toString() + " (v" + vsn.getVersionID() + ")");
-	    
+
 	    ArrayList<String> snames  = new ArrayList<String>();
 	    ArrayList<String> stitles = new ArrayList<String>();
 	    ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
 
-	    for(String sname : pStatus.getSourceNames()) {
-	      NodeCommon lcom = null;
-	      {
-		NodeDetailsLight ldetails = pStatus.getSource(sname).getLightDetails();
-		lcom = ldetails.getWorkingVersion();
-		if(lcom == null) 
-		  lcom = ldetails.getLatestVersion();
-	      }
+	    for(LinkVersion link : vsn.getSources()) {
+	      String sname = link.getName();
+	      VersionID vid = link.getVersionID();
+
+	      NodeCommon lcom = pCheckedInSources.get(sname, vid);
 
 	      FileSeq primary = lcom.getPrimarySequence();
 	      String stitle = primary.toString();
@@ -2533,14 +2613,39 @@ class JNodeDetailsPanel
 
     /* single valued parameters */ 
     if((action != null) && action.hasSingleParams()) {
-      pLinkActionParamValues.clear();
-      pLinkActionParamValues.add("-");
-      for(String sname : pStatus.getSourceNames()) 
-	pLinkActionParamValues.add(pStatus.getSource(sname).toString());
-      
-      pLinkActionParamNodeNames.clear();
-      pLinkActionParamNodeNames.add(null);
-      pLinkActionParamNodeNames.addAll(pStatus.getSourceNames());
+      if(waction != null) {
+	pWorkingLinkActionParamValues.clear();
+	pWorkingLinkActionParamValues.add("-");
+
+	pWorkingLinkActionParamNodeNames.clear();
+	pWorkingLinkActionParamNodeNames.add(null);
+
+	for(String sname : pWorkingSources.keySet()) {
+	  NodeCommon node = pWorkingSources.get(sname);
+
+	  pWorkingLinkActionParamValues.add(node.toString());
+	  pWorkingLinkActionParamNodeNames.add(sname);
+	}
+      }
+
+      if(caction != null) {
+	pCheckedInLinkActionParamValues.clear();
+	pCheckedInLinkActionParamValues.add("-");
+
+	pCheckedInLinkActionParamNodeNames.clear();
+	pCheckedInLinkActionParamNodeNames.add(null);
+
+	NodeVersion vsn = getCheckedInVersion();
+
+	for(String sname : vsn.getSourceNames()) {
+	  LinkVersion link = vsn.getSource(sname);
+	  VersionID vid = link.getVersionID();
+	  NodeCommon node = pCheckedInSources.get(sname, vid);
+
+	  pCheckedInLinkActionParamValues.add(node.toString());
+	  pCheckedInLinkActionParamNodeNames.add(sname);
+	}
+      }
 
       {
 	Box hbox = new Box(BoxLayout.X_AXIS);
@@ -2791,11 +2896,11 @@ class JNodeDetailsPanel
 		  }
 		  else if(aparam instanceof LinkActionParam) {
 		    JCollectionField field = 
-		      UIFactory.createCollectionField(pLinkActionParamValues, sVSize);
+		      UIFactory.createCollectionField(pWorkingLinkActionParamValues, sVSize);
 		    pcomps[1] = field;
 
 		    String source = (String) aparam.getValue();
-		    int idx = pLinkActionParamNodeNames.indexOf(source);
+		    int idx = pWorkingLinkActionParamNodeNames.indexOf(source);
 		    if(idx != -1) 
 		      field.setSelectedIndex(idx);
 		    else 
@@ -2836,6 +2941,21 @@ class JNodeDetailsPanel
 		btn.setEnabled(!isLocked() && !pIsFrozen && 
 			       (waction != null) && (caction != null) && 
 			       caction.getName().equals(waction.getName()));
+
+		/* disable the button if LinkActionParam and the value does
+		   not exist in both working and checked-in lists. */
+		{
+		  if(btn.isEnabled()) {
+		    ActionParam aparam = caction.getSingleParam(param.getName());
+
+		    if(aparam != null && aparam instanceof LinkActionParam) {
+		      String source = (String) aparam.getValue();
+		      int idx = pWorkingLinkActionParamNodeNames.indexOf(source);
+		      if(idx == -1)
+			btn.setEnabled(false);
+		    }
+		  }
+		}
 
 		hbox.add(btn);
 	      } 
@@ -2956,9 +3076,9 @@ class JNodeDetailsPanel
                     {
                       if(aparam instanceof LinkActionParam) {
                         String source = (String) aparam.getValue();
-                        int idx = pLinkActionParamNodeNames.indexOf(source);
+                        int idx = pCheckedInLinkActionParamNodeNames.indexOf(source);
                         if(idx != -1) 
-                          text = pLinkActionParamValues.get(idx);
+                          text = pCheckedInLinkActionParamValues.get(idx);
                       }
                       else if(aparam instanceof BooleanActionParam) {
                         Boolean value = (Boolean) aparam.getValue();
@@ -3835,7 +3955,7 @@ class JNodeDetailsPanel
 	  }
 	  else if(aparam instanceof LinkActionParam) {
 	    JCollectionField field = (JCollectionField) pcomps[1];
-	    wtext = pLinkActionParamNodeNames.get(field.getSelectedIndex());
+	    wtext = pWorkingLinkActionParamNodeNames.get(field.getSelectedIndex());
 	  }
 	}
       }
@@ -4592,7 +4712,7 @@ class JNodeDetailsPanel
 		}
 		else if(aparam instanceof LinkActionParam) {
 		  JCollectionField field = (JCollectionField) pcomps[1];
-		  value = pLinkActionParamNodeNames.get(field.getSelectedIndex());
+		  value = pWorkingLinkActionParamNodeNames.get(field.getSelectedIndex());
 		}
 		
 		waction.setSingleParamValue(aparam.getName(), value);
@@ -5050,7 +5170,7 @@ class JNodeDetailsPanel
 	else if(wparam instanceof LinkActionParam) {
 	  JCollectionField field = (JCollectionField) pcomps[1];
 	  
-	  int idx = pLinkActionParamNodeNames.indexOf(value);
+	  int idx = pWorkingLinkActionParamNodeNames.indexOf(value);
 	  if(idx != -1) 
 	    field.setSelectedIndex(idx);
 	}
@@ -8234,6 +8354,11 @@ class JNodeDetailsPanel
   private boolean  pIsFrozen; 
   private JLabel   pFrozenLabel;
 
+  /**
+   * Whether the working version is locked.
+   */
+  private boolean  pIsLocked;
+
   /**  
    * The button used to apply changes to the working version of the node.
    */ 
@@ -8486,14 +8611,16 @@ class JNodeDetailsPanel
   /**
    * The action parameter names indexed by the TextArea documents editing the parameter.
    */ 
-  private ListMap<Document, String> pDocToParamName;
+  private ListMap<Document,String> pDocToParamName;
 
   /**
    * The JCollectionField values and corresponding fully resolved names of the 
    * upstream nodes used by LinkActionParam fields.
    */ 
-  private ArrayList<String>  pLinkActionParamValues;
-  private ArrayList<String>  pLinkActionParamNodeNames;
+  private ArrayList<String>  pWorkingLinkActionParamValues;
+  private ArrayList<String>  pWorkingLinkActionParamNodeNames;
+  private ArrayList<String>  pCheckedInLinkActionParamValues;
+  private ArrayList<String>  pCheckedInLinkActionParamNodeNames;
 
   /**
    * The UI compontents related to per-source action parameters.
@@ -8782,6 +8909,18 @@ class JNodeDetailsPanel
   /**
    * The annotation names indexed by the TextArea annotation parameter documents.
    */ 
-  private ListMap<Document, String> pDocToAnnotName;
+  private ListMap<Document,String> pDocToAnnotName;
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The sources of the working version.
+   */
+  private TreeMap<String,NodeCommon>  pWorkingSources;
+
+  /**
+   * The sources for each checked-in version selected.
+   */
+  private DoubleMap<String,VersionID,NodeCommon>  pCheckedInSources;
 
 }
