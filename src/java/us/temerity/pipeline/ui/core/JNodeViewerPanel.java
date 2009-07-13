@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.137 2009/07/11 10:54:21 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.138 2009/07/13 17:47:48 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4524,7 +4524,9 @@ class JNodeViewerPanel
     if(pReleaseViewDialog == null) 
       pReleaseViewDialog = new JReleaseViewDialog(getTopFrame());
 
+    pReleaseViewDialog.setEnableRemoveWorkingArea(!pView.equals("default"));
     pReleaseViewDialog.setVisible(true);
+
     if(pReleaseViewDialog.wasConfirmed()) {
       ReleaseViewTask task = 
 	new ReleaseViewTask(pAuthor, pView, pReleaseViewDialog.getPattern(), 
@@ -6638,9 +6640,8 @@ class JNodeViewerPanel
 	   which setAuthorView does in addtion to changing the author|view. */
 	if(pRemoveArea)
 	  setAuthorView(pAuthor, "default");
-	else {
-	  updateRoots();
-	}
+	else
+	  setAuthorView(pAuthor, pView);
       }
     }
 
