@@ -1,4 +1,4 @@
-// $Id: NativeFileStat.java,v 1.2 2009/07/11 10:54:21 jim Exp $
+// $Id: NativeFileStat.java,v 1.3 2009/07/13 11:22:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -219,7 +219,8 @@ class NativeFileStat
    * this timestamp is older (less-than) than the files current ctime, then the newest of 
    * the ctime mtime is returned.  Otherwise, just the mtime is returned. <P> 
    * 
-   * All times are measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).<P>
+   * All times are measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).
+   * <P>
    * 
    * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
    * and not the eventual target of the symlink.
