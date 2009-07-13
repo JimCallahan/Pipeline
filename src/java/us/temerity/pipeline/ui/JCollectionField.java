@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.20 2008/03/07 09:58:27 jim Exp $
+// $Id: JCollectionField.java,v 1.21 2009/07/13 17:34:44 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -483,17 +483,16 @@ class JCollectionField
       Dimension size = getSize();
 
       if(selected.size() < sItemLimit) {
-	pPopup.setPopupSize(new Dimension(size.width, 23*selected.size() + 10));
-	pPopup.show(this, 0, size.height);
+	pPopup.show(this, e.getX(), e.getY());
       }
       else {
 	pItemList.removeListSelectionListener(this);
 	{
 	  DefaultListModel model = (DefaultListModel) pItemList.getModel();
 	  model.clear();
-	  
-	  for(String value : selected) 
-	    model.addElement(value);	  
+
+	  for(String value : selected)
+	    model.addElement(value);
 
 	  {	  
 	    String value = getSelected();
@@ -508,8 +507,9 @@ class JCollectionField
 	  Point pos = new Point(0, size.height);
 	  SwingUtilities.convertPointToScreen(pos, this);
 
-	  Dimension dsize = new Dimension(size.width, 23*sItemLimit + 14);
-	  pDialog.setSize(dsize);
+	  pDialog.pack();
+
+	  Dimension dsize = new Dimension(pDialog.getWidth(), 23*sItemLimit + 14);
 
 	  Rectangle bounds = pDialog.getGraphicsConfiguration().getBounds();
 
