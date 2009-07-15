@@ -681,6 +681,26 @@
 
 
 
+  <!--  H E L P   B U T T O N  -->
+
+  <style id="HelpButton"> 
+    <state>
+      <imagePainter path="Help.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="HelpPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="HelpDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="HelpButton" type="name" key="HelpButton"/>
+
+
+
   <!--  S M A L L   L E F T   A R R O W   B U T T O N  -->
 
   <style id="SmallLeftArrowButton"> 
