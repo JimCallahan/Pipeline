@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.138 2009/07/13 17:47:48 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.139 2009/07/16 12:33:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1970,7 +1970,8 @@ class JNodeViewerPanel
                "subsequent nodes were therefore displayed in a collapsed mode " + 
                "automatically.  Note that there are only (" + uniqueNodes + ") total " + 
                "unique nodes in this node network including both upstream and downstream, " + 
-               "so the nodes hidden are most likely duplicates of already visible nodes.\n\n");
+               "so the nodes hidden are most likely duplicates of already visible " + 
+               "nodes.\n\n");
           }
         }
       }
