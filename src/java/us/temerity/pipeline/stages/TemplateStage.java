@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.16 2009/06/25 22:11:35 jesse Exp $
+// $Id: TemplateStage.java,v 1.17 2009/07/18 04:43:25 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -725,7 +725,7 @@ class TemplateStage
       for (int idx = 0; idx < size; idx++) {
         Path target = seq.getPath(idx);
         Path source = exSeq.getPath(idx);
-        out.write("ln -s " + source + " " + target + "\n");
+        out.write("ln -sf " + source + " " + target + "\n");
       }
       out.close();
       args.add(f.getAbsolutePath());
