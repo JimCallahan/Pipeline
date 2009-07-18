@@ -159,16 +159,21 @@
   <style id="ApplyHeaderButton"> 
     <state>
       <imagePainter path="ApplyHeaderButton.png"
-                    sourceInsets="0 0 0 0"/>
+                    method="buttonBackground"
+                    sourceInsets="6 6 6 6"/>
     </state>
     <state value="PRESSED">
       <imagePainter path="ApplyHeaderButtonPressed.png"
-                    sourceInsets="0 0 0 0"/>
+                    method="buttonBackground"
+                    sourceInsets="6 6 6 6"/>
     </state>
     <state value="DISABLED">
       <imagePainter path="ApplyHeaderButtonDisabled.png"
-                    sourceInsets="0 0 0 0"/>
+                    method="buttonBackground"
+                    sourceInsets="6 6 6 6"/>
     </state>
+    <insets top="8" bottom="8" right="8" left="8"/> 
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
   <bind style="ApplyHeaderButton" type="name" key="ApplyHeaderButton"/>
 
@@ -237,38 +242,6 @@
     </state>
   </style>
   <bind style="DeleteCompletedButton" type="name" key="DeleteCompletedButton"/>
-
-
-
-  <!--  F R O Z E N   B U T T O N  -->
-
-  <style id="FrozenButton"> 
-    <state>
-      <imagePainter path="UnfrozenButton.png"
-                    sourceInsets="0 0 0 0"/>
-    </state> 
-    <state value="PRESSED">
-      <imagePainter path="UnfrozenButtonPressed.png"
-                    sourceInsets="0 0 0 0"/>
-    </state>
-    <state value="SELECTED">
-      <imagePainter path="FrozenButton.png"
-                    sourceInsets="0 0 0 0"/>
-    </state>
-    <state value="PRESSED and SELECTED">
-      <imagePainter path="FrozenButtonPressed.png"
-                    sourceInsets="0 0 0 0"/>
-    </state>
-    <state value="DISABLED">
-      <imagePainter path="UnfrozenButtonDisabled.png"
-                    sourceInsets="0 0 0 0"/>
-    </state>
-    <state value="DISABLED and SELECTED">
-      <imagePainter path="FrozenButtonDisabled.png"
-                    sourceInsets="0 0 0 0"/>
-    </state>
-  </style>
-  <bind style="FrozenButton" type="name" key="FrozenButton"/>
 
 
 

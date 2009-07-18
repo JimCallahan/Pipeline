@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.61 2009/07/15 03:42:02 jlee Exp $
+// $Id: JNodeDetailsPanel.java,v 1.62 2009/07/18 21:14:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -253,8 +253,9 @@ class JNodeDetailsPanel
 	  JButton btn = new JButton();		
 	  pApplyButton = btn;
 	  btn.setName("ApplyHeaderButton");
+          btn.setEnabled(false);
 		  
-	  Dimension size = new Dimension(19, 19);
+	  Dimension size = new Dimension(30, 30);
 	  btn.setMinimumSize(size);
 	  btn.setMaximumSize(size);
 	  btn.setPreferredSize(size);
@@ -264,7 +265,7 @@ class JNodeDetailsPanel
 	  
 	  btn.setToolTipText(UIFactory.formatToolTip
 			     ("Apply the changes to node properties."));
-          
+
 	  panel.add(btn);
 	} 
       
@@ -1931,6 +1932,9 @@ class JNodeDetailsPanel
     pApplyButton.setEnabled(false);
     pApplyItem.setEnabled(false);
 
+    pApplyButton.setToolTipText(UIFactory.formatToolTip
+      ("There are no unsaved changes to Apply at this time.")); 
+
     super.postPanelOp();
   }
   
@@ -1946,6 +1950,9 @@ class JNodeDetailsPanel
   {
     pApplyButton.setEnabled(true);
     pApplyItem.setEnabled(true);
+
+    pApplyButton.setToolTipText(UIFactory.formatToolTip
+      ("Apply the changes to node properties."));
 
     super.unsavedChange(name); 
   }
@@ -2012,6 +2019,8 @@ class JNodeDetailsPanel
 	pIsFrozen = mod.isFrozen();
 	pIsLocked = mod.isLocked();
 	pFrozenLabel.setIcon(pIsLocked ? sLockedIcon : sFrozenIcon);
+        pFrozenLabel.setToolTipText(UIFactory.formatToolTip
+          (pIsLocked ? "The Node is Locked." : "The Node is Frozen.")); 
       }
       
       pFrozenLabel.setVisible(pIsFrozen);
@@ -6669,10 +6678,7 @@ class JNodeDetailsPanel
       String cname = plugin.getClass().getName();
       Path path = new Path(PackageInfo.sInstPath, 
                            "share/docs/javadoc/" + cname.replace(".", "/") + ".html");
-
-      File file = path.toFile();
-
-      return file.exists();
+      return path.toFile().exists();
     }
 
     return false;

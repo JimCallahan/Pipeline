@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.35 2009/06/02 20:08:37 jlee Exp $
+// $Id: JNodeLinksPanel.java,v 1.36 2009/07/18 21:14:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -205,8 +205,9 @@ class JNodeLinksPanel
 	  JButton btn = new JButton();		
 	  pApplyButton = btn;
 	  btn.setName("ApplyHeaderButton");
+          btn.setEnabled(false);
 		  
-	  Dimension size = new Dimension(19, 19);
+	  Dimension size = new Dimension(30, 30);
 	  btn.setMinimumSize(size);
 	  btn.setMaximumSize(size);
 	  btn.setPreferredSize(size);
@@ -417,6 +418,9 @@ class JNodeLinksPanel
   {
     pApplyButton.setEnabled(false);
     pApplyItem.setEnabled(false);
+    
+    pApplyButton.setToolTipText(UIFactory.formatToolTip
+      ("There are no unsaved changes to Apply at this time.")); 
 
     super.postPanelOp();
   }
@@ -433,6 +437,9 @@ class JNodeLinksPanel
   {
     pApplyButton.setEnabled(true);
     pApplyItem.setEnabled(true);
+
+    pApplyButton.setToolTipText(UIFactory.formatToolTip
+      ("Replace the working links with the selected checked-in files."));
 
     super.unsavedChange(name); 
   }
@@ -482,6 +489,8 @@ class JNodeLinksPanel
       if(mod != null) {
 	pIsFrozen = mod.isFrozen();
 	pFrozenLabel.setIcon(mod.isLocked() ? sLockedIcon : sFrozenIcon);
+        pFrozenLabel.setToolTipText(UIFactory.formatToolTip
+          (mod.isLocked() ? "The Node is Locked." : "The Node is Frozen.")); 
       }
 
       pFrozenLabel.setVisible(pIsFrozen);

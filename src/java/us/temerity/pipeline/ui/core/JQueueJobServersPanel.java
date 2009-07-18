@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.18 2009/06/02 20:08:37 jlee Exp $
+// $Id: JQueueJobServersPanel.java,v 1.19 2009/07/18 21:14:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -247,8 +247,9 @@ class JQueueJobServersPanel
 	  JButton btn = new JButton();		
 	  pApplyButton = btn;
 	  btn.setName("ApplyHeaderButton");
+          btn.setEnabled(false);
 	    
-	  Dimension size = new Dimension(19, 19);
+	  Dimension size = new Dimension(30, 30);
 	  btn.setMinimumSize(size);
 	  btn.setMaximumSize(size);
 	  btn.setPreferredSize(size);
@@ -590,6 +591,9 @@ class JQueueJobServersPanel
     pApplyButton.setEnabled(true);
     pApplyItem.setEnabled(true);
 
+    pApplyButton.setToolTipText(UIFactory.formatToolTip
+      ("Apply the changes to server properties."));
+
     super.unsavedChange(name); 
   }
 
@@ -628,6 +632,9 @@ class JQueueJobServersPanel
     
     pApplyButton.setEnabled(false);
     pApplyItem.setEnabled(false);
+
+    pApplyButton.setToolTipText(UIFactory.formatToolTip
+      ("There are no unsaved changes to Apply at this time.")); 
 
     super.postPanelOp(); 
   }
