@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.19 2009/07/11 10:54:21 jim Exp $
+// $Id: NativeFileSys.java,v 1.20 2009/07/18 02:17:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -95,7 +95,69 @@ class NativeFileSys
     }
   }
 
-  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Move a file or directory by running the Unix mv(1) command in a subprocess.<P> 
+   * 
+   * This exists because the @{link File#renameTo File.renameTo} method is pretty much 
+   * usless.  Among other things, it does not work accross file system bountries.<P> 
+   * 
+   * This method is not supported by the Windows operating system.
+   * 
+   * @param src
+   *   The source (original) file or directory.
+   * 
+   * @param dst
+   *   The destination (new) file or directory.
+   * 
+   * @param force
+   *   Whether to overrite any existing destination file. 
+   * 
+   * @throws PipelineException
+   *   If unable to run the subprocess or the mv(1) process fails. 
+   */ 
+  public static void
+  move
+  (
+   File src,
+   File dst, 
+   boolean force
+  ) 
+    throws PipelineException
+  {
+    switch(PackageInfo.sOsType) {
+    case Windows:
+      throw new PipelineException
+	("Not supported on Windows systems!");
+    }
+
+    ArrayList<String> args = new ArrayList<String>();
+    if(force) 
+      args.add("--force"); 
+    args.add(src.getPath());
+    args.add(dst.getPath());
+	
+    Map<String,String> env = System.getenv();
+	
+    SubProcessLight proc = 
+      new SubProcessLight("Move", "mv", args, env, PackageInfo.sTempPath.toFile());
+    try {
+      proc.start();
+      proc.join();
+      if(!proc.wasSuccessful()) 
+	throw new PipelineException
+	  ("Unable to move (" + src + ") to (" + dst + "): " + 
+	   proc.getStdErr());
+    }
+    catch(InterruptedException ex) {
+      throw new PipelineException
+	("Interrupted while moving (" + src + ") to (" + dst + ")!");
+    }
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -135,10 +197,7 @@ class NativeFileSys
 	("Not supported on Windows systems!");
     }
   }
-  
-
-  /*----------------------------------------------------------------------------------------*/
-
+ 
   /** 
    * Is the given path a symbolic link? <P> 
    * 

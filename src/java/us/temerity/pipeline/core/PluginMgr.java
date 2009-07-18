@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.43 2009/07/06 10:25:26 jim Exp $
+// $Id: PluginMgr.java,v 1.44 2009/07/18 02:17:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -425,7 +425,7 @@ class PluginMgr
 
 	      if(backupDir.exists()) {
 		try {
-		  mvdir(backupDir, currentDir);
+		  NativeFileSys.move(backupDir, currentDir, false);
 		}
 		catch(PipelineException ex) {
 		  throw new PipelineException
@@ -954,7 +954,7 @@ class PluginMgr
 	    if(backupVersionDir.exists())
 	      rmdir(backupVersionDir);
 
-	    mvdir(currentVersionDir, backupVersionDir);
+	    NativeFileSys.move(currentVersionDir, backupVersionDir, false);
 	  }
 	  /* If the plugin version directory does not exists, this means it is a 
 	     new plugin being installed.
@@ -991,7 +991,7 @@ class PluginMgr
 
 	    File scratchDir = scratchPath.toFile();
 
-	    mvdir(scratchDir, currentVersionDir);
+	    NativeFileSys.move(scratchDir, currentVersionDir, false);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -1116,7 +1116,7 @@ class PluginMgr
 	  else {
 	    if(backupVersionDir.exists()) {
 	      rmdir(currentVersionDir);
-	      mvdir(backupVersionDir, currentVersionDir);
+	      NativeFileSys.move(backupVersionDir, currentVersionDir, false);
 	    }
 	    else {
 	      rmdir(currentVersionDir);
@@ -1637,43 +1637,6 @@ class PluginMgr
     catch(InterruptedException ex) {
       throw new PipelineException
 	("Interrupted while removing the directory (" + dir + ")!");
-    }
-  }
-
-  /**
-   * Since File.renameTo fails with network filesystems use SubProcessLight 
-   * to call mv.  Since plpluginmgr requires Linux mv is always available.
-   * Note that we are using mv to rename a directory so the dst parent directory 
-   * should exist but dst itself does not exist, otherwise src will be moved into 
-   * dst.
-   */
-  private void
-  mvdir
-  (
-   File src, 
-   File dst
-  )
-    throws PipelineException
-  {
-    ArrayList<String> args = new ArrayList<String>();
-    args.add(src.getPath());
-    args.add(dst.getPath());
-	
-    Map<String,String> env = System.getenv();
-	
-    SubProcessLight proc = 
-      new SubProcessLight("Move-Dir", "mv", args, env, pTempDir);
-    try {
-      proc.start();
-      proc.join();
-      if(!proc.wasSuccessful()) 
-	throw new PipelineException
-	  ("Unable to move the directory (" + src + ") to (" + dst + "): " + 
-	   proc.getStdErr());
-    }
-    catch(InterruptedException ex) {
-      throw new PipelineException
-	("Interrupted while moving the directory (" + src + ") to (" + dst + ")!");
     }
   }
 
