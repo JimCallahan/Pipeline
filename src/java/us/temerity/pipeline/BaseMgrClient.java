@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.32 2009/07/01 16:43:14 jim Exp $
+// $Id: BaseMgrClient.java,v 1.33 2009/07/21 23:12:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -471,7 +471,7 @@ class BaseMgrClient
       ObjectInput objIn  = getObjectInput(in); 
       Object rsp = objIn.readObject();
 
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
+      if(timer != null) {
 	timer.resume();
 	LogMgr.getInstance().logStage
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
@@ -564,17 +564,19 @@ class BaseMgrClient
 	  rsp = objIn.readObject();
 	}
 	catch(SocketTimeoutException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Finest,
-	     "Socket Timeout [" + pSocket.getInetAddress() + "]: " + kind.toString() + "\n" +
-	     " " + timer); 
+          if(timer != null) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Net, LogMgr.Level.Finest,
+               "Socket Timeout [" + pSocket.getInetAddress() + "]: " + kind.toString() + "\n" +
+               " " + timer); 
+          }
 
 	  if(abortOnTimeout() || (ex.bytesTransferred > 0)) 
 	    throw ex;
 	}
       }
 
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
+      if(timer != null) {
 	timer.resume();
 	LogMgr.getInstance().logStage
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
