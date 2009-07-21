@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.68 2009/07/08 13:55:46 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.69 2009/07/21 19:57:32 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3279,18 +3279,26 @@ class JQueueJobViewerPanel
 
 	    /* To implement 1701 iterate though all the jobIDs, not just the first one.  
 	       This way mutliple jobs which have batches can be queued together. */
-	    TreeMap<Long, TreeSet<FileSeq>> targets = pTargets.get(nodeID);
+	    TreeMap<Long,TreeSet<FileSeq>> targets = pTargets.get(nodeID);
+	    TreeSet<FileSeq> targetSeqs = new TreeSet<FileSeq>();
+
 	    for(Long jobID : targets.keySet()) {
-	      if (pSpecial) 
+	      for(FileSeq fseq : targets.get(jobID))
+		targetSeqs.add(fseq);
+	    }
+
+	    if(!targetSeqs.isEmpty()) {
+	      if(pSpecial) 
 		client.resubmitJobs
-		  (nodeID, targets.get(jobID), pBatchSize, pPriority, pRampUp,
+		  (nodeID, targetSeqs, pBatchSize, pPriority, pRampUp,
 	           pMaxLoad, pMinMemory, pMinDisk,
 	           pSelectionKeys, pLicenseKeys, pHardwareKeys);
 	      else {
+		long jobID = targets.firstKey();
 		QueueJob job = queue.getJob(jobID);
 		JobReqs reqs = job.getJobRequirements();
 		client.resubmitJobs
-		  (nodeID, targets.get(jobID), pBatchSize, 
+		  (nodeID, targetSeqs, pBatchSize, 
 		   reqs.getPriority(), reqs.getRampUp(),
 	           reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
 	           reqs.getSelectionKeys(), reqs.getLicenseKeys(), reqs.getHardwareKeys());
