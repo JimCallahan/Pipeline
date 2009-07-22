@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.54 2009/07/22 00:28:44 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.55 2009/07/22 02:39:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -71,7 +71,7 @@ class PackageInfo
       case Windows: 
         if(!osName.equals("Windows XP") && !osName.equals("Windows 2000") &&
            !osName.equals("Windows 2003") && !osName.equals("Windows NT") && 
-           !osNAme.equals("Windows Vista")) 
+           !osName.equals("Windows Vista")) 
           throw new HostConfigException
             ("Attempting to run the (Windows) version on a the (" + osName + ") " + 
              "operating system!");
