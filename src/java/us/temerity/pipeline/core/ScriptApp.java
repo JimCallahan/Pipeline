@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.98 2009/07/06 10:25:26 jim Exp $
+// $Id: ScriptApp.java,v 1.99 2009/07/26 08:52:20 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -400,6 +400,11 @@ class ScriptApp
        "      --evolve=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
        "        [--version=major.minor.micro]\n" +
+       "      --lock=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--version=major.minor.micro]\n" +
+       "      --vouch=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
        "      --get-events\n" + 
        "        [--node=node-name ...] [--author=user-name ...]\n" + 
        "        [--from=[YYYY-MM-DD,]hh:mm:ss] [--until=[YYYY-MM-DD,]hh:mm:ss]\n" + 

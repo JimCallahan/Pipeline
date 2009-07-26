@@ -1862,6 +1862,8 @@ TOKEN :
 | <NODE_CHECK_IN:          "--check-in">              : NODE_NAME_SEP
 | <NODE_CHECK_OUT:         "--check-out">             : NODE_NAME_SEP
 | <NODE_EVOLVE:            "--evolve">                : NODE_NAME_SEP
+| <NODE_LOCK:              "--lock">                  : NODE_NAME_SEP
+| <NODE_VOUCH:             "--vouch">                 : NODE_NAME_SEP
 | <NODE_GET_EVENTS:        "--get-events">            : OPTIONS
 | <AE39:                   ["\0"]>   
 | <UNKNOWN_OPTION16:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
@@ -6357,7 +6359,8 @@ NodeCmds()
 {}
 {
   <NODE> AE() 
-     (NodeStatus() | NodeCheckIn() | NodeCheckOut() | NodeEvolve() | NodeGetEvents())
+     (NodeStatus() | NodeCheckIn() | NodeCheckOut() | NodeEvolve() | 
+      NodeLock() | NodeVouch() | NodeGetEvents())
   {}
 }
 
@@ -6618,7 +6621,7 @@ NodeCheckOut()
     if(!pVersionIDs.isEmpty()) {
       if((pVersionIDs.size() > 1))
 	throw new PipelineException
-	  ("Only one version of a node may checked-out!");
+	  ("Only one version of a node may be checked-out!");
 	
       vid = (VersionID) pVersionIDs.first();
     }
@@ -6716,7 +6719,7 @@ NodeEvolve()
     if(!pVersionIDs.isEmpty()) {
       if((pVersionIDs.size() > 1))
 	throw new PipelineException
-	  ("Only one version of a node may evolved!");
+	  ("Only one version of a node may be evolved!");
 	
       vid = (VersionID) pVersionIDs.first();
     }
@@ -6739,6 +6742,81 @@ NodeEvolveOpts()
   {}
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
+void
+NodeLock()
+  throws PipelineException :
+{
+  String name = null;
+
+  pAuthor     = PackageInfo.sUser;
+  pView       = "default";
+  pVersionIDs = new TreeSet();
+}
+{
+  <NODE_LOCK> EQ() name=NodeName() AE() (NodeLockOpts())*
+  {
+    VersionID vid = null;
+    if(!pVersionIDs.isEmpty()) {
+      if((pVersionIDs.size() > 1))
+	throw new PipelineException
+	  ("Only one version of a node may be locked!");
+	
+      vid = (VersionID) pVersionIDs.first();
+    }
+
+    pMasterMgrClient.lock(new NodeID(pAuthor, pView, name), vid);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Locked: " + name);
+    LogMgr.getInstance().flush();
+
+  }
+}
+
+void
+NodeLockOpts()
+  throws PipelineException :
+{}
+{
+  (Author() | View() | VersionOption())
+  {}
+}
+
+/*------------------------------------------------------------------------------------------*/
+
+void
+NodeVouch()
+  throws PipelineException :
+{
+  String name = null;
+
+  pAuthor = PackageInfo.sUser;
+  pView   = "default";
+}
+{
+  <NODE_VOUCH> EQ() name=NodeName() AE() (NodeVouchOpts())*
+  {
+    pMasterMgrClient.vouch(new NodeID(pAuthor, pView, name));
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Vouched: " + name);
+    LogMgr.getInstance().flush();
+  }
+}
+
+void
+NodeVouchOpts()
+  throws PipelineException :
+{}
+{
+  (Author() | View())
+  {}
+}
 
 /*------------------------------------------------------------------------------------------*/
 
