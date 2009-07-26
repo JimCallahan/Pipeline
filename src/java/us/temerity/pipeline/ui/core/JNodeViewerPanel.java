@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.139 2009/07/16 12:33:33 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.140 2009/07/26 02:47:40 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -807,7 +807,7 @@ class JNodeViewerPanel
     for(String name : names) 
       pRoots.put(name, null);
   
-    if (pGroupID != 0) {
+    if(pGroupID != 0) {
       PanelUpdater pu = new PanelUpdater(this, postUpdateSelected);
       pu.execute();
     }
@@ -5066,6 +5066,7 @@ class JNodeViewerPanel
     TreeMap<String,VersionID> base = new TreeMap<String,VersionID>();
     TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
     TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
+    TreeMap<String,VersionID> lockedVersionIDs = new TreeMap<String,VersionID>();
 
     try {
       for(String name : getMostDownstreamOfSelectedNames()) {
@@ -5076,6 +5077,10 @@ class JNodeViewerPanel
               VersionID vid = mod.getWorkingID();
               if(vid != null) 
                 base.put(name, vid);
+
+	      /* store the current VersionID of a locked node */
+	      if(mod.isLocked())
+		lockedVersionIDs.put(name, vid);
             }
           }
           catch (PipelineException ex) {
@@ -5108,8 +5113,25 @@ class JNodeViewerPanel
     pLockDialog.updateVersions(base, versions, offline);
     pLockDialog.setVisible(true);	
     if(pLockDialog.wasConfirmed()) {
-      LockTask task = new LockTask(pLockDialog.getVersionIDs());
-      task.start();
+      TreeMap<String,VersionID> versionIDs = pLockDialog.getVersionIDs();
+      TreeSet<String> ignoreIDs = new TreeSet<String>();
+
+      for(String name : versionIDs.keySet()) {
+	VersionID vsn  = versionIDs.get(name);
+	VersionID lvsn = lockedVersionIDs.get(name);
+
+	/* ignore locking to same version */
+	if(lvsn != null && vsn.equals(lvsn))
+	  ignoreIDs.add(name);
+      }
+
+      for(String name : ignoreIDs)
+	versionIDs.remove(name);
+
+      if(!versionIDs.isEmpty()) {
+	LockTask task = new LockTask(versionIDs);
+	task.start();
+      }
     }
 
     clearSelection();
