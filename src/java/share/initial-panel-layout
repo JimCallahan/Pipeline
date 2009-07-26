@@ -95,7 +95,7 @@ PanelLayout <LinkedList> #1 {
                     Single <QueueHostStatus> #55 { :Shutdown: }
                   }
                   6 <HistogramRange> #56 {
-                    Single <QueueHostStatus> #57 { :Hung: }
+                    Single <QueueHostStatus> #57 { :Limbo: }
                   }
                 }
                 Included <boolean[7]> #58 {
