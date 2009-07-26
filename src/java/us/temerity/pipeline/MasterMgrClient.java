@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.139 2009/06/13 22:59:29 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.140 2009/07/26 07:21:32 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -8645,6 +8645,45 @@ class MasterMgrClient
     }       
   } 
 
+  /**
+   * Retrieve the contents of the site default saved panel layout file. <P> 
+   * 
+   * The layout is copied from an initial default layout provided with the Pipeline release.
+   * This layout is provided as a helpful starting point for new users when creating custom
+   * layouts.  The created panels will be set to view the working area specified by the 
+   * <CODE>author</CODE> and <CODE>view</CODE> parameters. 
+   * 
+   * @param author
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view.
+   * 
+   * @throws PipelineException 
+   *   If unable to create the layout.
+   */ 
+  public synchronized String
+  getInitialPanelLayout
+  (
+   String author,  
+   String view
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscCreateInitialPanelLayoutReq req = new MiscCreateInitialPanelLayoutReq(author, view);
+    Object obj = performTransaction(MasterRequest.CreateInitialPanelLayout, req);
+    if(obj instanceof MiscCreateInitialPanelLayoutRsp) {
+      MiscCreateInitialPanelLayoutRsp rsp = (MiscCreateInitialPanelLayoutRsp) obj;
+
+      return rsp.getContents();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }       
+  }
 
 
 

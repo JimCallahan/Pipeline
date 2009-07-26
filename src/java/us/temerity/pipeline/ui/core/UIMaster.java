@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.108 2009/06/18 20:32:47 jlee Exp $
+// $Id: UIMaster.java,v 1.109 2009/07/26 07:21:32 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -602,6 +602,12 @@ class UIMaster
       if((pDefaultLayoutPath != null) && pDefaultLayoutPath.equals(pLayoutPath))
 	def = " (default)";
       title = ("plui - Main | " + pLayoutPath.getName() + def);
+    }
+    else {
+      /* For layouts that have not been saved or restored from a saved file give 
+         the main window a title that indicates it has not been saved. */
+
+      title = ("plui - (untitled)+");
     }
 
     pFrame.setTitle(title);    
@@ -4578,23 +4584,8 @@ class UIMaster
     JConfirmDialog diag = new JConfirmDialog(pFrame, "Reset Current Layout?"); 
     diag.setVisible(true);
     if(diag.wasConfirmed()) {
-      Path path = pLayoutPath;
-      if(path == null) 
-	path = new Path("Default"); 
-
-      MasterMgrClient client = acquireMasterMgrClient();
-      try {
-	client.createInitialPanelLayout
-	  (path.toString(), PackageInfo.sUser, "default");
-      }
-      catch(Exception ex) {
-	showErrorDialog(ex);
-      }    
-      finally {
-        releaseMasterMgrClient(client);
-      }
-
-      doRestoreSavedLayout(path, false);
+      pRestoreSelections = false;
+      SwingUtilities.invokeLater(new ResetLayoutTask());
     }  
   }
 
@@ -4624,7 +4615,7 @@ class UIMaster
 	    }
 	  }
 
-	  if(choice.equals("Save & Make Default"))
+	  if(choice.equals("Save & Make Default") && pLayoutPath != null)
 	    doDefaultLayout();
 	}
 	catch(Exception ex) {}
@@ -5405,7 +5396,47 @@ class UIMaster
   }
 
   /**
-   * Replace the current panels with those stored in the stored layout with the given name.
+   * Reset the current panels with the site default layout.  This layout is not saved.
+   */
+  private
+  class ResetLayoutTask
+    extends Thread
+  {
+    public
+    ResetLayoutTask()
+    {
+      super("UIMaster:ResetLayoutTask");
+    }
+
+    @Override
+    public void
+    run()
+    {
+      String layoutContents = null;
+      {
+	MasterMgrClient client = acquireMasterMgrClient();
+	try {
+	  layoutContents = client.getInitialPanelLayout
+	    (PackageInfo.sUser, "default");
+
+	  if(layoutContents == null)
+	    throw new PipelineException("Unable to load the site default layout!");
+
+	  SwingUtilities.invokeLater(new RestoreSavedLayoutTask(layoutContents));
+	}
+	catch(Exception ex) {
+	  showErrorDialog(ex);
+	}    
+	finally {
+	  releaseMasterMgrClient(client);
+	}
+      }
+    }
+  }
+
+  /**
+   * Replace the current panels with those stored in the stored layout with the given name 
+     or those stored in a GLUE string.
    */
   private 
   class RestoreSavedLayoutTask
@@ -5420,6 +5451,17 @@ class UIMaster
       super("UIMaster:RestoreSavedLayoutTask");
 
       pPath = path;
+    }
+
+    public 
+    RestoreSavedLayoutTask
+    (
+     String layoutContents
+    ) 
+    {
+      super("UIMaster:RestoreSavedLayoutTask");
+
+      pLayoutContents = layoutContents;
     }
 
     @Override
@@ -5465,11 +5507,11 @@ class UIMaster
       /* show the splash screen */ 
       pRestoreSplashFrame.setVisible(true);
       
-      RestoreSavedLayoutRefreshTask task = new RestoreSavedLayoutRefreshTask(pPath);
-      task.start();      
+      SwingUtilities.invokeLater(new RestoreSavedLayoutRefreshTask(pPath, pLayoutContents));
     }
 
-    private Path pPath; 
+    private Path    pPath; 
+    private String  pLayoutContents;
   }
 
   private 
@@ -5479,12 +5521,14 @@ class UIMaster
     public 
     RestoreSavedLayoutRefreshTask
     (
-     Path path 
+     Path path, 
+     String layoutContents
     ) 
     {
       super("UIMaster:RestoreSavedLayoutRefreshTask");
       
       pPath = path; 
+      pLayoutContents = layoutContents;
     }
 
     @Override
@@ -5497,11 +5541,11 @@ class UIMaster
       catch(InterruptedException ex) {
       }
 
-      SwingUtilities.invokeLater(new RestoreSavedLayoutLoaderTask(pPath));
+      SwingUtilities.invokeLater(new RestoreSavedLayoutLoaderTask(pPath, pLayoutContents));
     }
 
     private Path    pPath;
-    private JFrame  pSplash;
+    private String  pLayoutContents;
   }
 
   private 
@@ -5511,12 +5555,14 @@ class UIMaster
     public 
     RestoreSavedLayoutLoaderTask
     (
-     Path path 
+     Path path, 
+     String layoutContents
     ) 
     {
       super("UIMaster:RestoreSavedLayoutLoaderTask");
       
       pPath = path;
+      pLayoutContents = layoutContents;
     }
 
     @SuppressWarnings("unchecked")
@@ -5530,20 +5576,34 @@ class UIMaster
 	pIsRestoring.set(true);
 	getUICache(0).invalidateCaches();
 	
-	Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts"); 
-	Path path = new Path(lpath, pPath);
-	File file = path.toFile();
-	try {      
-	  if(!file.isFile()) 
-	    throw new GlueException();
-	  
-	  layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
+	if(pLayoutContents != null) {
+	  try {
+	    layouts = (LinkedList<PanelLayout>) GlueDecoderImpl.decodeString
+	      ("SiteDefaultLayout", pLayoutContents);
+	  }
+	  catch(GlueException ex) {
+	    showErrorDialog("Error:", "Unable to load the default layout!");
+	  }
+	  catch(Exception ex) {
+	    showErrorDialog(ex);
+	  }
 	}
-	catch(GlueException ex) {
-	  showErrorDialog("Error:", "Unable to load saved layout (" + file + ")!");
-	}
-	catch(Exception ex) {
-	  showErrorDialog(ex);
+	else {
+	  Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts"); 
+	  Path path = new Path(lpath, pPath);
+	  File file = path.toFile();
+	  try {      
+	    if(!file.isFile()) 
+	      throw new GlueException();
+
+	    layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
+	  }
+	  catch(GlueException ex) {
+	    showErrorDialog("Error:", "Unable to load saved layout (" + file + ")!");
+	  }
+	  catch(Exception ex) {
+	    showErrorDialog(ex);
+	  }
 	}
 	
 	pIsRestoring.set(false);
@@ -5600,8 +5660,6 @@ class UIMaster
 	    frames.add(frame);
 	  }
 	}
-	
-	setLayoutPath(pPath); 
       }
       else {
 	JManagerPanel mpanel = new JManagerPanel();
@@ -5614,6 +5672,8 @@ class UIMaster
 	frames.add(pFrame);
       }
 
+      setLayoutPath(pPath);
+
       /* hide the splash screen */ 
       pRestoreSplashFrame.setVisible(false);
       
@@ -5622,7 +5682,8 @@ class UIMaster
 	frame.setVisible(true);
     }
 
-    private Path pPath;
+    private Path    pPath;
+    private String  pLayoutContents;
   }
 
   /**
