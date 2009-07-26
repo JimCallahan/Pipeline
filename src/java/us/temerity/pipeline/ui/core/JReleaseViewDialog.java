@@ -1,4 +1,4 @@
-// $Id: JReleaseViewDialog.java,v 1.5 2009/07/13 17:47:48 jlee Exp $
+// $Id: JReleaseViewDialog.java,v 1.6 2009/07/26 04:56:28 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -148,12 +148,16 @@ class JReleaseViewDialog
    * Whether to allow remove working area directory.
    */
   public void
-  setEnableRemoveWorkingArea
+  setRemoveWorkingAreaEnabled
   (
    boolean v
   )
   {
     pRemoveWorkingAreaField.setEnabled(v);
+
+    if(!v) {
+      pRemoveWorkingAreaField.setValue(false);
+    }
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.140 2009/07/26 02:47:40 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.141 2009/07/26 04:56:28 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4525,7 +4525,7 @@ class JNodeViewerPanel
     if(pReleaseViewDialog == null) 
       pReleaseViewDialog = new JReleaseViewDialog(getTopFrame());
 
-    pReleaseViewDialog.setEnableRemoveWorkingArea(!pView.equals("default"));
+    pReleaseViewDialog.setRemoveWorkingAreaEnabled(!pView.equals("default"));
     pReleaseViewDialog.setVisible(true);
 
     if(pReleaseViewDialog.wasConfirmed()) {
@@ -6646,8 +6646,24 @@ class JNodeViewerPanel
 	  if(!pNames.isEmpty()) 
 	    client.release(pAuthor, pView, pNames, pRemoveFiles);
 
-	  if(pRemoveArea) 
+	  if(pRemoveArea) {
 	    client.removeWorkingArea(pAuthor, pView);
+
+	    PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+
+	    /* Reset to the default view for all node viewer panels with same 
+	       author|view prior to releasing the view. */
+	    for(JNodeViewerPanel panel : panels.getPanels()) {
+	      String author = panel.getAuthor();
+	      String view   = panel.getView();
+
+	      if(pAuthor.equals(author) && pView.equals(view))
+		panel.setAuthorView(pAuthor, "default");
+	    }
+	  }
+	  else {
+	    setAuthorView(pAuthor, pView);
+	  }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -6657,14 +6673,6 @@ class JNodeViewerPanel
 	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
-
-	/* After releasing a view and "Remove Working Area" is true, 
-	   set it to the default view.  In either case we want to updateRoots(), 
-	   which setAuthorView does in addtion to changing the author|view. */
-	if(pRemoveArea)
-	  setAuthorView(pAuthor, "default");
-	else
-	  setAuthorView(pAuthor, pView);
       }
     }
 
