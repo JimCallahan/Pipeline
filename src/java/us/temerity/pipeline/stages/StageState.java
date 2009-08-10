@@ -1,4 +1,4 @@
-// $Id: StageState.java,v 1.11 2009/05/07 03:25:29 jesse Exp $
+// $Id: StageState.java,v 1.12 2009/08/10 20:50:13 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -50,6 +50,7 @@ class StageState
     pConformedNodes = new TreeSet<String>();
     pCheckedOutNodes = new TreeSet<String>();
     pSkippedNodes = new TreeSet<String>();
+    pLockedNodes = new TreeSet<String>();
     
     pAOEModes = new TreeMap<String, ActionOnExistence>();
     pAOEOverrides = new DoubleMap<String, String, ActionOnExistence>();
@@ -98,6 +99,16 @@ class StageState
   {
     return new TreeSet<String>(pCheckedOutNodes);
   }
+
+  /**
+   * Gets a list of all the nodes that have been locked using the {@link BaseStage#lock()}
+   * method.
+   */
+  public TreeSet<String>
+  getLockedNodes()
+  {
+    return new TreeSet<String>(pLockedNodes);
+  }
   
   /**
    * Gets a list of all the nodes that have been checked out using the
@@ -144,7 +155,7 @@ class StageState
   }
   
   /**
-   * Adds a node to the list of things that have been checked out by a stage.
+   * Add a node to the list of things that have been checked out by a stage.
    */
   public final void
   addCheckedOutNode
@@ -153,6 +164,18 @@ class StageState
   )
   {
     pCheckedOutNodes.add(name);
+  }
+  
+  /**
+   * Add a node to the list of things that have been locked by a stage.
+   */
+  public final void
+  addLockedNode
+  (
+    String name  
+  )
+  {
+    pLockedNodes.add(name);
   }
   
   /**
@@ -408,7 +431,7 @@ class StageState
   ) 
     throws PipelineException
   {
-    if (sDefaultModes.contains(mode))
+    if (sDefaultModes.contains(mode) || mode.equals(ActionOnExistence.Lock.toString()))
       throw new PipelineException
         ("The mode (" + mode + ") is a default mode and cannot be set by a builder");
     if (pAOEModes.containsKey(mode))
@@ -592,6 +615,13 @@ class StageState
    * All stages are responsible for ensuring skipped nodes end up here. 
    */
   private TreeSet<String> pSkippedNodes;
+  
+  /**
+   * A list of all the nodes that have been locked by a stage. 
+   * <p>
+   * All stages are responsible for ensuring locked nodes end up here. 
+   */
+  private TreeSet<String> pLockedNodes;
   
   private TreeMap<String, PluginContext> pDefaultEditors;
   private MappedSet<String, String> pStageFunctionSelectionKeys;

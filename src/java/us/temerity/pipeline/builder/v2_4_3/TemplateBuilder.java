@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.23 2009/06/22 15:41:54 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.24 2009/08/10 20:50:13 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -198,7 +198,7 @@ class TemplateBuilder
       pOptionalBranches.putAll(optionalBranches);
     
     pLog.log(Kind.Ops, Level.Finest, 
-      "The list of optional branchs to apply to this template: " + pFrameRanges);
+      "The list of optional branchs to apply to this template: " + pOptionalBranches);
     
     pAnnotCache = new TripleMap<String, String, String, TreeMap<String,BaseAnnotation>>();
     
@@ -702,14 +702,14 @@ class TemplateBuilder
               pNodesIDependedOn.put(target, temp);
           }
           if (order != null)
-            for (String node : nodesMade)
+            for (String node : allNodes)
               orderedRoots.put(order, node);
         } 
         else { // we've got a node that nothing depends on, must be a root.
           if (order == null)
-            roots.addAll(nodesMade);
+            roots.addAll(allNodes);
           else {
-            for (String node : nodesMade)
+            for (String node : allNodes)
               orderedRoots.put(order, node);
           }
         }

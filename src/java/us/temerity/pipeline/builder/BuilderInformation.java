@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.22 2009/05/07 03:25:29 jesse Exp $
+// $Id: BuilderInformation.java,v 1.23 2009/08/10 20:50:13 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -387,6 +387,7 @@ class BuilderInformation
       
       pConformedNodes = new TreeSet<String>();
       pCheckedOutNodes = new TreeSet<String>();
+      pLockedNodes = new TreeSet<String>();
       pSkippedNodes = new TreeSet<String>();
     }
 
@@ -998,6 +999,16 @@ class BuilderInformation
     {
       return new TreeSet<String>(pCheckedOutNodes);
     }
+
+    /**
+     * Get a list of all the nodes that have been locked using the {@link BaseStage#lock()}
+     * method in the current Builder.
+     */
+    public TreeSet<String>
+    getLockedNodes()
+    {
+      return new TreeSet<String>(pCheckedOutNodes);
+    }
     
     /**
      * Get a list of all the nodes that have been skipped by the build() method
@@ -1089,6 +1100,19 @@ class BuilderInformation
     {
       pStageState.addCheckedOutNode(name);
       pCheckedOutNodes.add(name);
+    }
+    
+    /**
+     * Add a node to the list of things that have been locked by a stage.
+     */
+    public final void
+    addLockedNode
+    (
+      String name  
+    )
+    {
+      pStageState.addLockedNode(name);
+      pLockedNodes.add(name);
     }
     
     /**
@@ -1303,6 +1327,7 @@ class BuilderInformation
     
     private TreeSet<String> pConformedNodes;
     private TreeSet<String> pCheckedOutNodes;
+    private TreeSet<String> pLockedNodes;
     private TreeSet<String> pSkippedNodes;
 
     

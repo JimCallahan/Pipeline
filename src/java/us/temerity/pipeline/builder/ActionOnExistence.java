@@ -1,4 +1,4 @@
-// $Id: ActionOnExistence.java,v 1.4 2009/05/07 03:25:29 jesse Exp $
+// $Id: ActionOnExistence.java,v 1.5 2009/08/10 20:50:13 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -35,7 +35,13 @@ enum ActionOnExistence
    * Change the properties and links of the current working version to match what the 
    * builder expects for the node.
    */
-  Conform;
+  Conform,
+  
+  /**
+   * Lock the node to the latest version.  This will cause a failure if there are no 
+   * checked-in versions of the node. 
+   */
+  Lock;
   
 
 

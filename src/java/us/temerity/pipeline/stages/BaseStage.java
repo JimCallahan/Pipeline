@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.36 2009/06/11 05:14:06 jesse Exp $
+// $Id: BaseStage.java,v 1.37 2009/08/10 20:50:13 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -101,6 +101,7 @@ class BaseStage
       pStageFunction = stageFunction;
     
     pNodeCheckedOut = false;
+    pNodeLocked = false;
   }
   
   
@@ -858,6 +859,14 @@ class BaseStage
    return pNodeCheckedOut; 
   }
 
+  /**
+   * Was the node Locked by the {@link #checkExistance(String, ActionOnExistence)} method.
+   */
+  public boolean
+  wasNodeLocked()
+  {
+   return pNodeCheckedOut; 
+  }
   
   
   
@@ -1386,12 +1395,23 @@ class BaseStage
         ("The node (" + nodeName + ") exists, but in a different working area and was " +
          "never checked in.  The Builder is aborting due to this problem.");
     case WorkingCurrentCheckedInNone:
+      switch (actionOnExistence) {
+      case Lock:
+        throw new PipelineException
+          ("The node (" + nodeName + ") does not have any checked-in versions, but the " +
+           "Action On Existence was set to Lock.  The Builder is aborting due to " +
+           "this problem.");
+      }
       return true;
     case WorkingCurrentCheckedInSome:
       switch(actionOnExistence) {
+      case Lock:
+        pLog.log(Kind.Ops, Level.Finest, "Locking the node.");
+        lock();
+        return true;
       case CheckOut:
-	 checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+	checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+	pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	return true;
       case Conform:
         NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
@@ -1416,11 +1436,15 @@ class BaseStage
     case WorkingNoneCheckedInSome:
     case WorkingOtherCheckedInSome:
       switch(actionOnExistence) {
+      case Lock:
+        pLog.log(Kind.Ops, Level.Finest, "Locking the node.");
+        lock();
+        return true;
       case CheckOut:
       case Conform:
-	 checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
-	 return true;
+	checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+	pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+	return true;
       case Continue:
 	throw new PipelineException
           ("The node (" + nodeName + ") exists, but is not checked out in the current " +
@@ -1486,6 +1510,16 @@ class BaseStage
       mode, method);
     pStageInformation.addCheckedOutNode(pRegisteredNodeName);
     pNodeCheckedOut = true;
+  }
+  
+  public final void
+  lock()
+    throws PipelineException
+  {
+    VersionID latest = pClient.getCheckedInVersionIDs(pRegisteredNodeName).last();
+    pClient.lock(getAuthor(), getView(), pRegisteredNodeName, latest);
+    pStageInformation.addLockedNode(pRegisteredNodeName);
+    pNodeLocked = true;
   }
   
   
@@ -1589,9 +1623,14 @@ class BaseStage
   
   /**
    * Was the node Checked Out by the {@link #checkExistance(String, ActionOnExistence)} 
-   * method.
+   * method?
    */
   private boolean pNodeCheckedOut;
+  
+  /**
+   * Was the node locked by the {@link #checkExistance(String, ActionOnExistence)} method?
+   */
+  private boolean pNodeLocked;
 
   private String pStageFunction = StageFunction.aNone;
 }
