@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.283 2009/07/11 10:54:21 jim Exp $
+// $Id: MasterMgr.java,v 1.284 2009/08/10 18:22:52 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8689,10 +8689,11 @@ class MasterMgr
 	     or stale */
 	  if (updateTimeStamps) {
 	    nmod = getWorkingBundle(nid).getVersion();
+	    nmod.updateLastCTimeUpdate();
 	    nmod.initTimeStamps();
 	    
 	    /* write the new working version to disk */ 
-            writeWorkingVersion(id, nmod);
+            writeWorkingVersion(nid, nmod);
             
             /* update the bundle */ 
             bundle.setVersion(nmod);
@@ -22021,6 +22022,19 @@ class MasterMgr
     LogMgr.getInstance().log
       (LogMgr.Kind.Glu, LogMgr.Level.Finer,
        "Writing Working Version: " + id);
+
+    if (!id.getName().equals(mod.getName())) {
+      PipelineException ex = new PipelineException
+        ("Error trying to write the working glue file.  The name of the nodeID " +
+         "(" + id.getName() + ") did not match the name contained in the nodeMod " +
+         "(" + mod.getName() + ").");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 Exceptions.getFullMessage(ex));
+      LogMgr.getInstance().flush();
+      throw ex;
+    }
+      
 
     File file   = new File(pNodeDir, id.getWorkingPath().toString());
     File backup = new File(file + ".backup");
