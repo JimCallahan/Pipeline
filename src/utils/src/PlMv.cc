@@ -1,4 +1,4 @@
-// $Id: PlMv.cc,v 1.1 2009/07/11 10:54:21 jim Exp $
+// $Id: PlMv.cc,v 1.2 2009/08/11 17:53:43 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -65,7 +65,7 @@ main
   char msg[1024];
   FB::init(std::cout);
   FB::setWarnings(false);
-  FB::setStageStats(true);
+  FB::setStageStats(false);
 
   if(argc<3) {
     usage();
@@ -112,7 +112,7 @@ main
     strcpy(argv2[0], cmd); 
 
     const char* td = "--target-directory="; 
-    argv2[1] = new char[strlen(td) + strlen(targetDir)]; 
+    argv2[1] = new char[strlen(td) + strlen(targetDir) + 1]; 
     strcpy(argv2[1], td); 
     strcat(argv2[1], targetDir); 
 
@@ -178,7 +178,7 @@ main
   }
   assert(envp2);
 
-//   /* debugging */ 
+  /* debugging */ 
 //    FB::stageBegin("Original");
 //    {
 //      FB::stageBegin("Arguments");
