@@ -5,3 +5,13 @@ BadNodeModTest.java
 GlueTest.java
 ToolsetTest.java
 TupleRangeTest.java
+BuilderInstanciationTest.java
+DBFix.java
+DubiousTesting.java
+FileSeqTest.java
+ListSetTest.java
+MappedDataTest.java
+NodeBundleConform.java
+PathTest.java
+StatusTest.java
+TemplateGlueTest.java
