@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.17 2009/07/18 04:43:25 jesse Exp $
+// $Id: TemplateStage.java,v 1.18 2009/08/12 20:33:05 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -198,7 +198,7 @@ class TemplateStage
         "Checking the link: " + linkName);
       
       if (pSkippedNodes.contains(linkName)) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finest,
+        LogMgr.getInstance().log(Kind.Bld, Level.Fine,
           "The linked node was skipped during construction and the link is being ignored.");
         continue;
       }

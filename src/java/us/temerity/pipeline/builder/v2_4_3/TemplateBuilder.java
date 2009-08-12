@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.24 2009/08/10 20:50:13 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.25 2009/08/12 20:33:05 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -156,11 +156,12 @@ class TemplateBuilder
     else
       pProductContexts.putAll(productContexts);
     
-    MappedSet<String, String> optionalBranchValues = templateInfo.getOptionalBranches();
+    DoubleMap<String, String, OptionalBranchType> optionalBranchValues = 
+      templateInfo.getOptionalBranches();
     pLog.log(Kind.Ops, Level.Finest, 
       "The optionalBranches data structure passed in has the following values:\n" + 
       optionalBranchValues);
-    pOptionalBranchValues = new MappedSet<String, String>();
+    pOptionalBranchValues = new DoubleMap<String, String, OptionalBranchType>();
     if (optionalBranchValues != null)
       pOptionalBranchValues.putAll(optionalBranchValues);
     
@@ -412,11 +413,35 @@ class TemplateBuilder
     return toReturn;
   }
   
-  private void
+  /**
+   * Recursively remove nodes from the build list if they are supposed to be ignored.
+   * <p>
+   * This will remove the given node and any nodes upstream of it that other parts of the
+   * template are not using.
+   * 
+   * @param node
+   *   The name of the node.
+   *   
+   * @param type
+   *   The optional branch type that is causing this node to be cleared.
+   *   
+   * @return
+   *   Return the list of downstream nodes that had the cleared node as a source.
+   *   
+   * @throws PipelineException
+   *   If the type is set to AsProduct but some of the upstream nodes being cleared are 
+   *   still being used by other nodes in the network.  This state would potentially 
+   *   cause frozen staleness, which is not an acceptable state.
+   * 
+   */
+  private TreeSet<String>
   clearNode
   (
-    String node  
+    String parent,
+    String node,
+    OptionalBranchType type
   )
+    throws PipelineException
   {
     TreeSet<String> downstream = pNodesDependingOnMe.remove(node);
     if (downstream != null) {
@@ -429,11 +454,19 @@ class TemplateBuilder
         TreeSet<String> down = pNodesDependingOnMe.get(each); 
         down.remove(node);
         if (down.size() == 0)
-          clearNode(each);
+          clearNode(parent, each, type);
+        else if (type == OptionalBranchType.AsProduct)
+          throw new PipelineException
+            ("An error was encounted when trying to clear node (" + each + ") as part of an " +
+             "optional branch starting at (" + parent +").  The nodes (" + down + ") still " +
+              "depend on the node being cleared, which is not acceptable in a situation " +
+              "where the Optional Branch Type is AsProduct due to the possibility of getting " +
+              "frozen stale nodes.");
       }
     }
     pSkippedNodes.add(node);
     pNodesToBuild.remove(node);
+    return downstream;
   }
   
   
@@ -481,7 +514,7 @@ class TemplateBuilder
         pProductContexts = new DoubleMap<String, String, TreeSet<String>>();
         pNodesDependingOnMe = new MappedSet<String, String>();
         pNodesIDependedOn = new MappedSet<String, String>();
-        pOptionalBranchValues = new MappedSet<String, String>();
+        pOptionalBranchValues = new DoubleMap<String, String, OptionalBranchType>();
         
         for (String node : pNodesToBuild) {
           NodeStatus stat = pClient.status(new NodeID(getAuthor(), getView(), node), true, 
@@ -490,7 +523,13 @@ class TemplateBuilder
           BaseAnnotation annot = mod.getAnnotation("TemplateOptionalBranch");
           if (annot != null) {
             String optionName = (String) annot.getParamValue(aOptionName); 
-            pOptionalBranchValues.put(optionName, node);
+            OptionalBranchType type = OptionalBranchType.BuildOnly;
+            AnnotationParam aparam = annot.getParam(aOptionType);
+            if (aparam != null) {
+              String value = (String) aparam.getValue();
+              type = OptionalBranchType.valueOf(OptionalBranchType.class, value);
+            }
+            pOptionalBranchValues.put(optionName, node, type);
             pLog.log(Kind.Bld, Level.Finest, 
               "Found an optional branch (" + optionName+ ") for node (" + node + ").");
           }
@@ -522,19 +561,29 @@ class TemplateBuilder
         pLog.log(Kind.Ops, Level.Finest, 
           "The generated product contexts is:\n" + pProductContexts);
         
-        pTemplateInfo.setNodesDependingOnMe(pNodesDependingOnMe);
-        pTemplateInfo.setNodesIDependedOn(pNodesIDependedOn);
-        pTemplateInfo.setProductNodes(pProductNodes);
-        pTemplateInfo.setProductContexts(pProductContexts);
       } //if (pGenerateDependSets) {
       
       boolean cleared = false;
+      boolean asProduct = false;
       for (Entry<String, Boolean> entry : pOptionalBranches.entrySet()) {
         if (!entry.getValue()) {
-          TreeSet<String> taggedNodes = pOptionalBranchValues.get(entry.getKey());
-          for (String node : taggedNodes) {
-            clearNode(node);
+          TreeMap<String, OptionalBranchType> taggedNodes = 
+            pOptionalBranchValues.get(entry.getKey());
+          for (Entry<String, OptionalBranchType> entry2: taggedNodes.entrySet()) {
+            String node = entry2.getKey();
+            OptionalBranchType type = entry2.getValue();
+            TreeSet<String> downstreamNodes = clearNode(node, node, type);
             cleared = true;
+            if (type == OptionalBranchType.AsProduct) {
+              pProductNodes.put(node, true);
+              pSkippedNodes.remove(node);
+              for (String target : downstreamNodes) {
+                TreeSet<String> contexts = getContextLinks(target, node);
+                if (!contexts.isEmpty())
+                  pProductContexts.put(node, target, contexts);
+              }
+              asProduct = true;
+            }
           }
         }
       }
@@ -549,6 +598,19 @@ class TemplateBuilder
         pLog.log(Kind.Ops, Level.Finest, 
           "The pruned nodesIDependOn is:\n" + pNodesIDependedOn);
       }
+      if (asProduct) {
+        pLog.log(Kind.Ops, Level.Finest,
+        "\n\nAfter adding optional branches as product nodes:");
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The new product nodes are:\n" + pProductNodes);
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The new product contexts are:\n" + pProductContexts);
+      }
+      
+      pTemplateInfo.setNodesDependingOnMe(pNodesDependingOnMe);
+      pTemplateInfo.setNodesIDependedOn(pNodesIDependedOn);
+      pTemplateInfo.setProductNodes(pProductNodes);
+      pTemplateInfo.setProductContexts(pProductContexts);
       
       pFinalizableStages = new ArrayList<FinalizableStage>();
       pSecondaryFinalizableStages = new ArrayList<FinalizableStage>();
@@ -1168,6 +1230,7 @@ class TemplateBuilder
   public static final String aConditionName = "ConditionName";
   public static final String aModeName      = "ModeName";
   public static final String aOptionName    = "OptionName";
+  public static final String aOptionType    = "OptionType";
   public static final String aExternalName  = "ExternalName";
   
   public static final String aAllowZeroContexts = "AllowZeroContexts";
@@ -1207,7 +1270,7 @@ class TemplateBuilder
   
   private MappedSet<String, String> pNodesIDependedOn;
   private MappedSet<String, String> pNodesDependingOnMe;
-  private MappedSet<String, String> pOptionalBranchValues;
+  private DoubleMap<String, String, OptionalBranchType> pOptionalBranchValues;
   private TreeMap<String, Boolean> pProductNodes;
   private DoubleMap<String, String, TreeSet<String>> pProductContexts;
   private TreeMap<String, FrameRange> pFrameRanges;

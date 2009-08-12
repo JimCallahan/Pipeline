@@ -1,12 +1,14 @@
-// $Id: TemplateOptionalBranchTool.java,v 1.2 2009/08/12 20:33:05 jesse Exp $
+// $Id: TemplateOptionalBranchTool.java,v 1.1 2009/08/12 20:33:05 jesse Exp $
 
-package us.temerity.pipeline.plugin.TemplateOptionalBranchTool.v2_4_6;
+package us.temerity.pipeline.plugin.TemplateOptionalBranchTool.v2_4_9;
 
 import java.awt.*;
+import java.util.*;
 
 import javax.swing.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.plugin.*;
 import us.temerity.pipeline.plugin.TemplateOptionalBranchAnnotation.v2_4_6.*;
 import us.temerity.pipeline.ui.*;
@@ -29,12 +31,15 @@ class TemplateOptionalBranchTool
   public 
   TemplateOptionalBranchTool()
   {
-    super("TemplateOptionalBranch", new VersionID("2.4.6"), "Temerity", 
+    super("TemplateOptionalBranch", new VersionID("2.4.9"), "Temerity", 
           "Tool to add a TemplateOptionalBranch Annotation to nodes.");
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
+    
+    underDevelopment();
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -64,10 +69,18 @@ class TemplateOptionalBranchTool
         
         vBox.add(body);
       
-        pOptionField = UIFactory.createTitledEditableTextField
-          (tPanel, "Option:", sTSize, vPanel, "", sVSize, 
+        pOptionNameField = UIFactory.createTitledEditableTextField
+          (tPanel, "Option Name:", sTSize, vPanel, "", sVSize, 
            "The name of the template option to assign to the selected nodes.");
-
+        
+        UIFactory.addVerticalSpacer(tPanel, vPanel, 3);
+        
+        ArrayList<String> values = new ArrayList<String>(OptionalBranchType.titles());
+        pOptionTypeField = 
+          UIFactory.createTitledCollectionField
+          (tPanel, "Option Type:", sTSize, 
+           vPanel, values, sVSize, 
+           "The type of the template option to assign to the selected nodes.");
       }
       vBox.add(UIFactory.createFiller(sTSize +sVSize + 35));
       
@@ -104,14 +117,16 @@ class TemplateOptionalBranchTool
     throws PipelineException
   {
     PluginMgrClient plug = PluginMgrClient.getInstance();
-    String option = pOptionField.getText();
-    if (option == null || option.equals(""))
+    String optionName = pOptionNameField.getText();
+    String optionType = pOptionTypeField.getSelected();
+    if (optionName == null || optionName.equals(""))
       return false;
 
     for (String node : pSelected.keySet()) {
       BaseAnnotation annot = 
-        plug.newAnnotation("TemplateOptionalBranch", new VersionID("2.4.6"), "Temerity");
-      annot.setParamValue(aOptionName, option);
+        plug.newAnnotation("TemplateOptionalBranch", new VersionID("2.4.9"), "Temerity");
+      annot.setParamValue(aOptionName, optionName);
+      annot.setParamValue(aOptionType, optionType);
       NodeMod mod = mclient.getWorkingVersion(getAuthor(), getView(), node);
       mod.addAnnotation("TemplateOptionalBranch", annot);
       mclient.modifyProperties(getAuthor(), getView(), mod);
@@ -126,12 +141,13 @@ class TemplateOptionalBranchTool
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3173256588022059471L;
+  private static final long serialVersionUID = 6709071710312517847L;
   
   private static final int sVSize = 250;
   private static final int sTSize = 150;
   
   public static final String aOptionName = "OptionName";
+  public static final String aOptionType = "OptionType";
   
   
   
@@ -139,5 +155,6 @@ class TemplateOptionalBranchTool
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
  
-  private JTextField pOptionField;
+  private JTextField pOptionNameField;
+  private JCollectionField pOptionTypeField;
 }

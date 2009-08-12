@@ -1,8 +1,11 @@
-// $Id: TemplateOptionalBranchAnnotation.java,v 1.3 2009/08/12 20:33:05 jesse Exp $
+// $Id: TemplateOptionalBranchAnnotation.java,v 1.1 2009/08/12 20:33:05 jesse Exp $
 
-package us.temerity.pipeline.plugin.TemplateOptionalBranchAnnotation.v2_4_6;
+package us.temerity.pipeline.plugin.TemplateOptionalBranchAnnotation.v2_4_9;
+
+import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E M P L A T E   O P T I O N A L   B R A N C H   A N N O T A T I O N                  */
@@ -17,7 +20,14 @@ import us.temerity.pipeline.*;
  * sources by other parts of the template will still be built.
  * <p>
  * The Option Name parameter is the name that the Template will use to identify the optional
- * branch
+ * branch.
+ * <p>
+ * The Option Type parameter determines the exact behavior of the template.  If it is set to 
+ * BuildOnly, then when the option is disabled, the network is not built and the rest of the 
+ * template will ignore the node. If Option Type is set to As Product, then the node 
+ * will be ignored in terms of construction by the template but will be used as a product node
+ * if a version exists in the repository.  If no version exists in the repository, then the
+ * behavior will be identical to how BuildOnly works.
  */
 public 
 class TemplateOptionalBranchAnnotation
@@ -30,7 +40,7 @@ class TemplateOptionalBranchAnnotation
   public 
   TemplateOptionalBranchAnnotation()
   {
-    super("TemplateOptionalBranch", new VersionID("2.4.6"), "Temerity", 
+    super("TemplateOptionalBranch", new VersionID("2.4.9"), "Temerity", 
       "Designate an optional branch in a template.");
     
     {
@@ -42,17 +52,33 @@ class TemplateOptionalBranchAnnotation
       addParam(param);
     }
     
+    {
+      ArrayList<String> values = new ArrayList<String>(OptionalBranchType.titles());
+      
+      AnnotationParam param =
+        new EnumAnnotationParam
+        (aOptionType, 
+         "Which sort of optional branch this is", 
+         OptionalBranchType.BuildOnly.toTitle(), 
+         values);
+      addParam(param);
+    }
+    
     addContext(AnnotationContext.PerVersion);
     removeContext(AnnotationContext.PerNode);
+    
+    underDevelopment();
   }
- 
+
+  
   
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7956020650301407282L;
+  private static final long serialVersionUID = 1871528190506446502L;
   
   public static final String aOptionName = "OptionName";
+  public static final String aOptionType = "OptionType";
 }

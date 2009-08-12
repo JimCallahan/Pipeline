@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.14 2009/06/11 05:14:06 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.15 2009/08/12 20:33:05 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -357,9 +357,16 @@ class TemplateTaskBuilder
         BaseAnnotation annot = annots.get("TemplateOptionalBranch");
         if (annot != null) {
           String optionName = (String) annot.getParamValue(aOptionName);
-          pOptionalBranchValues.put(optionName, nodeName);
+          OptionalBranchType type = OptionalBranchType.BuildOnly;
+          AnnotationParam aparam = annot.getParam(aOptionType);
+          if (aparam != null) {
+            String value = (String) aparam.getValue();
+            type = OptionalBranchType.valueOf(OptionalBranchType.class, value);
+          }
+          pOptionalBranchValues.put(optionName, nodeName, type);
           pLog.log(Kind.Bld, Level.Finest, 
-            "Found an optional branch (" + optionName+ ") for node (" + nodeName + ").");
+            "Found an optional branch (" + optionName+ ") for node (" + nodeName + ") " +
+            "of the type (" + type + ").");
         }
       }
       else { //if the task doesn't match, it better be a Product node.
@@ -559,7 +566,7 @@ class TemplateTaskBuilder
       pProductNodeContexts = new DoubleMap<String, String, TreeSet<String>>();
       pNodesIDependedOn    = new MappedSet<String, String>();
       pNodesDependingOnMe  = new MappedSet<String, String>();
-      pOptionalBranchValues    = new MappedSet<String, String>();
+      pOptionalBranchValues = new DoubleMap<String, String, OptionalBranchType>();
       
       TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(pStartNode);
 
@@ -675,6 +682,7 @@ class TemplateTaskBuilder
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
   public static final String aOptionName        = "OptionName";
+  public static final String aOptionType        = "OptionType";
   
   public static final String aCheckInLevel   = "CheckInLevel";
   public static final String aCheckInMessage = "CheckInMessage";
@@ -714,5 +722,5 @@ class TemplateTaskBuilder
   private MappedSet<String, String> pNodesIDependedOn;
   private MappedSet<String, String> pNodesDependingOnMe;
   
-  private MappedSet<String, String> pOptionalBranchValues;
+  private DoubleMap<String, String, OptionalBranchType> pOptionalBranchValues;
 }
