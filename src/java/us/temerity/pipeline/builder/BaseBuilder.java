@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.77 2009/07/04 02:23:46 jim Exp $
+// $Id: BaseBuilder.java,v 1.78 2009/08/12 19:36:54 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1933,6 +1933,12 @@ class BaseBuilder
       pClient.status(getAuthor(), getView(), roots, roots, DownstreamMode.None);
     for(String nodeName : queuedNodes) {
       NodeStatus status = stati.get(nodeName);
+      if (status == null)
+        throw new PipelineException
+          ("Somehow the node (" + nodeName + ") which the builder queued no longer existed " +
+           "when the builder attempted to check the node status.  This is most likely an " +
+           "indication that some other process was messing in the same working area and " +
+           "removed this node.");
       toReturn = isTreeFinished(status);
       if(!toReturn)
 	break;
