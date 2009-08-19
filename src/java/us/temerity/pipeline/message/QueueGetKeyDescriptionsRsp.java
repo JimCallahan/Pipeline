@@ -1,4 +1,4 @@
-// $Id: QueueGetKeyDescriptionsRsp.java,v 1.1 2008/03/07 13:25:21 jim Exp $
+// $Id: QueueGetKeyDescriptionsRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -44,11 +44,9 @@ class QueueGetKeyDescriptionsRsp
       throw new IllegalArgumentException("The key descriptions cannot be (null)!");
     pKeyDescriptions = desc;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getKeyDescriptions():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

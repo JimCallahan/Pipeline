@@ -1,4 +1,4 @@
-// $Id: PluginResourceInstallRsp.java,v 1.1 2009/03/26 06:38:36 jlee Exp $
+// $Id: PluginResourceInstallRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -41,12 +41,9 @@ class PluginResourceInstallRsp
 
     pSessionID = sessionID;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        getTimer().toString());
-
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: MiscGetPluginMenuLayoutRsp.java,v 1.4 2005/06/28 18:05:22 jim Exp $
+// $Id: MiscGetPluginMenuLayoutRsp.java,v 1.5 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class MiscGetPluginMenuLayoutRsp
       throw new IllegalArgumentException("The plugin menu layuout cannot be (null)!");
     pLayout = layout;
     
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        getTimer().toString());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

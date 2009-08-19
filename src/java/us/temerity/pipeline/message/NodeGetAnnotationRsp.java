@@ -1,4 +1,4 @@
-// $Id: NodeGetAnnotationRsp.java,v 1.1 2007/06/15 00:27:31 jim Exp $
+// $Id: NodeGetAnnotationRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -43,11 +43,9 @@ class NodeGetAnnotationRsp
 
     pAnnotation = annot;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getAnnotation(): " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

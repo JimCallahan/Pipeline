@@ -1,4 +1,4 @@
-// $Id: PluginCountRsp.java,v 1.1 2009/02/11 16:32:39 jlee Exp $
+// $Id: PluginCountRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,12 +46,9 @@ class PluginCountRsp
     pRequiredPluginCount = requiredPluginCount;
     pUnknownPluginCount  = unknownPluginCount;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        getTimer().toString());
-
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: QueueGetHardwareKeysRsp.java,v 1.1 2007/11/30 20:06:25 jesse Exp $
+// $Id: QueueGetHardwareKeysRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -43,11 +43,9 @@ class QueueGetHardwareKeysRsp
       throw new IllegalArgumentException("The hardware keys cannot be (null)!");
     pKeys = keys;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getHardwareKeys():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

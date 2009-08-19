@@ -1,4 +1,4 @@
-// $Id: MiscGetEditorForSuffixRsp.java,v 1.5 2005/09/07 21:11:16 jim Exp $
+// $Id: MiscGetEditorForSuffixRsp.java,v 1.6 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class MiscGetEditorForSuffixRsp
 
     pEditor = editor;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getEditorForSuffix():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JobEditAsFailedRsp.java,v 1.1 2007/02/07 21:15:14 jim Exp $
+// $Id: JobEditAsFailedRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -49,11 +49,9 @@ class JobEditAsFailedRsp
     pResults[2] = proc.getStdOut(); 
     pResults[3] = proc.getStdErr();
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest, 
        getTimer().toString());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

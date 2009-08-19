@@ -1,4 +1,4 @@
-// $Id: QueueGetHardwareGroupNamesRsp.java,v 1.1 2007/11/30 20:06:25 jesse Exp $
+// $Id: QueueGetHardwareGroupNamesRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -44,11 +44,9 @@ class QueueGetHardwareGroupNamesRsp
       throw new IllegalArgumentException("The hardware group names cannot be (null)!");
     pNames = names;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getHardwareGroups():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

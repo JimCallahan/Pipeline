@@ -1,4 +1,4 @@
-// $Id: NodeEditingStartedRsp.java,v 1.1 2006/12/31 20:44:53 jim Exp $
+// $Id: NodeEditingStartedRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,12 +45,10 @@ class NodeEditingStartedRsp
       throw new IllegalArgumentException("The editing session ID cannot be (null)!");
     pEditID = editID;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.editingStarted():\n" + 
        "  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

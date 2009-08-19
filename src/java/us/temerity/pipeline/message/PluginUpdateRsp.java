@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.13 2009/03/26 06:41:16 jlee Exp $
+// $Id: PluginUpdateRsp.java,v 1.14 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -173,12 +173,9 @@ class PluginUpdateRsp
       throw new IllegalArgumentException("The Plugins permissions cannot be (null)!");
     pPluginStatus = pluginStatus;
 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Finest,
-	 "PluginMgr.update(): cycle " + cycleID + ":\n  " + getTimer());
-      LogMgr.getInstance().flush();
-    }
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "PluginMgr.update(): cycle " + cycleID + ":\n  " + getTimer());
   }
 
 

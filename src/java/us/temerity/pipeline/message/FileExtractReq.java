@@ -1,4 +1,4 @@
-// $Id: FileExtractReq.java,v 1.5 2007/07/01 23:54:23 jim Exp $
+// $Id: FileExtractReq.java,v 1.6 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -38,6 +38,11 @@ class FileExtractReq
    *   The file sequences to extract indexed by fully resolved node name and checked-in 
    *   revision number.
    * 
+   * @param checkSums
+   *   Read-only checksums for all files associated with the checked-in version
+   *   being extracted indexed by fully resolved node name and checked-in 
+   *   revision number.
+   * 
    * @param archiver
    *   The archiver plugin instance used to perform the archive operation.
    * 
@@ -57,6 +62,7 @@ class FileExtractReq
    String archiveName, 
    long stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
+   TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> checkSums, 
    BaseArchiver archiver, 
    Map<String,String> env, 
    Long size, 
@@ -74,6 +80,11 @@ class FileExtractReq
       throw new IllegalArgumentException
 	("The checked-in file sequences cannot be (null)!");
     pFileSeqs = fseqs;
+
+    if(checkSums == null) 
+      throw new IllegalArgumentException
+	("The checked-in file checksums cannot be (null)!");
+    pCheckSums = checkSums;
 
     if(archiver == null) 
       throw new IllegalArgumentException
@@ -121,6 +132,17 @@ class FileExtractReq
   getSequences()
   {
     return pFileSeqs; 
+  }
+
+  /**
+   * Read-only checksums for all files associated with the checked-in version
+   * being extracted indexed by fully resolved node name and checked-in 
+   * revision number.
+   */ 
+  public TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> 
+  getCheckSums() 
+  {
+    return pCheckSums; 
   }
 
   /**
@@ -182,6 +204,7 @@ class FileExtractReq
     out.writeObject(pArchiveName);
     out.writeObject(pTimeStamp);
     out.writeObject(pFileSeqs);
+    out.writeObject(pCheckSums); 
     out.writeObject(new BaseArchiver(pArchiver));
     out.writeObject(pEnvironment);
     out.writeObject(pSize);
@@ -205,6 +228,8 @@ class FileExtractReq
     pArchiveName = (String) in.readObject();
     pTimeStamp = (Long) in.readObject();
     pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
+    pCheckSums = 
+      (TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>>) in.readObject(); 
     
     BaseArchiver arch = (BaseArchiver) in.readObject();
     try {
@@ -249,6 +274,13 @@ class FileExtractReq
    * revision number.
    */ 
   private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs; 
+
+  /**
+   * Read-only checksums for all files associated with the checked-in version
+   * being extracted indexed by fully resolved node name and checked-in 
+   * revision number.
+   */ 
+  private TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> pCheckSums; 
 
   /**
    * The archiver plugin instance used to perform the archive operation.

@@ -1,4 +1,4 @@
-// $Id: JobWaitRsp.java,v 1.5 2005/01/22 06:10:09 jim Exp $
+// $Id: JobWaitRsp.java,v 1.6 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,11 +51,9 @@ class JobWaitRsp
 	("The job results cannot be (null)!");
     pResults = results; 
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "JobMgr.wait(): " + jobID + "\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

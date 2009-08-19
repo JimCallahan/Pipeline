@@ -1,4 +1,4 @@
-// $Id: QueueGetSelectionSchedulesRsp.java,v 1.1 2005/12/31 20:42:59 jim Exp $
+// $Id: QueueGetSelectionSchedulesRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class QueueGetSelectionSchedulesRsp
       throw new IllegalArgumentException("The selection schedules cannot be (null)!");
     pSelectionSchedules = schedules;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getSelectionSchedules():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

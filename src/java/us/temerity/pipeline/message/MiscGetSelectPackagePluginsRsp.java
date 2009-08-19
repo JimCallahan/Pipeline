@@ -1,4 +1,4 @@
-// $Id: MiscGetSelectPackagePluginsRsp.java,v 1.1 2006/10/23 11:30:20 jim Exp $
+// $Id: MiscGetSelectPackagePluginsRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,11 +46,9 @@ class MiscGetSelectPackagePluginsRsp
       throw new IllegalArgumentException("The associated plugins cannot be (null)!");
     pPlugins = plugins;
     
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        getTimer().toString());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

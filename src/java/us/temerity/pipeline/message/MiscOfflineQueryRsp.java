@@ -1,4 +1,4 @@
-// $Id: MiscOfflineQueryRsp.java,v 1.2 2005/03/23 20:45:21 jim Exp $
+// $Id: MiscOfflineQueryRsp.java,v 1.3 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,11 +46,9 @@ class MiscOfflineQueryRsp
       throw new IllegalArgumentException("The information cannot be (null)!");
     pInfo = info;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.offlineQuery()\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

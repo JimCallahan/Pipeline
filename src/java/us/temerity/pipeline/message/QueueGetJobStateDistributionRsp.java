@@ -1,4 +1,4 @@
-// $Id: QueueGetJobStateDistributionRsp.java,v 1.1 2009/05/14 23:30:43 jim Exp $
+// $Id: QueueGetJobStateDistributionRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class QueueGetJobStateDistributionRsp
       throw new IllegalArgumentException("The state distribution be (null)!");
     pStateDistribution = dist;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getJobStateDistribution():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

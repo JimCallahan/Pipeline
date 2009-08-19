@@ -1,4 +1,4 @@
-// $Id: QueueGetHostsRsp.java,v 1.4 2006/07/02 00:27:49 jim Exp $
+// $Id: QueueGetHostsRsp.java,v 1.5 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class QueueGetHostsRsp
       throw new IllegalArgumentException("The hosts cannot be (null)!");
     pHosts = hosts;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getHosts():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: FileGetOfflinedNodeVersionsRsp.java,v 1.1 2009/01/22 23:38:01 jim Exp $
+// $Id: FileGetOfflinedNodeVersionsRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,11 +46,9 @@ class FileGetOfflinedNodeVersionsRsp
 	("The offlined versions cannot be (null)!");
     pVersions = versions;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "FileMgr.getOfflinedNodeVersions():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

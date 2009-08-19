@@ -1,4 +1,4 @@
-// $Id: QueueGetQueueExtensionsRsp.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: QueueGetQueueExtensionsRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,11 +46,9 @@ class QueueGetQueueExtensionsRsp
       throw new IllegalArgumentException("The extensions cannot be (null)!");
     pExtensions = extensions;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getQueueExtensions():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

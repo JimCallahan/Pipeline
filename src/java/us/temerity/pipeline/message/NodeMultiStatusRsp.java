@@ -1,4 +1,4 @@
-// $Id: NodeMultiStatusRsp.java,v 1.2 2007/04/17 20:11:44 jim Exp $
+// $Id: NodeMultiStatusRsp.java,v 1.3 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class NodeMultiStatusRsp
       throw new IllegalArgumentException("The status of the node roots cannot be (null)!");
     pNodeStatus = status;    
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.multiStatus():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

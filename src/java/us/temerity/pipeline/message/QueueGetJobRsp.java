@@ -1,4 +1,4 @@
-// $Id: QueueGetJobRsp.java,v 1.4 2008/07/03 19:50:02 jesse Exp $
+// $Id: QueueGetJobRsp.java,v 1.5 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -43,11 +43,9 @@ class QueueGetJobRsp
       throw new IllegalArgumentException("The jobs cannot be (null) or empty!");
     pJobs = new TreeMap<Long, QueueJob>(jobs);
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getJobs():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
   
   /** 
@@ -73,11 +71,9 @@ class QueueGetJobRsp
     pJobs = new TreeMap<Long, QueueJob>();
     pJobs.put(job.getJobID(), job);
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getJob():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

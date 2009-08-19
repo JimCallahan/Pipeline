@@ -1,4 +1,4 @@
-// $Id: MiscGetArchiverOutputRsp.java,v 1.1 2005/04/03 01:54:23 jim Exp $
+// $Id: MiscGetArchiverOutputRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class MiscGetArchiverOutputRsp
 
     pOutput = output;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        getTimer().toString());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

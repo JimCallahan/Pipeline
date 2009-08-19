@@ -1,4 +1,4 @@
-// $Id: MiscGetArchivedOnRsp.java,v 1.2 2007/03/28 19:56:42 jim Exp $
+// $Id: MiscGetArchivedOnRsp.java,v 1.3 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -47,11 +47,9 @@ class MiscGetArchivedOnRsp
       throw new IllegalArgumentException("The restore index cannot be (null)!");
     pIndex = index;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getArchivedOn()\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
   

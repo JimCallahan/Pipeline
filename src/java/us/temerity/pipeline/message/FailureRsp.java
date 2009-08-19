@@ -1,4 +1,4 @@
-// $Id: FailureRsp.java,v 1.9 2005/01/22 06:10:09 jim Exp $
+// $Id: FailureRsp.java,v 1.10 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -42,11 +42,9 @@ class FailureRsp
       throw new IllegalArgumentException("The failure message cannot (null)!");
     pMsg = msg;
   
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        getTimer().toString());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

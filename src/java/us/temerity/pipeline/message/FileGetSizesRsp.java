@@ -1,4 +1,4 @@
-// $Id: FileGetSizesRsp.java,v 1.3 2005/01/22 06:10:09 jim Exp $
+// $Id: FileGetSizesRsp.java,v 1.4 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,11 +46,9 @@ class FileGetSizesRsp
       throw new IllegalArgumentException("The file sizes cannot be (null)!");
     pSizes = sizes;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "FileMgr.getSizes(): \n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

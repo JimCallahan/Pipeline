@@ -1,4 +1,4 @@
-// $Id: NodePackRsp.java,v 1.1 2007/10/23 02:29:58 jim Exp $
+// $Id: NodePackRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -54,12 +54,10 @@ class NodePackRsp
         ("The path to the node bundle cannot be (null)!");
     pPath = nodeArchive;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.packNodes(): " + nodeID + " (" + nodeArchive + "):" + 
        "\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

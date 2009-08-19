@@ -1,4 +1,4 @@
-// $Id: JobGetTotalDiskRsp.java,v 1.3 2005/01/22 06:10:09 jim Exp $
+// $Id: JobGetTotalDiskRsp.java,v 1.4 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class JobGetTotalDiskRsp
       throw new IllegalArgumentException("The disk size cannot be negative!");
     pDisk = disk;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "JobMgr.getTotalDisk():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

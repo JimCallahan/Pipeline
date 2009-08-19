@@ -1,4 +1,4 @@
-// $Id: QueueGetSelectionGroupsRsp.java,v 1.1 2005/12/31 20:42:59 jim Exp $
+// $Id: QueueGetSelectionGroupsRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class QueueGetSelectionGroupsRsp
       throw new IllegalArgumentException("The selection groups cannot be (null)!");
     pSelectionGroups = groups;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getSelectionGroups():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: FileLookupSiteVersionRsp.java,v 1.1 2009/03/25 22:02:24 jim Exp $
+// $Id: FileLookupSiteVersionRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -44,6 +44,11 @@ class FileLookupSiteVersionRsp
     if(vsn == null) 
       throw new IllegalArgumentException("The node version cannot be (null)!"); 
     pNodeVersion = vsn;
+
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "FileMgr.lookupSiteVersion(): " + vsn.getName() + " (v" + vsn.getVersionID() + ")\n" + 
+       "  " + getTimer());
   }
 
 

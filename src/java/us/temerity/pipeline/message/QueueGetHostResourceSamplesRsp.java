@@ -1,4 +1,4 @@
-// $Id: QueueGetHostResourceSamplesRsp.java,v 1.5 2006/11/21 19:55:51 jim Exp $
+// $Id: QueueGetHostResourceSamplesRsp.java,v 1.6 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class QueueGetHostResourceSamplesRsp
       throw new IllegalArgumentException("The resource samples cannot be (null)!");
     pSamples = samples;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getHostResourceSamples():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JobGetOsTypeRsp.java,v 1.1 2005/11/03 22:11:15 jim Exp $
+// $Id: JobGetOsTypeRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class JobGetOsTypeRsp
       throw new IllegalArgumentException("The operating system type cannoy be (null)!");
     pOsType = os; 
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "JobMgr.getOsType():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

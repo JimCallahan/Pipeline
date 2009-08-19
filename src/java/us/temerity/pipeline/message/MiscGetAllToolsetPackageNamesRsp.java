@@ -1,4 +1,4 @@
-// $Id: MiscGetAllToolsetPackageNamesRsp.java,v 1.2 2006/10/23 18:31:20 jim Exp $
+// $Id: MiscGetAllToolsetPackageNamesRsp.java,v 1.3 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class MiscGetAllToolsetPackageNamesRsp
       throw new IllegalArgumentException("The toolset package names cannot be (null)!");
     pNames = names;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getToolsetPackageNames()\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

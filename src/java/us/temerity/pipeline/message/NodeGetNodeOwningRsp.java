@@ -1,4 +1,4 @@
-// $Id: NodeGetNodeOwningRsp.java,v 1.1 2005/03/28 04:17:33 jim Exp $
+// $Id: NodeGetNodeOwningRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class NodeGetNodeOwningRsp
 
     pName = name;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getNodeOwning():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: NodeGetHistoryRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: NodeGetHistoryRsp.java,v 1.4 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,12 +46,9 @@ class NodeGetHistoryRsp
       throw new IllegalArgumentException("The history cannot be (null)!");
     pHistory = history;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.getHistory(): " + name + ":\n" + 
-       "  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
+       "MasterMgr.getHistory(): " + name + ":\n  " + getTimer());
   }
 
 

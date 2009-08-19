@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInFileNoveltyRsp.java,v 1.4 2005/01/22 06:10:10 jim Exp $
+// $Id: NodeGetCheckedInFileNoveltyRsp.java,v 1.5 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -50,12 +50,10 @@ class NodeGetCheckedInFileNoveltyRsp
       throw new IllegalArgumentException("The novelty cannot be (null)!");
     pNovelty = novelty;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getCheckedInFileNovelty(): " + name + ":\n" + 
        "  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

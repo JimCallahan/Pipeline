@@ -1,4 +1,4 @@
-// $Id: QueueGetSelectionKeysRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: QueueGetSelectionKeysRsp.java,v 1.4 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class QueueGetSelectionKeysRsp
       throw new IllegalArgumentException("The selection keys cannot be (null)!");
     pKeys = keys;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getSelectionKeys():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

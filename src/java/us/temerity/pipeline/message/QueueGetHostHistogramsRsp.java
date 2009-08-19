@@ -1,4 +1,4 @@
-// $Id: QueueGetHostHistogramsRsp.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: QueueGetHostHistogramsRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,11 +46,9 @@ class QueueGetHostHistogramsRsp
       throw new IllegalArgumentException("The histograms cannot be (null)!");
     pHistograms = histograms;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getHostHistograms():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

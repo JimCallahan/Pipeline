@@ -1,4 +1,4 @@
-// $Id: NodeGetEventsRsp.java,v 1.3 2008/06/19 03:30:36 jim Exp $
+// $Id: NodeGetEventsRsp.java,v 1.4 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,12 +46,10 @@ class NodeGetEventsRsp
       throw new IllegalArgumentException("The events cannot be (null)!");
     pEvents = events;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getNodeEvents():\n" + 
        "  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

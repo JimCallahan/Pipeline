@@ -1,4 +1,4 @@
-// $Id: DryRunRsp.java,v 1.1 2007/07/01 23:54:23 jim Exp $
+// $Id: DryRunRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -67,11 +67,9 @@ class DryRunRsp
 
     pMessage = msg;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        logMsg); 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
   

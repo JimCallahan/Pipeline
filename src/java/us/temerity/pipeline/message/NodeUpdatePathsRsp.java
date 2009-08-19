@@ -1,4 +1,4 @@
-// $Id: NodeUpdatePathsRsp.java,v 1.7 2005/01/22 06:10:10 jim Exp $
+// $Id: NodeUpdatePathsRsp.java,v 1.8 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -61,12 +61,10 @@ class NodeUpdatePathsRsp
       throw new IllegalArgumentException("The root node path component cannot be (null)!");
     pRootComp = rootComp;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.updatePaths(): " + author + "|" + view + ":\n" +
        "  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

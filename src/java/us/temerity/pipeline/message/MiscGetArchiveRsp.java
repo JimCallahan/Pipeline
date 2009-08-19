@@ -1,4 +1,4 @@
-// $Id: MiscGetArchiveRsp.java,v 1.4 2005/03/10 08:07:27 jim Exp $
+// $Id: MiscGetArchiveRsp.java,v 1.5 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,11 +46,9 @@ class MiscGetArchiveRsp
       throw new IllegalArgumentException("The archive cannot be (null)!");
     pArchive = archive;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getArchive(): " + pArchive.getName() + "\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

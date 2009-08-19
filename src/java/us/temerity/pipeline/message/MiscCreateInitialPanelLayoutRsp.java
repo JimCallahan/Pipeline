@@ -1,4 +1,4 @@
-// $Id: MiscCreateInitialPanelLayoutRsp.java,v 1.1 2006/07/02 07:48:55 jim Exp $
+// $Id: MiscCreateInitialPanelLayoutRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,12 +46,9 @@ class MiscCreateInitialPanelLayoutRsp
       throw new IllegalArgumentException("The layout contents cannot be (null)!");
     pContents = contents;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.createInitialPanelLayout():\n" +
-       "  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
+       "MasterMgr.createInitialPanelLayout():\n  " + getTimer());
   }
 
 

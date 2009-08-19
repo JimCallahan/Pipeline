@@ -1,4 +1,4 @@
-// $Id: QueueGetHardwareGroupsRsp.java,v 1.1 2007/11/30 20:06:25 jesse Exp $
+// $Id: QueueGetHardwareGroupsRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -43,11 +43,9 @@ class QueueGetHardwareGroupsRsp
       throw new IllegalArgumentException("The selection groups cannot be (null)!");
     pHardwareGroups = groups;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getHardwareGroups():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

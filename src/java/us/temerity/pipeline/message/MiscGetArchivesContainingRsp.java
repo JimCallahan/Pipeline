@@ -1,4 +1,4 @@
-// $Id: MiscGetArchivesContainingRsp.java,v 1.1 2005/03/21 07:04:36 jim Exp $
+// $Id: MiscGetArchivesContainingRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -48,11 +48,9 @@ class MiscGetArchivesContainingRsp
       throw new IllegalArgumentException("The archive names cannot be (null)!");
     pArchives = archives;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getArchivesContaining()\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
   

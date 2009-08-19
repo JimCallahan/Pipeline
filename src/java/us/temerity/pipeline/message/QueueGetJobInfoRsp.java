@@ -1,4 +1,4 @@
-// $Id: QueueGetJobInfoRsp.java,v 1.4 2008/07/03 19:50:01 jesse Exp $
+// $Id: QueueGetJobInfoRsp.java,v 1.5 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -44,11 +44,9 @@ class QueueGetJobInfoRsp
 
     pJobInfos = new TreeMap<Long, QueueJobInfo>(infos);
     
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getJobInfos():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
   /** 
@@ -75,11 +73,9 @@ class QueueGetJobInfoRsp
     pJobInfos = new TreeMap<Long, QueueJobInfo>();
     pJobInfos.put(info.getJobID(), info);
     
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getJobInfos():\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

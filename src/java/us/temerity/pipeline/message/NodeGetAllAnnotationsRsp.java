@@ -1,4 +1,4 @@
-// $Id: NodeGetAllAnnotationsRsp.java,v 1.1 2009/05/18 06:31:49 jesse Exp $
+// $Id: NodeGetAllAnnotationsRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,11 +45,9 @@ class NodeGetAllAnnotationsRsp
     if(annots != null)
       pAnnotations.putAll(annots);
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "MasterMgr.getBothAnnotation(TreeSet<NodeID>): " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 
