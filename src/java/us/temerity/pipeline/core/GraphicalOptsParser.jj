@@ -58,6 +58,8 @@ GraphicalOptsParser
     pTraceGL = false;
 
     pUsePBuffers = true;
+
+    pDebugSwing = false;
   }
  
 
@@ -131,6 +133,11 @@ GraphicalOptsParser
    */ 
   private boolean pUsePBuffers;
 
+  /**
+   * Whether to debug Swing threading violations.
+   */ 
+  private boolean pDebugSwing; 
+
 }
 
 
@@ -161,6 +168,8 @@ TOKEN :
 
 | <DEBUG_GL:       "--debug-gl">      : BOOLEAN_SEP
 | <TRACE_GL:       "--trace-gl">      : BOOLEAN_SEP
+
+| <DEBUG_SWING:    "--debug-swing">   : BOOLEAN_SEP
 
 | <USE_PBUFFERS:  "--use-pbuffers">   : BOOLEAN_SEP
 
@@ -346,7 +355,7 @@ CommandLine() :
       
       /* start the application */ 
       UIMaster.init(pLayout, pRestoreLayout, pRestoreSelections, pRemoteServer, 
-                    pUsePBuffers, pDebugGL, pTraceGL);
+                    pUsePBuffers, pDebugGL, pTraceGL, pDebugSwing);
     }
   }
 }
@@ -448,7 +457,7 @@ GlobalOpts() :
 {
   (Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
    Layout() | NoLayout() | NoSelections() | NoRemote() | 
-   UsePBuffers() | DebugGL() | TraceGL()) 
+   UsePBuffers() | DebugGL() | TraceGL() | DebugSwing()) 
   {}
 }
 
@@ -736,6 +745,17 @@ void TraceGL() :
   <TRACE_GL> EQ() tf=Boolean() 
   {
     pTraceGL = tf;
+  }
+}
+
+void DebugSwing() : 
+{
+  boolean tf;
+}
+{
+  <DEBUG_SWING> EQ() tf=Boolean() 
+  {
+    pDebugSwing = tf;
   }
 }
 

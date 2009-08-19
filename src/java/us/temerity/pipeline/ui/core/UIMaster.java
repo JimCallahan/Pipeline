@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.109 2009/07/26 07:21:32 jlee Exp $
+// $Id: UIMaster.java,v 1.110 2009/08/19 22:56:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -61,6 +61,9 @@ class UIMaster
    * 
    * @param traceGL
    *   Whether to print all OpenGL calls to STDOUT.
+   * 
+   * @param debugSwing
+   *   Whether to check for Swing thread violations. 
    */ 
   private 
   UIMaster
@@ -71,7 +74,8 @@ class UIMaster
    boolean remoteServer, 
    boolean usePBuffers, 
    boolean debugGL, 
-   boolean traceGL
+   boolean traceGL, 
+   boolean debugSwing
   ) 
   {
     {
@@ -177,6 +181,8 @@ class UIMaster
     pTraceGL = traceGL; 
     pDisplayLists = new TreeSet<Integer>();
 
+    pDebugSwing = debugSwing; 
+
     pUsePBuffers = usePBuffers;
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));  // Does this need to be run 
@@ -213,6 +219,9 @@ class UIMaster
    * 
    * @param traceGL
    *   Whether to print all OpenGL calls to STDOUT.
+   * 
+   * @param debugSwing
+   *   Whether to check for Swing thread violations. 
    */ 
   public static void 
   init
@@ -223,12 +232,13 @@ class UIMaster
    boolean remoteServer, 
    boolean usePBuffers, 
    boolean debugGL, 
-   boolean traceGL
+   boolean traceGL, 
+   boolean debugSwing
   ) 
   {
     assert(sMaster == null);
     sMaster = new UIMaster(layout, restoreLayout, restoreSelections, remoteServer, 
-                           usePBuffers, debugGL, traceGL);
+                           usePBuffers, debugGL, traceGL, debugSwing);
   }
 
 
@@ -499,8 +509,11 @@ class UIMaster
   createWindow() 
   {
     JPanelFrame frame = new JPanelFrame(); 
-    pPanelFrames.add(frame);
 
+    if(pDebugSwing) 
+      RepaintManager.setCurrentManager(new ThreadingDebugRepaintManager());
+
+    pPanelFrames.add(frame);
     frame.setVisible(true);
 
     return frame;
@@ -4414,6 +4427,20 @@ class UIMaster
       pDisplayLists.add(dl);
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S W I N G   U T I L I T I E S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to check for Swing thread violations. 
+   */ 
+  public boolean 
+  getDebugSwing() 
+  {
+    return pDebugSwing;
+  }
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -4866,6 +4893,9 @@ class UIMaster
 	JFrame frame = new JFrame("plui");
 	pRestoreSplashFrame = frame;
 
+        if(pDebugSwing) 
+          RepaintManager.setCurrentManager(new ThreadingDebugRepaintManager());
+
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	frame.setResizable(false);
@@ -4911,6 +4941,9 @@ class UIMaster
       {
 	JFrame frame = new JFrame("plui");
 	pFrame = frame;
+
+        if(pDebugSwing) 
+          RepaintManager.setCurrentManager(new ThreadingDebugRepaintManager());
 
 	frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	frame.addWindowListener(pMaster);
@@ -5651,6 +5684,9 @@ class UIMaster
 	  else {
 	    JPanelFrame frame = new JPanelFrame(); 
 	    
+            if(pDebugSwing) 
+              RepaintManager.setCurrentManager(new ThreadingDebugRepaintManager());
+
 	    frame.setBounds(layout.getBounds());
 	    frame.setManagerPanel(mpanel);
 	    frame.setWindowName(layout.getName());
@@ -6864,6 +6900,78 @@ class UIMaster
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * A replacement RepaintManager which checks the call stack to insure that non-event
+   * threads are not making Swing calls.
+   */ 
+  public class 
+  ThreadingDebugRepaintManager
+    extends RepaintManager 
+  {
+    public
+    ThreadingDebugRepaintManager() 
+    {
+      super();
+    }
+                              
+    public synchronized void 
+    addInvalidComponent
+    (
+      JComponent component
+    ) 
+    {
+      checkThreadViolations(component);
+      super.addInvalidComponent(component);
+    }
+
+    public void 
+    addDirtyRegion
+    (
+     JComponent component, 
+     int x, 
+     int y, 
+     int w, 
+     int h
+    )
+    {
+      checkThreadViolations(component);
+      super.addDirtyRegion(component, x, y, w, h);
+    }
+
+    private void 
+    checkThreadViolations
+    (
+     JComponent c
+    ) 
+    {
+      if(!SwingUtilities.isEventDispatchThread()) {
+        Exception ex = new Exception();
+
+        boolean repaint = false;
+        boolean fromSwing = false;
+        for(StackTraceElement st : ex.getStackTrace()) {
+          if(repaint && st.getClassName().startsWith("javax.swing.")) 
+            fromSwing = true;
+
+          if("repaint".equals(st.getMethodName())) 
+            repaint = true;
+        }
+
+        /* no problems here, since repaint() is thread safe */ 
+        if(repaint && !fromSwing) 
+          return;
+
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+           Exceptions.getFullMessage
+           ("Detected call to Swing from outside the Event thread:", ex)); 
+      }
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -6992,6 +7100,14 @@ class UIMaster
    * context as pTexLoader.getContext(). <P> 
    */ 
   private TreeSet<Integer>  pDisplayLists; 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to check for Swing thread violations. 
+   */ 
+  private boolean pDebugSwing;
 
 
   /*----------------------------------------------------------------------------------------*/
