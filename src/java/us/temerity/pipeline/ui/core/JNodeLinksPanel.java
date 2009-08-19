@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.36 2009/07/18 21:14:45 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.37 2009/08/19 23:37:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -21,8 +21,7 @@ import javax.swing.*;
  */ 
 public  
 class JNodeLinksPanel
-  extends JSimpleNodeDetailPanel
-  implements MouseListener, KeyListener, ActionListener
+  extends JBaseNodeDetailPanel
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -73,110 +72,7 @@ class JNodeLinksPanel
 
     /* initialize the popup menus */ 
     {
-      JMenuItem item;
-      JMenu sub;
-      
-      pWorkingPopup   = new JPopupMenu();  
-      pCheckedInPopup = new JPopupMenu(); 
-
-      pEditItems            = new JMenuItem[2];
-      pEditWithDefaultItems = new JMenuItem[2];
-      pEditWithMenus        = new JMenu[2];
-
-      {
-	item = new JMenuItem("Apply Changes");
-	pApplyItem = item;
-	item.setActionCommand("apply");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-
-	pWorkingPopup.addSeparator();
-      }
-
-      JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
-      int wk;
-      for(wk=0; wk<menus.length; wk++) {
-	item = new JMenuItem((wk == 1) ? "View" : "Edit");
-	pEditItems[wk] = item;
-	item.setActionCommand("edit");
-	item.addActionListener(this);
-	menus[wk].add(item);
-	
-	pEditWithMenus[wk] = new JMenu((wk == 1) ? "View With" : "Edit With");
-	menus[wk].add(pEditWithMenus[wk]);
-
-	item = new JMenuItem((wk == 1) ? "View With Default" : "Edit With Default");
-	pEditWithDefaultItems[wk] = item;
-	item.setActionCommand("edit-with-default");
-	item.addActionListener(this);
-	menus[wk].add(item);
-
-      }
-      
-      item = new JMenuItem("Edit As Owner");
-      pEditAsOwnerItem = item;
-      item.setActionCommand("edit-as-owner");
-      item.addActionListener(this);
-      menus[0].add(item);
-
-      {
-	pWorkingPopup.addSeparator();
-	
-	item = new JMenuItem("Queue Jobs");
-	pQueueJobsItem = item;
-	item.setActionCommand("queue-jobs");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-	
-	item = new JMenuItem("Queue Jobs Special...");
-	pQueueJobsSpecialItem = item;
-	item.setActionCommand("queue-jobs-special");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-	
-	pWorkingPopup.addSeparator();
-
-	item = new JMenuItem("Vouch"); 
-	pVouchItem = item;
-	item.setActionCommand("vouch");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-
-	pWorkingPopup.addSeparator();
-
-	item = new JMenuItem("Pause Jobs");
-	pPauseJobsItem = item;
-	item.setActionCommand("pause-jobs");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-      
-	item = new JMenuItem("Resume Jobs");
-	pResumeJobsItem = item;
-	item.setActionCommand("resume-jobs");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-	
-	item = new JMenuItem("Preempt Jobs");
-	pPreemptJobsItem = item;
-	item.setActionCommand("preempt-jobs");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-
-	item = new JMenuItem("Kill Jobs");
-	pKillJobsItem = item;
-	item.setActionCommand("kill-jobs");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-
-	pWorkingPopup.addSeparator();
-
-	item = new JMenuItem("Remove Files");
-	pRemoveFilesItem = item;
-	item.setActionCommand("remove-files");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-      }
-
+      initBasicMenus(true, false); 
       updateMenuToolTips();
     }
 
@@ -186,44 +82,13 @@ class JNodeLinksPanel
 
       /* header */ 
       {
-	JPanel panel = new JPanel();	
+        pApplyToolTipText   = "Replace the working links with the selected checked-in files.";
+        pUnApplyToolTipText = "There are no unsaved changes to Apply at this time."; 
 
-        {
-          initHeader(panel);
-          pHeaderIcon.addMouseListener(this); 
-        }
-
-	panel.add(Box.createHorizontalGlue());
-      
-	{
-	  JLabel label = new JLabel(sFrozenIcon);
-	  pFrozenLabel = label;
-	  panel.add(label);	  
-	}
-
-	{
-	  JButton btn = new JButton();		
-	  pApplyButton = btn;
-	  btn.setName("ApplyHeaderButton");
-          btn.setEnabled(false);
-		  
-	  Dimension size = new Dimension(30, 30);
-	  btn.setMinimumSize(size);
-	  btn.setMaximumSize(size);
-	  btn.setPreferredSize(size);
-	  
-	  btn.setActionCommand("apply");
-	  btn.addActionListener(this);
-
-	  btn.setToolTipText(UIFactory.formatToolTip
-	    ("Replace the working links with the selected checked-in files."));
-
-	  panel.add(btn);
-	} 
-
+	JPanel panel = initHeader(true); 
 	add(panel);
       }
-
+    
       add(Box.createRigidArea(new Dimension(0, 4)));
 
       /* full node name */ 
@@ -364,7 +229,8 @@ class JNodeLinksPanel
   /**
    * Update all panels which share the current update channel.
    */ 
-  private void 
+  @Override
+  public void 
   updatePanels() 
   {
     if (pGroupID != 0) {
@@ -407,42 +273,6 @@ class JNodeLinksPanel
     updateNodeStatus(status, links, offline);
   }
 
-  /**
-   * Perform any operations needed after an panel operation has completed. <P> 
-   * 
-   * This method is run by the Swing Event thread.
-   */ 
-  @Override
-  public void 
-  postPanelOp() 
-  {
-    pApplyButton.setEnabled(false);
-    pApplyItem.setEnabled(false);
-    
-    pApplyButton.setToolTipText(UIFactory.formatToolTip
-      ("There are no unsaved changes to Apply at this time.")); 
-
-    super.postPanelOp();
-  }
-  
-  /**
-   * Register the name of a panel property which has just been modified.
-   */ 
-  @Override
-  public void
-  unsavedChange
-  (
-   String name
-  )
-  {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
-
-    pApplyButton.setToolTipText(UIFactory.formatToolTip
-      ("Replace the working links with the selected checked-in files."));
-
-    super.unsavedChange(name); 
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -467,7 +297,7 @@ class JNodeLinksPanel
    TreeSet<VersionID> offline
   ) 
   {
-    super.updateNodeStatus(status);
+    super.updateNodeStatus(status, false);
 
     pOffline = offline;
 
@@ -482,20 +312,6 @@ class JNodeLinksPanel
     NodeMod mod = null;
     if(details != null) 
       mod = details.getWorkingVersion();
-
-    /* frozen node? */
-    {
-      pIsFrozen = false;
-      if(mod != null) {
-	pIsFrozen = mod.isFrozen();
-	pFrozenLabel.setIcon(mod.isLocked() ? sLockedIcon : sFrozenIcon);
-        pFrozenLabel.setToolTipText(UIFactory.formatToolTip
-          (mod.isLocked() ? "The Node is Locked." : "The Node is Frozen.")); 
-      }
-
-      pFrozenLabel.setVisible(pIsFrozen);
-      pApplyButton.setVisible(!pIsFrozen);
-    }
 
     /* links */ 
     {
@@ -799,350 +615,28 @@ class JNodeLinksPanel
     return comps;
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Update the node menu.
-   */ 
-  public void 
-  updateNodeMenu()
-  {
-    boolean queuePrivileged = 
-      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isQueueManaged(pAuthor));
-
-    boolean nodePrivileged = 
-      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isNodeManaged(pAuthor));
-
-    pQueueJobsItem.setEnabled(queuePrivileged);
-    pQueueJobsSpecialItem.setEnabled(queuePrivileged);
-
-    pVouchItem.setEnabled(queuePrivileged);
-
-    pPauseJobsItem.setEnabled(queuePrivileged);
-    pResumeJobsItem.setEnabled(queuePrivileged);
-    pPreemptJobsItem.setEnabled(queuePrivileged);
-    pKillJobsItem.setEnabled(queuePrivileged);
-
-    pRemoveFilesItem.setEnabled(nodePrivileged);  
-
-    updateEditorMenus();
-  }
-
-  /**
-   * Reset the caches of toolset plugins and plugin menu layouts.
-   */ 
-  @Override
-  public void 
-  clearPluginCache()
-  {
-    pEditorMenuToolset = null;
-  }
-
-  /**
-   * Update the editor plugin menus.
-   */ 
-  private void 
-  updateEditorMenus()
-  {
-    String toolset = null;
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      NodeDetailsLight details = pStatus.getLightDetails();
-      if(details.getWorkingVersion() != null) 
-        toolset = details.getWorkingVersion().getToolset();
-      else if(details.getLatestVersion() != null) 
-        toolset = details.getLatestVersion().getToolset();
-    }
-
-    if((toolset != null) && !toolset.equals(pEditorMenuToolset)) {
-      UIMaster master = UIMaster.getInstance();
-      int wk;
-      for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
-      
-      pEditorMenuToolset = toolset;
-    }
-
-    pEditAsOwnerItem.setEnabled(pPrivilegeDetails.isNodeManaged(pAuthor) && 
-                                !PackageInfo.sUser.equals(pAuthor) && 
-                                (PackageInfo.sOsType != OsType.Windows));
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Update the panel to reflect new user preferences.
-   */ 
-  @Override
-  public void 
-  updateUserPrefs() 
-  {
-    TextureMgr.getInstance().rebuildIcons();
-
-    updateMenuToolTips();
-  }
-
-  /**
-   * Update the menu item tool tips.
-   */ 
-  private void 
-  updateMenuToolTips() 
-  {
-    UserPrefs prefs = UserPrefs.getInstance();
-       
-    updateMenuToolTip
-      (pApplyItem, prefs.getApplyChanges(),
-       "Apply the changes to the working version.");
-
-    int wk;
-    for(wk=0; wk<pEditItems.length; wk++) {
-      updateMenuToolTip
-	(pEditItems[wk], prefs.getEdit(), 
-	 "Edit primary file sequences of the current primary selection.");
-
-      updateMenuToolTip
-	(pEditWithDefaultItems[wk], prefs.getEdit(), 
-	 "Edit primary file sequences of the current primary selection using the default" + 
-	 "editor for the file type.");
-    }
-
-    updateMenuToolTip
-      (pEditAsOwnerItem, prefs.getEditAsOwner(), 
-       "Edit primary file sequences of the current primary selection with the permissions " +
-       "of the owner of the node.");
-
-    updateMenuToolTip
-      (pQueueJobsItem, prefs.getQueueJobs(), 
-       "Submit jobs to the queue for the current primary selection.");
-    updateMenuToolTip
-      (pQueueJobsSpecialItem, prefs.getQueueJobsSpecial(), 
-       "Submit jobs to the queue for the current primary selection with special job " + 
-       "requirements.");
-    updateMenuToolTip
-      (pPauseJobsItem, prefs.getPauseJobs(), 
-       "Pause all jobs associated with the selected nodes.");
-    updateMenuToolTip
-      (pResumeJobsItem, prefs.getResumeJobs(), 
-       "Resume execution of all jobs associated with the selected nodes.");
-    updateMenuToolTip
-      (pPreemptJobsItem, prefs.getPreemptJobs(), 
-       "Preempt all jobs associated with the selected nodes.");
-    updateMenuToolTip
-      (pKillJobsItem, prefs.getKillJobs(), 
-       "Kill all jobs associated with the selected nodes.");
-
-    updateMenuToolTip
-      (pRemoveFilesItem, prefs.getRemoveFiles(), 
-       "Remove all the primary/secondary files associated with the selected nodes.");
-  }
-
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
-
-  /**
-   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
-   */ 
-  public void 
-  mouseClicked(MouseEvent e) {}
-   
-  /**
-   * Invoked when the mouse enters a component. 
-   */
-  public void 
-  mouseEntered
-  (
-   MouseEvent e
-  ) 
-  {
-    requestFocusInWindow();
-  }
-  
-  /**
-   * Invoked when the mouse exits a component. 
-   */ 
-  public void 
-  mouseExited
-  (
-   MouseEvent e
-  ) 
-  {
-    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
-  }
-
-  /**
-   * Invoked when a mouse button has been pressed on a component. 
-   */
-  public void 
-  mousePressed
-  (
-   MouseEvent e
-  )
-  {
-    /* manager panel popups */ 
-    if(pManagerPanel.handleManagerMouseEvent(e)) 
-      return;
-
-    /* local mouse events */ 
-    if(e.getSource() == pHeaderIcon) {
-      if((pStatus != null) && pStatus.hasLightDetails()) {
-        NodeDetailsLight details = pStatus.getLightDetails();
-        NodeMod work = details.getWorkingVersion();
-        NodeVersion latest = details.getLatestVersion();
-        if((work != null) && !pIsFrozen) {
-          updateNodeMenu();
-          pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
-        }
-        else if(latest != null) {
-          updateNodeMenu();
-          pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
-        }
-      }
-    }
-  }
-
-  /**
-   * Invoked when a mouse button has been released on a component. 
-   */ 
-  public void 
-  mouseReleased(MouseEvent e) {}
-
-
-  /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
-
-  /**
-   * invoked when a key has been pressed.
-   */   
-  public void 
-  keyPressed
-  (
-   KeyEvent e
-  )
-  {
-    /* manager panel hotkeys */ 
-    if(pManagerPanel.handleManagerKeyEvent(e)) 
-      return;
-
-    /* local hotkeys */ 
-    UserPrefs prefs = UserPrefs.getInstance();
-    if((prefs.getApplyChanges() != null) &&
-       prefs.getApplyChanges().wasPressed(e) && 
-       pApplyButton.isEnabled())
-      doApply();
-
-    else if((prefs.getEdit() != null) &&
-       prefs.getEdit().wasPressed(e))
-      doEdit();
-    else if((prefs.getEditWithDefault() != null) &&
-	    prefs.getEditWithDefault().wasPressed(e))
-      doEditWithDefault();
-    else if((prefs.getEditAsOwner() != null) &&
-	    prefs.getEditAsOwner().wasPressed(e))
-      doEditAsOwner();
-    
-    else if((prefs.getQueueJobs() != null) &&
-	    prefs.getQueueJobs().wasPressed(e))
-      doQueueJobs();
-    else if((prefs.getQueueJobsSpecial() != null) &&
-	    prefs.getQueueJobsSpecial().wasPressed(e))
-      doQueueJobsSpecial();
-
-    else if((prefs.getVouch() != null) &&
-            prefs.getVouch().wasPressed(e))
-      doVouch();
-
-    else if((prefs.getPauseJobs() != null) &&
-	    prefs.getPauseJobs().wasPressed(e))
-	doPauseJobs();
-    else if((prefs.getResumeJobs() != null) &&
-	    prefs.getResumeJobs().wasPressed(e))
-      doResumeJobs();
-    else if((prefs.getKillJobs() != null) &&
-	      prefs.getKillJobs().wasPressed(e))
-      doKillJobs();
-    
-    else if((prefs.getRemoveFiles() != null) &&
-	    prefs.getRemoveFiles().wasPressed(e))
-      doRemoveFiles();
-
-    else {
-      switch(e.getKeyCode()) {
-      case KeyEvent.VK_SHIFT:
-      case KeyEvent.VK_ALT:
-      case KeyEvent.VK_CONTROL:
-	break;
-      
-      default:
-	if(UIFactory.getBeepPreference())
-	  Toolkit.getDefaultToolkit().beep();
-      }
-    }
-  }
-
-  /**
-   * Invoked when a key has been released.
-   */ 
-  public void 	
-  keyReleased(KeyEvent e) {}
-
-  /**
-   * Invoked when a key has been typed.
-   */ 
-  public void 	
-  keyTyped(KeyEvent e) {} 
-
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
    ActionEvent e
   ) 
   {
+    super.actionPerformed(e);
+
     String cmd = e.getActionCommand();
-    if(cmd.equals("apply")) 
-      doApply();
-
-    else if(cmd.equals("edit"))
-      doEdit();
-    else if(cmd.equals("edit-with-default"))
-      doEditWithDefault();
-    else if(cmd.startsWith("edit-with:"))
-      doEditWith(cmd.substring(10)); 
-    else if(cmd.equals("edit-as-owner"))
-      doEditAsOwner();  
-
-    else if(cmd.equals("queue-jobs"))
-      doQueueJobs();
-    else if(cmd.equals("queue-jobs-special"))
-      doQueueJobsSpecial();
-
-    else if(cmd.equals("vouch"))
-      doVouch();
-
-    else if(cmd.equals("pause-jobs"))
-      doPauseJobs();
-    else if(cmd.equals("resume-jobs"))
-      doResumeJobs();
-    else if(cmd.equals("preempt-jobs"))
-      doPreemptJobs();
-    else if(cmd.equals("kill-jobs"))
-      doKillJobs();
-
-    else if(cmd.equals("remove-files"))
-      doRemoveFiles();        
-
-    else if(cmd.startsWith("policy-changed:")) 
+    if(cmd.startsWith("policy-changed:")) 
       doPolicyChanged(cmd.substring(15));
     else if(cmd.startsWith("relationship-changed:")) 
       doRelationshipChanged(cmd.substring(21));
@@ -1160,6 +654,7 @@ class JNodeLinksPanel
       doUnlink(cmd.substring(7));
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
@@ -1511,287 +1006,6 @@ class JNodeLinksPanel
   {
     UnlinkTask task = new UnlinkTask(name);
     task.start();
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Edit/View the current node with the editor specified by the node version.
-   */ 
-  private void 
-  doEdit() 
-  {
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      NodeDetailsLight details = pStatus.getLightDetails();
-
-      NodeCommon com = details.getWorkingVersion();
-      if(com == null) 
-        com = details.getLatestVersion();
-      
-      if(com != null) {
-        EditTask task = new EditTask(com);
-        task.start();
-      }
-    }
-  }
-
-  /**   
-   * Edit/View the primary selected node using the default editor for the file type.
-   */ 
-  private void 
-  doEditWithDefault() 
-  {
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      NodeDetailsLight details = pStatus.getLightDetails();
-
-      NodeCommon com = details.getWorkingVersion();
-      if(com == null) 
-        com = details.getLatestVersion();
-      
-      if(com != null) {
-        EditTask task = new EditTask(com, true, false);
-        task.start();
-      }
-    }
-  }
-
-  /**
-   * Edit/View the current node with the given editor.
-   */ 
-  private void 
-  doEditWith
-  (
-   String editor
-  ) 
-  {
-    String parts[] = editor.split(":");
-    assert(parts.length == 3);
-    
-    String ename   = parts[0];
-    VersionID evid = new VersionID(parts[1]);
-    String evendor = parts[2];
-
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      NodeDetailsLight details = pStatus.getLightDetails();
-
-      NodeCommon com = details.getWorkingVersion();
-      if(com == null) 
-        com = details.getLatestVersion();
-      
-      if(com != null) {
-        EditTask task = new EditTask(com, ename, evid, evendor);
-        task.start();
-      }
-    }
-  }
-
-  /**
-   * Edit/View the current node with the permissions of the owner of the node.
-   */ 
-  private void 
-  doEditAsOwner() 
-  {
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      NodeDetailsLight details = pStatus.getLightDetails();
-
-      boolean isWorking = true;
-      NodeCommon com = details.getWorkingVersion();
-      if(com == null) {
-        com = details.getLatestVersion();
-        isWorking = false;
-      }
-
-      if(com != null) {
-        EditTask task = new EditTask(com, false, isWorking);
-        task.start();
-      }
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Queue jobs to the queue for the primary current node and all nodes upstream of it.
-   */ 
-  private void 
-  doQueueJobs() 
-  {
-    if(pIsFrozen) 
-      return;
-
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      QueueJobsTask task = new QueueJobsTask(pStatus.getName());
-      task.start();
-    }
-  }
-
-  /**
-   * Queue jobs to the queue for the primary current node and all nodes upstream of it
-   * with special job requirements.
-   */ 
-  private void 
-  doQueueJobsSpecial() 
-  {
-    if(pIsFrozen) 
-      return;
-
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
-      if(diag.wasConfirmed()) {
-        Integer batchSize = null;
-        if(diag.overrideBatchSize()) 
-          batchSize = diag.getBatchSize();
-        
-        Integer priority = null;
-        if(diag.overridePriority()) 
-          priority = diag.getPriority();
-        
-        Integer interval = null;
-        if(diag.overrideRampUp()) 
-          interval = diag.getRampUp();
-        
-        Float maxLoad = null;
-        if(diag.overrideMaxLoad())
-          maxLoad = diag.getMaxLoad();
-        
-        Long minMemory = null;
-        if(diag.overrideMinMemory())
-          minMemory = diag.getMinMemory();
-        
-        Long minDisk= null;
-        if(diag.overrideMinDisk())
-          minDisk = diag.getMinDisk();
-        
-        TreeSet<String> selectionKeys = null;
-        if(diag.overrideSelectionKeys()) 
-          selectionKeys = diag.getSelectionKeys();
-        
-        TreeSet<String> licenseKeys = null;
-        if(diag.overrideLicenseKeys()) 
-          licenseKeys = diag.getLicenseKeys();
-        
-        TreeSet<String> hardwareKeys = null;
-        if(diag.overrideHardwareKeys()) 
-          hardwareKeys = diag.getHardwareKeys();
-        
-        QueueJobsTask task = 
-          new QueueJobsTask(pStatus.getName(), batchSize, priority, interval, 
-                            maxLoad, minMemory, minDisk,
-                            selectionKeys, licenseKeys, hardwareKeys);
-        task.start();
-      }
-    }
-  }
-
-  /**
-   * Vouch for the files associated with the current node.
-   */ 
-  private synchronized void 
-  doVouch() 
-  {
-    if(pIsFrozen) 
-      return;
-
-    if((pStatus != null) && pStatus.hasLightDetails()) {	 
-      VouchTask task = new VouchTask(pStatus.getName());
-      task.start();
-    }
-  }
-
-  /**
-   * Pause all waiting jobs associated with the current node.
-   */ 
-  private void 
-  doPauseJobs() 
-  {
-    if(pIsFrozen) 
-      return;
-
-    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
-    TreeSet<Long> jobIDs    = new TreeSet<Long>();
-    lookupNodeJobsWithState(nodeIDs, jobIDs, QueueState.Queued);
-
-    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
-      PauseJobsTask task = new PauseJobsTask(nodeIDs, jobIDs);
-      task.start();
-    }
-  }
-
-  /**
-   * Resume execution of all paused jobs associated with the current node.
-   */ 
-  private void 
-  doResumeJobs() 
-  {
-    if(pIsFrozen) 
-      return;
-
-    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
-    TreeSet<Long> jobIDs    = new TreeSet<Long>();
-    lookupNodeJobsWithState(nodeIDs, jobIDs, QueueState.Paused);
-
-    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
-      ResumeJobsTask task = new ResumeJobsTask(nodeIDs, jobIDs);
-      task.start();
-    }
-  }
-
-  /**
-   * Preempt all jobs associated with the current node.
-   */ 
-  private void 
-  doPreemptJobs() 
-  {
-    if(pIsFrozen) 
-      return;
-
-    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
-    TreeSet<Long> jobIDs    = new TreeSet<Long>();
-    lookupNodeJobsPending(nodeIDs, jobIDs); 
-
-    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
-      PreemptJobsTask task = new PreemptJobsTask(nodeIDs, jobIDs);
-      task.start();
-    }
-  }
-
-  /**
-   * Kill all jobs associated with the current node.
-   */ 
-  private void 
-  doKillJobs() 
-  {
-    if(pIsFrozen) 
-      return;
-
-    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
-    TreeSet<Long> jobIDs    = new TreeSet<Long>();
-    lookupNodeJobsPending(nodeIDs, jobIDs); 
-
-    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
-      KillJobsTask task = new KillJobsTask(nodeIDs, jobIDs);
-      task.start();
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Remove all primary/secondary files associated with the current node.
-   */ 
-  private void 
-  doRemoveFiles() 
-  {
-    if(pIsFrozen) 
-      return;
-
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      RemoveFilesTask task = new RemoveFilesTask(pStatus.getName());
-      task.start();
-    }
   }
 
 
@@ -2423,260 +1637,7 @@ class JNodeLinksPanel
     private String pSourceName; 
   }
   
-
-  /*----------------------------------------------------------------------------------------*/
   
-  /** 
-   * Edit/View the primary file sequence of the given node version.
-   */ 
-  private
-  class EditTask
-    extends UIMaster.EditTask
-  {
-    public 
-    EditTask
-    (
-     NodeCommon com
-    ) 
-    {
-      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView, false);
-      setName("JNodeLinksPanel:EditTask");
-    }
-
-    public 
-    EditTask
-    (
-     NodeCommon com, 
-     boolean useDefault, 
-     boolean substitute 
-    ) 
-    {
-      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView, substitute);
-      setName("JNodeLinksPanel:EditTask");
-    }
-
-    public 
-    EditTask
-    (
-     NodeCommon com, 
-     String ename, 
-     VersionID evid, 
-     String evendor
-    ) 
-    {
-      UIMaster.getInstance().super
-	(pGroupID, com, ename, evid, evendor, pAuthor, pView, false);
-      setName("JNodeLinksPanel:EditTask");
-    }
-  }
-
-
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Queue jobs to the queue for the given node.
-   */ 
-  private
-  class QueueJobsTask
-    extends UIMaster.QueueJobsTask
-  {
-    public 
-    QueueJobsTask
-    (
-     String name
-    ) 
-    {
-      this(name, null, null, null, null, null, null, null, null, null);
-    }
-
-    public 
-    QueueJobsTask
-    (
-     String name, 
-     Integer batchSize, 
-     Integer priority, 
-     Integer rampUp,
-     Float maxLoad,              
-     Long minMemory,              
-     Long minDisk,  
-     TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys,
-     TreeSet<String> hardwareKeys
-    ) 
-    {
-      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
-				   batchSize, priority, rampUp, 
-				   maxLoad, minMemory, minDisk,
-				   selectionKeys, licenseKeys, hardwareKeys);
-      setName("JNodeLinksPanel:QueueJobsTask");
-    }
-
-    @Override
-    protected void
-    postOp() 
-    {
-      updatePanels();
-    }
-  }
-
-  /** 
-   * Vouch for the working area files associated with the given nodes.
-   */ 
-  private
-  class VouchTask
-    extends UIMaster.VouchTask
-  {
-    public 
-    VouchTask
-    (
-     String name
-    ) 
-    {
-      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView);
-      setName("JNodeLinksPanel:VouchTask");
-    }
-    
-    @Override
-    protected void
-    postOp() 
-    {
-      updatePanels(); 
-    }    
-  }
-
-  /** 
-   * Pause the given jobs.
-   */ 
-  private
-  class PauseJobsTask
-    extends UIMaster.PauseJobsTask
-  {
-    public 
-    PauseJobsTask
-    (
-     TreeSet<NodeID> nodeIDs, 
-     TreeSet<Long> jobIDs
-    ) 
-    {
-      UIMaster.getInstance().super("JNodeLinksPanel", 
-                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
-    }
-
-    @Override
-    protected void
-    postOp() 
-    {
-      updatePanels(); 
-    }
-  }
-
-  /** 
-   * Resume execution of the the given paused jobs.
-   */ 
-  private
-  class ResumeJobsTask
-    extends UIMaster.ResumeJobsTask
-  {
-    public 
-    ResumeJobsTask
-    (
-     TreeSet<NodeID> nodeIDs, 
-     TreeSet<Long> jobIDs
-    ) 
-    {
-      UIMaster.getInstance().super("JNodeLinksPanel", 
-                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
-    }
-
-    @Override
-    protected void
-    postOp() 
-    {
-      updatePanels(); 
-    }
-  }
-
-  /** 
-   * Preempt the given jobs.
-   */ 
-  private
-  class PreemptJobsTask
-    extends UIMaster.PreemptJobsTask
-  {
-    public 
-    PreemptJobsTask
-    (
-     TreeSet<NodeID> nodeIDs, 
-     TreeSet<Long> jobIDs
-    ) 
-    {
-      UIMaster.getInstance().super("JNodeLinksPanel", 
-                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
-    }
-
-    @Override
-    protected void
-    postOp() 
-    {
-      updatePanels(); 
-    }
-  }
-
-  /** 
-   * Kill the given jobs.
-   */ 
-  private
-  class KillJobsTask
-    extends UIMaster.KillJobsTask
-  {
-    public 
-    KillJobsTask
-    (
-     TreeSet<NodeID> nodeIDs, 
-     TreeSet<Long> jobIDs
-    ) 
-    {
-      UIMaster.getInstance().super("JNodeLinksPanel", 
-                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
-    }
-
-    @Override
-    protected void
-    postOp() 
-    {
-      updatePanels(); 
-    }
-  }
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Remove the working area files associated with the given nodes.
-   */ 
-  private
-  class RemoveFilesTask
-    extends UIMaster.RemoveFilesTask
-  {
-    public 
-    RemoveFilesTask
-    (
-     String name
-    ) 
-    {
-      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView);
-      setName("JNodeLinksPanel:RemoveFilesTask");
-    }
-    
-    @Override
-    protected void
-    postOp() 
-    {
-      updatePanels();
-    }    
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -2715,13 +1676,6 @@ class JNodeLinksPanel
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtendIconSelected.png"));
 
 
-  private static final Icon sFrozenIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("FrozenIcon.png"));
-
-  private static final Icon sLockedIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("LockedIcon.png"));
-
-
   private static final Icon sFileArrowIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileArrowIcon.png"));
 
@@ -2755,35 +1709,9 @@ class JNodeLinksPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The working file popup menu.
-   */ 
-  private JPopupMenu  pWorkingPopup; 
-  
-  /**
    * The working file popup menu items.
    */ 
   private JMenuItem  pApplyItem;  
-  private JMenuItem  pQueueJobsItem;
-  private JMenuItem  pQueueJobsSpecialItem;
-  private JMenuItem  pVouchItem;
-  private JMenuItem  pPauseJobsItem;
-  private JMenuItem  pResumeJobsItem;
-  private JMenuItem  pPreemptJobsItem;
-  private JMenuItem  pKillJobsItem;
-  private JMenuItem  pRemoveFilesItem;  
-
-  /**
-   * The checked-in file popup menu.
-   */ 
-  private JPopupMenu  pCheckedInPopup; 
-
-  /**
-   * The edit with submenus.
-   */ 
-  private JMenuItem[]  pEditItems;
-  private JMenuItem[]  pEditWithDefaultItems;
-  private JMenu[]      pEditWithMenus; 
-  private JMenuItem    pEditAsOwnerItem; 
 
 
   /*----------------------------------------------------------------------------------------*/
