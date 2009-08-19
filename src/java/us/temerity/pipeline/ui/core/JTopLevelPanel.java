@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.16 2009/03/25 19:31:58 jesse Exp $
+// $Id: JTopLevelPanel.java,v 1.17 2009/08/19 23:38:29 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -36,9 +36,9 @@ class JTopLevelPanel
   {
     super();
 
-    pPrivilegeDetails = new PrivilegeDetails();
+    pPrivilegeDetails  = new PrivilegeDetails();
     pPanelOpInProgress = new AtomicBoolean(false);
-    pUnsavedChanges   = new TreeSet<String>();
+    pUnsavedChanges    = new TreeSet<String>();
 
     setAuthorViewLocal(PackageInfo.sUser, "default");
     setGroupID(0);
@@ -55,9 +55,9 @@ class JTopLevelPanel
   {
     super();
 
-    pPrivilegeDetails = new PrivilegeDetails();
+    pPrivilegeDetails  = new PrivilegeDetails();
     pPanelOpInProgress = new AtomicBoolean(false);
-    pUnsavedChanges   = new TreeSet<String>();
+    pUnsavedChanges    = new TreeSet<String>();
 
     if(panel != null) {
       setAuthorViewLocal(panel.getAuthor(), panel.getView());
