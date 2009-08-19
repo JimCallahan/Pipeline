@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.14 2009/07/06 10:25:26 jim Exp $
+// $Id: GraphicalApp.java,v 1.15 2009/08/19 22:52:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -105,7 +105,7 @@ class GraphicalApp
        "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
        "  [--log-backups=...] [--log=...]\n" +
        "  [--no-layout] [--layout=...] [--no-selections] [--no-remote]\n" + 
-       "  [--debug-gl=...] [--trace-gl=...]\n" +
+       "  [--debug-gl=...] [--trace-gl=...] [--debug-swing]\n" +
        "\n" + 
        "\n" +  
        "Use \"plui --html-help\" to browse the full documentation.\n");
