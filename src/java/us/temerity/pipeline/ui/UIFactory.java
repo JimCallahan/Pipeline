@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.35 2009/06/17 00:00:50 jlee Exp $
+// $Id: UIFactory.java,v 1.36 2009/08/19 22:58:04 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4052,7 +4052,7 @@ class UIFactory
       scroll.setMaximumSize(maxSize);
     
     scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-    scroll.getVerticalScrollBar().setUnitIncrement(23);
+    scroll.getVerticalScrollBar().setUnitIncrement(22);
 
     return scroll;
   }
