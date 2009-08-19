@@ -1,4 +1,4 @@
-// $Id: JTopLevelDialog.java,v 1.5 2009/03/24 01:21:21 jesse Exp $
+// $Id: JTopLevelDialog.java,v 1.6 2009/08/19 23:50:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -262,6 +262,43 @@ class JTopLevelDialog
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Update the tool tip for the given menu item.
+   */   
+  protected void 
+  updateMenuToolTip
+  (
+   boolean showTooltips, 
+   JMenuItem item, 
+   HotKey key,
+   String desc
+  ) 
+  {
+    String text = null;
+    if(showTooltips) {
+      if(desc != null) {
+	if(key != null) 
+	  text = (desc + " <P>Hot Key = " + key);
+	else 
+	  text = desc;
+      }
+      else {
+	text = ("Hot Key = " + key);
+      }
+    }
+    
+    if(text != null) 
+      item.setToolTipText(UIFactory.formatToolTip(text));
+    else 
+      item.setToolTipText(null);
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P O N E N T   O V E R R I D E S                                                */
