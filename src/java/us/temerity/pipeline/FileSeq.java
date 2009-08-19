@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.25 2009/06/11 05:14:06 jesse Exp $
+// $Id: FileSeq.java,v 1.26 2009/08/19 23:02:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -529,6 +529,71 @@ class FileSeq
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   M E T H O D S                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Constructs the minium set of file sequences which include all of the files associated
+   * with the given set of file sequences.<P> 
+   * 
+   * @param fseqs
+   *   The original file sequences.
+   * 
+   * @return 
+   *   The collated file sequences.
+   */ 
+  public static TreeSet<FileSeq>
+  collateSeqs
+  (
+   Set<FileSeq> fseqs
+  ) 
+  {
+    TreeSet<FileSeq> collated = new TreeSet<FileSeq>();
+
+    MappedSet<FilePattern,Integer> framesByPattern = new MappedSet<FilePattern,Integer>();
+    for(FileSeq fseq : fseqs) {
+      FrameRange range = fseq.getFrameRange();
+      if(range != null) {
+        for(int frame : range.getFrameNumbers()) 
+          framesByPattern.put(fseq.getFilePattern(), frame);
+      }
+      else {
+        collated.add(fseq);
+      }
+    }
+
+    for(FilePattern fpat : framesByPattern.keySet()) {
+      Integer start = null;
+      Integer by    = null;
+      Integer prev  = null;
+      for(Integer frame : framesByPattern.get(fpat)) {
+        if(start == null) {
+          start = frame;
+        }
+        else if(by == null) {
+          by = frame - prev;
+        }
+        else if(by != (frame - prev)) {
+          FrameRange range = new FrameRange(start, prev, by);
+          collated.add(new FileSeq(fpat, range));
+
+          start = frame;
+          by    = null;
+          prev  = null;
+        }
+
+        prev = frame;
+      }
+      
+      FrameRange range = null;
+      if(by == null) 
+        range = new FrameRange(start);
+      else 
+        range = new FrameRange(start, prev, by);
+      collated.add(new FileSeq(fpat, range));
+    }
+
+    return collated;
+  }
+
 
   /**
    * Constructs the minimum set of file sequences which include all of the given files.<P> 
