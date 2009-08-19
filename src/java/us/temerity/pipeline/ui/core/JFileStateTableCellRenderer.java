@@ -1,9 +1,6 @@
-// $Id: JTuple3dTableCellRenderer.java,v 1.3 2009/08/19 23:49:20 jim Exp $
+// $Id: JFileStateTableCellRenderer.java,v 1.1 2009/08/19 23:49:20 jim Exp $
 
-package us.temerity.pipeline.ui;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.math.*;
+package us.temerity.pipeline.ui.core;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -11,16 +8,19 @@ import java.text.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+import us.temerity.pipeline.laf.LookAndFeelLoader;
+import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   T U P L E   3 D   T A B L E   C E L L   R E N D E R E R                                */
+/*   F I L E   S T A T E    T A B L E   C E L L   R E N D E R E R                           */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer for {@link JTable} cells containing {@link Tuple3d} data. 
+ * The renderer for {@link JTable} cells used in the JFileSeqPanel table.
  */ 
 public
-class JTuple3dTableCellRenderer
+class JFileStateTableCellRenderer
   extends JFastTableCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,17 +31,15 @@ class JTuple3dTableCellRenderer
    * Construct a new renderer.
    */
   public 
-  JTuple3dTableCellRenderer() 
+  JFileStateTableCellRenderer
+  (
+   FileSeqTableModel model
+  )  
   {
-    setText("-");
-    setName("SimpleTableCellRenderer");
-    setHorizontalAlignment(JLabel.CENTER);
-
-    pField = new JTuple3dField();
-    pField.setEnabled(false);
+    pModel = model;
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   R E N D E R I N G                                                                    */
@@ -61,37 +59,36 @@ class JTuple3dTableCellRenderer
    int col
   )
   {
-    Color fg = (isSelected ? Color.yellow : Color.white);
-
-    Tuple3d tuple = (Tuple3d) value; 
-    if(tuple != null) {
-      pField.setValue(tuple); 
-      pField.setForeground(fg);
-      return pField;
+    String prefix = (String) value;
+    
+    TextureMgr mgr = TextureMgr.getInstance();
+    try {
+      String suffix = (pModel.isEnabled(row) && isSelected) ? "Selected" : "Normal"; 
+      setIcon(mgr.getIcon21(prefix + suffix));
+    }	
+    catch(PipelineException ex) {
+      setIcon(null); 
+      UIMaster.getInstance().showErrorDialog(ex);
     }
-    else {
-      setForeground(fg);
-      return this;
-    }
+    
+    return this;
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6997629161832240773L;
+  private static final long serialVersionUID = 1026090129214149429L;
 
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Displays the tuple if not <CODE>null</CODE>.
+   * The parent table model.
    */ 
-  private JTuple3dField  pField; 
-
+  private FileSeqTableModel pModel;
 }

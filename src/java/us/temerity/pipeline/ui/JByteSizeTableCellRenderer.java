@@ -1,4 +1,4 @@
-// $Id: JByteSizeTableCellRenderer.java,v 1.2 2006/10/11 22:45:41 jim Exp $
+// $Id: JByteSizeTableCellRenderer.java,v 1.3 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -20,8 +20,7 @@ import javax.swing.table.*;
  */ 
 public
 class JByteSizeTableCellRenderer
-  extends JLabel 
-  implements TableCellRenderer
+  extends JFastTableCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -39,9 +38,7 @@ class JByteSizeTableCellRenderer
    int align
   ) 
   {
-    setOpaque(true);
     setName("SimpleTableCellRenderer");
-
     setHorizontalAlignment(align);
   }
 

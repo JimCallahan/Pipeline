@@ -1,4 +1,4 @@
-// $Id: JSimpleTableCellRenderer.java,v 1.3 2007/11/30 20:14:25 jesse Exp $
+// $Id: JSimpleTableCellRenderer.java,v 1.4 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -18,8 +18,7 @@ import javax.swing.table.*;
  */ 
 public
 class JSimpleTableCellRenderer
-  extends JLabel 
-  implements TableCellRenderer
+  extends JFastTableCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -37,8 +36,54 @@ class JSimpleTableCellRenderer
    int align
   ) 
   {
-    setOpaque(true);
-    setName("SimpleTableCellRenderer");
+    this(null, align, false); 
+  }
+
+  /**
+   * Construct a new renderer.
+   * 
+   * @param colorPrefix
+   *   The Synth color prefix to give the component name.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */
+  public 
+  JSimpleTableCellRenderer
+  (
+   String colorPrefix, 
+   int align
+  ) 
+  {
+    this(colorPrefix, align, false); 
+  }
+
+  /**
+   * Construct a new renderer.
+   * 
+   * @param colorPrefix
+   *   The Synth color prefix to give the component name.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   * 
+   * @param dimUneditable
+   *   Whether to render uneditable cells with a dimmed foreground color.
+   */
+  public 
+  JSimpleTableCellRenderer
+  (
+   String colorPrefix, 
+   int align, 
+   boolean dimUneditable   
+  ) 
+  {
+    super(dimUneditable); 
+
+    if((colorPrefix == null) || (colorPrefix.length() == 0)) 
+      setName("SimpleTableCellRenderer");
+    else
+      setName(colorPrefix + "TableCellRenderer");
 
     setHorizontalAlignment(align);
   }
@@ -60,7 +105,7 @@ class JSimpleTableCellRenderer
    boolean isSelected, 
    boolean hasFocus, 
    int row, 
-   int column
+   int col
   )
   {
     String text = null;
@@ -72,7 +117,7 @@ class JSimpleTableCellRenderer
     else 
       setText("-");
 
-    setForeground(isSelected ? Color.yellow : Color.white);
+    setBasicForeground(table, isSelected, row, col);
 
     return this;
   }
@@ -84,5 +129,6 @@ class JSimpleTableCellRenderer
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 7930267239670931454L;
+
 
 }

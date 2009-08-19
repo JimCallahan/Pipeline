@@ -1,4 +1,4 @@
-// $Id: JWorkGroupMemberTableCellRenderer.java,v 1.1 2006/01/15 06:29:26 jim Exp $
+// $Id: JWorkGroupMemberTableCellRenderer.java,v 1.2 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -36,6 +36,7 @@ class JWorkGroupMemberTableCellRenderer
   JWorkGroupMemberTableCellRenderer() 
   {
     super(JLabel.CENTER);
+    setName("GreenTableCellRenderer");
   }
 
 

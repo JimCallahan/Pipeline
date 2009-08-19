@@ -1,4 +1,4 @@
-// $Id: JWeekdayFlagsTableCellRenderer.java,v 1.1 2006/01/05 16:54:44 jim Exp $
+// $Id: JWeekdayFlagsTableCellRenderer.java,v 1.2 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -102,7 +102,7 @@ class JWeekdayFlagsTableCellRenderer
       return pPanel;
     }
     else {
-      pNullLabel.setForeground(isSelected ? Color.yellow : Color.white);
+      pNullLabel.setForeground(isSelected ? sOffYellow : sOffWhite);
       return pNullLabel;
     }
   }
@@ -135,7 +135,10 @@ class JWeekdayFlagsTableCellRenderer
     new ImageIcon(LookAndFeelLoader.class.getResource("WeeklySelectedIcon0.png"))
   };
 
+  private static final Color sOffYellow = new Color(0.7f, 0.7f, 0.0f);
+  private static final Color sOffWhite  = new Color(0.7f, 0.7f, 0.7f);
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

@@ -1,4 +1,4 @@
-// $Id: JColorTableCellRenderer.java,v 1.1 2007/07/31 14:58:14 jim Exp $
+// $Id: JColorTableCellRenderer.java,v 1.2 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,8 +21,7 @@ import javax.swing.table.*;
  */ 
 public
 class JColorTableCellRenderer
-  extends JLabel 
-  implements TableCellRenderer
+  extends JFastTableCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -40,9 +39,7 @@ class JColorTableCellRenderer
    Dialog owner
   ) 
   {
-    super("-");
-
-    setOpaque(true);
+    setText("-");
     setName("SimpleTableCellRenderer");
     setHorizontalAlignment(JLabel.CENTER);
 

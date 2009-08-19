@@ -1,4 +1,4 @@
-// $Id: JPluginTableCellRenderer.java,v 1.1 2005/09/07 21:11:17 jim Exp $
+// $Id: JPluginTableCellRenderer.java,v 1.2 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -19,8 +19,7 @@ import javax.swing.table.*;
  */ 
 public
 class JPluginTableCellRenderer
-  extends JLabel 
-  implements TableCellRenderer
+  extends JFastTableCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -38,9 +37,7 @@ class JPluginTableCellRenderer
    int align
   ) 
   {
-    setOpaque(true);
-    setName("SimpleTableCellRenderer");
-
+    setName("PurpleTableCellRenderer");
     setHorizontalAlignment(align);
   }
 

@@ -1,9 +1,6 @@
-// $Id: JTuple3dTableCellRenderer.java,v 1.3 2009/08/19 23:49:20 jim Exp $
+// $Id: JHeaderTableCellRenderer.java,v 1.3 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.math.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -11,16 +8,15 @@ import java.text.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
-
 /*------------------------------------------------------------------------------------------*/
-/*   T U P L E   3 D   T A B L E   C E L L   R E N D E R E R                                */
+/*   H E A D E R   T A B L E   C E L L   R E N D E R E R                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer for {@link JTable} cells containing {@link Tuple3d} data. 
+ * The renderer for the header cells of a table.
  */ 
 public
-class JTuple3dTableCellRenderer
+class JHeaderTableCellRenderer
   extends JFastTableCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,16 +25,28 @@ class JTuple3dTableCellRenderer
 
   /**
    * Construct a new renderer.
+   * 
+   * @param align
+   *   The horizontal alignment.
    */
   public 
-  JTuple3dTableCellRenderer() 
+  JHeaderTableCellRenderer
+  (
+   AbstractSortableTableModel model, 
+   int col, 
+   int align
+  ) 
   {
-    setText("-");
-    setName("SimpleTableCellRenderer");
-    setHorizontalAlignment(JLabel.CENTER);
+    pModel  = model;
+    pColumn = col;
 
-    pField = new JTuple3dField();
-    pField.setEnabled(false);
+    String colorPrefix = model.getColumnColorPrefix(col); 
+    if((colorPrefix == null) || (colorPrefix.length() == 0)) 
+      setName("TableHeaderRenderer");
+    else
+      setName(colorPrefix + "TableHeaderRenderer");
+
+    setHorizontalAlignment(align);
   }
 
 
@@ -58,21 +66,30 @@ class JTuple3dTableCellRenderer
    boolean isSelected, 
    boolean hasFocus, 
    int row, 
-   int col
+   int column
   )
   {
-    Color fg = (isSelected ? Color.yellow : Color.white);
+    setText((String) value); 
+    return this;
+  }
 
-    Tuple3d tuple = (Tuple3d) value; 
-    if(tuple != null) {
-      pField.setValue(tuple); 
-      pField.setForeground(fg);
-      return pField;
-    }
-    else {
-      setForeground(fg);
-      return this;
-    }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   O V E R R I D E S                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the string to be used as the tooltip for event.
+   */ 
+  @Override
+  public String 
+  getToolTipText
+  (
+   MouseEvent e
+  )
+  {
+    return pModel.getColumnDescription(pColumn); 
   }
 
 
@@ -81,17 +98,22 @@ class JTuple3dTableCellRenderer
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6997629161832240773L;
+  private static final long serialVersionUID = 1316445099657212359L;
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
+  /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Displays the tuple if not <CODE>null</CODE>.
+   * The parent table model.
    */ 
-  private JTuple3dField  pField; 
+  private AbstractSortableTableModel  pModel;
+
+  /**
+   * The column index into the model for this header.
+   */ 
+  private int pColumn;
 
 }

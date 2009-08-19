@@ -1,4 +1,4 @@
-// $Id: JTuple2dTableCellRenderer.java,v 1.2 2008/01/20 01:38:06 jim Exp $
+// $Id: JTuple2dTableCellRenderer.java,v 1.3 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,8 +21,7 @@ import javax.swing.table.*;
  */ 
 public
 class JTuple2dTableCellRenderer
-  extends JLabel 
-  implements TableCellRenderer
+  extends JFastTableCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -34,9 +33,7 @@ class JTuple2dTableCellRenderer
   public 
   JTuple2dTableCellRenderer() 
   {
-    super("-");
-
-    setOpaque(true);
+    setText("-");
     setName("SimpleTableCellRenderer");
     setHorizontalAlignment(JLabel.CENTER);
 

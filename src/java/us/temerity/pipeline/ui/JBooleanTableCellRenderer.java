@@ -1,4 +1,4 @@
-// $Id: JBooleanTableCellRenderer.java,v 1.2 2005/03/20 22:48:44 jim Exp $
+// $Id: JBooleanTableCellRenderer.java,v 1.3 2009/08/19 23:49:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -19,12 +19,20 @@ import javax.swing.table.*;
  */ 
 public
 class JBooleanTableCellRenderer
-  extends JLabel 
-  implements TableCellRenderer
+  extends JSimpleTableCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct a new renderer.
+   */
+  public 
+  JBooleanTableCellRenderer() 
+  {
+    this("", JLabel.CENTER, false); 
+  }
 
   /**
    * Construct a new renderer.
@@ -38,10 +46,49 @@ class JBooleanTableCellRenderer
    int align
   ) 
   {
-    setOpaque(true);
-    setName("SimpleTableCellRenderer");
+    this("", align, false); 
+  }
 
-    setHorizontalAlignment(align);
+  /**
+   * Construct a new renderer.
+   * 
+   * @param colorPrefix
+   *   The Synth color prefix to give the component name.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */
+  public 
+  JBooleanTableCellRenderer
+  (
+   String colorPrefix, 
+   int align
+  ) 
+  {
+    this(colorPrefix, align, false); 
+  }
+
+  /**
+   * Construct a new renderer.
+   * 
+   * @param colorPrefix
+   *   The Synth color prefix to give the component name.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   * 
+   * @param dimUneditable
+   *   Whether to render uneditable cells with a dimmed foreground color.
+   */
+  public 
+  JBooleanTableCellRenderer
+  (
+   String colorPrefix, 
+   int align, 
+   boolean dimUneditable
+  ) 
+  {
+    super(colorPrefix, align, dimUneditable); 
   }
 
 
@@ -53,6 +100,7 @@ class JBooleanTableCellRenderer
   /**
    * Returns the component used for drawing the cell.
    */ 
+  @Override
   public Component 	
   getTableCellRendererComponent
   (
@@ -70,7 +118,7 @@ class JBooleanTableCellRenderer
     else 
       setText("-");
 
-    setForeground(isSelected ? Color.yellow : Color.white);
+    setBasicForeground(table, isSelected, row, col);
 
     return this;
   }
