@@ -326,8 +326,16 @@ of OS level subprocesses.<br>
 <br>
 </div>
 <span style="font-weight: bold;"></span></div>
-<span style="font-weight: bold;"></span>The (<span
- style="font-style: italic;">level</span>) portion of
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span
+ style="font-weight: bold;">sum</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span>Logs
+the activity of checksums used to optimize
+comparisons of the working area and repository files associated with
+nodes.<br>
+</div>
+<br>
+</div>
+The (<span style="font-style: italic;">level</span>) portion of
 the option's argument can be:<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
