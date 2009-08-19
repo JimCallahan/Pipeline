@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.9 2009/07/11 10:54:21 jim Exp $
+// $Id: NativeFileSys.cc,v 1.10 2009/08/19 23:58:58 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -209,7 +209,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
   }
   
   env->ReleaseStringUTFChars(jfile, file); 
-  if(sb.st_mode & S_IFLNK)
+  if((sb.st_mode & S_IFMT) == S_IFLNK)
     return JNI_TRUE;
   else 
     return JNI_FALSE;
