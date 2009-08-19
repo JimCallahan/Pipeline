@@ -32,6 +32,18 @@ class Vector2l
   }
 
   /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector2l
+  (
+   long v
+  ) 
+  {
+    super(v); 
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 

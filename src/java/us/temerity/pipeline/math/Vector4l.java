@@ -32,6 +32,18 @@ class Vector4l
   }
 
   /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector4l
+  (
+   long v
+  ) 
+  {
+    super(v); 
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 

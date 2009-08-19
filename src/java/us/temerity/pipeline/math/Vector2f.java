@@ -1,4 +1,4 @@
-// $Id: Vector2f.java,v 1.5 2004/12/19 19:28:49 jim Exp $
+// $Id: Vector2f.java,v 1.6 2009/08/19 22:37:36 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -29,6 +29,18 @@ class Vector2f
   Vector2f() 
   {
     super();
+  }
+
+  /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector2f
+  (
+   float v
+  ) 
+  {
+    super(v); 
   }
 
   /**

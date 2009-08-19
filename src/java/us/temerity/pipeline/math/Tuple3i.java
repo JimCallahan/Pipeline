@@ -30,6 +30,18 @@ class Tuple3i
   }
   
   /**
+   * Construct with all components set to a constant value. 
+   */ 
+  public 
+  Tuple3i
+  (
+   int v
+  ) 
+  {
+    super(sSize, v);
+  }
+  
+  /**
    * Construct from individual components.
    */ 
   public 

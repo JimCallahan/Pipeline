@@ -32,6 +32,18 @@ class Vector4d
   }
 
   /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector4d
+  (
+   double v
+  ) 
+  {
+    super(v); 
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 

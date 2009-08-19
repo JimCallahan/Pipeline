@@ -30,6 +30,18 @@ class Tuple3l
   }
   
   /**
+   * Construct with all components set to a constant value. 
+   */ 
+  public 
+  Tuple3l
+  (
+   long v
+  ) 
+  {
+    super(sSize, v);
+  }
+  
+  /**
    * Construct from individual components.
    */ 
   public 

@@ -30,6 +30,18 @@ class Tuple2l
   }
 
   /**
+   * Construct with all components set to a constant value. 
+   */ 
+  public 
+  Tuple2l
+  (
+   long v
+  ) 
+  {
+    super(sSize, v);
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 

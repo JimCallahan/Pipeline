@@ -32,6 +32,18 @@ class Vector3i
   }
 
   /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector3i
+  (
+   int v
+  ) 
+  {
+    super(v); 
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 

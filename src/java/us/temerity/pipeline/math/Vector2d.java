@@ -32,6 +32,18 @@ class Vector2d
   }
 
   /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector2d
+  (
+   double v
+  ) 
+  {
+    super(v); 
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 

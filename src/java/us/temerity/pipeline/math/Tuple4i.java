@@ -28,6 +28,18 @@ class Tuple4i
   {
     super(sSize);
   }
+
+  /**
+   * Construct with all components set to a constant value. 
+   */ 
+  public 
+  Tuple4i
+  (
+   int v
+  ) 
+  {
+    super(sSize, v);
+  }
   
   /**
    * Construct from individual components.

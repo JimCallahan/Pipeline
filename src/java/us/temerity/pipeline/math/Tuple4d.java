@@ -28,6 +28,18 @@ class Tuple4d
   {
     super(sSize);
   }
+
+  /**
+   * Construct with all components set to a constant value. 
+   */ 
+  public 
+  Tuple4d
+  (
+   double v
+  ) 
+  {
+    super(sSize, v);
+  }
   
   /**
    * Construct from individual components.

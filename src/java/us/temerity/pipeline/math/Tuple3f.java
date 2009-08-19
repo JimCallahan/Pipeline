@@ -1,4 +1,4 @@
-// $Id: Tuple3f.java,v 1.3 2008/07/21 20:35:19 jesse Exp $
+// $Id: Tuple3f.java,v 1.4 2009/08/19 22:37:36 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -27,6 +27,18 @@ class Tuple3f
   Tuple3f() 
   {
     super(sSize);
+  }
+  
+  /**
+   * Construct with all components set to a constant value. 
+   */ 
+  public 
+  Tuple3f
+  (
+   float v
+  ) 
+  {
+    super(sSize, v);
   }
   
   /**

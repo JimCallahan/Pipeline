@@ -1,4 +1,4 @@
-// $Id: Vector3f.java,v 1.5 2004/12/19 19:28:49 jim Exp $
+// $Id: Vector3f.java,v 1.6 2009/08/19 22:37:36 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -29,6 +29,18 @@ class Vector3f
   Vector3f() 
   {
     super();
+  }
+
+  /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector3f
+  (
+   float v
+  ) 
+  {
+    super(v); 
   }
 
   /**

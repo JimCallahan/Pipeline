@@ -32,6 +32,18 @@ class Vector3d
   }
 
   /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector3d
+  (
+   double v
+  ) 
+  {
+    super(v); 
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 

@@ -28,7 +28,19 @@ class Tuple3d
   {
     super(sSize);
   }
-  
+
+  /**
+   * Construct with all components set to a constant value. 
+   */ 
+  public 
+  Tuple3d
+  (
+   double v
+  ) 
+  {
+    super(sSize, v);
+  }
+
   /**
    * Construct from individual components.
    */ 

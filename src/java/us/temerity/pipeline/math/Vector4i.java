@@ -32,6 +32,18 @@ class Vector4i
   }
 
   /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector4i
+  (
+   int v
+  ) 
+  {
+    super(v); 
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 

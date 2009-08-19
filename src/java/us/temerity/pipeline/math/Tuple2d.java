@@ -30,6 +30,18 @@ class Tuple2d
   }
 
   /**
+   * Construct with all components set to a constant value. 
+   */ 
+  public 
+  Tuple2d
+  (
+   double v
+  ) 
+  {
+    super(sSize, v);
+  }
+  
+  /**
    * Construct from individual components.
    */ 
   public 

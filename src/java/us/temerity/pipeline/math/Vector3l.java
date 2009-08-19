@@ -32,6 +32,18 @@ class Vector3l
   }
 
   /**
+   * Construct all components set to a constant value. 
+   */ 
+  public 
+  Vector3l
+  (
+   long v
+  ) 
+  {
+    super(v); 
+  }
+
+  /**
    * Construct from individual components.
    */ 
   public 
