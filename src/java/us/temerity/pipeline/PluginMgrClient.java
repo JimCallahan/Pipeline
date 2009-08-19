@@ -1,4 +1,4 @@
-// $Id: PluginMgrClient.java,v 1.9 2009/03/01 21:47:46 jim Exp $
+// $Id: PluginMgrClient.java,v 1.10 2009/08/19 22:50:38 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -87,7 +87,7 @@ class PluginMgrClient
     if(failFast) 
       sPluginMgrClient.verifyConnection();
     else 
-      sPluginMgrClient.waitForConnection(100, 5000);
+      sPluginMgrClient.waitForConnection(5000);
 
     sPluginMgrClient.update();
   }

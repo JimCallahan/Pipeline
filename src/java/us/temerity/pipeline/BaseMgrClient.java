@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.33 2009/07/21 23:12:26 jim Exp $
+// $Id: BaseMgrClient.java,v 1.34 2009/08/19 22:49:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -211,9 +211,6 @@ class BaseMgrClient
   /**
    * Attempt to establish the the network connection to the server instance.
    * 
-   * @param tries
-   *   The number of attempts to make before giving up.
-   * 
    * @param delay
    *   The number of milliseconds to wait between tries.
    * 
@@ -223,13 +220,12 @@ class BaseMgrClient
   public synchronized void 
   waitForConnection
   (
-   long tries, 
    long delay
   ) 
     throws PipelineException 
   {
-    long wk; 
-    for(wk=0L; wk<tries; wk++) {
+    long tries = 1;
+    while(true) {
       try {
 	verifyConnection();
 	return;
@@ -245,14 +241,13 @@ class BaseMgrClient
 	Thread.sleep(5000);
       }
       catch(InterruptedException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
-	   "Interrupted while attempting establish network connection!");
+        throw new PipelineException 
+          ("Interrupted while attempting establish network connection!\n" + 
+           "Giving up after (" + tries + ") attempts!");
       }
-    }
 
-    throw new PipelineException 
-      ("Giving up after (" + tries + ") attempts!");
+      tries++;
+    }
   }
 
   /**
