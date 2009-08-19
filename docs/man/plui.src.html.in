@@ -293,7 +293,20 @@ Do not listen for connections from <a href="plremote.html"><span
 &nbsp;<br>
 </div>
 <span style="font-weight: bold;"><br>
---debug-gl</span>=on|off<span style="font-weight: bold;"><br>
+</span><span style="font-weight: bold;">--debug-swing</span>=on|off<span
+ style="font-weight: bold;"><br>
+</span>
+<br>
+<div style="margin-left: 40px;">Whether to check for calls to Swing
+outside the event thread.&nbsp; This is mostly only useful for the
+developers of Pipeline and should not be turned on normally by users
+because it will degrade performance.<br>
+<br>
+By default Swing debugging is (off).<br>
+</div>
+<br>
+<span style="font-weight: bold;">--debug-gl</span>=on|off<span
+ style="font-weight: bold;"><br>
 </span>
 <br>
 <div style="margin-left: 40px;">Whether to check all calls to OpenGL
