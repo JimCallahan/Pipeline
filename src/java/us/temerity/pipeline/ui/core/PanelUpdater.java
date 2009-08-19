@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.39 2009/07/01 16:43:14 jim Exp $
+// $Id: PanelUpdater.java,v 1.40 2009/08/19 23:07:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -554,6 +554,75 @@ class PanelUpdater
 	  /* node details panels */ 
 	  if(pDetailedNode != null) {
 	    
+            /* get the versions of the source nodes of the working, base and latest versions
+               of the node displayed in the Node Details panel */ 
+            if(pNodeDetailsPanel != null) {
+              // THIS COULD BE FASTER IF IT USED FEWER SERVER CALLS!
+	      master.updatePanelOp(pGroupID, "Updating Source Versions...");
+
+              pWorkingSources   = new TreeMap<String,NodeCommon>();
+              pCheckedInSources = new DoubleMap<String,VersionID,NodeCommon>(); 
+
+              NodeMod work = null;
+              NodeVersion base = null;
+              NodeVersion latest = null;
+              NodeDetailsLight details = pDetailedNode.getLightDetails();
+              if(details != null) {
+                work = details.getWorkingVersion();
+                base = details.getBaseVersion();
+                latest = details.getLatestVersion();
+              }
+
+              /* working version sources */ 
+              if(work != null) {
+                if(work.isLocked()) {
+                  /* since its locked, get the sources of the base version */ 
+                  for(LinkVersion link : base.getSources()) {
+                    String sname = link.getName();
+                    VersionID svid = link.getVersionID();
+                    NodeVersion node = 
+                      scavengeSourceVersion(mclient, pDetailedNode, sname, svid); 
+                    pWorkingSources.put(sname, node);
+                    pCheckedInSources.put(sname, svid, node);
+                  }
+                }
+                else {
+                  /* is certain to be part of the node status already */ 
+                  for(String sname : pDetailedNode.getSourceNames()) {
+                    NodeMod node = 
+                      pDetailedNode.getSource(sname).getLightDetails().getWorkingVersion();
+                    pWorkingSources.put(sname, node);
+                  }
+                }
+              }
+              
+              /* latest version sources, try to reuse if possible */ 
+              if(latest != null) {
+                for(LinkVersion link : latest.getSources()) {
+                  String sname = link.getName();
+                  VersionID svid = link.getVersionID();
+                  if(!pCheckedInSources.containsKey(sname, svid)) {
+                    NodeVersion node = 
+                      scavengeSourceVersion(mclient, pDetailedNode, sname, svid); 
+                    pCheckedInSources.put(sname, svid, node);
+                  }
+                }
+              }
+              
+              /* base version sources, try to reuse if possible */ 
+              if(base != null) {
+                for(LinkVersion link : base.getSources()) {
+                  String sname = link.getName();
+                  VersionID svid = link.getVersionID();                  
+                  if(!pCheckedInSources.containsKey(sname, svid)) {
+                    NodeVersion node = 
+                      scavengeSourceVersion(mclient, pDetailedNode, sname, svid); 
+                    pCheckedInSources.put(sname, svid, node);
+                  }
+                }
+              }
+            }
+
 	    /* file novelty */ 
 	    if(pNodeFilesPanel != null) {
 	      master.updatePanelOp(pGroupID, "Updating File Novelty...");
@@ -798,6 +867,53 @@ class PanelUpdater
     return null;
   }
 
+  /**
+   * Try to lookup the given checked-in version from the base/latest checked-in versions
+   * associated with the source NodeStatus of the given root status, and if that fails
+   * just ask the server.
+   * 
+   * @param mclient
+   *    The master manager connection.
+   * 
+   * @param root
+   *    The root node status.
+   * 
+   * @param sname
+   *    The name of the checked-in version to scavenge.
+   * 
+   * @param svid
+   *    The revision number of the checked-in version to scavenge.
+   * 
+   * @return 
+   *    The version or <CODE>null</CODE> if not found.
+   */ 
+  private NodeVersion
+  scavengeSourceVersion
+  (
+   MasterMgrClient mclient, 
+   NodeStatus root, 
+   String sname, 
+   VersionID svid
+  )
+    throws PipelineException
+  {
+    NodeStatus status = root.getSource(sname); 
+    if(status != null) {
+      NodeDetailsLight details = status.getLightDetails();
+      if(details != null) {
+        NodeVersion base = details.getBaseVersion();
+        if((base != null) && base.getVersionID().equals(svid))
+          return base;
+        
+        NodeVersion latest = details.getLatestVersion();
+        if((latest != null) && latest.getVersionID().equals(svid))
+          return latest; 
+      }
+    }
+
+    return mclient.getCheckedInVersion(sname, svid);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -851,7 +967,8 @@ class PanelUpdater
 	if(pNodeDetailsPanel != null) 
 	  pNodeDetailsPanel.applyPanelUpdates
 	    (pAuthor, pView, pDetailedNode, 
-             pUserLicenseKeys, pUserSelectionKeys, pUserHardwareKeys);
+             pUserLicenseKeys, pUserSelectionKeys, pUserHardwareKeys, 
+             pWorkingSources, pCheckedInSources); 
 	
 	/* node files */ 
 	if(pNodeFilesPanel != null) 
@@ -1041,6 +1158,16 @@ class PanelUpdater
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The sources of the working version.
+   */
+  private TreeMap<String,NodeCommon>  pWorkingSources;
+
+  /**
+   * The sources for each checked-in version selected.
+   */
+  private DoubleMap<String,VersionID,NodeCommon>  pCheckedInSources;
 
   /**
    * Whether each file associated with each checked-in version of a node 
