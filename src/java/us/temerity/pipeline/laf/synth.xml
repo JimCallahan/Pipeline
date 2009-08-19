@@ -1042,16 +1042,16 @@
 
   <style id="FileCheck">
     <state>
-      <imageIcon id="FileUncheckedIcon" path="FileCheckIcon.png"/>
-      <property key="CheckBox.icon" value="FileUncheckedIcon"/>   	
+      <imageIcon id="FileCheckIcon" path="FileCheckIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckIcon"/>   	
     </state>
     <state value="SELECTED">
-      <imageIcon id="FileCheckedIcon" path="FileCheckIconSelected.png"/>
-      <property key="CheckBox.icon" value="FileCheckedIcon"/>   	
+      <imageIcon id="FileCheckedPickedIcon" path="FileCheckPickedIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckedPickedIcon"/>   	
     </state>
     <state value="DISABLED">
-      <imageIcon id="FileCheckedIconDisabled" path="FileCheckIconDisabled.png"/>
-      <property key="CheckBox.icon" value="FileCheckedIconDisabled"/>   	
+      <imageIcon id="FileCheckedDisabledIcon" path="FileCheckDisabledIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckedDisabledIcon"/>   	
     </state>
     <imagePainter path="Grey.png"
                   method="checkBoxBackground"
@@ -1060,6 +1060,152 @@
   </style>
   <bind style="FileCheck" type="name" key="FileCheck"/>
 
+  <style id="FileCheckSelected">
+    <state>
+      <imageIcon id="FileCheckIconSelected" path="FileCheckIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckIconSelected"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="FileCheckedPickedIconSelected" path="FileCheckPickedIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckedPickedIconSelected"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="FileCheckedDisabledIconSelected" 
+                 path="FileCheckDisabledIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckedDisabledIconSelected"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="FileCheckSelected" type="name" key="FileCheckSelected"/>
+
+  <style id="FileCheckExtLeft">
+    <state>
+      <imageIcon id="FileCheckExtLeftIcon" path="FileCheckExtLeftIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckExtLeftIcon"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="FileCheckPickedExtLeftIcon" path="FileCheckPickedExtLeftIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckPickedExtLeftIcon"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="FileCheckDisabledExtLeftIcon" path="FileCheckDisabledExtLeftIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckDisabledExtLeftIcon"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="FileCheckExtLeft" type="name" key="FileCheckExtLeft"/>
+
+  <style id="FileCheckExtLeftSelected">
+    <state>
+      <imageIcon id="FileCheckExtLeftIconSelected" path="FileCheckExtLeftIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckExtLeftIconSelected"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="FileCheckPickedExtLeftIconSelected" 
+                 path="FileCheckPickedExtLeftIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckPickedExtLeftIconSelected"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="FileCheckDisabledExtLeftIconSelected" 
+                 path="FileCheckDisabledExtLeftIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckDisabledExtLeftIconSelected"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="FileCheckExtLeftSelected" type="name" key="FileCheckExtLeftSelected"/>
+
+  <style id="FileCheckExtRight">
+    <state>
+      <imageIcon id="FileCheckExtRightIcon" path="FileCheckExtRightIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckExtRightIcon"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="FileCheckPickedExtRightIcon" path="FileCheckPickedExtRightIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckPickedExtRightIcon"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="FileCheckDisabledExtRightIcon" path="FileCheckDisabledExtRightIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckDisabledExtRightIcon"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="FileCheckExtRight" type="name" key="FileCheckExtRight"/>
+
+  <style id="FileCheckExtRightSelected">
+    <state>
+      <imageIcon id="FileCheckExtRightIconSelected" path="FileCheckExtRightIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckExtRightIconSelected"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="FileCheckPickedExtRightIconSelected" 
+                 path="FileCheckPickedExtRightIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckPickedExtRightIconSelected"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="FileCheckDisabledExtRightIconSelected" 
+                 path="FileCheckDisabledExtRightIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckDisabledExtRightIconSelected"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="FileCheckExtRightSelected" type="name" key="FileCheckExtRightSelected"/>
+
+  <style id="FileCheckExtBoth">
+    <state>
+      <imageIcon id="FileCheckExtBothIcon" path="FileCheckExtBothIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckExtBothIcon"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="FileCheckPickedExtBothIcon" path="FileCheckPickedExtBothIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckPickedExtBothIcon"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="FileCheckDisabledExtBothIcon" path="FileCheckDisabledExtBothIcon.png"/>
+      <property key="CheckBox.icon" value="FileCheckDisabledExtBothIcon"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="FileCheckExtBoth" type="name" key="FileCheckExtBoth"/>
+
+  <style id="FileCheckExtBothSelected">
+    <state>
+      <imageIcon id="FileCheckExtBothIconSelected" path="FileCheckExtBothIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckExtBothIconSelected"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="FileCheckPickedExtBothIconSelected" 
+                 path="FileCheckPickedExtBothIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckPickedExtBothIconSelected"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="FileCheckDisabledExtBothIconSelected" 
+                 path="FileCheckDisabledExtBothIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckDisabledExtBothIconSelected"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="FileCheckExtBothSelected" type="name" key="FileCheckExtBothSelected"/>
 
 
   <!--  W E E K L Y   C H E C K  -->
@@ -1301,6 +1447,15 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="TextFieldLabel" type="name" key="TextFieldLabel"/>
+
+  <style id="TextFieldLabelLarge">
+    <imagePainter path="ValuePanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="6" bottom="6" right="8" left="8"/>
+    <font name="Lucida Sans Demibold" size="16"/>
+  </style>
+  <bind style="TextFieldLabelLarge" type="name" key="TextFieldLabelLarge"/>
 
 
 
@@ -1644,69 +1799,66 @@
 
   <!--  T A B L E  -->
 
-  <style id="TableHeaderButton">
+  <style id="TableHeaderPanel">
+    <imagePainter path="FrameIn.png"
+                  method="viewportBorder"
+                  sourceInsets="3 3 3 3" 
+                  paintCenter="false" 
+                  stretch="true" 
+                  center="false"/>
+    <insets top="5" bottom="5" right="5" left="5"/>
+  </style>
+  <bind style="TableHeaderPanel" type="name" key="TableHeaderPanel"/>
+
+
+  <style id="TableHeaderRenderer">
     <state>
       <imagePainter path="TableHeaderButton.png"
-                    method="buttonBackground"
-                    sourceInsets="4 4 4 4"/>
-    </state>
-    <state value="PRESSED">
-      <imagePainter path="TableHeaderButtonPressed.png"
-                    method="buttonBackground"	
+                    method="labelBackground"
                     sourceInsets="4 4 4 4"/>
     </state>
     <insets top="3" bottom="3" right="10" left="10"/> 
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
-  <bind style="TableHeaderButton" type="name" key="TableHeaderButton"/>
+  <bind style="TableHeaderRenderer" type="name" key="TableHeaderRenderer"/>
 
-  <style id="BlueTableHeaderButton">
+  <style id="BlueTableHeaderRenderer">
     <state>
       <imagePainter path="BlueTableHeaderButton.png"
-                    method="buttonBackground"
-                    sourceInsets="4 4 4 4"/>
-    </state>
-    <state value="PRESSED">
-      <imagePainter path="BlueTableHeaderButtonPressed.png"
-                    method="buttonBackground"	
+                    method="labelBackground"
                     sourceInsets="4 4 4 4"/>
     </state>
     <insets top="3" bottom="3" right="10" left="10"/> 
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
-  <bind style="BlueTableHeaderButton" type="name" key="BlueTableHeaderButton"/>
+  <bind style="BlueTableHeaderRenderer" type="name" key="BlueTableHeaderRenderer"/>
 
-  <style id="GreenTableHeaderButton">
+  <style id="GreenTableHeaderRenderer">
     <state>
       <imagePainter path="GreenTableHeaderButton.png"
-                    method="buttonBackground"
-                    sourceInsets="4 4 4 4"/>
-    </state>
-    <state value="PRESSED">
-      <imagePainter path="GreenTableHeaderButtonPressed.png"
-                    method="buttonBackground"	
+                    method="labelBackground"
                     sourceInsets="4 4 4 4"/>
     </state>
     <insets top="3" bottom="3" right="10" left="10"/> 
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
-  <bind style="GreenTableHeaderButton" type="name" key="GreenTableHeaderButton"/>
+  <bind style="GreenTableHeaderRenderer" type="name" key="GreenTableHeaderRenderer"/>
 
-  <style id="PurpleTableHeaderButton">
+  <style id="PurpleTableHeaderRenderer">
     <state>
       <imagePainter path="PurpleTableHeaderButton.png"
-                    method="buttonBackground"
+                    method="labelBackground"
                     sourceInsets="4 4 4 4"/>
     </state>
     <state value="PRESSED">
       <imagePainter path="PurpleTableHeaderButtonPressed.png"
-                    method="buttonBackground"	
+                    method="labelBackground"	
                     sourceInsets="4 4 4 4"/>
     </state>
     <insets top="3" bottom="3" right="10" left="10"/> 
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
-  <bind style="PurpleTableHeaderButton" type="name" key="PurpleTableHeaderButton"/>
+  <bind style="PurpleTableHeaderRenderer" type="name" key="PurpleTableHeaderRenderer"/>
 
 
   <style id="JobStatesTableCellRenderer">
@@ -1813,7 +1965,8 @@
     <insets top="2" bottom="2" right="8" left="21"/>
     <font name="Lucida Sans Bold" size="12"/>
   </style>
-  <bind style="GreenConflictTableCellRenderer" type="name" key="GreenConflictTableCellRenderer"/>
+  <bind style="GreenConflictTableCellRenderer" type="name" 
+        key="GreenConflictTableCellRenderer"/>
   
   <style id="GreenLockTableCellRenderer">
     <imagePainter path="GreenLockPanel.png"
@@ -1849,7 +2002,8 @@
     <insets top="2" bottom="2" right="8" left="21"/>
     <font name="Lucida Sans Bold" size="12"/>
   </style>
-  <bind style="PurpleConflictTableCellRenderer" type="name" key="PurpleConflictTableCellRenderer"/>
+  <bind style="PurpleConflictTableCellRenderer" type="name" 
+        key="PurpleConflictTableCellRenderer"/>
   
   <style id="PurpleLockTableCellRenderer">
     <imagePainter path="PurpleLockPanel.png"
@@ -1859,6 +2013,8 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="PurpleLockTableCellRenderer" type="name" key="PurpleLockTableCellRenderer"/>
+
+
 
   <!--  L I S T  -->
 
@@ -1881,7 +2037,7 @@
   </style>
   <bind style="TitleValuePanel" type="name" key="TitleValuePanel"/>
 
-
+   
    
   <!--  S C R O L L   P A N E -->
 
