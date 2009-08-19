@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.63 2009/07/06 10:25:28 jim Exp $
+// $Id: JManagerPanel.java,v 1.64 2009/08/19 23:43:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1940,7 +1940,8 @@ class JManagerPanel
       }
       else if((prefs.getShowUserManual() != null) &&
               prefs.getShowUserManual().wasPressed(e)) {
-        BaseApp.showURL("file:///" + PackageInfo.sInstPath + "/share/docs/manuals/PipelineManual.pdf");
+        BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
+                        "/share/docs/manuals/PipelineManual.pdf");
         return true;
       }
 
@@ -2159,7 +2160,8 @@ class JManagerPanel
       else if(cmd.equals("quick-reference"))
         BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php");
       else if(cmd.equals("user-manual")) 
-        BaseApp.showURL("file:///" + PackageInfo.sInstPath + "/share/docs/manuals/PipelineManual.pdf");
+        BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
+                        "/share/docs/manuals/PipelineManual.pdf");
 
       else if(cmd.equals("home-page"))
         BaseApp.showURL("http://www.temerity.us");
