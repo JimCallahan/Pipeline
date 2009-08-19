@@ -1,4 +1,4 @@
-// $Id: JUserPrefsTreeCellRenderer.java,v 1.2 2005/06/14 13:38:33 jim Exp $
+// $Id: JUserPrefsTreeCellRenderer.java,v 1.3 2009/08/19 23:52:28 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -11,6 +11,7 @@ import java.text.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.tree.*;
+import javax.swing.table.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U S E R   P R E F S   T R E E   C E L L   R E N D E R E R                              */
@@ -22,8 +23,7 @@ import javax.swing.tree.*;
  */ 
 public
 class JUserPrefsTreeCellRenderer
-  extends JLabel 
-  implements TreeCellRenderer 
+  extends DefaultTreeCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

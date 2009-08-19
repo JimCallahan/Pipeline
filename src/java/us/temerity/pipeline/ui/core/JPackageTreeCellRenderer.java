@@ -1,4 +1,4 @@
-// $Id: JPackageTreeCellRenderer.java,v 1.2 2005/06/14 13:38:33 jim Exp $
+// $Id: JPackageTreeCellRenderer.java,v 1.3 2009/08/19 23:52:28 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -21,8 +21,7 @@ import javax.swing.tree.*;
  */ 
 public
 class JPackageTreeCellRenderer
-  extends JLabel 
-  implements TreeCellRenderer 
+  extends DefaultTreeCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

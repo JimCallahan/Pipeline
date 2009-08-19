@@ -1,4 +1,4 @@
-// $Id: JListCellRenderer.java,v 1.4 2005/06/14 13:38:33 jim Exp $
+// $Id: JListCellRenderer.java,v 1.5 2009/08/19 23:49:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -19,8 +19,7 @@ import javax.swing.border.*;
  */ 
 public
 class JListCellRenderer
-  extends JLabel 
-  implements ListCellRenderer 
+  extends DefaultListCellRenderer 
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
