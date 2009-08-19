@@ -1,8 +1,9 @@
-// $Id: SourceParamsTableModel.java,v 1.8 2008/08/19 19:44:34 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.9 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
@@ -88,24 +89,24 @@ class SourceParamsTableModel
 	pColumnNames        = new String[pNumColumns];
 	pColumnDescriptions = new String[pNumColumns];
 	pParamNames         = new String[pNumColumns];
-	pColumnWidths       = new int[pNumColumns];
+        pColumnWidthRanges  = new Vector3i[pNumColumns];
 	pRenderers          = new TableCellRenderer[pNumColumns];
 	pEditors            = new TableCellEditor[pNumColumns];
       }
 
       /* source node name */ 
-      pColumnClasses[0] = String.class;
-      pColumnNames[0]   = "Source Node";
-      pColumnWidths[0]  = 240;
-      pRenderers[0]     = new JSimpleTableCellRenderer(JLabel.CENTER);
-      pEditors[0]       = null;
+      pColumnClasses[0]     = String.class;
+      pColumnNames[0]       = "Source Node";
+      pColumnWidthRanges[0] = new Vector3i(180, 240, Integer.MAX_VALUE); 
+      pRenderers[0]         = new JSimpleTableCellRenderer(JLabel.CENTER);
+      pEditors[0]           = null;
 
       /* source node name file pattern */ 
-      pColumnClasses[1] = String.class;
-      pColumnNames[1]   = "File Sequence";
-      pColumnWidths[1]  = 240;
-      pRenderers[1]     = new JSimpleTableCellRenderer(JLabel.CENTER);
-      pEditors[1]       = null;
+      pColumnClasses[1]     = String.class;
+      pColumnNames[1]       = "File Sequence";
+      pColumnWidthRanges[1] = new Vector3i(180, 240, Integer.MAX_VALUE); 
+      pRenderers[1]         = new JSimpleTableCellRenderer(JLabel.CENTER);
+      pEditors[1]           = null;
 
       /* unique node short and fully resolved names */ 
       ArrayList<String> ntitles = new ArrayList<String>();
@@ -131,69 +132,69 @@ class SourceParamsTableModel
 	pParamNames[col]         = aparam.getName(); 
 
 	if(aparam instanceof BooleanActionParam) {
-	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JBooleanParamTableCellRenderer(JLabel.CENTER);
-	  pEditors[col]       = new JBooleanParamTableCellEditor(160, JLabel.CENTER);
+	  pColumnWidthRanges[col] = new Vector3i(160); 
+	  pRenderers[col] = new JBooleanParamTableCellRenderer(JLabel.CENTER);
+	  pEditors[col]   = new JBooleanParamTableCellEditor(160, JLabel.CENTER);
 	}
 	else if(aparam instanceof IntegerActionParam) {
-	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
-	  pEditors[col]       = new JIntegerParamTableCellEditor(160, JLabel.CENTER);
+	  pColumnWidthRanges[col] = new Vector3i(160); 
+	  pRenderers[col] = new JSimpleTableCellRenderer(JLabel.CENTER);
+	  pEditors[col]   = new JIntegerParamTableCellEditor(160, JLabel.CENTER);
 	}
 	else if(aparam instanceof ByteSizeActionParam) {
-	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JByteSizeParamTableCellRenderer(JLabel.CENTER);
-	  pEditors[col]       = new JByteSizeParamTableCellEditor(160, JLabel.CENTER);
+	  pColumnWidthRanges[col] = new Vector3i(160); 
+	  pRenderers[col] = new JByteSizeParamTableCellRenderer(JLabel.CENTER);
+	  pEditors[col]   = new JByteSizeParamTableCellEditor(160, JLabel.CENTER);
 	}
 	else if(aparam instanceof DoubleActionParam) {
-	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
-	  pEditors[col]       = new JDoubleParamTableCellEditor(160, JLabel.CENTER);
+	  pColumnWidthRanges[col] = new Vector3i(160); 
+	  pRenderers[col] = new JSimpleTableCellRenderer(JLabel.CENTER);
+	  pEditors[col]   = new JDoubleParamTableCellEditor(160, JLabel.CENTER);
 	}
 	else if(aparam instanceof Color3dActionParam) {
-	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JColorParamTableCellRenderer(parent);
-	  pEditors[col]       = new JColorParamTableCellEditor(parent, 160);
+	  pColumnWidthRanges[col] = new Vector3i(160);
+	  pRenderers[col] = new JColorParamTableCellRenderer(parent);
+	  pEditors[col]   = new JColorParamTableCellEditor(parent, 160);
 	}
  	else if(aparam instanceof Tuple2iActionParam) {
- 	  pColumnWidths[col]  = 160;
- 	  pRenderers[col]     = new JTuple2iParamTableCellRenderer();
- 	  pEditors[col]       = new JTuple2iParamTableCellEditor(160);
+ 	  pColumnWidthRanges[col] = new Vector3i(160);
+ 	  pRenderers[col] = new JTuple2iParamTableCellRenderer();
+ 	  pEditors[col]   = new JTuple2iParamTableCellEditor(160);
  	}
  	else if(aparam instanceof Tuple3iActionParam) {
- 	  pColumnWidths[col]  = 240;
- 	  pRenderers[col]     = new JTuple3iParamTableCellRenderer();
- 	  pEditors[col]       = new JTuple3iParamTableCellEditor(240);
+ 	  pColumnWidthRanges[col] = new Vector3i(240);
+ 	  pRenderers[col] = new JTuple3iParamTableCellRenderer();
+ 	  pEditors[col]   = new JTuple3iParamTableCellEditor(240);
  	}
  	else if(aparam instanceof Tuple2dActionParam) {
- 	  pColumnWidths[col]  = 160;
- 	  pRenderers[col]     = new JTuple2dParamTableCellRenderer();
- 	  pEditors[col]       = new JTuple2dParamTableCellEditor(160);
+ 	  pColumnWidthRanges[col] = new Vector3i(160);
+ 	  pRenderers[col] = new JTuple2dParamTableCellRenderer();
+ 	  pEditors[col]   = new JTuple2dParamTableCellEditor(160);
  	}
  	else if(aparam instanceof Tuple3dActionParam) {
- 	  pColumnWidths[col]  = 240;
- 	  pRenderers[col]     = new JTuple3dParamTableCellRenderer();
- 	  pEditors[col]       = new JTuple3dParamTableCellEditor(240);
+ 	  pColumnWidthRanges[col] = new Vector3i(240); 
+ 	  pRenderers[col] = new JTuple3dParamTableCellRenderer();
+ 	  pEditors[col]   = new JTuple3dParamTableCellEditor(240);
  	}
  	else if(aparam instanceof Tuple4dActionParam) {
- 	  pColumnWidths[col]  = 360;
- 	  pRenderers[col]     = new JTuple4dParamTableCellRenderer();
- 	  pEditors[col]       = new JTuple4dParamTableCellEditor(360);
+ 	  pColumnWidthRanges[col] = new Vector3i(360);
+ 	  pRenderers[col] = new JTuple4dParamTableCellRenderer();
+ 	  pEditors[col]   = new JTuple4dParamTableCellEditor(360);
  	}        
 	else if(aparam instanceof StringActionParam) {
-	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
-	  pEditors[col]       = new JStringParamTableCellEditor(160, JLabel.CENTER);
+	  pColumnWidthRanges[col] = new Vector3i(160, 160, Integer.MAX_VALUE); 
+	  pRenderers[col] = new JSimpleTableCellRenderer(JLabel.CENTER);
+	  pEditors[col]   = new JStringParamTableCellEditor(160, JLabel.CENTER);
 	}
 	else if(aparam instanceof EnumActionParam) {
-	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
-	  pEditors[col]       = new JEnumParamTableCellEditor(parent, 160);
+	  pColumnWidthRanges[col] = new Vector3i(160, 160, Integer.MAX_VALUE); 
+	  pRenderers[col] = new JSimpleTableCellRenderer(JLabel.CENTER);
+	  pEditors[col]   = new JEnumParamTableCellEditor(parent, 160);
 	}
 	else if(aparam instanceof LinkActionParam) {
-	  pColumnWidths[col]  = 240;
-	  pRenderers[col]     = new JLinkParamTableCellRenderer(ntitles, nnames);
-	  pEditors[col]       = new JLinkParamTableCellEditor(parent, 240, ntitles, nnames);
+	  pColumnWidthRanges[col] = new Vector3i(120, 240, Integer.MAX_VALUE); 
+	  pRenderers[col] = new JLinkParamTableCellRenderer(ntitles, nnames);
+	  pEditors[col]   = new JLinkParamTableCellEditor(parent, 240, ntitles, nnames);
 	}
 
 	col++;
@@ -202,17 +203,17 @@ class SourceParamsTableModel
 
     /* make modifiable copy of the source parameters in array form */ 
     {
-      int numRows = snames.size();
+      pNumRows = snames.size();
 
-      pParams = new ActionParam[numRows][];
+      pParams = new ActionParam[pNumRows][];
 
-      pSourceNames = new String[numRows];
+      pSourceNames = new String[pNumRows];
       snames.toArray(pSourceNames);
 
-      pSourceTitles = new String[numRows];
+      pSourceTitles = new String[pNumRows];
       stitles.toArray(pSourceTitles);
 
-      pFileSeqs = new FileSeq[numRows];
+      pFileSeqs = new FileSeq[pNumRows];
       fseqs.toArray(pFileSeqs);
 
       int row;
@@ -253,73 +254,9 @@ class SourceParamsTableModel
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the current sort column and direction.
-   */ 
-  public void 
-  sort()
-  {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    int row;
-    for(row=0; row<pParams.length; row++) {
-      Comparable value = null;
-
-      switch(pSortColumn) {
-      case 0:
-	value = pSourceTitles[row];
-	break;
-
-      case 1:
-	if(pFileSeqs[row] != null) 
-	  value = pFileSeqs[row].toString();
-	break;
-
-      default:
-	{
-	  ActionParam params[] = pParams[row];
-	  if(params != null) 
-	    value = params[pSortColumn-2].getValue();
-	}
-      }
-
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	Comparable cvalue = values.get(wk);
-	if(value == null) {
-	  if(cvalue == null)
-	    break;
-	}
-	else if((cvalue != null) && (value.compareTo(cvalue) > 0)) 
-	  break;
-      }
-
-      values.add(wk, value);
-      indices.add(wk, row);
-    }
-
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, row=indices.size()-1; wk<pRowToIndex.length; wk++, row--) 
-	pRowToIndex[wk] = indices.get(row);
-    }
-
-    fireTableDataChanged();    
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -414,17 +351,58 @@ class SourceParamsTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*   S O R T I N G                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the number of rows in the model.
+   * Sort the rows by the values in the current sort column and direction.
    */ 
-  public int 
-  getRowCount()
+  public void 
+  sort()
   {
-    return pParams.length;
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx;
+    for(idx=0; idx<pParams.length; idx++) {
+      Comparable value = null;
+
+      switch(pSortColumn) {
+      case 0:
+	value = pSourceTitles[idx];
+	break;
+
+      case 1:
+	if(pFileSeqs[idx] != null) 
+	  value = pFileSeqs[idx].toString();
+	break;
+
+      default:
+	{
+	  ActionParam params[] = pParams[idx];
+	  if(params != null) 
+	    value = params[pSortColumn-2].getValue();
+	}
+      }
+
+      cells[idx] = new IndexValue(idx, value); 
+    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();     
+
+    fireTableDataChanged();    
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.

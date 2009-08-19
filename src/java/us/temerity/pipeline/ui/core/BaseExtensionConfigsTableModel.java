@@ -1,8 +1,9 @@
-// $Id: BaseExtensionConfigsTableModel.java,v 1.1 2006/10/11 22:45:41 jim Exp $
+// $Id: BaseExtensionConfigsTableModel.java,v 1.2 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
@@ -63,11 +64,16 @@ class BaseExtensionConfigsTableModel
 
       {
 	String names[] = { 
-	  "Name", "Toolset", "Extension", "Version", "Vendor", "Enabled" 
+	  "Config Name", "Toolset", "Extension", "Version", "Vendor", "Enabled" 
 	}; 
 	pColumnNames = names;
       }
 
+      {
+	String colors[] = { "", "", "Purple", "Purple", "Purple", "" };
+	pColumnColorPrefix = colors; 
+      }
+      
       {
 	String desc[] = {
 	  "The name of the " + title + " Extension configuration.", 
@@ -81,10 +87,15 @@ class BaseExtensionConfigsTableModel
       }
 
       {
-	int widths[] = { 
-	  180, 120, 180, 120, 120, 120
-	};
-	pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(180), 
+          new Vector3i(120), 
+          new Vector3i(180), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120)
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
@@ -92,8 +103,8 @@ class BaseExtensionConfigsTableModel
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JPluginTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer("Purple", JLabel.CENTER), 
+	  new JSimpleTableCellRenderer("Purple", JLabel.CENTER), 
 	  new JBooleanTableCellRenderer(JLabel.CENTER)
 	};
 	pRenderers = renderers;
@@ -121,8 +132,7 @@ class BaseExtensionConfigsTableModel
   public void 
   sort()
   {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
+    IndexValue cells[] = new IndexValue[pNumRows]; 
     int idx = 0;
     for(BaseExtensionConfig config : pConfigs) {
       Comparable value = null;
@@ -147,65 +157,44 @@ class BaseExtensionConfigsTableModel
 	      break;
 
 	    case 3:
-	      value = ext.getVersionID().toString();
+	      value = ext.getVersionID();
 	      break;
 
 	    case 4:
 	      value = ext.getVendor();
 	    }
 	  }
-	  else {
-	    value = "-";
-	  }
 	}
 	catch(PipelineException ex) {
-	  value = "-";
+	  value = null;
 	}
 	break;
 	
       case 5:
 	value = config.isEnabled();
-	break;
       }
 
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-
+      cells[idx] = new IndexValue(idx, value); 
       idx++;
     }
 
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
 
     fireTableDataChanged();
   }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Returns the number of rows in the model.
-   */ 
-  public int 
-  getRowCount()
-  {
-    return pConfigs.size(); 
-  }
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.

@@ -1,8 +1,6 @@
-// $Id: AbstractSortableTableModel.java,v 1.1 2005/03/04 09:20:30 jim Exp $
+// $Id: AbstractSortableTableModel.java,v 1.2 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui;
-
-import us.temerity.pipeline.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -10,6 +8,9 @@ import java.text.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S O R T A B L E   T A B L E   M O D E L                                                */
@@ -58,16 +59,18 @@ class AbstractSortableTableModel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Get the width of the given column.
-   */ 
-  public int
-  getColumnWidth
+   * Get the range of widths (min, preferred, max) of the column. 
+   */
+  public Vector3i
+  getColumnWidthRange
   (
    int col   
   )
   {
-    return pColumnWidths[col];
+    return pColumnWidthRanges[col]; 
   }
 
   /**
@@ -168,25 +171,20 @@ class AbstractSortableTableModel
   public abstract void 
   sort();
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O L U M N   V I S I B I L I T Y                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Notifies the model that columns visible to the user have changed.
-   */ 
-  public void 
-  columnVisiblityChanged()
-  {
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the number of rows in the model.
+   */ 
+  public int 
+  getRowCount()
+  {
+    return pNumRows;
+  }
 
   /**
    * Returns the most specific superclass for all the cell values in the column.
@@ -224,6 +222,86 @@ class AbstractSortableTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  public 
+  class IndexValue
+  {
+    public 
+    IndexValue
+    (
+     int index, 
+     Comparable value
+    ) 
+    {
+      pIndex = index; 
+      pValue = value; 
+    }
+
+    public int
+    getIndex()
+    {
+      return pIndex; 
+    }
+
+    public Comparable
+    getValue() 
+    {
+      return pValue; 
+    }
+
+    private int pIndex; 
+    private Comparable pValue; 
+  }
+
+  public 
+  class AscendingIndexValue
+    implements Comparator<IndexValue> 
+  {
+    public int 	
+    compare
+    (
+     IndexValue a, 
+     IndexValue b
+    ) 
+    {
+      Comparable aval = a.getValue();
+      Comparable bval = b.getValue(); 
+
+      if(aval != null) {
+        if(bval != null) 
+          return aval.compareTo(bval); 
+        else 
+          return 1;
+      }
+      else {
+        if(bval != null) 
+          return -1; 
+        else 
+          return 0;
+      }
+    }
+  }
+
+  public 
+  class DescendingIndexValue
+    extends AscendingIndexValue
+  {
+    public int 	
+    compare
+    (
+     IndexValue a, 
+     IndexValue b
+    ) 
+    {
+      return super.compare(b, a);
+    }
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
@@ -234,6 +312,11 @@ class AbstractSortableTableModel
   
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The number of rows in the table.
+   */ 
+  protected int pNumRows; 
 
   /**
    * Param row indices for each displayed row number.
@@ -272,9 +355,10 @@ class AbstractSortableTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The widths of the columns
+   * Get the (min, preferred, max) widths of the column or <CODE>null</CODE> to use the
+   * fixed width for all values.
    */ 
-  protected int  pColumnWidths[]; 
+  protected Vector3i pColumnWidthRanges[]; 
 
   /**
    * The color prefix used to determine the synth style of the header button for 

@@ -1,4 +1,4 @@
-// $Id: MasterExtensionConfigsTableModel.java,v 1.1 2006/10/11 22:45:41 jim Exp $
+// $Id: MasterExtensionConfigsTableModel.java,v 1.2 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -97,23 +97,28 @@ class MasterExtensionConfigsTableModel
    * @param configs
    *   The extension configurations indexed by configuration name.
    * 
-   * @param privileges
+   * @param details
    *   The details of the administrative privileges granted to the current user. 
    */ 
   public void
   setMasterExtensionConfigs
   (
    TreeMap<String,MasterExtensionConfig> configs, 
-   PrivilegeDetails privileges
+   PrivilegeDetails details
   ) 
   {
     pConfigs.clear();    
+    if(configs != null) {
+      for(MasterExtensionConfig config : configs.values()) 
+        pConfigs.add(config);
+    }
+
+    pNumRows = pConfigs.size();
+
+    if(details != null)
+      pPrivilegeDetails = details; 
+
     pModifiedIndices.clear();  
-
-    for(MasterExtensionConfig config : configs.values()) 
-      pConfigs.add(config);
-
-    pPrivilegeDetails = privileges; 
 
     sort();
   }

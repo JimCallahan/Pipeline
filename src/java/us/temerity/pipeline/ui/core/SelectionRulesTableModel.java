@@ -1,4 +1,4 @@
-// $Id: SelectionRulesTableModel.java,v 1.5 2009/07/01 16:43:14 jim Exp $
+// $Id: SelectionRulesTableModel.java,v 1.6 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,6 +9,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -65,7 +66,7 @@ class SelectionRulesTableModel
 
       {
 	String names[] = {
-	  "Group", "Status", "RemoveReserv", "NewOrder", "NewSlots", 
+	  "Group Name", "Status", "Remove Res.", "New Order", "New Slots", 
 	  "Order", "Rule", "Date", "Weekdays", "Begins", "Ends"
 	};
 	pColumnNames = names;
@@ -89,25 +90,35 @@ class SelectionRulesTableModel
       }
 
       {
-	int widths[] = { 
-	  120, 90, 100, 80, 80, 80, 80, 120, 154, 60, 60
-	};
-	pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(140), 
+          new Vector3i(90), 
+          new Vector3i(100), 
+          new Vector3i(100), 
+          new Vector3i(80), 
+          new Vector3i(80), 
+          new Vector3i(80), 
+          new Vector3i(120), 
+          new Vector3i(154), 
+          new Vector3i(60), 
+          new Vector3i(60)
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
+	  new JBooleanTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER),   
+	  new JSimpleTableCellRenderer("", JLabel.CENTER, true),   
  	  new JWeekdayFlagsTableCellRenderer(),
-	  new JSimpleTableCellRenderer(JLabel.CENTER),   
-	  new JSimpleTableCellRenderer(JLabel.CENTER)
+	  new JSimpleTableCellRenderer("", JLabel.CENTER, true),   
+	  new JSimpleTableCellRenderer("", JLabel.CENTER, true)
 	};
 	pRenderers = renderers;
       }
@@ -147,21 +158,18 @@ class SelectionRulesTableModel
   public void 
   sort()
   {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
+    IndexValue cells[] = new IndexValue[pNumRows]; 
     int idx = 0;
     for(SelectionRule rule : pRules) {
       Comparable value = null;
       switch(pSortColumn) {
       case 0:
 	value = rule.getGroup();
-	if(value == null) 
-	  value = "";
 	break;
 	
       case 1:
 	value = rule.getServerStatus();
-	if (value == null)
+	if(value == null)
 	  value = QueueHostStatus.Limbo;
 	break;
 	
@@ -171,13 +179,11 @@ class SelectionRulesTableModel
 	
       case 3:
 	value = rule.getOrder();
-	if (value == null)
-	  value = -1;
+        break;
 	
       case 4:
 	value = rule.getSlots();
-	if (value == null)
-	  value = -1;
+        break;
 	
       case 5:
 	value = pOrder.get(idx);
@@ -193,7 +199,6 @@ class SelectionRulesTableModel
 	break;
 	
       case 7:
-	value = "";
 	if(rule instanceof SpecificSelectionRule) {
 	  SpecificSelectionRule srule = (SpecificSelectionRule) rule;
 	  value = srule.getStartDateString();
@@ -201,7 +206,6 @@ class SelectionRulesTableModel
 	break;
 	
       case 8:
-	value = "";
 	if(rule instanceof DailySelectionRule) {
 	  DailySelectionRule drule = (DailySelectionRule) rule;
 	  boolean flags[] = drule.getActiveFlags();
@@ -216,7 +220,6 @@ class SelectionRulesTableModel
 	break;
 	
       case 9:
-	value = "";
 	if(rule instanceof IntervalSelectionRule) {
 	  IntervalSelectionRule irule = (IntervalSelectionRule) rule;
 	  value = irule.getStartTimeString();
@@ -224,37 +227,24 @@ class SelectionRulesTableModel
 	break;
 
       case 10:
-	value = "";
 	if(rule instanceof IntervalSelectionRule) {
 	  IntervalSelectionRule irule = (IntervalSelectionRule) rule;
 	  value = irule.getEndTimeString();
 	}
-
-      default:
-	assert(false);
       }
       
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-	
+      cells[idx] = new IndexValue(idx, value); 
       idx++;
     }
-      
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
 
     fireTableDataChanged();
   }
@@ -343,7 +333,10 @@ class SelectionRulesTableModel
   ) 
   {
     pRules.clear();
-    pRules.addAll(rules);
+    if(rules != null) 
+      pRules.addAll(rules);
+    
+    pNumRows = pRules.size();
 
     pOrder.clear();
     int order = 100;
@@ -353,7 +346,8 @@ class SelectionRulesTableModel
     }
     
     pSelectionGroups.clear();
-    pSelectionGroups.addAll(groups);
+    if(groups != null) 
+      pSelectionGroups.addAll(groups);
 
     pPrivilegeDetails = privileges; 
 
@@ -407,15 +401,6 @@ class SelectionRulesTableModel
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Returns the number of rows in the model.
-   */ 
-  public int 
-  getRowCount()
-  {
-    return pRules.size();
-  }
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.

@@ -1,8 +1,9 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.10 2009/05/14 23:30:43 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.11 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.text.*;
@@ -68,8 +69,16 @@ class QueueJobGroupsTableModel
       }
 
       {
-	int widths[] = { 80, 140, 300, 180, 180, 540, 180 };
-	pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(80), 
+          new Vector3i(140),
+          new Vector3i(120, 240, Integer.MAX_VALUE), 
+          new Vector3i(180), 
+          new Vector3i(180), 
+          new Vector3i(180, 360, Integer.MAX_VALUE), 
+          new Vector3i(180)
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
@@ -97,92 +106,10 @@ class QueueJobGroupsTableModel
     pJobStateDist   = new TreeMap<Long,double[]>();
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S O R T I N G                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the current sort column and direction.
-   */ 
-  public void 
-  sort()
-  {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    int idx = 0;
-    for(QueueJobGroup group : pQueueJobGroups) {
-      Comparable value = null;
-      switch(pSortColumn) {
-      case 0:
-	value = new Long(group.getGroupID());
-	break;
-
-      case 1:
-	{
-	  double[] dist = pJobStateDist.get(group.getGroupID());
-	  StringBuilder buf = new StringBuilder();
-	  int wk;
-	  for(wk=0; wk<dist.length; wk++) 
-	    buf.append(dist[wk] + ":");
-
-	  value = buf.toString();
-	}
-	break;
-
-      case 2:
-	value = group.getRootSequence().toString();
-	break;
-
-      case 3: 
-	value = group.getSubmittedStamp();
-	break;
-
-      case 4:
-	if(group.getCompletedStamp() != null)
-	  value = group.getCompletedStamp();
-	else 
-	  value = new Long(0L);
-	break;
-
-      case 5:
-	value = group.getNodeID().getName();
-	break;
-
-      case 6:
-	value = (group.getNodeID().getAuthor() + "|" + group.getNodeID().getView());
-      }
-      
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-
-      idx++;
-    }
-
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
-
-    fireTableDataChanged();
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -229,6 +156,8 @@ class QueueJobGroupsTableModel
       pJobStateDist.putAll(dist); 
     }
 
+    pNumRows = pQueueJobGroups.size(); 
+
     sort();
   }
   
@@ -255,17 +184,77 @@ class QueueJobGroupsTableModel
   
 
   /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*   S O R T I N G                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the number of rows in the model.
+   * Sort the rows by the values in the current sort column and direction.
    */ 
-  public int 
-  getRowCount()
+  public void 
+  sort()
   {
-    return pQueueJobGroups.size();
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx = 0;
+    for(QueueJobGroup group : pQueueJobGroups) {
+      Comparable value = null;
+      switch(pSortColumn) {
+      case 0:
+	value = new Long(group.getGroupID());
+	break;
+
+      case 1:
+	{
+	  double[] dist = pJobStateDist.get(group.getGroupID());
+	  StringBuilder buf = new StringBuilder();
+	  int wk;
+	  for(wk=0; wk<dist.length; wk++) 
+	    buf.append(dist[wk] + ":");
+
+	  value = buf.toString();
+	}
+	break;
+
+      case 2:
+	value = group.getRootSequence().toString();
+	break;
+
+      case 3: 
+	value = group.getSubmittedStamp();
+	break;
+
+      case 4:
+        value = group.getCompletedStamp();
+	break;
+
+      case 5:
+	value = group.getNodeID().getName();
+	break;
+
+      case 6:
+	value = (group.getNodeID().getAuthor() + "|" + group.getNodeID().getView());
+      }
+      
+      cells[idx] = new IndexValue(idx, value); 
+      idx++;
+    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
+
+    fireTableDataChanged();
   }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.

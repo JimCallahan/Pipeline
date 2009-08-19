@@ -1,4 +1,4 @@
-// $Id: QueueExtensionConfigsTableModel.java,v 1.1 2006/10/11 22:45:41 jim Exp $
+// $Id: QueueExtensionConfigsTableModel.java,v 1.2 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -97,23 +97,28 @@ class QueueExtensionConfigsTableModel
    * @param configs
    *   The extension configurations indexed by configuration name.
    * 
-   * @param privileges
+   * @param details
    *   The details of the administrative privileges granted to the current user. 
    */ 
   public void
   setQueueExtensionConfigs
   (
    TreeMap<String,QueueExtensionConfig> configs, 
-   PrivilegeDetails privileges
+   PrivilegeDetails details
   ) 
   {
-    pConfigs.clear();
-    pModifiedIndices.clear();
+    pConfigs.clear();    
+    if(configs != null) {
+      for(QueueExtensionConfig config : configs.values()) 
+        pConfigs.add(config);
+    }
 
-    for(QueueExtensionConfig config : configs.values()) 
-      pConfigs.add(config);
+    pNumRows = pConfigs.size();
 
-    pPrivilegeDetails = privileges; 
+    if(details != null)
+      pPrivilegeDetails = details; 
+
+    pModifiedIndices.clear();  
 
     sort();
   }

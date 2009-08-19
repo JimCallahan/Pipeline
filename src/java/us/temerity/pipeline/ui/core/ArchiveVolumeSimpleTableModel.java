@@ -1,8 +1,9 @@
-// $Id: ArchiveVolumeSimpleTableModel.java,v 1.2 2007/03/28 20:07:15 jim Exp $
+// $Id: ArchiveVolumeSimpleTableModel.java,v 1.3 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.text.*;
@@ -60,8 +61,11 @@ class ArchiveVolumeSimpleTableModel
       }
 
       {
-	int widths[] = { 240, 180 };
-	pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(180, 240, Integer.MAX_VALUE), 
+          new Vector3i(180)
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
@@ -86,59 +90,7 @@ class ArchiveVolumeSimpleTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S O R T I N G                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the current sort column and direction.
-   */ 
-  public void 
-  sort()
-  {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    Comparable value = null;
-
-    int idx = 0;
-    for(ArchiveVolume volume : pVolumes) {
-      switch(pSortColumn) {
-      case 0:
-	value = volume.getName();
-	break;
-	
-      case 1:
-	value = volume.getTimeStamp();
-      }
-      
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-      
-      idx++;
-    }
-
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
-
-    fireTableDataChanged();
-  }
-  
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -154,9 +106,10 @@ class ArchiveVolumeSimpleTableModel
   ) 
   {
     pVolumes.clear();
-
     if(volumes != null) 
       pVolumes.addAll(volumes);
+
+    pNumRows = pVolumes.size(); 
 
     sort();
   }
@@ -203,17 +156,49 @@ class ArchiveVolumeSimpleTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*   S O R T I N G                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the number of rows in the model.
+   * Sort the rows by the values in the current sort column and direction.
    */ 
-  public int 
-  getRowCount()
+  public void 
+  sort()
   {
-    return pVolumes.size();
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx = 0;
+    for(ArchiveVolume volume : pVolumes) {
+      Comparable value = null;
+      switch(pSortColumn) {
+      case 0:
+	value = volume.getName();
+	break;
+	
+      case 1:
+	value = volume.getTimeStamp();
+      }
+      
+      cells[idx] = new IndexValue(idx, value); 
+      idx++;
+    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
+
+    fireTableDataChanged();
   }
+  
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.

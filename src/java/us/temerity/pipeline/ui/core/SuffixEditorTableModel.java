@@ -1,14 +1,15 @@
-// $Id: SuffixEditorTableModel.java,v 1.9 2009/03/24 01:21:21 jesse Exp $
+// $Id: SuffixEditorTableModel.java,v 1.10 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import java.util.*;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.*;
 
+import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S U F F I X   E D I T O R   T A B L E   M O D E L                                      */
@@ -65,8 +66,14 @@ class SuffixEditorTableModel
       }
 
       {
-	int widths[] = { 80, 600, 120, 120, 120 };
-	pColumnWidths = widths;
+	Vector3i ranges[] = { 
+          new Vector3i(80), 
+          new Vector3i(180, 360, Integer.MAX_VALUE), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120) 
+        };
+	pColumnWidthRanges = ranges;
       }
 
       {
@@ -111,8 +118,7 @@ class SuffixEditorTableModel
   public void 
   sort()
   {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
+    IndexValue cells[] = new IndexValue[pNumRows]; 
     int idx = 0;
     for(SuffixEditor se : pSuffixEditors) {
       BaseEditor editor = se.getEditor();
@@ -124,53 +130,36 @@ class SuffixEditorTableModel
 
       case 1:
 	value = se.getDescription(); 
-	if(value == null) 
-	  value = "";
 	break;
 
       case 2:
 	if(editor != null)
 	  value = editor.getName();
-	else 
-	  value = "-";
 	break;
 
       case 3:
 	if(editor != null)
-	  value = editor.getVersionID().toString();
-	else 
-	  value = "-";
+	  value = editor.getVersionID();
 	break;
 
       case 4:
 	if(editor != null)
 	  value = editor.getVendor();
-	else 
-	  value = "-";
 	break;
       }
       
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-
+      cells[idx] = new IndexValue(idx, value); 
       idx++;
     }
 
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
 
     fireTableDataChanged();
   }
@@ -200,7 +189,10 @@ class SuffixEditorTableModel
   ) 
   {
     pSuffixEditors.clear();
-    pSuffixEditors.addAll(editors);
+    if(editors != null) 
+      pSuffixEditors.addAll(editors);
+
+    pNumRows = pSuffixEditors.size();
 
     sort();
 
@@ -258,15 +250,6 @@ class SuffixEditorTableModel
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Returns the number of rows in the model.
-   */ 
-  public int 
-  getRowCount()
-  {
-    return pSuffixEditors.size();
-  }
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.

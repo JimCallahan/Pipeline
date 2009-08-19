@@ -1,4 +1,4 @@
-// $Id: PrivilegesTableModel.java,v 1.5 2009/08/19 23:42:47 jim Exp $
+// $Id: WorkGroupsTableModel.java,v 1.1 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,15 +13,15 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P R I V I L E G E S  T A B L E   M O D E L                                             */
+/*   W O R K   G R O U P S   T A B L E   M O D E L                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A {@link SortableTableModel SortableTableModel} which contains both WorkGroup and 
- * Privilege information for each Pipeline user.
+ * A {@link SortableTableModel SortableTableModel} which WorkGroup and information for 
+ * each Pipeline user.
  */ 
 public
-class PrivilegesTableModel
+class WorkGroupsTableModel
   extends AbstractPrivsTableModel
 {
   /*----------------------------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ class PrivilegesTableModel
    * Construct a table model.
    */
   public 
-  PrivilegesTableModel
+  WorkGroupsTableModel
   (
    JManagePrivilegesDialog parent
   ) 
@@ -41,67 +41,15 @@ class PrivilegesTableModel
     
     /* initialize the fields */ 
     {
-      pUserPrivileges = new ArrayList<Privileges>();
+      pGroupNames       = new ArrayList<String>();
+      pGroupMemberships = new ArrayList<ArrayList<Boolean>>();
     }
 
-    /* initialize the columns */ 
-    { 
-      pNumColumns = 7;
-
-      {
-        Class cls[] = {
-          String.class, 
-          Boolean.class, Boolean.class, Boolean.class, 
-          Boolean.class, Boolean.class, Boolean.class
-        };
-        
-        pColumnClasses = cls;
-      }
-
-      {
-	String names[] = { 
-	  "User Name", 
-          "Master Admin", "Developer", "Annotator", 
-          "Queue Admin", "Queue Manager", "Node Manager"
-	};
-	pColumnNames = names;
-      }
-
-      {
-	String colors[] = { 
-          "", 
-          "Blue", "Blue", "Blue",  
-          "Blue", "Blue", "Blue"
-        };
-	pColumnColorPrefix = colors; 
-      }
-
-      {
-	String desc[] = {
-          "The names of each user.", 
-	  "Whether the user has full administrative privileges.", 
-	  "Whether the user has developer privileges.", 
-	  "Whether the user has annotator privileges.", 
-	  "Whether the user has queue administration privileges.", 
-	  "Whether the user has queue manager privileges.", 
-	  "Whether the user has node manager privileges.", 
-	};
-	pColumnDescriptions = desc;
-      }
-    }
-
-    pCellRenderer = new JBooleanTableCellRenderer("Blue", JLabel.CENTER, true); 
-
-    {
-      JBooleanTableCellEditor editor = 
-        new JBooleanTableCellEditor(120, JLabel.CENTER, false); 
-      editor.setSynthPrefix("Blue");
-      pCellEditor = editor;
-    }
+    pCellRenderer = new JWorkGroupMemberTableCellRenderer(); 
+    pCellEditor   = new JWorkGroupMemberTableCellEditor(120); 
   }
  
 
- 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -112,47 +60,52 @@ class PrivilegesTableModel
    * @param groups
    *   The current work groups used to determine the scope of administrative privileges.
    * 
-   * @param privileges
-   *   The administrative privileges for all users.
-   * 
    * @param details
    *   The privileges granted to the current user with respect to all other users.
    */ 
-  public void 
-  setPrivileges
+  public void
+  setWorkGroups
   (
    WorkGroups groups, 
-   TreeMap<String,Privileges> privileges,
    PrivilegeDetails details
   ) 
   {
     super.setPrivileges(groups, details); 
 
-    pUserPrivileges.clear();
+    pGroupNames.clear();
+    if(groups != null) 
+      pGroupNames.addAll(groups.getGroups());
+
+    int gsize = pGroupNames.size();
+    pGroupMemberships.clear();
     for(String uname : pUserNames) {
-      Privileges privs = null; 
-      if(privileges != null) 
-	privs = privileges.get(uname);
-      if(privs == null) 
-	privs = new Privileges();
-      pUserPrivileges.add(privs);
+      ArrayList<Boolean> members = new ArrayList<Boolean>(gsize);
+      for(String gname : pGroupNames) 
+	members.add(groups.isMemberOrManager(uname, gname));
+
+      pGroupMemberships.add(members);
     }
 
-    sort();
+    sort();   
+    fireTableStructureChanged(); 
   }
 
   /**
-   * Get the modified privileges indexed by user name.
+   * Get the modified work group memberships.
    */ 
-  public TreeMap<String,Privileges>
-  getModifiedPrivileges() 
+  public DoubleMap<String,String,Boolean>  
+  getModifiedWorkGroupMemberships() 
   {
-    TreeMap<String,Privileges> privs = new TreeMap<String,Privileges>();
+    DoubleMap<String,String,Boolean> members = new DoubleMap<String,String,Boolean>();
 
-    for(Integer idx : pEditedRows) 
-      privs.put(pUserNames.get(idx), pUserPrivileges.get(idx));
+    for(Integer idx : pEditedRows) {
+      ArrayList<Boolean> flags = pGroupMemberships.get(idx);
+      int ck;
+      for(ck=0; ck<flags.size(); ck++) 
+	members.put(pUserNames.get(idx), pGroupNames.get(ck), flags.get(ck));
+    }
 
-    return privs;
+    return members;
   }
 
 
@@ -171,32 +124,15 @@ class PrivilegesTableModel
     int idx;
     for(idx=0; idx<pNumRows; idx++) {
       Comparable value = null;
-      Privileges privs = pUserPrivileges.get(idx);
       switch(pSortColumn) {
       case 0:
 	value = pUserNames.get(idx);
-        break;
-        
-      case 1:
-	value = new Boolean(privs.isDeveloper());
 	break;
 
-      case 2:
-	value = new Boolean(privs.isAnnotator());
-	break;
-
-      case 3:
-	value = new Boolean(privs.isQueueAdmin());  
-	break;
-
-      case 4:
-	value = new Boolean(privs.isQueueManager()); 
-	break;
-
-      case 5:
-	value = new Boolean(privs.isNodeManager()); 
+      default:
+	value = pGroupMemberships.get(idx).get(pSortColumn-1);
       }
-
+      
       cells[idx] = new IndexValue(idx, value); 
     }
 
@@ -212,10 +148,99 @@ class PrivilegesTableModel
     fireTableDataChanged(); 
   }
 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O R T A B L E   T A B L E   M O D E L   O V E R R I D E S                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the description of the column columnIndex used in tool tips.
+   */ 
+  public String 	
+  getColumnDescription
+  (
+   int col
+  ) 
+  {
+    switch(col) {
+    case 0:
+      return "The names of each user."; 
+
+    default:
+      return "Work group membership.";
+    }
+  }
+  
+  /**
+   * Returns the color prefix used to determine the synth style of the header button for 
+   * the given column.
+   */ 
+  public String 	
+  getColumnColorPrefix
+  (
+   int col
+  )
+  { 
+    switch(col) {
+    case 0:
+      return ""; 
+
+    default:
+      return "Green"; 
+    }
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the most specific superclass for all the cell values in the column.
+   */
+  public Class 	
+  getColumnClass
+  (
+   int col
+  )
+  {
+    switch(col) {
+    case 0:
+      return String.class; 
+
+    default:
+      return Boolean.class;
+    }
+  }
+  
+  /**
+   * Returns the number of columns in the model.
+   */ 
+  public int
+  getColumnCount()
+  {
+    return (pGroupNames.size() + 1);
+  }
+
+  /**
+   * Returns the name of the column at columnIndex.
+   */ 
+  public String 	
+  getColumnName
+  (
+   int col
+  ) 
+  {
+    switch(col) {
+    case 0:
+      return "User Name";
+
+    default:
+      return pGroupNames.get(col-1);
+    }
+  }
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
@@ -236,26 +261,12 @@ class PrivilegesTableModel
     if(uname.equals(PackageInfo.sPipelineUser))
       return false;
 
-    Privileges privs = pUserPrivileges.get(srow);
     switch(col) {
     case 0:
       return false;
-
-    case 1:
-      return true; 
       
-    case 2:
-    case 3:
-    case 4:
-    case 6:
-      return new Boolean(!privs.isMasterAdmin());
-      
-    case 5:
-      return new Boolean(!(privs.isMasterAdmin() || privs.isQueueAdmin()));
-
     default:
-      throw new IllegalArgumentException
-        ("There is no such column (" + col + ")!"); 
+      return true; 
     }
   }
 
@@ -270,32 +281,12 @@ class PrivilegesTableModel
   )
   {
     int srow = pRowToIndex[row];
-    Privileges privs = pUserPrivileges.get(srow);
     switch(col) {
     case 0:
       return pUserNames.get(srow);
 
-    case 1:
-      return new Boolean(privs.isMasterAdmin()); 
-      
-    case 2:
-      return new Boolean(privs.isDeveloper());
-      
-    case 3:
-      return new Boolean(privs.isAnnotator());
-      
-    case 4:
-      return new Boolean(privs.isQueueAdmin()); 
-      
-    case 5:
-      return new Boolean(privs.isQueueManager()); 
-      
-    case 6:
-      return new Boolean(privs.isNodeManager()); 
-
     default:
-      throw new IllegalArgumentException
-        ("There is no such column (" + col + ")!"); 
+      return pGroupMemberships.get(srow).get(col-1);
     }
   }
 
@@ -310,38 +301,12 @@ class PrivilegesTableModel
    int col
   ) 
   {
-    Privileges privs = pUserPrivileges.get(srow);
     switch(col) {
     case 0:
       return false;
-
-    case 1:
-      privs.setMasterAdmin((Boolean) value);
-      pEditedRows.add(srow);
-      break;
-      
-    case 2:
-      privs.setDeveloper((Boolean) value);
-      pEditedRows.add(srow);
-      break;
-      
-    case 3:
-      privs.setAnnotator((Boolean) value);
-      pEditedRows.add(srow);
-      break;
-      
-    case 4:
-      privs.setQueueAdmin((Boolean) value);  
-      pEditedRows.add(srow);
-      break;
-      
-    case 5:
-      privs.setQueueManager((Boolean) value); 
-      pEditedRows.add(srow);
-      break;
-      
-    case 6:
-      privs.setNodeManager((Boolean) value); 
+   
+    default:
+      pGroupMemberships.get(srow).set(col-1, (Boolean) value);
       pEditedRows.add(srow);
     }
     
@@ -354,7 +319,7 @@ class PrivilegesTableModel
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 477295869489343622L;
+  private static final long serialVersionUID = -3298562617566392573L;
 
 
 
@@ -363,8 +328,16 @@ class PrivilegesTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The privileges for each user.
+   * The names of the work groups.
    */ 
-  private ArrayList<Privileges>  pUserPrivileges;
+  private ArrayList<String>  pGroupNames; 
+
+  /**
+   * The memberships of users in work groups indexed by user (row) and group (col-6).<P>
+   * 
+   * Where (true) = Manager, (false) = Member and (null) = Not part of group.
+   */ 
+  private ArrayList<ArrayList<Boolean>>  pGroupMemberships; 
+
 
 }

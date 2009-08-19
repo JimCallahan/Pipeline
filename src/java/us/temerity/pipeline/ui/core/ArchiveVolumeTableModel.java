@@ -1,8 +1,9 @@
-// $Id: ArchiveVolumeTableModel.java,v 1.2 2007/03/28 20:07:15 jim Exp $
+// $Id: ArchiveVolumeTableModel.java,v 1.3 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.text.*;
@@ -65,8 +66,14 @@ class ArchiveVolumeTableModel
       }
 
       {
-	int widths[] = { 240, 180, 80, 80, 80 };
-	pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(180, 240, Integer.MAX_VALUE), 
+          new Vector3i(180), 
+          new Vector3i(80), 
+          new Vector3i(80), 
+          new Vector3i(80)
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
@@ -99,70 +106,7 @@ class ArchiveVolumeTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S O R T I N G                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the current sort column and direction.
-   */ 
-  public void 
-  sort()
-  {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    Comparable value = null;
-
-    int idx = 0;
-    for(ArchiveVolume volume : pVolumes) {
-      switch(pSortColumn) {
-      case 0:
-	value = volume.getName();
-	break;
-	
-      case 1:
-	value = volume.getTimeStamp();	  
-	break;
-	
-      case 2: 
-	value = pContains[idx];
-	break;
-
-      case 3:
-	value = pRestores[idx];
-	
-      case 4:
-	value = pUseVolume[idx];
-      }
-      
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-      
-      idx++;
-    }
-
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
-
-    fireTableDataChanged();
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -289,11 +233,11 @@ class ArchiveVolumeTableModel
       
       pVolumes.addAll(volumes);
 
-      int size = pVolumes.size();
-      pIsUnique   = new boolean[size];
-      pContains   = new int[size];
-      pRestores   = new int[size];
-      pUseVolume  = new boolean[size];
+      pNumRows = pVolumes.size();
+      pIsUnique   = new boolean[pNumRows];
+      pContains   = new int[pNumRows];
+      pRestores   = new int[pNumRows];
+      pUseVolume  = new boolean[pNumRows];
       
       int idx = 0;
       for(ArchiveVolume volume : pVolumes) {
@@ -341,6 +285,117 @@ class ArchiveVolumeTableModel
 
     return volumes;
   }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O R T I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sort the rows by the values in the current sort column and direction.
+   */ 
+  public void 
+  sort()
+  {
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx = 0;
+    for(ArchiveVolume volume : pVolumes) {
+      Comparable value = null;
+      switch(pSortColumn) {
+      case 0:
+	value = volume.getName();
+	break;
+	
+      case 1:
+	value = volume.getTimeStamp();	  
+	break;
+	
+      case 2: 
+	value = pContains[idx];
+	break;
+
+      case 3:
+	value = pRestores[idx];
+	break;
+	
+      case 4:
+	value = pUseVolume[idx];
+      }
+      
+      cells[idx] = new IndexValue(idx, value); 
+      idx++;
+    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
+
+    fireTableDataChanged();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns true if the cell at rowIndex and columnIndex is editable.
+   */ 
+  public boolean 	
+  isCellEditable
+  (
+   int row, 
+   int col
+  ) 
+  {
+    return false;
+  }
+
+  /**
+   * Returns the value for the cell at columnIndex and rowIndex.
+   */ 
+  public Object 	
+  getValueAt
+  (
+   int row, 
+   int col
+  )
+  {
+    int irow = pRowToIndex[row];
+    ArchiveVolume volume = pVolumes.get(irow);
+    switch(col) {
+    case 0:
+      return volume.getName();
+      
+    case 1:
+      return TimeStamps.format(volume.getTimeStamp());
+
+    case 2: 
+      return pContains[irow];
+
+    case 3:
+      return pRestores[irow];
+	
+    case 4:
+      return pUseVolume[irow];
+
+    default:
+      assert(false);
+      return null;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Recompute the version restore counts based on the current contents of the table.
@@ -419,72 +474,10 @@ class ArchiveVolumeTableModel
 	if((pRestores[wk] == 0) && !pIsUnique[wk]) 
 	  pUseVolume[wk] = false;
     }
-    
 
     fireTableDataChanged(); 
   }
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Returns the number of rows in the model.
-   */ 
-  public int 
-  getRowCount()
-  {
-    return pVolumes.size();
-  }
-
-  /**
-   * Returns true if the cell at rowIndex and columnIndex is editable.
-   */ 
-  public boolean 	
-  isCellEditable
-  (
-   int row, 
-   int col
-  ) 
-  {
-    return false;
-  }
-
-  /**
-   * Returns the value for the cell at columnIndex and rowIndex.
-   */ 
-  public Object 	
-  getValueAt
-  (
-   int row, 
-   int col
-  )
-  {
-    int irow = pRowToIndex[row];
-    ArchiveVolume volume = pVolumes.get(irow);
-    switch(col) {
-    case 0:
-      return volume.getName();
-      
-    case 1:
-      return TimeStamps.format(volume.getTimeStamp());
-
-    case 2: 
-      return pContains[irow];
-
-    case 3:
-      return pRestores[irow];
-	
-    case 4:
-      return pUseVolume[irow];
-
-    default:
-      assert(false);
-      return null;
-    }
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -544,4 +537,5 @@ class ArchiveVolumeTableModel
    * The archive volumes.
    */ 
   private ArrayList<ArchiveVolume>  pVolumes; 
+
 }

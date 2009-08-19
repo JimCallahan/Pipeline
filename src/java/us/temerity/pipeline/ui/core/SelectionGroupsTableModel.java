@@ -1,8 +1,9 @@
-// $Id: SelectionGroupsTableModel.java,v 1.6 2009/06/01 07:40:23 jesse Exp $
+// $Id: SelectionGroupsTableModel.java,v 1.7 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.text.*;
@@ -52,8 +53,14 @@ class SelectionGroupsTableModel
     }
 
     /* all columns are dynamic, just initialize the shared renderers/editors */ 
-    pSelectionBiasRenderer = new JSimpleTableCellRenderer(JLabel.CENTER);
-    pSelectionBiasEditor   = new JIntegerTableCellEditor(120, JLabel.CENTER);
+    pSelectionBiasRenderer = new JSimpleTableCellRenderer("Green", JLabel.CENTER);
+    {
+      JIntegerTableCellEditor bias = new JIntegerTableCellEditor(120, JLabel.CENTER);
+      bias.setName("GreenEditableTextField");
+      pSelectionBiasEditor = bias;
+    }
+
+    pNameRenderer = new JSimpleTableCellRenderer(JLabel.CENTER);
 
     pFavorRenderer = new JSimpleTableCellRenderer(JLabel.CENTER); 
     pFavorRenderer.setName("BlueTableCellRenderer");
@@ -63,228 +70,8 @@ class SelectionGroupsTableModel
   }
  
 
-
   /*----------------------------------------------------------------------------------------*/
-  /*   S O R T I N G                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the current sort column and direction.
-   */ 
-  public void 
-  sort()
-  {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    int idx = 0;
-    for(SelectionGroup group : pSelectionGroups) {
-      Comparable value = null;
-      switch(pSortColumn) {
-      case 0:
-	value = group.getFavorMethod().toString();
-	break;
-
-      default:
-	{
-	  String kname = pSelectionKeys.get(pSortColumn-1);
-	  if(kname != null) 
-	    value = group.getBias(kname);
-	}
-      }
-      
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	Comparable v = values.get(wk);
-	if((v == null) || ((value != null) && (value.compareTo(v) > 0)))
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-
-      idx++;
-    }
-
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
-
-    fireTableDataChanged(); 
-    
-    pParent.sortNamesTable(pRowToIndex);
-  }
-
-  /**
-   * Copy the row sort order from another table model with the same number of rows.
-   */ 
-  public void
-  externalSort
-  (
-   int[] rowToIndex
-  ) 
-  {
-    pRowToIndex = rowToIndex.clone();
-    fireTableDataChanged();     
-  }
-
-  
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S O R T A B L E   T A B L E   M O D E L   O V E R R I D E S                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the width of the given column.
-   */ 
-  public int
-  getColumnWidth
-  (
-   int col   
-  )
-  {
-    switch(col) {
-    case 0:
-      return 140;
-      
-    default:
-      return 120;
-    }
-  }
-
-  /**
-   * Returns the color prefix used to determine the synth style of the header button for 
-   * the given column.
-   */ 
-  public String 	
-  getColumnColorPrefix
-  (
-   int col
-  )
-  {  
-    switch(col) {
-    case 0:
-      return "Blue"; 
-
-    default:
-      return "";
-    }
-  }
-
-  /**
-   * Returns the description of the column columnIndex used in tool tips.
-   */ 
-  public String 	
-  getColumnDescription
-  (
-   int col
-  ) 
-  {
-    switch(col) {
-    case 0:
-      return "The job group favor method."; 
-
-    default:
-      return pSelectionDescriptions.get(col-1);
-    }
-  }
-  
-  /**
-   * Get the renderer for the given column. 
-   */ 
-  public TableCellRenderer
-  getRenderer
-  (
-   int col   
-  )
-  {
-    switch(col) {
-    case 0:
-      return pFavorRenderer; 
-      
-    default:
-      return pSelectionBiasRenderer; 
-    }
-  }
-
-  /**
-   * Get the editor for the given column. 
-   */ 
-  public TableCellEditor
-  getEditor
-  (
-   int col   
-  )
-  {
-    switch(col) {
-    case 0:
-      return pFavorEditor; 
-      
-    default:
-      return pSelectionBiasEditor; 
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Returns the most specific superclass for all the cell values in the column.
-   */
-  public Class 	
-  getColumnClass
-  (
-   int col
-  )
-  {
-    switch(col) {
-    case 0:
-      return String.class; 
-      
-    default:
-      return Integer.class;
-    }
-  }
-  
-  /**
-   * Returns the number of columns in the model.
-   */ 
-  public int
-  getColumnCount()
-  {
-    return pSelectionKeys.size() + 1;
-  }
-
-  /**
-   * Returns the name of the column at columnIndex.
-   */ 
-  public String 	
-  getColumnName
-  (
-   int col
-  ) 
-  {
-    switch(col) {
-    case 0:
-      return "Favor Groups";
-      
-    default:
-      return pSelectionKeys.get(col-1);
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -298,11 +85,8 @@ class SelectionGroupsTableModel
    * 
    * @param privileges
    *   The details of the administrative privileges granted to the current user. 
-   * 
-   * @return 
-   *   Modify whether a column should be visible indexed by column name. 
    */ 
-  public TreeMap<String,Boolean>
+  public void 
   setSelectionGroups
   (
    TreeMap<String,SelectionGroup> groups, 
@@ -314,34 +98,23 @@ class SelectionGroupsTableModel
     if(groups != null)
       pSelectionGroups.addAll(groups.values());
     
-    TreeMap<String,Boolean> modified = new TreeMap<String,Boolean>();
-    {
-      TreeSet<String> obsolete = new TreeSet<String>(pSelectionKeys);
-      TreeSet<String> newborn  = new TreeSet<String>(keys.keySet());
+    pNumRows = pSelectionGroups.size();
 
-      pSelectionKeys.clear();
-      if(keys != null) {
-	pSelectionKeys.addAll(newborn);
-	newborn.removeAll(obsolete);
-	obsolete.removeAll(pSelectionKeys);
+    pSelectionKeys.clear();
+    pSelectionDescriptions.clear();
+    if(keys != null) {
+      for(Map.Entry<String,String> entry : keys.entrySet()) {
+        pSelectionKeys.add(entry.getKey()); 
+        pSelectionDescriptions.add(entry.getValue()); 
       }
-      
-      for(String gname : obsolete)
-	modified.put(gname, false);
-    
-      for(String gname : newborn)
-	modified.put(gname, true);
     }
 
-    pSelectionDescriptions.clear();
-    if(keys != null) 
-      pSelectionDescriptions.addAll(keys.values());
+    pPrivilegeDetails = privileges;     
 
-    pPrivilegeDetails = privileges; 
-    
     pEditedIndices.clear();
 
-    return modified;
+    sort();
+    fireTableStructureChanged(); 
   }
 
   
@@ -424,17 +197,223 @@ class SelectionGroupsTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   S O R T I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sort the rows by the values in the current sort column and direction.
+   */ 
+  public void 
+  sort()
+  {
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx = 0;
+    for(SelectionGroup group : pSelectionGroups) {
+      Comparable value = null;
+      switch(pSortColumn) {
+      case 0:
+	value = group.getName(); 
+	break;
+
+      case 1:
+	value = group.getFavorMethod().toString();
+	break;
+
+      default:
+	{
+	  String kname = pSelectionKeys.get(pSortColumn-2);
+	  if(kname != null) 
+	    value = group.getBias(kname);
+    	}
+      }
+      
+      cells[idx] = new IndexValue(idx, value); 
+      idx++;
+    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
+
+    fireTableDataChanged();
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O R T A B L E   T A B L E   M O D E L   O V E R R I D E S                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the range of widths (min, preferred, max) of the column. 
+   */
+  public Vector3i
+  getColumnWidthRange
+  (
+   int col   
+  )
+  {
+    switch(col) {
+    case 0:
+    case 1:
+      return new Vector3i(140);
+      
+    default:
+      return new Vector3i(120);
+    }
+  }
+
+  /**
+   * Returns the color prefix used to determine the synth style of the header button for 
+   * the given column.
+   */ 
+  public String 	
+  getColumnColorPrefix
+  (
+   int col
+  )
+  {  
+    switch(col) {
+    case 0:
+      return "";
+
+    case 1:
+      return "Blue"; 
+
+    default:
+      return "Green"; 
+    }
+  }
+
+  /**
+   * Returns the description of the column columnIndex used in tool tips.
+   */ 
+  public String 	
+  getColumnDescription
+  (
+   int col
+  ) 
+  {
+    switch(col) {
+    case 0:
+      return "The name of the selection group."; 
+      
+    case 1:
+      return "The job group favor method."; 
+
+    default:
+      return pSelectionDescriptions.get(col-2);
+    }
+  }
+  
+  /**
+   * Get the renderer for the given column. 
+   */ 
+  public TableCellRenderer
+  getRenderer
+  (
+   int col   
+  )
+  {
+    switch(col) {
+    case 0:
+      return pNameRenderer;
+
+    case 1: 
+      return pFavorRenderer; 
+      
+    default:
+      return pSelectionBiasRenderer; 
+    }
+  }
+
+  /**
+   * Get the editor for the given column. 
+   */ 
+  public TableCellEditor
+  getEditor
+  (
+   int col   
+  )
+  {
+    switch(col) {
+    case 0:
+      return null;
+
+    case 1:
+      return pFavorEditor; 
+      
+    default:
+      return pSelectionBiasEditor; 
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the number of rows in the model.
-   */ 
-  public int 
-  getRowCount()
+   * Returns the most specific superclass for all the cell values in the column.
+   */
+  public Class 	
+  getColumnClass
+  (
+   int col
+  )
   {
-    return pSelectionGroups.size();
+    switch(col) {
+    case 0:
+    case 1:
+      return String.class; 
+      
+    default:
+      return Integer.class;
+    }
   }
+  
+  /**
+   * Returns the number of columns in the model.
+   */ 
+  public int
+  getColumnCount()
+  {
+    return pSelectionKeys.size() + 2;
+  }
+
+  /**
+   * Returns the name of the column at columnIndex.
+   */ 
+  public String 	
+  getColumnName
+  (
+   int col
+  ) 
+  {
+    switch(col) {
+    case 0:
+      return "Group Name"; 
+
+    case 1: 
+      return "Favor Groups";
+      
+    default:
+      return pSelectionKeys.get(col-2);
+    }
+  }
+
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
@@ -446,7 +425,13 @@ class SelectionGroupsTableModel
    int col
   ) 
   {
-    return pPrivilegeDetails.isQueueAdmin(); 
+    switch(col) {
+    case 0:
+      return false;
+      
+    default:  
+      return pPrivilegeDetails.isQueueAdmin(); 
+    }
   }
 
   /**
@@ -460,14 +445,16 @@ class SelectionGroupsTableModel
   )
   {
     SelectionGroup group = pSelectionGroups.get(pRowToIndex[row]);
-
     switch(col) {
     case 0:
+      return group.getName();
+
+    case 1:
       return group.getFavorMethod().toTitle();
       
     default:
       {
-	String kname = pSelectionKeys.get(col-1);
+	String kname = pSelectionKeys.get(col-2);
 	if(kname != null) 
 	  return group.getBias(kname);
       }
@@ -521,6 +508,9 @@ class SelectionGroupsTableModel
 
     switch(col) {
     case 0:
+      return false;
+
+    case 1:
       {
 	String favor = (String) value; 
 	for(JobGroupFavorMethod method : JobGroupFavorMethod.all()) {
@@ -535,7 +525,7 @@ class SelectionGroupsTableModel
 
     default:
       {
-	String kname = pSelectionKeys.get(col-1);
+	String kname = pSelectionKeys.get(col-2);
 	if(kname != null) {
 	  Integer bias = (Integer) value;
 	  if(bias == null) 
@@ -614,6 +604,12 @@ class SelectionGroupsTableModel
    * The shared renderer for all selection bias cells.
    */ 
   private TableCellEditor  pSelectionBiasEditor;
+
+
+  /** 
+   * The cell render for selection group names.
+   */ 
+  private TableCellRenderer  pNameRenderer; 
 
 
   /**

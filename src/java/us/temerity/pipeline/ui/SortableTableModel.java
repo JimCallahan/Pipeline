@@ -1,8 +1,9 @@
-// $Id: SortableTableModel.java,v 1.5 2005/03/04 09:20:30 jim Exp $
+// $Id: SortableTableModel.java,v 1.6 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -40,10 +41,10 @@ interface SortableTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the width of the given column.
-   */ 
-  public int
-  getColumnWidth
+   * Get the range of widths (min, preferred, max) of the column. 
+   */
+  public Vector3i
+  getColumnWidthRange
   (
    int col   
   );

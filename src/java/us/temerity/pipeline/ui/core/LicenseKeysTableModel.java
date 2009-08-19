@@ -1,15 +1,16 @@
-// $Id: LicenseKeysTableModel.java,v 1.7 2007/12/16 12:22:09 jesse Exp $
+// $Id: LicenseKeysTableModel.java,v 1.8 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import java.util.ArrayList;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.*;
 
+import java.util.*;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L I C E N S E   K E Y S   T A B L E   M O D E L                                        */
@@ -60,13 +61,22 @@ class LicenseKeysTableModel
 
       {
 	String names[] = {
-	  "Key", "Description", "Scheme", 
+	  "Key Name", "Description", "Scheme", 
 	  "Available", "Max Slots", "Max Hosts", "Max Host Slots",
 	  "Plugin", "Version", "Vendor"
 	};
 	pColumnNames = names;
       }
 
+      {
+	String colors[] = { 
+          "", "", "Blue", 
+          "Green", "Green", "Green", "Green", 
+          "Purple", "Purple", "Purple" 
+        };
+	pColumnColorPrefix = colors; 
+      }
+      
       {
 	String desc[] = {
 	  "The name of the license key.", 
@@ -85,42 +95,51 @@ class LicenseKeysTableModel
       }
 
       {
-	int widths[] = { 
-	  120, 360, 120, 
-	  120, 120, 120, 120,
-	  120, 120, 120
-	};
-	pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(140), 
+          new Vector3i(180, 360, Integer.MAX_VALUE), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120)
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(SwingConstants.CENTER), 
 	  new JSimpleTableCellRenderer(SwingConstants.LEFT), 
-	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
-	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
-	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
-	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
-	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
+	  new JSimpleTableCellRenderer("Blue", SwingConstants.CENTER),
+	  new JSimpleTableCellRenderer("Green", SwingConstants.CENTER, true),
+	  new JSimpleTableCellRenderer("Green", SwingConstants.CENTER, true),
+	  new JSimpleTableCellRenderer("Green", SwingConstants.CENTER, true),
+	  new JSimpleTableCellRenderer("Green", SwingConstants.CENTER, true),
           new JPluginTableCellRenderer(SwingConstants.CENTER), 
-          new JSimpleTableCellRenderer(SwingConstants.CENTER), 
-          new JSimpleTableCellRenderer(SwingConstants.CENTER)
+          new JSimpleTableCellRenderer("Purple", SwingConstants.CENTER), 
+          new JSimpleTableCellRenderer("Purple", SwingConstants.CENTER)
 	};
 	pRenderers = renderers;
       }
 
       {
+        
+        JCollectionTableCellEditor scheme = 
+          new JCollectionTableCellEditor(LicenseScheme.titles(), 120); 
+        scheme.setSynthPrefix("Blue"); 
+
+        JIntegerTableCellEditor counts = 
+          new JIntegerTableCellEditor(120, SwingConstants.CENTER);
+        counts.setName("GreenEditableTextField");
+
 	TableCellEditor editors[] = {
-	  null, 
-	  null, 
-	  new JCollectionTableCellEditor(LicenseScheme.titles(), 120),
-	  null,
-	  new JIntegerTableCellEditor(120, SwingConstants.CENTER),
-	  new JIntegerTableCellEditor(120, SwingConstants.CENTER),
-	  new JIntegerTableCellEditor(120, SwingConstants.CENTER),
-          null,
-          null,
-          null
+	  null, null, scheme, 
+	  null, counts, counts, counts, 
+          null, null, null
 	};
 	pEditors = editors;
       }
@@ -132,118 +151,7 @@ class LicenseKeysTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S O R T I N G                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the current sort column and direction.
-   */ 
-  @Override
-  public void 
-  sort()
-  {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    int idx = 0;
-    for(LicenseKey key : pLicenseKeys) {
-      Comparable value = null;
-      switch(pSortColumn) {
-      case 0:
-	value = key.getName();
-	break;
-
-      case 1:
-	value = key.getDescription(); 
-	if(value == null) 
-	  value = "";
-	break;
-
-      case 2:
-	value = key.getScheme().toTitle();
-	break;
-
-      case 3:
-	value = new Integer(key.getAvailable());
-	break;
-
-      case 4:
-	value = key.getMaxSlots();
-	if(value == null)
-	  value = "";
-	break;
-
-      case 5:
-	value = key.getMaxHosts();
-	if(value == null)
-	  value = "";
-	break;
-
-      case 6:
-	value = key.getMaxHostSlots();
-	if(value == null)
-	  value = "";
-	break;
-
-      case 7:
-        {
-          BaseKeyChooser plug = key.getKeyChooser();
-          if (plug == null)
-            value = "-";
-          else
-            value = plug.getName();
-          break;
-        }
-
-      case 8:
-        {
-          BaseKeyChooser plug = key.getKeyChooser();
-          if (plug == null)
-            value = "-";
-          else
-            value = plug.getVersionID().toString();
-          break;
-        }
-
-      case 9:
-        {
-          BaseKeyChooser plug = key.getKeyChooser();
-          if (plug == null)
-            value = "-";
-          else
-            value = plug.getVendor();
-          break;
-        }
-      }
-      
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-
-      idx++;
-    }
-
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
-
-    fireTableDataChanged();
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -294,7 +202,10 @@ class LicenseKeysTableModel
   ) 
   {
     pLicenseKeys.clear();
-    pLicenseKeys.addAll(keys);
+    if(keys != null) 
+      pLicenseKeys.addAll(keys);
+
+    pNumRows = pLicenseKeys.size();
 
     pPrivilegeDetails = privileges; 
 
@@ -303,19 +214,89 @@ class LicenseKeysTableModel
 
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O R T I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sort the rows by the values in the current sort column and direction.
+   */ 
+  @Override
+  public void 
+  sort()
+  {
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx = 0;
+    for(LicenseKey key : pLicenseKeys) {
+      Comparable value = null;
+      BaseKeyChooser plug = key.getKeyChooser();
+      switch(pSortColumn) {
+      case 0:
+	value = key.getName();
+	break;
+
+      case 1:
+	value = key.getDescription(); 
+	break;
+
+      case 2:
+	value = key.getScheme().toTitle();
+	break;
+
+      case 3:
+	value = new Integer(key.getAvailable());
+	break;
+
+      case 4:
+	value = key.getMaxSlots();
+	break;
+
+      case 5:
+	value = key.getMaxHosts();
+	break;
+
+      case 6:
+	value = key.getMaxHostSlots();
+	break;
+
+      case 7:
+        if(plug != null) 
+          value = plug.getName();
+        break;
+
+      case 8:
+        if(plug != null) 
+          value = plug.getVersionID().toString();
+        break;
+        
+      case 9:
+        if(plug != null) 
+          value = plug.getVendor();
+      }
+      
+      cells[idx] = new IndexValue(idx, value); 
+      idx++;
+    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
+
+    fireTableDataChanged();
+  }
+
+
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Returns the number of rows in the model.
-   */ 
-  public int 
-  getRowCount()
-  {
-    return pLicenseKeys.size();
-  }
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
@@ -564,6 +545,5 @@ class LicenseKeysTableModel
    * The underlying set of editors.
    */ 
   private ArrayList<LicenseKey> pLicenseKeys;
-
 
 }

@@ -1,8 +1,9 @@
-// $Id: QueueSlotsTableModel.java,v 1.12 2009/07/01 16:43:14 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.13 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
@@ -87,8 +88,17 @@ class QueueSlotsTableModel
       }
 
       {
-	int widths[] = { 200, 80, 270, 120, 180, 120, 540, 180 };
-	pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(120, 200, Integer.MAX_VALUE), 
+          new Vector3i(80),
+          new Vector3i(120, 240, Integer.MAX_VALUE), 
+          new Vector3i(120), 
+          new Vector3i(180), 
+          new Vector3i(120), 
+          new Vector3i(180, 360, Integer.MAX_VALUE), 
+          new Vector3i(180)
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
@@ -112,110 +122,10 @@ class QueueSlotsTableModel
     }
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S O R T I N G                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the current sort column and direction.
-   */ 
-  public void 
-  sort()
-  {
-    long now = System.currentTimeMillis();
-
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    int idx;
-    for(idx=0; idx<pHostnames.length; idx++) {
-      Comparable value = null;
-
-      QueueJobInfo info = pJobInfo[idx];
-      JobStatus status = pJobStatus[idx]; 
-      Long onHold = pOnHold[idx];
-
-      switch(pSortColumn) {
-      case 0:
-	value = pHostnames[idx];
-	break;
-
-      case 1:
-	if(info != null) 
-	  value = new Long(info.getJobID());
-	else 
-	  value = new Long(Long.MAX_VALUE);
-	break;
-
-      case 2:
-	if(status != null) 
-	  value = status.getTargetSequence().toString();
-	else 
-	  value = "-";
-	break;
-
-      case 3:
-	if(onHold != null) 
-	  value = onHold;
-	else 
-	  value = 0L;
-	break;
-	
-      case 4:
-	if(info != null) 
-	  value = info.getStartedStamp();
-	else 
-	  value = new Long(0L);
-	break;
-
-      case 5:
-	if(info != null) 
-	  value = new Long(now - info.getStartedStamp());
-	else 
-	  value = new Long(Long.MAX_VALUE);
-	break;
-
-      case 6:
-	if(status != null) 
-	  value = status.getNodeID().getName();
-	else 
-	  value = "";
-	break;
-      case 7:
-	if(status != null) 
-	  value = (status.getNodeID().getAuthor() + "|" + status.getNodeID().getView());
-	else 
-	  value = "-";
-      }
-      
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-    }
-
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
-
-    fireTableDataChanged();
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -258,21 +168,21 @@ class QueueSlotsTableModel
   { 
     UserPrefs prefs = UserPrefs.getInstance();
 
-    int cnt = 0;
+    pNumRows = 0; 
     for(QueueHostInfo host : hosts.values()) {
       switch(host.getStatus()) {
       case Enabled:
       case Disabled:
       case Limbo:
-	cnt += host.getJobSlots();
+	pNumRows += host.getJobSlots();
       }
     }
 
-    pHostStatus = new QueueHostStatus[cnt];
-    pHostnames  = new String[cnt];
-    pJobInfo    = new QueueJobInfo[cnt];
-    pJobStatus  = new JobStatus[cnt];
-    pOnHold     = new Long[cnt];
+    pHostStatus = new QueueHostStatus[pNumRows];
+    pHostnames  = new String[pNumRows];
+    pJobInfo    = new QueueJobInfo[pNumRows];
+    pJobStatus  = new JobStatus[pNumRows];
+    pOnHold     = new Long[pNumRows];
     
     long now = TimeStamps.now();
 
@@ -348,17 +258,86 @@ class QueueSlotsTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*   S O R T I N G                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the number of rows in the model.
+   * Sort the rows by the values in the current sort column and direction.
    */ 
-  public int 
-  getRowCount()
+  public void 
+  sort()
   {
-    return pHostnames.length;
+    long now = System.currentTimeMillis();
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx;
+    for(idx=0; idx<pHostnames.length; idx++) {
+      Comparable value = null;
+
+      QueueJobInfo info = pJobInfo[idx];
+      JobStatus status = pJobStatus[idx]; 
+      Long onHold = pOnHold[idx];
+
+      switch(pSortColumn) {
+      case 0:
+	value = pHostnames[idx];
+	break;
+
+      case 1:
+	if(info != null) 
+	  value = new Long(info.getJobID());
+	break;
+
+      case 2:
+	if(status != null) 
+	  value = status.getTargetSequence().toString();
+	break;
+
+      case 3:
+	if(onHold != null) 
+	  value = onHold;
+	break;
+	
+      case 4:
+	if(info != null) 
+	  value = info.getStartedStamp();
+	break;
+
+      case 5:
+	if(info != null) 
+	  value = new Long(now - info.getStartedStamp());
+	break;
+
+      case 6:
+	if(status != null) 
+	  value = status.getNodeID().getName();
+	break;
+
+      case 7:
+	if(status != null) 
+	  value = (status.getNodeID().getAuthor() + "|" + status.getNodeID().getView());
+      }
+      
+      cells[idx] = new IndexValue(idx, value); 
+    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
+
+    fireTableDataChanged();
   }
+
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
@@ -450,6 +429,7 @@ class QueueSlotsTableModel
     }    
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

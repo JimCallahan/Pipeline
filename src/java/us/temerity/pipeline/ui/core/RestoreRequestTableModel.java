@@ -1,8 +1,9 @@
-// $Id: RestoreRequestTableModel.java,v 1.3 2007/03/28 20:07:15 jim Exp $
+// $Id: RestoreRequestTableModel.java,v 1.4 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.text.*;
@@ -65,8 +66,15 @@ class RestoreRequestTableModel
       }
 
       {
-	int widths[] = { 460, 80, 80, 180, 180, 240 };
-	pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(180, 460, Integer.MAX_VALUE), 
+          new Vector3i(80), 
+          new Vector3i(80), 
+          new Vector3i(180), 
+          new Vector3i(180),
+          new Vector3i(240) 
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
@@ -97,81 +105,7 @@ class RestoreRequestTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S O R T I N G                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the current sort column and direction.
-   */ 
-  public void 
-  sort()
-  {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    Comparable value = null;
-
-    int idx = 0;
-    for(RestoreRequest rr : pRequests) {
-      switch(pSortColumn) {
-      case 0:
-	value = pNames.get(idx);
-	break;
-	
-      case 1:
-	value = pVersions.get(idx);
-	break;
-	
-      case 2: 
-	value = rr.getState().toTitle();
-	break;
-
-      case 3:
-	value = rr.getSubmittedStamp();
-	break;
-	
-      case 4:
-	if(rr.getResolvedStamp() != null)
-	  value = rr.getResolvedStamp();
-	else 
-	  value = new Long(0L);
-	break;
-	
-      case 5:
-	if(rr.getArchiveName() != null)
-	  value = rr.getArchiveName();
-	else 
-	  value = "";
-      }
-      
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-	if(value.compareTo(values.get(wk)) > 0) 
-	  break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-      
-      idx++;
-    }
-
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-	pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-	pRowToIndex[wk] = indices.get(idx);
-    }
-
-    fireTableDataChanged();
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -251,7 +185,6 @@ class RestoreRequestTableModel
     pNames.clear();
     pVersions.clear();
     pRequests.clear();
-
     if(reqs != null) {
       for(String name : reqs.keySet()) {
 	TreeMap<VersionID,RestoreRequest> vreqs = reqs.get(name);
@@ -263,23 +196,72 @@ class RestoreRequestTableModel
       }
     }
 
+    pNumRows = pNames.size(); 
+
     sort();
   }
   
   
 
   /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*   S O R T I N G                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the number of rows in the model.
+   * Sort the rows by the values in the current sort column and direction.
    */ 
-  public int 
-  getRowCount()
+  public void 
+  sort()
   {
-    return pRequests.size();
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx = 0;
+    for(RestoreRequest rr : pRequests) {
+      Comparable value = null;
+      switch(pSortColumn) {
+      case 0:
+	value = pNames.get(idx);
+	break;
+	
+      case 1:
+	value = pVersions.get(idx);
+	break;
+	
+      case 2: 
+	value = rr.getState().toTitle();
+	break;
+
+      case 3:
+	value = rr.getSubmittedStamp();
+	break;
+	
+      case 4:
+        value = rr.getResolvedStamp();
+	break;
+	
+      case 5:
+        value = rr.getArchiveName();
+      }
+     
+      cells[idx] = new IndexValue(idx, value); 
+      idx++;
+    }
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
+
+    fireTableDataChanged();
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.

@@ -1,16 +1,15 @@
-// $Id: BaseKeysTableModel.java,v 1.2 2007/12/16 12:22:09 jesse Exp $
+// $Id: BaseKeysTableModel.java,v 1.3 2009/08/19 23:42:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import java.util.ArrayList;
-
-import javax.swing.SwingConstants;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-
-import us.temerity.pipeline.BaseKey;
-import us.temerity.pipeline.BaseKeyChooser;
+import us.temerity.pipeline.*; 
 import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.math.*;
+
+import java.util.*;
+import javax.swing.*;
+import javax.swing.table.*; 
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   K E Y S   T A B L E   M O D E L                                              */
@@ -32,7 +31,10 @@ class BaseKeysTableModel
    * Construct a table model.
    */
   public 
-  BaseKeysTableModel()
+  BaseKeysTableModel
+  (
+   int descrWidth
+  )
   {
     super();
 
@@ -42,15 +44,21 @@ class BaseKeysTableModel
 
       {
         Class classes[] = { 
-          String.class, String.class, BaseKeyChooser.class, String.class, String.class  }; 
+          String.class, String.class, BaseKeyChooser.class, String.class, String.class 
+        }; 
         pColumnClasses = classes;
       }
 
       {
-        String names[] = {"Key", "Description", "Plugin", "Version", "Vendor"  };
+        String names[] = { "Key Name", "Description", "Plugin", "Version", "Vendor" };
         pColumnNames = names;
       }
 
+      {
+	String colors[] = { "", "", "Purple", "Purple", "Purple" };
+	pColumnColorPrefix = colors; 
+      }
+      
       {
         String desc[] = {
           "The name of the selection key.", 
@@ -63,17 +71,23 @@ class BaseKeysTableModel
       }
 
       {
-        int widths[] = { 120, 600, 120, 120, 120 };
-        pColumnWidths = widths;
+        Vector3i ranges[] = {
+          new Vector3i(140), 
+          new Vector3i(180, descrWidth, Integer.MAX_VALUE), 
+          new Vector3i(120), 
+          new Vector3i(120), 
+          new Vector3i(120)
+        };
+        pColumnWidthRanges = ranges;
       }
 
       {
         TableCellRenderer renderers[] = {
-          new JSimpleTableCellRenderer(SwingConstants.CENTER), 
-          new JSimpleTableCellRenderer(SwingConstants.LEFT),
-          new JPluginTableCellRenderer(SwingConstants.CENTER), 
-          new JSimpleTableCellRenderer(SwingConstants.CENTER), 
-          new JSimpleTableCellRenderer(SwingConstants.CENTER)
+          new JSimpleTableCellRenderer(JLabel.CENTER), 
+          new JSimpleTableCellRenderer(JLabel.LEFT),
+          new JPluginTableCellRenderer(JLabel.CENTER), 
+          new JSimpleTableCellRenderer("Purple", JLabel.CENTER), 
+          new JSimpleTableCellRenderer("Purple", JLabel.CENTER)
         };
         pRenderers = renderers;
       }
@@ -106,11 +120,11 @@ class BaseKeysTableModel
   public void 
   sort()
   {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
+    IndexValue cells[] = new IndexValue[pNumRows]; 
     int idx = 0;
     for(BaseKey key : pKeys) {
       Comparable value = null;
+      BaseKeyChooser plug = key.getKeyChooser();
       switch(pSortColumn) {
       case 0:
         value = key.getName();
@@ -118,62 +132,35 @@ class BaseKeysTableModel
 
       case 1:
         value = key.getDescription();  
-        if(value == null) 
-          value = "";
         break;
       
       case 2:
-        {
-          BaseKeyChooser plug = key.getKeyChooser();
-          if (plug == null)
-            value = "-";
-          else
-            value = plug.getName();
-          break;
-        }
-        
+        if(plug != null)
+          value = plug.getName();
+        break;
+
       case 3:
-        {
-          BaseKeyChooser plug = key.getKeyChooser();
-          if (plug == null)
-            value = "-";
-          else
-            value = plug.getVersionID().toString();
-          break;
-        }
+        if(plug != null)
+          value = plug.getVersionID();
+        break;
       
       case 4:
-        {
-          BaseKeyChooser plug = key.getKeyChooser();
-          if (plug == null)
-            value = "-";
-          else
-            value = plug.getVendor();
-          break;
-        }
+        if(plug != null)
+          value = plug.getVendor();
       }
       
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-        if(value.compareTo(values.get(wk)) > 0) 
-          break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-
+      cells[idx] = new IndexValue(idx, value); 
       idx++;
     }
 
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-        pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-        pRowToIndex[wk] = indices.get(idx);
-    }
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();       
 
     fireTableDataChanged();
   }
@@ -212,7 +199,10 @@ class BaseKeysTableModel
   ) 
   {
     pKeys.clear();
-    pKeys.addAll(keys);
+    if(keys != null) 
+      pKeys.addAll(keys);
+
+    pNumRows = pKeys.size();
 
     sort();
   }
@@ -224,24 +214,13 @@ class BaseKeysTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the number of rows in the model.
-   */ 
-  public int 
-  getRowCount()
-  {
-    return pKeys.size();
-  }
-
-  /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
    */ 
   @Override
   public boolean        
   isCellEditable
   (
-   @SuppressWarnings("unused")
    int row,
-   @SuppressWarnings("unused")
    int col
   ) 
   {
