@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.9 2009/03/24 01:21:21 jesse Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.10 2009/08/19 23:53:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -37,7 +37,7 @@ class JDefaultEditorsDialog
     /* create dialog body components */ 
     { 
       JPanel body = new JPanel();
-      body.setName("MainDialogPanel");
+      body.setName("MainPanel");
 
       body.setLayout(new BorderLayout());
 

@@ -1,4 +1,4 @@
-// $Id: JManageServerExtensionsDialog.java,v 1.3 2009/03/19 21:55:59 jesse Exp $
+// $Id: JManageServerExtensionsDialog.java,v 1.4 2009/08/19 23:53:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,86 +39,105 @@ class JManageServerExtensionsDialog
 
     /* create dialog body components */ 
     { 
-      pTab = new JTabbedPanel();
+      setLayout(new BorderLayout());
+
+      JTabbedPanel tab = new JTabbedPanel();
+      pTab = tab;
 
       /* master extensions panel */ 
       {
 	JPanel body = new JPanel();
-	body.setLayout(new BorderLayout());
+	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
 
-	{ 
-	  JPanel main = new JPanel();
- 	  main.setName("MainDialogPanel");
-	  main.setLayout(new BoxLayout(main, BoxLayout.X_AXIS));
-
+	{
+	  JPanel panel = new JPanel();
+	  panel.setName("DialogHeader");	
+	  
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	  
 	  {
-	    Box vbox = new Box(BoxLayout.Y_AXIS);
+	    JLabel label = new JLabel("Manage Master Manager Extensions:");
+	    label.setName("DialogHeaderLabel");	
 	    
-	    vbox.add(UIFactory.createPanelLabel("Master Manager Extensions:"));
-	    
-	    vbox.add(Box.createRigidArea(new Dimension(0, 4)));
-	    
-	    {
-	      MasterExtensionConfigsTableModel model = 
-		new MasterExtensionConfigsTableModel(this); 
-	      pMasterTableModel = model;
-	      
-	      JTablePanel tpanel = new JTablePanel(model);
-	      pMasterTablePanel = tpanel;
-	    
-	      ListSelectionModel smodel = tpanel.getTable().getSelectionModel();
-	      smodel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	      
-	      vbox.add(tpanel);
-	    }
-	    
-	    main.add(vbox);
+	    panel.add(label);	  
 	  }
+	  
+	  panel.add(Box.createHorizontalGlue());
 
-	  body.add(main);
+	  body.add(panel);
 	}
 
-	pTab.add(body);
-      }
+	{ 
+	  JPanel panel = new JPanel();
+ 	  panel.setName("MainPanel");
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+         
+          {
+            MasterExtensionConfigsTableModel model = 
+              new MasterExtensionConfigsTableModel(this); 
+            pMasterTableModel = model;
+	      
+            JTablePanel tpanel = new JTablePanel(model);
+            pMasterTablePanel = tpanel;
+	    
+            ListSelectionModel smodel = tpanel.getTable().getSelectionModel();
+            smodel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+	    panel.add(tpanel);
+	  }
+
+	  body.add(panel);
+	}
+
+	tab.addTab(body);
+      }
+      
       /* queue extensions panel */ 
       {
 	JPanel body = new JPanel();
-	body.setLayout(new BorderLayout());
+	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
 
-	{ 
-	  JPanel main = new JPanel();
- 	  main.setName("MainDialogPanel");
-	  main.setLayout(new BoxLayout(main, BoxLayout.X_AXIS));
-
+	{
+	  JPanel panel = new JPanel();
+	  panel.setName("DialogHeader");	
+	  
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	  
 	  {
-	    Box vbox = new Box(BoxLayout.Y_AXIS);
+	    JLabel label = new JLabel("Manage Queue Manager Extensions:");
+	    label.setName("DialogHeaderLabel");	
 	    
-	    vbox.add(UIFactory.createPanelLabel("Queue Manager Extensions:"));
-	    
-	    vbox.add(Box.createRigidArea(new Dimension(0, 4)));
-	    
-	    {
-	      QueueExtensionConfigsTableModel model = 
-		new QueueExtensionConfigsTableModel(this); 
-	      pQueueTableModel = model;
-	      
-	      JTablePanel tpanel = new JTablePanel(model);
-	      pQueueTablePanel = tpanel;
-	    
-	      ListSelectionModel smodel = tpanel.getTable().getSelectionModel();
-	      smodel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	      
-	      vbox.add(tpanel);
-	    }
-	    
-	    main.add(vbox);
+	    panel.add(label);	  
 	  }
+	  
+	  panel.add(Box.createHorizontalGlue());
 
-	  body.add(main);
+	  body.add(panel);
 	}
 
-	pTab.add(body);
+	{ 
+	  JPanel panel = new JPanel();
+ 	  panel.setName("MainPanel");
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+         
+          {
+            QueueExtensionConfigsTableModel model = 
+              new QueueExtensionConfigsTableModel(this); 
+            pQueueTableModel = model;
+	      
+            JTablePanel tpanel = new JTablePanel(model);
+            pQueueTablePanel = tpanel;
+            
+            ListSelectionModel smodel = tpanel.getTable().getSelectionModel();
+            smodel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+	    panel.add(tpanel);
+	  }
+
+	  body.add(panel);
+	}
+
+	tab.addTab(body);
       }
 
       String extra[][] = {
@@ -129,8 +148,7 @@ class JManageServerExtensionsDialog
 	{ "Update", "update" }
       };
 
-      JButton btns[] = super.initUI("Manage Server Extensions:", pTab, 
-				    null, null, extra, "Close");
+      JButton btns[] = super.initUI(null, tab, null, null, extra, "Close");
       pAddButton    = btns[0];
       pEditButton   = btns[1];
       pRemoveButton = btns[2];

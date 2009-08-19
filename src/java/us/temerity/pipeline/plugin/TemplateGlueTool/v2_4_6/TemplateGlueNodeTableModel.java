@@ -1,19 +1,24 @@
-// $Id: TemplateGlueNodeTableModel.java,v 1.3 2009/06/16 01:32:48 jesse Exp $
+// $Id: TemplateGlueNodeTableModel.java,v 1.4 2009/08/19 23:54:25 jim Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
-import java.util.*;
+import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.math.*;
 
+import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import us.temerity.pipeline.ui.*;
 
 @SuppressWarnings("unchecked")
 public 
 class TemplateGlueNodeTableModel
   extends AbstractSortableTableModel
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
   public 
   TemplateGlueNodeTableModel
   (
@@ -24,17 +29,6 @@ class TemplateGlueNodeTableModel
   {
     this(toList(names), present, headers);
   }     
-  
-  private static ArrayList<String[]>
-  toList
-  (
-    String[] list 
-  )
-  {
-    ArrayList<String[]> toReturn = new ArrayList<String[]>();
-    toReturn.add(list);
-    return toReturn;
-  }
   
   public 
   TemplateGlueNodeTableModel
@@ -47,7 +41,9 @@ class TemplateGlueNodeTableModel
     super();
     pNames = names;
     pPresent = present;
-    
+
+    pNumRows = pNames.get(0).length; 
+
     /* initialize the columns */ 
     {
       int nameSize = names.size();
@@ -71,8 +67,7 @@ class TemplateGlueNodeTableModel
             "Whether the object was found in the (" + headers.get(i - 1) + ")";
       }
       
-      
-      pColumnWidths = new int[pNumColumns];
+      pColumnWidthRanges = new Vector3i[pNumColumns];
       {
         for (int i = 0; i < nameSize; i++) {
           int width = headers.get(i).length() * 12;
@@ -81,15 +76,14 @@ class TemplateGlueNodeTableModel
             if (w > width)
               width = w;
           }
-          pColumnWidths[i] = width;
+          pColumnWidthRanges[i] = new Vector3i(180, width, Integer.MAX_VALUE); 
         }
 
         for (int i = nameSize ; i < nameSize + shortSize; i++) {
           int width = headers.get(i).length() * 12;
-          pColumnWidths[i] = width;
+          pColumnWidthRanges[i] = new Vector3i(width);
         }
       }
-        
       
       {
         pRenderers = new TableCellRenderer[pNumColumns];
@@ -116,6 +110,21 @@ class TemplateGlueNodeTableModel
     sort();
   }
 
+
+  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
+
+  private static ArrayList<String[]>
+  toList
+  (
+    String[] list 
+  )
+  {
+    ArrayList<String[]> toReturn = new ArrayList<String[]>();
+    toReturn.add(list);
+    return toReturn;
+  }
+  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   S O R T I N G                                                                        */
@@ -129,11 +138,6 @@ class TemplateGlueNodeTableModel
   public void 
   sort()
   {
-    ArrayList<Comparable> values = new ArrayList<Comparable>();
-    ArrayList<Integer> indices = new ArrayList<Integer>();
-    int idx;
-    
-    
     Comparable[] sorting;
     int size = pNames.size(); // if this is 2, we have 0 and 1
     if ( (pSortColumn) < size ) { // so if we sort on column 1 we're here 
@@ -142,39 +146,32 @@ class TemplateGlueNodeTableModel
     else // If this is col 2, we want entry zero. 
       sorting = pPresent.get(pSortColumn - size);
     
-    for(idx=0; idx < pNames.get(0).length; idx++) {
-      Comparable value = sorting[idx];
-      
-      int wk;
-      for(wk=0; wk<values.size(); wk++) {
-        if(value.compareTo(values.get(wk)) > 0) 
-          break;
-      }
-      values.add(wk, value);
-      indices.add(wk, idx);
-    }
-    
-    pRowToIndex = new int[indices.size()];
-    int wk; 
-    if(pSortAscending) {
-      for(wk=0; wk<pRowToIndex.length; wk++) 
-        pRowToIndex[wk] = indices.get(wk);
-    }
-    else {
-      for(wk=0, idx=indices.size()-1; wk<pRowToIndex.length; wk++, idx--) 
-        pRowToIndex[wk] = indices.get(idx);
-    }
+    IndexValue cells[] = new IndexValue[pNumRows]; 
+    int idx;
+    for(idx=0; idx<pNumRows; idx++) 
+      cells[idx] = new IndexValue(idx, sorting[idx]);
+
+    Comparator<IndexValue> comp = 
+      pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
+    Arrays.sort(cells, comp);
+
+    pRowToIndex = new int[pNumRows];
+    int row; 
+    for(row=0; row<pNumRows; row++) 
+      pRowToIndex[row] = cells[row].getIndex();     
 
     fireTableDataChanged();
   }
-  
-  @Override
-  public int 
-  getRowCount()
-  {
-    return pNames.get(0).length;
-  }
 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the value for the cell at columnIndex and rowIndex.
+   */ 
   @Override
   public Object 
   getValueAt
@@ -184,7 +181,6 @@ class TemplateGlueNodeTableModel
   )
   {
     int srow = pRowToIndex[rowIndex];
-
     
     int size = pNames.size(); // if this is 2, we have 0 and 1
     if ( (columnIndex) < size ) { // so if we sort on column 1 we're here 
@@ -194,8 +190,21 @@ class TemplateGlueNodeTableModel
       return pPresent.get(columnIndex- size)[srow];
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 6513554323453717487L;
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
   private ArrayList<String[]> pNames;
   private ArrayList<Comparable[]> pPresent;
   
-  private static final long serialVersionUID = 6513554323453717487L;
 }

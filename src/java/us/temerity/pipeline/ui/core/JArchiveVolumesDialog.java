@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.9 2009/03/19 21:55:59 jesse Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.10 2009/08/19 23:53:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -116,7 +116,8 @@ class JArchiveVolumesDialog
 		  UIFactory.createTitledTextField
 		  (tpanel, "Toolset:", sTSize, 
 		   vpanel, "-", sVSize, 
-		   "The name of the shell environment under which the Archiver plugin is run.");
+		   "The name of the shell environment under which the Archiver " + 
+                   "plugin is run.");
 
 		UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 

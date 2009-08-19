@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.7 2007/07/31 14:58:14 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.8 2009/08/19 23:53:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -87,7 +87,7 @@ class JSourceParamsDialog
 	  int total = 3;
 	  int col;
 	  for(col=0; col<model.getColumnCount(); col++) 
-	    total += model.getColumnWidth(col) + 3;
+	    total += model.getColumnWidthRange(col).y() + 3;
 
 	  if(total > 800)
 	    tpanel.getTable().setPreferredScrollableViewportSize(new Dimension(800, 300));

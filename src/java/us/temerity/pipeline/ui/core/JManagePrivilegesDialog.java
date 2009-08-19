@@ -1,4 +1,4 @@
-// $Id: JManagePrivilegesDialog.java,v 1.8 2009/06/02 20:08:37 jlee Exp $
+// $Id: JManagePrivilegesDialog.java,v 1.9 2009/08/19 23:53:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -21,7 +21,7 @@ import javax.swing.event.*;
 public 
 class  JManagePrivilegesDialog
   extends JTopLevelDialog
-  implements MouseListener, KeyListener, ActionListener, AdjustmentListener
+  implements MouseListener, KeyListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -33,7 +33,7 @@ class  JManagePrivilegesDialog
   public 
   JManagePrivilegesDialog() 
   {
-    super("Manage Privileges");
+    super("Manage Privileges and Work Groups");
 
     pPrivilegeDetails = new PrivilegeDetails();
     pWorkGroups = new WorkGroups();
@@ -79,160 +79,133 @@ class  JManagePrivilegesDialog
 
     /* create dialog body components */ 
     { 
-      JPanel body = new JPanel();
-      body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
+      setLayout(new BorderLayout());
 
+      JTabbedPanel tab = new JTabbedPanel();
+      pTab = tab;
+
+      /* privileges panel */ 
       {
-	JPanel panel = new JPanel();
-	panel.setName("DialogHeader");	
-	  
-	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	  
-	{
-	  JLabel label = new JLabel("Manage User Privileges:");
-	  label.setName("DialogHeaderLabel");	
-	    
-	  panel.add(label);	  
-	}
-	  
-	panel.add(Box.createHorizontalGlue());
+	JPanel body = new JPanel();
+	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
 
 	{
-	  JToggleButton btn = new JToggleButton();		
-	  pPrivsButton = btn;
-	  btn.setName("PrivsButton");
+	  JPanel panel = new JPanel();
+	  panel.setName("DialogHeader");	
 	  
-	  Dimension size = new Dimension(30, 10);
-	  btn.setMinimumSize(size);
-	  btn.setMaximumSize(size);
-	  btn.setPreferredSize(size);
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
-	  btn.setSelected(true);
-	  btn.setActionCommand("toggle-privs-columns");
-	  btn.addActionListener(this);
-	  
-	  btn.setToolTipText(UIFactory.formatToolTip
-	    ("Toggle display of the adminstrative privileges columns."));
-	  
-	  panel.add(btn);
-	} 
-	
-	panel.add(Box.createRigidArea(new Dimension(15, 0)));
-	
-	{
-	  JToggleButton btn = new JToggleButton();		
-	  pGroupsButton = btn;
-	  btn.setName("GroupsButton");
-
-	  Dimension size = new Dimension(30, 10);
-	  btn.setMinimumSize(size);
-	  btn.setMaximumSize(size);
-	  btn.setPreferredSize(size);
-	  
-	  btn.setSelected(true);
-	  btn.setActionCommand("toggle-groups-columns");
-	  btn.addActionListener(this);
-	    
-	  btn.setToolTipText(UIFactory.formatToolTip
-	    ("Toggle display of the work groups columns."));
-	  
-	  panel.add(btn);
-	} 
-
-	panel.add(Box.createRigidArea(new Dimension(30, 0)));
-
-	body.add(panel);
-      }
-	
-      {
-	JPanel panel = new JPanel();
-	panel.setName("MainPanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	   
-	{	
-	  Box vbox = new Box(BoxLayout.Y_AXIS);
-	  vbox.setAlignmentX(0.5f);
-	    
 	  {
-	    PrivilegeNamesTableModel model = new PrivilegeNamesTableModel(this);
-	    pPrivilegeNamesTableModel = model;
+	    JLabel label = new JLabel("Manage Privileges:");
+	    label.setName("DialogHeaderLabel");	
+	    
+	    panel.add(label);	  
+	  }
 	  
-	    JTablePanel tpanel =
-	      new JTablePanel(model, 
-			      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
-			      ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-	    pPrivilegeNamesTablePanel = tpanel;
-	      
- 	    {
- 	      JScrollPane scroll = tpanel.getTableScroll();
- 	      scroll.addMouseListener(this); 
- 	      scroll.setFocusable(true);
- 	      scroll.addKeyListener(this);
- 	    }
-	      
+	  panel.add(Box.createHorizontalGlue());
+
+	  body.add(panel);
+	}
+	
+	{
+	  JPanel panel = new JPanel();
+	  panel.setName("MainPanel");
+	  panel.setLayout(new BorderLayout());
+	   
+	  panel.addMouseListener(this); 
+	  panel.setFocusable(true);
+	  panel.addKeyListener(this);
+
+	  {
+	    PrivilegesTableModel model = new PrivilegesTableModel(this);
+            pPrivilegesTableModel = model;
+	    
+            JTablePanel tpanel = new JTablePanel(model);
+            pPrivilegesTablePanel = tpanel;
+	    
+	    {
+	      JScrollPane scroll = tpanel.getTableScroll();
+	      scroll.addMouseListener(this); 
+	      scroll.setFocusable(true);
+	      scroll.addKeyListener(this);
+	    }
+	    
 	    {
 	      JTable table = tpanel.getTable();
 	      table.addMouseListener(this); 
 	      table.setFocusable(true);
 	      table.addKeyListener(this);
 	    }
-	      
-	    vbox.add(tpanel);
+
+	    panel.add(tpanel);
 	  }
-	    
-	  vbox.add(Box.createRigidArea(new Dimension(0, 14)));
-	    
-	  vbox.setMinimumSize(new Dimension(186, 30));
-	  vbox.setMaximumSize(new Dimension(186, Integer.MAX_VALUE));
-	    
-	  panel.add(vbox);
-	}
-	  
-	panel.add(Box.createRigidArea(new Dimension(2, 0)));
-	  
-	{	    
-	  PrivilegesTableModel model = new PrivilegesTableModel(this);
-	  pPrivilegesTableModel = model;
-	    
-	  JTablePanel tpanel = new JTablePanel(model);
-	  pPrivilegesTablePanel = tpanel;
-	    
-	  {
-	    JScrollPane scroll = tpanel.getTableScroll();
-	      
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-	      
-	    scroll.getVerticalScrollBar().addAdjustmentListener(this);
-	      
- 	    scroll.addMouseListener(this); 
- 	    scroll.setFocusable(true);
- 	    scroll.addKeyListener(this);
-	  }
-	    
-	  {
-	    JTable table = tpanel.getTable();
-	    table.addMouseListener(this); 
-	    table.setFocusable(true);
-	    table.addKeyListener(this);
-	  }
-	    
-	  panel.add(tpanel);
+
+	  body.add(panel);
 	}
 
-	/* sychronize the selected rows in the two tables */ 
+	tab.addTab(body);
+      }
+
+      /* work groups panel */ 
+      {
+	JPanel body = new JPanel();
+	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
+
 	{
-	  JTable ntable = pPrivilegeNamesTablePanel.getTable();
-	  JTable gtable = pPrivilegesTablePanel.getTable();
-	    
-	  ntable.getSelectionModel().addListSelectionListener
-	    (new TableSyncSelector(ntable, gtable));
-	    
-	  gtable.getSelectionModel().addListSelectionListener
-	    (new TableSyncSelector(gtable, ntable));
-	}
+	  JPanel panel = new JPanel();
+	  panel.setName("DialogHeader");	
 	  
-	body.add(panel);
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	  
+	  {
+	    JLabel label = new JLabel("Manage Work Groups:");
+	    label.setName("DialogHeaderLabel");	
+	    
+	    panel.add(label);	  
+	  }
+	  
+	  panel.add(Box.createHorizontalGlue());
+
+	  body.add(panel);
+	}
+	
+	{
+	  JPanel panel = new JPanel();
+	  panel.setName("MainPanel");
+	  panel.setLayout(new BorderLayout());
+	   
+	  panel.addMouseListener(this); 
+	  panel.setFocusable(true);
+	  panel.addKeyListener(this);
+
+	  {
+ 	    WorkGroupsTableModel model = new WorkGroupsTableModel(this);
+            pWorkGroupsTableModel = model;
+	    
+            JTablePanel tpanel = new JTablePanel(model);
+            pWorkGroupsTablePanel = tpanel;
+	    
+	    {
+	      JScrollPane scroll = tpanel.getTableScroll();
+	      scroll.addMouseListener(this); 
+	      scroll.setFocusable(true);
+	      scroll.addKeyListener(this);
+	    }
+	    
+	    {
+	      JTable table = tpanel.getTable();
+	      table.addMouseListener(this); 
+	      table.setFocusable(true);
+	      table.addKeyListener(this);
+	    }
+
+	    panel.add(tpanel);
+	  }
+
+	  body.add(panel);
+	}
+
+	tab.addTab(body);
       }
 
       String extra[][] = {
@@ -240,7 +213,7 @@ class  JManagePrivilegesDialog
 	{ "Update", "update" }
       };
 
-      JButton btns[] = super.initUI(null, body, "Confirm", "Apply", extra, "Close");
+      JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close");
       
       pUpdateButton = btns[1];
       pUpdateButton.setToolTipText(UIFactory.formatToolTip(
@@ -252,8 +225,6 @@ class  JManagePrivilegesDialog
        "Apply the changes."));
 
       updateAll();
-      doToggleGroupsColumns();
-      updateHostsHeaderButtons();
       pack();
     }
 
@@ -276,15 +247,12 @@ class  JManagePrivilegesDialog
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.acquireMasterMgrClient();
     try {
-      pPrivilegeDetails = client.getPrivilegeDetails();
-      pWorkGroups = client.getWorkGroups();
-      
       TreeMap<String,Privileges> privileges = client.getPrivileges();
+      pPrivilegeDetails = client.getPrivilegeDetails();
+      pPrivilegesTableModel.setPrivileges(pWorkGroups, privileges, pPrivilegeDetails);
 
-      pPrivilegeNamesTableModel.setNames(pWorkGroups.getUsers());
-      TreeMap<String,Boolean> modified = 
-	pPrivilegesTableModel.setPrivileges(pWorkGroups, privileges, pPrivilegeDetails);
-      pPrivilegesTablePanel.refilterColumns(modified); 
+      pWorkGroups = client.getWorkGroups();
+      pWorkGroupsTableModel.setWorkGroups(pWorkGroups, pPrivilegeDetails);      
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
@@ -303,84 +271,22 @@ class  JManagePrivilegesDialog
 
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * Update the sort of the user names table to match the privileges table.
-   */ 
-  public void
-  sortNamesTable
-  (
-   int[] rowToIndex
-  )
-  {
-    if(pPrivilegeNamesTableModel != null) 
-      pPrivilegeNamesTableModel.externalSort(rowToIndex);
-  }
-
-  /** 
-   * Update the sort of the privileges table to match the user names table.
-   */ 
-  public void
-  sortPrivilegesTable
-  (
-   int[] rowToIndex
-  )
-  {
-    if(pPrivilegesTableModel != null) 
-      pPrivilegesTableModel.externalSort(rowToIndex);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Update the state of the column visiblity buttons.
-   */ 
-  public void 
-  updateHostsHeaderButtons()
-  {
-    {
-      TreeSet<String> cnames = new TreeSet<String>();
-      cnames.add("Master Admin");
-      cnames.add("Developer");
-      cnames.add("Annotator");
-      cnames.add("Queue Admin");
-      cnames.add("Queue Manager");
-      cnames.add("Node Manager");
-
-      boolean selected = true;
-      for(String cname : cnames) {
-	if(!pPrivilegesTablePanel.isColumnVisible(cname)) {
-	  selected = false;
-	  break;
-	}
-      }
-      
-      pPrivsButton.setSelected(selected);
-    }
-
-    {
-      boolean selected = true;
-      for(String cname : pWorkGroups.getGroups()) {
-	if(!pPrivilegesTablePanel.isColumnVisible(cname)) {
-	  selected = false;
-	  break;
-	}
-      }
-      
-      pGroupsButton.setSelected(selected);
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
    * Update the users menu. 
    */ 
   public void 
   updateUsersMenu() 
   {
-    boolean selected = (pPrivilegeNamesTablePanel.getTable().getSelectedRowCount() > 0);
+    boolean selected = false;
+    switch(pTab.getSelectedIndex()) { 
+    case 0:
+      selected = (pPrivilegesTablePanel.getTable().getSelectedRowCount() > 0);   
+      break;
+  
+    case 1:
+      selected = (pWorkGroupsTablePanel.getTable().getSelectedRowCount() > 0);
+    }
+      
     boolean privileged = pPrivilegeDetails.isMasterAdmin();
 
     pUsersAddItem.setEnabled(privileged);
@@ -394,6 +300,7 @@ class  JManagePrivilegesDialog
   updateGroupsMenu() 
   {
     boolean privileged = pPrivilegeDetails.isMasterAdmin();
+
     pGroupsAddItem.setEnabled(privileged);
     pGroupsRemoveItem.setEnabled(privileged && (pGroupUnderMouse != null)); 
   }
@@ -418,68 +325,25 @@ class  JManagePrivilegesDialog
   updateMenuToolTips() 
   {
     UserPrefs prefs = UserPrefs.getInstance();
-       
-    updateMenuToolTip
-      (pUsersAddItem, prefs.getPrivilegeUsersAdd(),
-       "Add a new user.");
-    updateMenuToolTip
-      (pUsersRemoveItem, prefs.getPrivilegeUsersRemove(),
-       "Remove the selected users.");
+    boolean showTooltips = prefs.getShowMenuToolTips();
 
     updateMenuToolTip
-      (pGroupsAddItem, prefs.getWorkGroupsAdd(),
+      (showTooltips, pUsersAddItem, prefs.getPrivilegeUsersAdd(),
+       "Add a new user.");
+    updateMenuToolTip
+      (showTooltips, pUsersRemoveItem, prefs.getPrivilegeUsersRemove(),
+       "Remove the selected users.");
+    updateMenuToolTip
+      (showTooltips, pGroupsAddItem, prefs.getWorkGroupsAdd(),
        "Add a new work group.");
   }
 
-  /**
-   * Update the tool tip for the given menu item.
-   */   
-  private void 
-  updateMenuToolTip
-  (
-   JMenuItem item, 
-   HotKey key,
-   String desc
-  ) 
-  {
-    String text = null;
-    if(UserPrefs.getInstance().getShowMenuToolTips()) {
-      if(desc != null) {
-	if(key != null) 
-	  text = (desc + " <P>Hot Key = " + key);
-	else 
-	  text = desc;
-      }
-      else {
-	text = ("Hot Key = " + key);
-      }
-    }
-    
-    if(text != null) 
-      item.setToolTipText(UIFactory.formatToolTip(text));
-    else 
-      item.setToolTipText(null);
-  }
-  
 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Used to determine the name of the work group under the given mouse position (if any).
-   */ 
-  @SuppressWarnings("unused")
-  private void 
-  setGroupUnderMouse
-  (
-   Point pos
-  ) 
-  {
-  }
-
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
 
@@ -526,22 +390,36 @@ class  JManagePrivilegesDialog
 
 	/* BUTTON3: popup menus */ 
 	if((mods & (on1 | off1)) == on1) {
-	  if((e.getComponent() == pPrivilegeNamesTablePanel.getTable()) ||
-	     (e.getComponent() == pPrivilegeNamesTablePanel.getTableScroll())) {
-	    updateUsersMenu();
-	    pUsersPopup.show(e.getComponent(), e.getX(), e.getY());
-	  }
-	  else {
-	    int filteredCol = pPrivilegesTablePanel.getTable().columnAtPoint(e.getPoint());
-	    if(filteredCol != -1) {
-	      int col = pPrivilegesTablePanel.getColumnIndex(filteredCol);
-	      if(col >= 5) 
-		pGroupUnderMouse = pPrivilegesTableModel.getColumnName(col);
-	    }
+          pGroupUnderMouse = null;
+	  switch(pTab.getSelectedIndex()) {      
+	  case 0:
+            {
+              int col = pPrivilegesTablePanel.getTable().columnAtPoint(e.getPoint());
+              switch(col) {
+              case 0:
+                updateUsersMenu();
+                pUsersPopup.show(e.getComponent(), e.getX(), e.getY());
+              }
+            }
+            break;
 
-	    updateGroupsMenu();
-	    pGroupsPopup.show(e.getComponent(), e.getX(), e.getY());	 
-	  }
+          case 1:
+            {
+              int col = pWorkGroupsTablePanel.getTable().columnAtPoint(e.getPoint());
+              switch(col) {
+              case 0:
+                updateUsersMenu();
+                pUsersPopup.show(e.getComponent(), e.getX(), e.getY());
+                break;
+
+              default:
+                if(col != -1) 
+                  pGroupUnderMouse = pWorkGroupsTableModel.getColumnName(col);
+                updateGroupsMenu();
+                pGroupsPopup.show(e.getComponent(), e.getX(), e.getY());
+              }
+            }
+          }
 	}
 	else {
 	  if(UIFactory.getBeepPreference())
@@ -560,7 +438,7 @@ class  JManagePrivilegesDialog
    MouseEvent e
   ) 
   {
-      //pGroupUnderMouse = null;
+    pGroupUnderMouse = null;
   }
 
 
@@ -576,39 +454,39 @@ class  JManagePrivilegesDialog
    KeyEvent e
   )
   {
-    boolean unsupported = false;
-    UserPrefs prefs = UserPrefs.getInstance();
-    if((e.getComponent() == pPrivilegeNamesTablePanel.getTable()) ||
-       (e.getComponent() == pPrivilegeNamesTablePanel.getTableScroll())) {
-      if((prefs.getPrivilegeUsersAdd() != null) &&
-	 prefs.getPrivilegeUsersAdd().wasPressed(e))
-	doUsersAdd();
-      else if((prefs.getPrivilegeUsersRemove() != null) &&
-	      prefs.getPrivilegeUsersRemove().wasPressed(e))
-	doUsersRemove();
-      else 
-	unsupported = true;
-    }
-    else {
-      if((prefs.getWorkGroupsAdd() != null) &&
-	 prefs.getWorkGroupsAdd().wasPressed(e))
-	doGroupsAdd();
-      else 
-	unsupported = true;      
-    }
+  //   boolean unsupported = false;
+//     UserPrefs prefs = UserPrefs.getInstance();
+//     if((e.getComponent() == pPrivilegeNamesTablePanel.getTable()) ||
+//        (e.getComponent() == pPrivilegeNamesTablePanel.getTableScroll())) {
+//       if((prefs.getPrivilegeUsersAdd() != null) &&
+// 	 prefs.getPrivilegeUsersAdd().wasPressed(e))
+// 	doUsersAdd();
+//       else if((prefs.getPrivilegeUsersRemove() != null) &&
+// 	      prefs.getPrivilegeUsersRemove().wasPressed(e))
+// 	doUsersRemove();
+//       else 
+// 	unsupported = true;
+//     }
+//     else {
+//       if((prefs.getWorkGroupsAdd() != null) &&
+// 	 prefs.getWorkGroupsAdd().wasPressed(e))
+// 	doGroupsAdd();
+//       else 
+// 	unsupported = true;      
+//     }
     
-    if(unsupported) {
-      switch(e.getKeyCode()) {
-      case KeyEvent.VK_SHIFT:
-      case KeyEvent.VK_ALT:
-      case KeyEvent.VK_CONTROL:
-	break;
+//     if(unsupported) {
+//       switch(e.getKeyCode()) {
+//       case KeyEvent.VK_SHIFT:
+//       case KeyEvent.VK_ALT:
+//       case KeyEvent.VK_CONTROL:
+// 	break;
       
-      default:
-	if(UIFactory.getBeepPreference())
-	  Toolkit.getDefaultToolkit().beep();
-      }
-    }
+//       default:
+// 	if(UIFactory.getBeepPreference())
+// 	  Toolkit.getDefaultToolkit().beep();
+//       }
+//     }
   }
 
   /**
@@ -637,12 +515,7 @@ class  JManagePrivilegesDialog
   ) 
   {
     String cmd = e.getActionCommand();
-    if(cmd.equals("toggle-privs-columns"))
-      doTogglePrivsColumns();
-    else if(cmd.equals("toggle-groups-columns"))
-      doToggleGroupsColumns();    
-
-    else if(cmd.equals("user-add")) 
+    if(cmd.equals("user-add")) 
       doUsersAdd();
     else if(cmd.equals("user-remove")) 
       doUsersRemove();
@@ -656,31 +529,6 @@ class  JManagePrivilegesDialog
       doUpdate();
     else 
       super.actionPerformed(e);
-  }
-
-
-  /*-- ADJUSTMENT LISTENER METHODS ---------------------------------------------------------*/
-
-  /**
-   * Invoked when the value of the adjustable has changed.
-   */ 
-  public void
-  adjustmentValueChanged
-  (
-   AdjustmentEvent e
-  )
-  { 
-    JViewport nview = pPrivilegeNamesTablePanel.getTableScroll().getViewport();
-    JViewport gview = pPrivilegesTablePanel.getTableScroll().getViewport();
-    if((nview != null) && (gview != null)) {
-      Point npos = nview.getViewPosition();    
-      Point gpos = gview.getViewPosition();    
-      
-      if(npos.y != gpos.y) {
- 	npos.y = gpos.y;
- 	nview.setViewPosition(npos);
-      }
-    }  
   }
 
 
@@ -717,7 +565,7 @@ class  JManagePrivilegesDialog
       }
 
       DoubleMap<String,String,Boolean> members = 
-	pPrivilegesTableModel.getModifiedWorkGroupMemberships(); 
+	pWorkGroupsTableModel.getModifiedWorkGroupMemberships(); 
       if(!members.isEmpty()) {
 	for(String uname : members.keySet()) {
 	  for(String gname : members.get(uname).keySet()) 
@@ -762,84 +610,37 @@ class  JManagePrivilegesDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Toggle display of the privileges columns.
-   */ 
-  public void 
-  doTogglePrivsColumns()
-  { 
-    TreeSet<String> cnames = new TreeSet<String>();
-    cnames.add("Master Admin");
-    cnames.add("Developer");
-    cnames.add("Annotator");
-    cnames.add("Queue Admin");
-    cnames.add("Queue Manager");
-    cnames.add("Node Manager");
-    
-    boolean isVisible = false;
-    for(String cname : cnames) {
-      if(!pPrivilegesTablePanel.isColumnVisible(cname)) {
-	isVisible = true;
-	break;
-      }
-    }
-    
-    pPrivilegesTablePanel.setColumnsVisible(cnames, isVisible);
-  }
-
-  /**
-   * Toggle display of the work group columns.
-   */ 
-  public void 
-  doToggleGroupsColumns()
-  { 
-    TreeSet<String> cnames = new TreeSet<String>(pWorkGroups.getGroups());
-
-    boolean isVisible = false;
-    for(String cname : cnames) {
-      if(!pPrivilegesTablePanel.isColumnVisible(cname)) {
-	isVisible = true;
-	break;
-      }
-    }
-    
-    pPrivilegesTablePanel.setColumnsVisible(cnames, isVisible);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Add a new user.
    */ 
   private void 
   doUsersAdd()
-  {
+  { 
     pPrivilegesTablePanel.stopEditing();
+    pWorkGroupsTablePanel.stopEditing();
 
     boolean modified = false;
     {
       pUsersNewDialog.setVisible(true);
       
       if(pUsersNewDialog.wasConfirmed()) {
-	String uname = pUsersNewDialog.getName();
-	if((uname != null) && (uname.length() > 0)) {
-	  
-	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.acquireMasterMgrClient();
-	  try {
-	    pWorkGroups.addUser(uname);
-	    client.setWorkGroups(pWorkGroups);
-	    master.invalidateAllCachedWorkGroups();
-	    modified = true;
-	  }
-	  catch(PipelineException ex) {
-	    showErrorDialog(ex);
-	  }
-	  finally {
-	    master.releaseMasterMgrClient(client);
-	  }
-	}
+ 	String uname = pUsersNewDialog.getName();
+ 	if((uname != null) && (uname.length() > 0)) {
+          
+ 	  UIMaster master = UIMaster.getInstance();
+ 	  MasterMgrClient client = master.acquireMasterMgrClient();
+ 	  try {
+ 	    pWorkGroups.addUser(uname);
+ 	    client.setWorkGroups(pWorkGroups);
+ 	    master.invalidateAllCachedWorkGroups();
+ 	    modified = true;
+ 	  }
+ 	  catch(PipelineException ex) {
+ 	    showErrorDialog(ex);
+ 	  }
+ 	  finally {
+ 	    master.releaseMasterMgrClient(client);
+ 	  }
+ 	}
       }
     }
 
@@ -853,25 +654,35 @@ class  JManagePrivilegesDialog
   private void 
   doUsersRemove() 
   {
-    pPrivilegeNamesTablePanel.cancelEditing();
+    pPrivilegesTablePanel.cancelEditing();
+    pWorkGroupsTablePanel.cancelEditing();
 
+    ArrayList<String> selected = new ArrayList<String>();
+    switch(pTab.getSelectedIndex()) {      
+    case 0:
+      for(int row : pPrivilegesTablePanel.getTable().getSelectedRows())
+        selected.add(pPrivilegesTableModel.getUserName(row));
+      break;
+
+    case 1:
+      for(int row : pWorkGroupsTablePanel.getTable().getSelectedRows())
+        selected.add(pWorkGroupsTableModel.getUserName(row));
+    }
+      
     boolean modified = false;
     {
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
       try {
-	int rows[] = pPrivilegeNamesTablePanel.getTable().getSelectedRows();
-	int wk;
-	for(wk=0; wk<rows.length; wk++) {
-	  String uname = pPrivilegeNamesTableModel.getName(rows[wk]);
-	  pWorkGroups.removeUser(uname);
-	  client.setWorkGroups(pWorkGroups);
-	  master.invalidateAllCachedWorkGroups();
-	  modified = true;
-	}
+        for(String uname : selected) {
+ 	  pWorkGroups.removeUser(uname);
+ 	  client.setWorkGroups(pWorkGroups);
+ 	  master.invalidateAllCachedWorkGroups();
+ 	  modified = true;
+ 	}
       }
       catch(PipelineException ex) {
-	showErrorDialog(ex);
+ 	showErrorDialog(ex);
       }
       finally {
         master.releaseMasterMgrClient(client);
@@ -891,132 +702,70 @@ class  JManagePrivilegesDialog
   private void 
   doGroupsAdd()
   {
-    pPrivilegeNamesTablePanel.stopEditing();
-
+    pPrivilegesTablePanel.stopEditing();
+    pWorkGroupsTablePanel.stopEditing();
+    
     boolean modified = false;
     {
       pGroupsNewDialog.setVisible(true);
-
+      
       if(pGroupsNewDialog.wasConfirmed()) {
-	String gname = pGroupsNewDialog.getName();
-	if((gname != null) && (gname.length() > 0)) {
-	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.acquireMasterMgrClient();
-	  try {
-	    pWorkGroups.addGroup(gname);
-	    client.setWorkGroups(pWorkGroups);
-	    master.invalidateAllCachedWorkGroups();
-	    modified = true;
-	  }
-	  catch(PipelineException ex) {
-	    showErrorDialog(ex);
-	  }
-	  finally {
-	    master.releaseMasterMgrClient(client);
-	  }
-	}
+ 	String gname = pGroupsNewDialog.getName();
+ 	if((gname != null) && (gname.length() > 0)) {
+ 	  UIMaster master = UIMaster.getInstance();
+ 	  MasterMgrClient client = master.acquireMasterMgrClient();
+ 	  try {
+ 	    pWorkGroups.addGroup(gname);
+ 	    client.setWorkGroups(pWorkGroups);
+ 	    master.invalidateAllCachedWorkGroups();
+ 	    modified = true;
+ 	  }
+ 	  catch(PipelineException ex) {
+ 	    showErrorDialog(ex);
+ 	  }
+ 	  finally {
+ 	    master.releaseMasterMgrClient(client);
+ 	  }
+ 	}
       }
     }
-
+    
     if(modified) 
       updateAll();
   }
   
   /**
-   * Remove the  rows from the selection groups table.
+   * Remove rows from the selection groups table.
    */ 
   private void 
   doGroupsRemove() 
   {
-    pPrivilegeNamesTablePanel.cancelEditing();
+    pPrivilegesTablePanel.cancelEditing();
+    pWorkGroupsTablePanel.cancelEditing();
 
     boolean modified = false;
     if(pGroupUnderMouse != null) {
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
       try {
-	pWorkGroups.removeGroup(pGroupUnderMouse);
-	client.setWorkGroups(pWorkGroups);
-	master.invalidateAllCachedWorkGroups();
-	modified = true;
+        pWorkGroups.removeGroup(pGroupUnderMouse);
+        client.setWorkGroups(pWorkGroups);
+        master.invalidateAllCachedWorkGroups();
+        modified = true;
       }
       catch(PipelineException ex) {
-	showErrorDialog(ex);
+        showErrorDialog(ex);
       }
       finally {
         master.releaseMasterMgrClient(client);
       }
-
+      
       pGroupUnderMouse = null;
     }
-
+    
     if(modified) 
       updateAll();
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  private 
-  class TableSyncSelector
-    implements ListSelectionListener
-  {
-    public 
-    TableSyncSelector
-    (
-     JTable source,
-     JTable target
-    ) 
-    {
-      pSourceTable = source;
-      pTargetTable = target;
-    }
-
-    /**
-     * Called whenever the value of the selection changes.
-     */ 
-    public void 	
-    valueChanged
-    (
-     ListSelectionEvent e
-    )
-    {
-      if(e.getValueIsAdjusting()) 
-	return;
-      
-      DefaultListSelectionModel smodel = 
-	(DefaultListSelectionModel) pTargetTable.getSelectionModel();
-
-      ListSelectionListener[] listeners = smodel.getListSelectionListeners();
-      {
-	int wk;
-	for(wk=0; wk<listeners.length; wk++) 
-	  smodel.removeListSelectionListener(listeners[wk]);
-      }
-
-      smodel.clearSelection();
-
-      {
-	int rows[] = pSourceTable.getSelectedRows();
-	int wk; 
-	for(wk=0; wk<rows.length; wk++) 
-	  smodel.addSelectionInterval(rows[wk], rows[wk]);	  
-      }
-      
-      {
-	int wk;
-	for(wk=0; wk<listeners.length; wk++) 
-	  smodel.addListSelectionListener(listeners[wk]);
-      }
-
-      pTargetTable.repaint();
-    }
-
-    private JTable pSourceTable;
-    private JTable pTargetTable;
-  }  
 
 
 
@@ -1046,10 +795,9 @@ class  JManagePrivilegesDialog
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Column display buttons.
+   * The tabbed panel.
    */ 
-  private JToggleButton  pPrivsButton;
-  private JToggleButton  pGroupsButton;
+  private JTabbedPanel  pTab;
 
   /**
    * The dialog update button.
@@ -1070,18 +818,6 @@ class  JManagePrivilegesDialog
   private JMenuItem  pUsersAddItem;
   private JMenuItem  pUsersRemoveItem;
 
-
-  /**
-   * The user names table model.
-   */ 
-  private PrivilegeNamesTableModel  pPrivilegeNamesTableModel;
-
-  /**
-   * The user names table panel.
-   */ 
-  private JTablePanel  pPrivilegeNamesTablePanel;
-
-
   /**
    * The user creation dialog.
    */ 
@@ -1089,6 +825,29 @@ class  JManagePrivilegesDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The privileges table model.
+   */ 
+  private PrivilegesTableModel  pPrivilegesTableModel;
+
+  /**
+   * The privileges table panel.
+   */ 
+  private JTablePanel  pPrivilegesTablePanel;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The work groups table model.
+   */ 
+  private WorkGroupsTableModel  pWorkGroupsTableModel;
+
+  /**
+   * The work groups table panel.
+   */ 
+  private JTablePanel  pWorkGroupsTablePanel;
 
   /**
    * The work groups popup menu.
@@ -1104,24 +863,13 @@ class  JManagePrivilegesDialog
   /**
    * The name of the work group under the mouse when the groups menu is active.
    */ 
-  private String  pGroupUnderMouse; 
-
-
-  /**
-   * The privileges table model.
-   */ 
-  private PrivilegesTableModel  pPrivilegesTableModel;
-
-  /**
-   * The privileges table panel.
-   */ 
-  private JTablePanel  pPrivilegesTablePanel;
-
+  private String pGroupUnderMouse;
 
   /**
    * The work groups creation dialog.
    */ 
   private JNewWorkGroupDialog  pGroupsNewDialog; 
+
 
 }
 

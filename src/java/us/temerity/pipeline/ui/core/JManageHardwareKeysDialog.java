@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.7 2009/06/02 20:08:37 jlee Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.8 2009/08/19 23:53:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -25,7 +25,7 @@ public
 class JManageHardwareKeysDialog
   extends JTopLevelDialog
   implements ListSelectionListener, MouseListener, KeyListener, ActionListener, 
-             AdjustmentListener, ChangeListener
+             ChangeListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -128,7 +128,7 @@ class JManageHardwareKeysDialog
 	  panel.addKeyListener(this);
 
 	  {
-	    BaseKeysTableModel model = new BaseKeysTableModel();
+	    BaseKeysTableModel model = new BaseKeysTableModel(540);
 	    pKeysTableModel = model;
 	    
 	    JTablePanel tpanel = new JTablePanel(model);
@@ -191,47 +191,6 @@ class JManageHardwareKeysDialog
 	  panel.setFocusable(true);
 	  panel.addKeyListener(this);
 
-	  {	
-	    Box vbox = new Box(BoxLayout.Y_AXIS);
-	    vbox.setAlignmentX(0.5f);
-	    
-	    {
-	      HardwareGroupNamesTableModel model = new HardwareGroupNamesTableModel(this);
-	      pGroupNamesTableModel = model;
-	  
-	      JTablePanel tpanel =
-		new JTablePanel(model, 
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-	      pGroupNamesTablePanel = tpanel;
-	      
-	      {
-		JScrollPane scroll = tpanel.getTableScroll();
-		scroll.addMouseListener(this); 
-		scroll.setFocusable(true);
-		scroll.addKeyListener(this);
-	      }
-	      
-	      {
-		JTable table = tpanel.getTable();
-		table.addMouseListener(this); 
-		table.setFocusable(true);
-		table.addKeyListener(this);
-	      }
-	      
-	      vbox.add(tpanel);
-	    }
-	    
-	    vbox.add(Box.createRigidArea(new Dimension(0, 14)));
-	    
-	    vbox.setMinimumSize(new Dimension(186, 30));
-	    vbox.setMaximumSize(new Dimension(186, Integer.MAX_VALUE));
-	    
-	    panel.add(vbox);
-	  }
-	  
-	  panel.add(Box.createRigidArea(new Dimension(2, 0)));
-	  
 	  {	    
 	    HardwareGroupsTableModel model = new HardwareGroupsTableModel(this);
 	    pGroupsTableModel = model;
@@ -244,8 +203,6 @@ class JManageHardwareKeysDialog
 	      
 	      scroll.setHorizontalScrollBarPolicy
 		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-	      
-	      scroll.getVerticalScrollBar().addAdjustmentListener(this);
 	      
 	      scroll.addMouseListener(this); 
 	      scroll.setFocusable(true);
@@ -262,18 +219,6 @@ class JManageHardwareKeysDialog
 	    panel.add(tpanel);
 	  }
 
-	  /* Synchronize the selected rows in the two tables */ 
-	  {
-	    JTable ntable = pGroupNamesTablePanel.getTable();
-	    JTable gtable = pGroupsTablePanel.getTable();
-	    
-	    ntable.getSelectionModel().addListSelectionListener
-	      (new TableSyncSelector(ntable, gtable));
-	    
-	    gtable.getSelectionModel().addListSelectionListener
-	      (new TableSyncSelector(gtable, ntable));
-	  }
-	  
 	  body.add(panel);
 	}
 
@@ -310,8 +255,8 @@ class JManageHardwareKeysDialog
     /* This needs to be run after the edit button is created. */
     pTab.addChangeListener(this);
     
-    pKeysCreateDialog   = new JCreateHardwareKeyDialog(this);
-    pGroupsNewDialog    = new JNewHardwareGroupDialog(this);
+    pKeysCreateDialog = new JCreateHardwareKeyDialog(this);
+    pGroupsNewDialog  = new JNewHardwareGroupDialog(this);
   }
 
   
@@ -332,33 +277,26 @@ class JManageHardwareKeysDialog
     try {
       pPrivilegeDetails = mclient.getPrivilegeDetails();
 
-      ArrayList<BaseKey> keys = new ArrayList<BaseKey>();
-      for (HardwareKey key : qclient.getHardwareKeys() )
-        keys.add(key);
-      TreeMap<String,HardwareGroup> groups = qclient.getHardwareGroups();
-
-      pGroupNames.clear();
-      pGroupNames.addAll(groups.keySet());
-
-      TreeMap<String,String> keyDesc = new TreeMap<String,String>();
-      for(BaseKey key : keys) 
-	keyDesc.put(key.getName(), key.getDescription());
-      
       /* update hardware keys */ 
-      pKeysTableModel.setKeys(keys);
-      
-      /* update hardware groups */ 
-      pGroupNamesTableModel.setNames(pGroupNames);
-      TreeMap<String,Boolean> modified = 
-	pGroupsTableModel.setHardwareGroups(groups, keyDesc, pPrivilegeDetails);
-      
-      if (pLastSort == LastSort.DATA)
-        pGroupsTableModel.sort();
-      else
-        pGroupNamesTableModel.sort();
-      
-      pGroupsTablePanel.refilterColumns(modified);
+      ArrayList<BaseKey> keys = new ArrayList<BaseKey>();
+      {
+        for(HardwareKey key : qclient.getHardwareKeys() )
+          keys.add(key);
+        pKeysTableModel.setKeys(keys);
+      }
 
+      /* update hardware groups */ 
+      { 
+        TreeMap<String,String> keyDesc = new TreeMap<String,String>();
+        for(BaseKey key : keys) 
+          keyDesc.put(key.getName(), key.getDescription());
+
+        TreeMap<String,HardwareGroup> groups = qclient.getHardwareGroups();
+	pGroupsTableModel.setHardwareGroups(groups, keyDesc, pPrivilegeDetails);
+
+        pGroupNames.clear();
+        pGroupNames.addAll(groups.keySet());
+      }
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
@@ -412,37 +350,6 @@ class JManageHardwareKeysDialog
 
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * Update the sort of the selection group names table to match the selection groups table.
-   */ 
-  public void
-  sortNamesTable
-  (
-   int[] rowToIndex
-  )
-  {
-    if(pGroupNamesTableModel != null) 
-      pGroupNamesTableModel.externalSort(rowToIndex);
-    pLastSort = LastSort.DATA;
-  }
-
-  /** 
-   * Update the sort of the selection groups table to match the selection group names table.
-   */ 
-  public void
-  sortGroupsTable
-  (
-   int[] rowToIndex
-  )
-  {
-    if(pGroupsTableModel != null) 
-      pGroupsTableModel.externalSort(rowToIndex);
-    pLastSort = LastSort.NAMES;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
    * Update the selection keys menu.
    */ 
@@ -484,57 +391,27 @@ class JManageHardwareKeysDialog
   updateMenuToolTips() 
   {
     UserPrefs prefs = UserPrefs.getInstance();
+    boolean showTooltips = prefs.getShowMenuToolTips();
        
     updateMenuToolTip
-      (pKeysAddItem, prefs.getSelectionKeysAdd(),
+      (showTooltips, pKeysAddItem, prefs.getSelectionKeysAdd(),
        "Add a new selection key.");
     updateMenuToolTip
-      (pKeysRemoveItem, prefs.getSelectionKeysRemove(),
+      (showTooltips, pKeysRemoveItem, prefs.getSelectionKeysRemove(),
        "Remove the selected selection keys.");
 
     updateMenuToolTip
-      (pGroupsAddItem, prefs.getSelectionGroupsAdd(),
+      (showTooltips, pGroupsAddItem, prefs.getSelectionGroupsAdd(),
        "Add a new selection group.");
     updateMenuToolTip
-      (pGroupsCloneItem, prefs.getSelectionGroupsClone(),
+      (showTooltips, pGroupsCloneItem, prefs.getSelectionGroupsClone(),
        "Add a new selection group which is a copy of the selected group.");
     updateMenuToolTip
-      (pGroupsRemoveItem, prefs.getSelectionGroupsRemove(),
+      (showTooltips, pGroupsRemoveItem, prefs.getSelectionGroupsRemove(),
        "Remove the selected selection groups.");
   }
 
-  /**
-   * Update the tool tip for the given menu item.
-   */   
-  private void 
-  updateMenuToolTip
-  (
-   JMenuItem item, 
-   HotKey key,
-   String desc
-  ) 
-  {
-    String text = null;
-    if(UserPrefs.getInstance().getShowMenuToolTips()) {
-      if(desc != null) {
-	if(key != null) 
-	  text = (desc + " <P>Hot Key = " + key);
-	else 
-	  text = desc;
-      }
-      else {
-	text = ("Hot Key = " + key);
-      }
-    }
-    
-    if(text != null) 
-      item.setToolTipText(UIFactory.formatToolTip(text));
-    else 
-      item.setToolTipText(null);
-  }
   
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -742,32 +619,7 @@ class JManageHardwareKeysDialog
       super.actionPerformed(e);
   }
 
-
-  /*-- ADJUSTMENT LISTENER METHODS ---------------------------------------------------------*/
-
-  /**
-   * Invoked when the value of the adjustable has changed.
-   */ 
-  public void
-  adjustmentValueChanged
-  (
-   AdjustmentEvent e
-  )
-  { 
-    JViewport nview = pGroupNamesTablePanel.getTableScroll().getViewport();
-    JViewport gview = pGroupsTablePanel.getTableScroll().getViewport();
-    if((nview != null) && (gview != null)) {
-      Point npos = nview.getViewPosition();    
-      Point gpos = gview.getViewPosition();    
-      
-      if(npos.y != gpos.y) {
- 	npos.y = gpos.y;
- 	nview.setViewPosition(npos);
-      }
-    }  
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
@@ -1231,16 +1083,6 @@ class JManageHardwareKeysDialog
   private JMenuItem  pGroupsCloneItem;
   private JMenuItem  pGroupsRemoveItem;
 
-
-  /**
-   * The selection group names table model.
-   */ 
-  private HardwareGroupNamesTableModel  pGroupNamesTableModel;
-
-  /**
-   * The selection group names table panel.
-   */ 
-  private JTablePanel  pGroupNamesTablePanel;
 
   /**
    * The add/edit configuration dialog.
