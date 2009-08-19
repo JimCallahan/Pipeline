@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.110 2009/08/19 22:56:16 jim Exp $
+// $Id: UIMaster.java,v 1.111 2009/08/19 23:41:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3380,7 +3380,7 @@ class UIMaster
         /* Adding PackageInfo.sUser for the author matches the behavior of a user 
 	   right clicking a checked-in node and selecting one of the View menu items. */
 	{
-	  EditTask task = new EditTask(0, vsn, false, PackageInfo.sUser, null, false);
+	  EditTask task = new EditTask(0, vsn, null, false, PackageInfo.sUser, null, false);
 	  task.start();
 	}
       }
@@ -5967,6 +5967,7 @@ class UIMaster
     (
      int channel, 
      NodeCommon com,
+     TreeSet<FileSeq> selectSeqs, 
      boolean useDefault,
      String author, 
      String view, 
@@ -5976,6 +5977,7 @@ class UIMaster
       super("UIMaster:EditTask", channel, author, view);
 
       pNodeCommon = com;
+      pSelectSeqs = selectSeqs; 
       pUseDefault = useDefault;
       pSubstitute = substitute;
     }
@@ -5985,6 +5987,7 @@ class UIMaster
     (
      int channel, 
      NodeCommon com, 
+     TreeSet<FileSeq> selectSeqs, 
      String ename, 
      VersionID evid, 
      String evendor, 
@@ -5996,6 +5999,7 @@ class UIMaster
       super("UIMaster:EditTask", channel, author, view);
 
       pNodeCommon    = com;
+      pSelectSeqs    = selectSeqs; 
       pEditorName    = ename;
       pEditorVersion = evid; 
       pEditorVendor  = evendor; 
@@ -6008,7 +6012,7 @@ class UIMaster
     public void 
     run() 
     {
-      SubProcessLight proc = null;
+      LinkedList<SubProcessLight> procs = new LinkedList<SubProcessLight>();
       Long editID = null;
       {
 	UIMaster master = UIMaster.getInstance();
@@ -6074,8 +6078,8 @@ class UIMaster
 		      (pAuthorName, view, tname, PackageInfo.sOsType);
 	    }
 	    
-	    /* get the primary file sequence */ 
-	    FileSeq fseq = null;
+	    /* get the file sequences to edit */ 
+	    TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>(); 
 	    File dir = null; 
 	    {
 	      Path path = null;
@@ -6092,32 +6096,43 @@ class UIMaster
 	      else {
 		assert(false);
 	      }
-	  
-	      fseq = new FileSeq(path.toString(), pNodeCommon.getPrimarySequence());
+
 	      dir = path.toFile();
+	  
+              if(pSelectSeqs != null) {
+                for(FileSeq target : pSelectSeqs) 
+                  fseqs.add(new FileSeq(path.toString(), target));
+              }
+              else {
+                FileSeq target = pNodeCommon.getPrimarySequence();
+                fseqs.add(new FileSeq(path.toString(), target));
+              }
 	    }
 
-	    /* start the editor */ 
-	    if(pSubstitute) {
-	      PrivilegeDetails details = getUICache(pChannel).getCachedPrivilegeDetails();
-	      if(details.isNodeManaged(pAuthorName)) {
-		EditAsTask task = new EditAsTask(editor, pAuthorName, fseq, env, dir);
-		task.start();
-	      }
-	      else {
-		throw new PipelineException
-		  ("You do not have the necessary privileges to execute an editor as the " + 
-		   "(" + pAuthorName + ") user!");
-	      }
-	    }
-	    else {
-	      editor.makeWorkingDirs(dir);
-	      proc = editor.prep(PackageInfo.sUser, fseq, env, dir);
-	      if(proc != null) 
-		proc.start();
-	      else 
-		proc = editor.launch(fseq, env, dir);
-	    }
+            if(pSubstitute) {
+              PrivilegeDetails details = getUICache(pChannel).getCachedPrivilegeDetails();
+              if(!details.isNodeManaged(pAuthorName)) 
+                throw new PipelineException
+                  ("You do not have the necessary privileges to execute an editor as " + 
+                   "the (" + pAuthorName + ") user!");
+            }
+
+	    /* start the editor(s) */ 
+            for(FileSeq fseq : fseqs) {
+              if(pSubstitute) {
+                EditAsTask task = new EditAsTask(editor, pAuthorName, fseq, env, dir);
+                task.start();
+              }
+              else {
+                editor.makeWorkingDirs(dir);
+                SubProcessLight proc = editor.prep(PackageInfo.sUser, fseq, env, dir);
+                if(proc != null) 
+                  proc.start();
+                else 
+                  proc = editor.launch(fseq, env, dir);
+                procs.add(proc); 
+              }
+            }
 
 	    /* generate the editing started event */ 
 	    if(mod != null) {
@@ -6143,35 +6158,38 @@ class UIMaster
 	  }
 	}
 
-	/* wait for the editor to exit */ 
-	if(proc != null) {
-	  try {
-	    proc.join();
-	    if(!proc.wasSuccessful() && !ignoreExitCode) 
-	      master.showSubprocessFailureDialog("Editor Failure:", proc);
+	/* wait for the editor(s) to exit */ 
+	if(!procs.isEmpty()) {
+          for(SubProcessLight proc : procs) {
+            try {
+              proc.join();
+              if(!proc.wasSuccessful() && !ignoreExitCode) 
+                master.showSubprocessFailureDialog("Editor Failure:", proc);
 
-	    MasterMgrClient client = acquireMasterMgrClient();
-	    try {
-	      if((client != null) && (editID != null))
-	        client.editingFinished(editID);
-  	    }
-	    finally {
-	      releaseMasterMgrClient(client);
-	    }
-	  }
-	  catch(Exception ex) {
-	    master.showErrorDialog(ex);
-	  }
-	}
+              MasterMgrClient client = acquireMasterMgrClient();
+              try {
+                if((client != null) && (editID != null))
+                  client.editingFinished(editID);
+              }
+              finally {
+                releaseMasterMgrClient(client);
+              }
+            }
+            catch(Exception ex) {
+              master.showErrorDialog(ex);
+            }
+          }
+        }
       }
     }
  
-    private NodeCommon  pNodeCommon; 
-    private boolean     pUseDefault; 
-    private String      pEditorName;
-    private VersionID   pEditorVersion; 
-    private String      pEditorVendor; 
-    private boolean     pSubstitute; 
+    private NodeCommon        pNodeCommon; 
+    private TreeSet<FileSeq>  pSelectSeqs;
+    private boolean           pUseDefault; 
+    private String            pEditorName;
+    private VersionID         pEditorVersion; 
+    private String            pEditorVendor; 
+    private boolean           pSubstitute; 
   }
 
   /** 

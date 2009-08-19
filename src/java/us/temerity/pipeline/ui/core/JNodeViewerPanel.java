@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.141 2009/07/26 04:56:28 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.142 2009/08/19 23:44:46 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5832,7 +5832,8 @@ class JNodeViewerPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView, false);
+      UIMaster.getInstance().super
+        (pGroupID, com, null, false, pAuthor, pView, false);
       setName("JNodeViewerPanel:EditTask");
     }
 
@@ -5844,7 +5845,8 @@ class JNodeViewerPanel
      boolean substitute
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView, substitute);
+      UIMaster.getInstance().super
+        (pGroupID, com, null, useDefault, pAuthor, pView, substitute);
       setName("JNodeViewerPanel:EditTask");
     }
 
@@ -5858,7 +5860,7 @@ class JNodeViewerPanel
     ) 
     {
       UIMaster.getInstance().super
-	(pGroupID, com, ename, evid, evendor, pAuthor, pView, false);
+	(pGroupID, com, null, ename, evid, evendor, pAuthor, pView, false);
       setName("JNodeViewerPanel:EditTask");
     }
   }
