@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.284 2009/08/10 18:22:52 jesse Exp $
+// $Id: MasterMgr.java,v 1.285 2009/08/20 04:45:03 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -319,7 +319,7 @@ class MasterMgr
 	
 	FileMgrNetClient fclient = (FileMgrNetClient) acquireFileMgrClient();
 	try {
-	  fclient.waitForConnection(1000, 5000);
+	  fclient.waitForConnection(5000);
 	}
 	finally {
 	  releaseFileMgrClient(fclient);
@@ -328,7 +328,7 @@ class MasterMgr
       
       /* make a connection to the queue manager */ 
       pQueueMgrClient = new QueueMgrControlClient();
-      pQueueMgrClient.waitForConnection(1000, 5000);
+      pQueueMgrClient.waitForConnection(5000);
     }
 
     LogMgr.getInstance().logAndFlush
