@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.120 2009/07/06 10:25:26 jim Exp $
+// $Id: QueueMgr.java,v 1.121 2009/08/20 04:48:07 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -572,7 +572,7 @@ class QueueMgr
   establishMasterConnection()
   {
     try {
-      pMasterMgrClient.waitForConnection(1000, 5000);
+      pMasterMgrClient.waitForConnection(5000);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
