@@ -1,4 +1,4 @@
-// $Id: JobRankingTableModel.java,v 1.1 2008/07/04 15:27:56 jesse Exp $
+// $Id: JobRankingTableModel.java,v 1.2 2009/08/20 19:44:07 jesse Exp $
 
 package com.theorphanage.pipeline.plugin.JobRankingTool.v1_0_0;
 
@@ -8,18 +8,19 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   J O B   R A N K I N G   T A B L E   M O D E L                                          */
 /*------------------------------------------------------------------------------------------*/
 
+@SuppressWarnings("unchecked")
 public 
 class JobRankingTableModel
   extends AbstractSortableTableModel
 {
 
-  @SuppressWarnings("unchecked")
   public 
   JobRankingTableModel
   (
@@ -63,8 +64,9 @@ class JobRankingTableModel
       }
       
       {
-        int widths[] = { 80, 540, 80, 160};
-        pColumnWidths = widths;
+        Vector3i widths[] = 
+          { new Vector3i(80), new Vector3i(540), new Vector3i(80), new Vector3i(160)};
+        pColumnWidthRanges = widths;
       }
       
       {
@@ -115,7 +117,7 @@ class JobRankingTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  @SuppressWarnings({ "unchecked", "null" })
+  @SuppressWarnings({ "null" })
   @Override
   public void 
   sort()
