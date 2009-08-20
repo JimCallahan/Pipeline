@@ -52,8 +52,8 @@ done
 for x in Vector*[il].java
 do
   mv $x ORIG
-  head -163 ORIG > $x
-  tail +192 ORIG >> $x
+  head -175 ORIG > $x
+  tail +204 ORIG >> $x
   rm -f ORIG
 done
 

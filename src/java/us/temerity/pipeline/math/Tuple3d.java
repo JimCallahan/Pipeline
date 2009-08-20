@@ -28,7 +28,7 @@ class Tuple3d
   {
     super(sSize);
   }
-
+  
   /**
    * Construct with all components set to a constant value. 
    */ 
@@ -40,7 +40,7 @@ class Tuple3d
   {
     super(sSize, v);
   }
-
+  
   /**
    * Construct from individual components.
    */ 

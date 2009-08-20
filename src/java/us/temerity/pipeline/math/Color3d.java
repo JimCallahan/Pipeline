@@ -300,7 +300,7 @@ class Color3d
     /* has saturation... */ 
     else {
       double hue  = hsv.x() / 60.0;
-      int region = (int) Math.floor(hue);
+      int region = (int) Math.floor((double) hue);
       double frac = hue - ((double) region);
 
       double p = hsv.z() * (1.0 - hsv.y());

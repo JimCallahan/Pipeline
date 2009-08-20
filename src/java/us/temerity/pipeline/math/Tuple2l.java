@@ -40,7 +40,7 @@ class Tuple2l
   {
     super(sSize, v);
   }
-
+  
   /**
    * Construct from individual components.
    */ 

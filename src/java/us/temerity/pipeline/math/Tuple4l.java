@@ -28,7 +28,7 @@ class Tuple4l
   {
     super(sSize);
   }
-  
+
   /**
    * Construct with all components set to a constant value. 
    */ 
