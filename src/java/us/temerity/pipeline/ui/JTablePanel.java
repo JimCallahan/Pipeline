@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.20 2009/08/19 23:42:47 jim Exp $
+// $Id: JTablePanel.java,v 1.21 2009/08/21 20:13:48 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -25,7 +25,7 @@ import javax.swing.plaf.*;
 public 
 class JTablePanel 
   extends JPanel 
-  implements MouseListener, TableModelListener, ChangeListener
+  implements MouseListener, ChangeListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -70,10 +70,7 @@ class JTablePanel
   {
     /* initialize fields */ 
     {
-      pFirstUpdate = true;
-
       pTableModel = model;
-      pTableModel.addTableModelListener(this);
     }
 
     /* create panel components */ 
@@ -98,6 +95,7 @@ class JTablePanel
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
           
           pHeaderViewport = new JViewport();
+          //pHeaderViewport.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
           panel.add(pHeaderViewport); 
 
           panel.setMinimumSize(new Dimension(29, 29));
@@ -173,9 +171,9 @@ class JTablePanel
    * Notify the table that the structure of the table model has changed.
    */ 
   public void 
-  tableStructureChanged() 
+  tableStructureChanged() // IS THIS METHOD NEEDED?
   {
-    pTableModel.fireTableStructureChanged();
+    pTableModel.fireTableStructureChanged();  
   }
 
 
@@ -266,47 +264,6 @@ class JTablePanel
   mouseReleased(MouseEvent e) {}
 
 
-
-
-  /*-- TABLE MODEL LISTENER METHODS --------------------------------------------------------*/
-
-  /**
-   * This fine grain notification tells listeners the exact range of cells, rows, or columns 
-   * that changed.
-   */ 
-  public void 
-  tableChanged
-  (
-   TableModelEvent e
-  )
-  {    
-    /* HEADER_ROW means that the whole model changed */ 
-    if(!pFirstUpdate && (e.getFirstRow() != TableModelEvent.HEADER_ROW))
-      return;
-    pFirstUpdate = false;
- 
-    TableColumnModel cmodel = pTable.getColumnModel();
-    int col;
-    for(col=0; col<pTableModel.getColumnCount(); col++) {
-      TableColumn tcol = cmodel.getColumn(col);
-      tcol.setHeaderRenderer(new JHeaderTableCellRenderer(pTableModel, col, JLabel.CENTER));
-      tcol.setCellRenderer(pTableModel.getRenderer(col));
-   
-      TableCellEditor editor = pTableModel.getEditor(col);
-      if(editor != null) 
-        tcol.setCellEditor(editor);
-   
-      Vector3i wrange = pTableModel.getColumnWidthRange(col); 
-      tcol.setMinWidth(wrange.x()); 
-      tcol.setPreferredWidth(wrange.y());
-      tcol.setMaxWidth(wrange.z()); 
-    }
-
-    revalidate(); 
-    repaint(); // IS THIS NEEDED?
-  }
-
-
   /*-- CHANGE LISTENER METHODS -------------------------------------------------------------*/
 
   /**
@@ -368,6 +325,7 @@ class JTablePanel
   private 
   class JFancyTable
     extends JTable
+    implements TableColumnModelListener
   {
     /*--------------------------------------------------------------------------------------*/
     /*   C O N S T R U C T O R                                                              */
@@ -413,6 +371,7 @@ class JTablePanel
       
       {
         TableColumnModel cmodel = getColumnModel();
+        cmodel.addColumnModelListener(this); 
 	
         int col;
         for(col=0; col<model.getColumnCount(); col++) {
@@ -461,6 +420,63 @@ class JTablePanel
       pHeaderViewport.setView(getTableHeader()); 
     }
 
+    /**
+     * This fine grain notification tells listeners the exact range of cells, rows, or 
+     * columns that changed.
+     */ 
+    public void 
+    tableChanged
+    (
+     TableModelEvent e
+    )
+    {    
+      super.tableChanged(e); 
+
+      /* HEADER_ROW means that the whole model changed */ 
+      if((e == null) || (e.getFirstRow() == TableModelEvent.HEADER_ROW)) {
+        TableColumnModel cmodel = getColumnModel();
+        AbstractSortableTableModel model = (AbstractSortableTableModel) getModel();
+        int col;
+        for(col=0; col<model.getColumnCount(); col++) {
+          TableColumn tcol = cmodel.getColumn(col);
+          
+          JHeaderTableCellRenderer hrender = 
+            new JHeaderTableCellRenderer(model, col, JLabel.CENTER);
+          tcol.setHeaderRenderer(hrender);
+ 
+          tcol.setCellRenderer(model.getRenderer(col));
+          
+          TableCellEditor editor = model.getEditor(col);
+          if(editor != null) 
+            tcol.setCellEditor(editor);
+          
+          Vector3i wrange = model.getColumnWidthRange(col); 
+          tcol.setMinWidth(wrange.x()); 
+          tcol.setPreferredWidth(wrange.y());
+          tcol.setMaxWidth(wrange.z()); 
+        }
+
+        resizeAndRepaint();
+      }
+    }
+
+    /**
+     * Tells listeners that a column was moved due to a margin change.
+     */ 
+//     @Override
+//     public void 
+//     columnMarginChanged
+//     (
+//      ChangeEvent e
+//     )
+//     {
+//       super.columnMarginChanged(e);
+
+//       if(pHeaderViewport != null) 
+//         pHeaderViewport.setView(getTableHeader()); 
+//     }
+      
+          
 
     /*--------------------------------------------------------------------------------------*/
     /*   S T A T I C   I N T E R N A L S                                                    */
@@ -495,11 +511,6 @@ class JTablePanel
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether this the first update of the table model.
-   */ 
-  private boolean  pFirstUpdate; 
 
   /**
    * The table model.
