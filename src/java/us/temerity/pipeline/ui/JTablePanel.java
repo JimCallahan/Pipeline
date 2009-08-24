@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.21 2009/08/21 20:13:48 jim Exp $
+// $Id: JTablePanel.java,v 1.22 2009/08/24 21:41:30 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -95,7 +95,6 @@ class JTablePanel
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
           
           pHeaderViewport = new JViewport();
-          //pHeaderViewport.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
           panel.add(pHeaderViewport); 
 
           panel.setMinimumSize(new Dimension(29, 29));
@@ -365,7 +364,7 @@ class JTablePanel
         header.addMouseListener(parent);
         
         header.setMinimumSize(new Dimension(total.x(), 23)); 
-        header.setPreferredSize(new Dimension(total.y(), 23)); 
+        //header.setPreferredSize(new Dimension(total.y(), 23)); 
         header.setMaximumSize(new Dimension(total.z(), 23)); 
       }
       
@@ -459,22 +458,6 @@ class JTablePanel
         resizeAndRepaint();
       }
     }
-
-    /**
-     * Tells listeners that a column was moved due to a margin change.
-     */ 
-//     @Override
-//     public void 
-//     columnMarginChanged
-//     (
-//      ChangeEvent e
-//     )
-//     {
-//       super.columnMarginChanged(e);
-
-//       if(pHeaderViewport != null) 
-//         pHeaderViewport.setView(getTableHeader()); 
-//     }
       
           
 
