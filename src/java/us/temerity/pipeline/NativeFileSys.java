@@ -1,8 +1,9 @@
-// $Id: NativeFileSys.java,v 1.20 2009/07/18 02:17:20 jim Exp $
+// $Id: NativeFileSys.java,v 1.21 2009/08/25 01:49:14 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.io.*; 
+import java.security.*;
 import java.util.*; 
 import java.util.concurrent.atomic.*;
 
@@ -16,7 +17,26 @@ import java.util.concurrent.atomic.*;
 public
 class NativeFileSys
   extends Native
-{  
+{ 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N I T I A L I Z A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Initialize fields which must be determined at runtime.
+   */ 
+  static {
+    try {
+      sDigest = MessageDigest.getInstance("MD5");
+    }
+    catch (NoSuchAlgorithmException ex) {
+      throw new IllegalArgumentException
+	("Unknown digest algorithm (MD5)!");
+    }
+  }
+
+    
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -385,14 +405,70 @@ class NativeFileSys
   {
     switch(PackageInfo.sOsType) {
     case Windows:
-      throw new IOException
-	("Not supported on Windows systems!");
-    }
+      return md5sumJava(path); 
 
-    loadLibrary();
-    return md5sumNative(path.toOsString());
+    default:
+      loadLibrary();
+      return md5sumNative(path.toOsString());
+    }
   }
 
+  /**
+   * Not native version which is easier than wrestling with the damn Microsoft API!
+   * 
+   * @param path 
+   *   The path to the file to digest. 
+   *
+   * @return
+   *   The checksum bytes.
+   * 
+   * @throws IOException 
+   *   If the given path is illegal or some other I/O problem was encountered.
+   */
+  private static byte[]
+  md5sumJava
+  (
+   Path path
+  ) 
+    throws IOException
+  {
+    byte checksum[] = null;
+    try {
+      FileInputStream in = new FileInputStream(path.toFile());
+      try {
+	MessageDigest digest = (MessageDigest) sDigest.clone();
+
+        byte buf[] = new byte[65536];
+	while(true) {
+	  int num = in.read(buf);
+	  if(num == -1) 
+	    break;
+	  digest.update(buf, 0, num);
+	}
+
+	return digest.digest();
+      }
+      catch(IOException ex) {
+	throw new IOException
+	  ("Unable to read the source file (" + path + ")!");
+      }
+      catch(CloneNotSupportedException ex) {
+	throw new IOException
+	  ("Unable to clone the MessageDigest!");
+      }
+      finally {
+	in.close();
+      }
+    }
+    catch(FileNotFoundException ex) {
+      throw new IOException
+	("The source file (" + path + ") did not exist!");
+    }
+    catch(SecurityException ex) {
+      throw new IOException
+	("No permission to read the source file (" + path + ")!");
+    }   
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -601,4 +677,17 @@ class NativeFileSys
    String path
   ) 
     throws IOException;
+
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The message digest algorithm. 
+   */ 
+  private static final MessageDigest sDigest;
+  
 }
