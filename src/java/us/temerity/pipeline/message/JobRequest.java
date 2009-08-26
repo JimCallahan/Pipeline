@@ -1,4 +1,4 @@
-// $Id: JobRequest.java,v 1.8 2007/02/07 21:15:14 jim Exp $
+// $Id: JobRequest.java,v 1.9 2009/08/26 22:32:07 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -57,17 +57,17 @@ enum JobRequest
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * An instance {@link JobStartReq JobStartReq} is next.
+   * An instance {@link JobStartReq} is next.
    */ 
   Start, 
 
   /**
-   * An instance {@link JobKillReq JobKillReq} is next.
+   * An instance {@link JobKillReq} is next.
    */ 
   Kill, 
 
   /**
-   * An instance {@link JobWaitReq JobWaitReq} is next.
+   * An instance {@link JobWaitReq} is next.
    */ 
   Wait, 
 
@@ -75,12 +75,12 @@ enum JobRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance {@link JobCleanupResourcesReq JobCleanupResourcesReq} is next.
+   * An instance {@link JobCleanupResourcesReq} is next.
    */  
   CleanupResources, 
 
   /**
-   * An instance {@link JobCleanupPreemptedResourcesReq JobCleanupPreemptedResourcesReq} 
+   * An instance {@link JobCleanupPreemptedResourcesReq} 
    * is next.
    */  
   CleanupPreemptedResources, 
@@ -89,7 +89,7 @@ enum JobRequest
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * An instance {@link JobGetExecDetailsReq JobGetExecDetailsReq} is next.
+   * An instance {@link JobGetExecDetailsReq} is next.
    */ 
   GetExecDetails, 
   
@@ -97,33 +97,33 @@ enum JobRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance {@link JobGetNumStdOutLinesReq JobGetNumStdOutLinesReq} is next.
+   * An instance {@link JobGetNumStdOutLinesReq} is next.
    */ 
   GetNumStdOutLines, 
 
   /**
-   * An instance {@link JobGetStdOutLinesReq JobGetStdOutLinesReq} is next.
+   * An instance {@link JobGetStdOutLinesReq} is next.
    */ 
   GetStdOutLines, 
 
   /**
-   * An instance {@link JobCloseStdOutReq JobCloseStdOutReq} is next.
+   * An instance {@link JobCloseStdOutReq} is next.
    */ 
   CloseStdOut, 
 
 
   /**
-   * An instance {@link JobGetNumStdOutLinesReq JobGetNumStdOutLinesReq} is next.
+   * An instance {@link JobGetNumStdOutLinesReq} is next.
    */ 
   GetNumStdErrLines, 
 
   /**
-   * An instance {@link JobGetStdErrLinesReq JobGetStdErrLinesReq} is next.
+   * An instance {@link JobGetStdErrLinesReq} is next.
    */ 
   GetStdErrLines, 
 
   /**
-   * An instance {@link JobCloseStdErrReq JobCloseStdErrReq} is next.
+   * An instance {@link JobCloseStdErrReq} is next.
    */ 
   CloseStdErr, 
 
