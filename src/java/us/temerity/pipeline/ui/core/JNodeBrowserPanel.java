@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.24 2009/06/02 20:11:35 jlee Exp $
+// $Id: JNodeBrowserPanel.java,v 1.25 2009/08/26 02:50:44 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -66,14 +66,12 @@ class JNodeBrowserPanel
     {
       pSelected = new TreeSet<String>();
 
-      pFilter = new TreeMap<NodeTreeComp.State, Boolean>();
+      pFilter = new TreeMap<NodeTreeComp.State,Boolean>();
       pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInSome, true);
       pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInSome,   true);
       pFilter.put(NodeTreeComp.State.WorkingNoneCheckedInSome,    true);
       pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, true);
       pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInNone,   true);
-
-      pCollapsedTreePath = new TreeSet<String>();
     }
 
     /* panel popup menu */ 
@@ -443,16 +441,13 @@ class JNodeBrowserPanel
         MasterMgrClient client = master.acquireMasterMgrClient();
 	try { 
 	  TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
-	  for(String path : expanded)
-	    paths.put(path, (deep != null) && path.equals(deep));
-	  for(String path : pSelected) {
-	    Path p = new Path(path);
-	    String parent = p.getParent();
+	  {
+	    for(String path : expanded)
+	      paths.put(path, (deep != null) && path.equals(deep));
 
-	    if(expandSelected || 
-	       UserPrefs.getInstance().getExpandSelected() || 
-	       !pCollapsedTreePath.contains(parent))
-	      paths.put(path, false);
+	    for(String path : pSelected)
+	      if(expandSelected || UserPrefs.getInstance().getExpandSelected())
+		paths.put(path, false);
 	  }
 	  
 	  comp = client.updatePaths(pAuthor, pView, paths); 
@@ -670,8 +665,6 @@ class JNodeBrowserPanel
     {
       TreePath tpath = e.getPath();
       String   tname = treePathToNodeName(tpath);
-
-      pCollapsedTreePath.add(tname);
     }
   }
 
@@ -687,8 +680,6 @@ class JNodeBrowserPanel
     {
       TreePath tpath = e.getPath();
       String   tname = treePathToNodeName(tpath);
-
-      pCollapsedTreePath.remove(tname);
     }
 
     updateNodeTree();
@@ -1157,12 +1148,5 @@ class JNodeBrowserPanel
    * The editor dialog for node filters.
    */ 
   private JNodeBrowserFilterDialog  pFilterDialog; 
-
-
-  /**
-   * The set of TreePath that are expanded.
-   */
-  private TreeSet<String>  pCollapsedTreePath;
-
 
 }
