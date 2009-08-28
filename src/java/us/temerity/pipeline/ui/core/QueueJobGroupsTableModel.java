@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.11 2009/08/19 23:42:47 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.12 2009/08/28 02:04:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -104,6 +104,8 @@ class QueueJobGroupsTableModel
 
     pQueueJobGroups = new ArrayList<QueueJobGroup>();
     pJobStateDist   = new TreeMap<Long,double[]>();
+
+    pSortAscending = false;
   }
 
   
