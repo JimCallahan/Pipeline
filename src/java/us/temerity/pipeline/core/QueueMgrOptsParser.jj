@@ -206,6 +206,7 @@ TOKEN :
 | <LOG_NET: 	     "net">    
 | <LOG_PLG: 	     "plg">      
 | <LOG_DSP: 	     "dsp">        
+| <LOG_SEL: 	     "sel">        
 | <LOG_JOB: 	     "job">        
 | <LOG_COL: 	     "col">        
 | <LOG_SCH: 	     "sch">   
@@ -478,8 +479,8 @@ LogMgr.Kind LogKind() :
 }
 {
   (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=GluKind() | 
-   g=DspKind() | g=JobKind() | g=ColKind() | g=SchKind() | g=SubKind() | 
-   g=ExtKind() | g=MemKind() | g=TimKind())
+   g=DspKind() | g=JobKind() | g=SelKind() | g=ColKind() | g=SchKind() | 
+   g=SubKind() | g=ExtKind() | g=MemKind() | g=TimKind())
   {
     return g;
   }
@@ -554,6 +555,15 @@ LogMgr.Kind JobKind() :
   <LOG_JOB>
   {
     return LogMgr.Kind.Job;
+  }
+}
+
+LogMgr.Kind SelKind() : 
+{}
+{
+  (<LOG_SEL>)
+  {
+    return LogMgr.Kind.Sel;
   }
 }
 

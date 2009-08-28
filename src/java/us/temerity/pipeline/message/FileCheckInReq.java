@@ -1,4 +1,4 @@
-// $Id: FileCheckInReq.java,v 1.7 2009/07/11 10:54:21 jim Exp $
+// $Id: FileCheckInReq.java,v 1.8 2009/08/28 02:10:47 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -60,6 +60,12 @@ class FileCheckInReq
    * @param isNovel
    *   Whether each file associated with the version contains new data not present in the
    *   previous checked-in version.
+   * 
+   * @param ctime
+   *   The last legitimate change time (ctime) of the file.
+   * 
+   * @param workingCheckSums
+   *   Current cache of checksums for files associated with the working version.
    */
   public
   FileCheckInReq
@@ -69,7 +75,9 @@ class FileCheckInReq
    VersionID latest, 
    boolean hasEnabledAction, 
    TreeSet<FileSeq> fseqs, 
-   TreeMap<FileSeq,boolean[]> isNovel
+   TreeMap<FileSeq,boolean[]> isNovel, 
+   long ctime, 
+   CheckSumCache workingCheckSums
   )
   { 
     if(id == null) 
@@ -90,6 +98,12 @@ class FileCheckInReq
     if(isNovel == null) 
       throw new IllegalArgumentException("The working file states cannot (null)!");
     pIsNovel = isNovel;
+
+    pChangeStamp = ctime;
+
+    if(workingCheckSums == null) 
+      throw new IllegalArgumentException("The working checksum cache cannot be (null)!");
+    pWorkingCheckSums = workingCheckSums; 
   }
 
 
@@ -152,6 +166,24 @@ class FileCheckInReq
     return pIsNovel;
   }
   
+  /**
+   * Gets the last legitimate change time (ctime) of the file.
+   */
+  public long
+  getChangeStamp() 
+  {
+    return pChangeStamp;
+  }
+  
+  /**
+   * Current cache of checksums for files associated with the working version.
+   */ 
+  public CheckSumCache
+  getWorkingCheckSums()
+  {
+    return pWorkingCheckSums; 
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -195,6 +227,16 @@ class FileCheckInReq
    * previous checked-in version.
    */
   private TreeMap<FileSeq,boolean[]>  pIsNovel;
+
+  /**
+   * The last legitimate change time (ctime) of the file.
+   */ 
+  private long  pChangeStamp; 
+
+  /**
+   * Current cache of checksums for files associated with the working version.
+   */ 
+  private CheckSumCache pWorkingCheckSums; 
 
 }
   

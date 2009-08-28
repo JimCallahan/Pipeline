@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.67 2009/07/06 10:25:26 jim Exp $
+// $Id: QueueMgrServer.java,v 1.68 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -697,6 +697,15 @@ class QueueMgrServer
 
 
               /*-- JOBS --------------------------------------------------------------------*/
+              case GetJobStatesAndCheckSums:
+                {
+                  QueueGetJobStatesAndCheckSumsReq req = 
+                    (QueueGetJobStatesAndCheckSumsReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.getJobStatesAndCheckSums(req));
+                  objOut.flush(); 
+                }
+                break; 
+
               case GetJobStates:
                 {
                   QueueGetJobStatesReq req = (QueueGetJobStatesReq) objIn.readObject();
@@ -912,7 +921,8 @@ class QueueMgrServer
                 {
                   QueueShutdownOptionsReq req = (QueueShutdownOptionsReq) objIn.readObject();
                   pQueueMgr.setShutdownOptions(req.shutdownJobMgrs());
-                }
+                } 
+                // fallthrough to Shutdown case is intentional here!
 
               case Shutdown:
                 LogMgr.getInstance().log

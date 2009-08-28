@@ -1,4 +1,4 @@
-// $Id: FileStateReq.java,v 1.8 2008/05/16 01:11:41 jim Exp $
+// $Id: FileStateReq.java,v 1.9 2009/08/28 02:10:47 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,6 +36,9 @@ class FileStateReq
    *   The relationship between the revision numbers of working and checked-in versions 
    *   of the node.
    * 
+   * @param jobStates 
+   *   The jobs states for each primary/secondary file (if any).
+   * 
    * @param isFrozen
    *   Whether the files associated with the working version are symlinks to the 
    *   checked-in files instead of copies.
@@ -52,17 +55,32 @@ class FileStateReq
    * 
    * @param fseqs 
    *   The primary and secondary file sequences associated with the working version.
+   * 
+   * @param baseCheckSums
+   *   Read-only checksums for all files associated with the base checked-in version
+   *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param latestCheckSums
+   *   Read-only checksums for all files associated with the latest checked-in version
+   *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param workingCheckSums
+   *   Current cache of checksums for files associated with the working version.
    */
   public
   FileStateReq
   (
    NodeID id, 
    VersionState vstate, 
+   JobState jobStates[], 
    boolean isFrozen, 
    VersionID working, 
    VersionID latest, 
    long ctime, 
-   TreeSet<FileSeq> fseqs
+   TreeSet<FileSeq> fseqs,
+   SortedMap<String,CheckSum> baseCheckSums, 
+   SortedMap<String,CheckSum> latestCheckSums, 
+   CheckSumCache workingCheckSums
   )
   { 
     if(id == null) 
@@ -104,6 +122,10 @@ class FileStateReq
 	   "VersionState is (" + vstate.name() + ")!");
     }
 
+    if(jobStates == null) 
+      throw new IllegalArgumentException("The job states cannot be (null)!");
+    pJobStates = jobStates;
+
     pWorkingVersionID = working;
     pLatestVersionID  = latest;
 
@@ -112,6 +134,13 @@ class FileStateReq
     if(fseqs == null) 
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
     pFileSeqs = fseqs;
+
+    pBaseCheckSums   = baseCheckSums;
+    pLatestCheckSums = latestCheckSums;
+
+    if(workingCheckSums == null) 
+      throw new IllegalArgumentException("The working checksum cache cannot be (null)!");
+    pWorkingCheckSums = workingCheckSums; 
   }
 
 
@@ -136,6 +165,15 @@ class FileStateReq
   getVersionState() 
   {
     return pVersionState;
+  }
+  
+  /**
+   * Gets the jobs states for each primary/secondary file (if any).
+   */
+  public JobState[]
+  getJobStates() 
+  {
+    return pJobStates;
   }
   
   /**
@@ -185,6 +223,34 @@ class FileStateReq
     return pFileSeqs;
   }
 
+  /**
+   * Read-only checksums for all files associated with the base checked-in version
+   * or <CODE>null</CODE> if no base version exists.
+   */
+  public SortedMap<String,CheckSum> 
+  getBaseCheckSums()
+  {
+    return pBaseCheckSums; 
+  }
+
+  /**
+   * Read-only checksums for all files associated with the latest checked-in version
+   * or <CODE>null</CODE> if no base version exists.
+   */ 
+  public SortedMap<String,CheckSum> 
+  getLatestCheckSums()
+  {
+    return pLatestCheckSums; 
+  }
+
+  /**
+   * Current cache of checksums for files associated with the working version.
+   */ 
+  public CheckSumCache
+  getWorkingCheckSums()
+  {
+    return pWorkingCheckSums; 
+  }
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -209,6 +275,11 @@ class FileStateReq
    * of the node.
    */
   private VersionState  pVersionState;
+
+  /**
+   * The jobs states for each primary/secondary file (if any).
+   */
+  private JobState  pJobStates[];
 
   /**
    * Whether the files associated with the working version are symlinks to the 
@@ -238,5 +309,23 @@ class FileStateReq
    * The primary and secondary file sequences associated with the working version. 
    */
   private TreeSet<FileSeq>  pFileSeqs;
+
+  /**
+   * Read-only checksums for all files associated with the base checked-in version
+   * or <CODE>null</CODE> if no base version exists.
+   */
+  private SortedMap<String,CheckSum>  pBaseCheckSums; 
+
+  /**
+   * Read-only checksums for all files associated with the latest checked-in version
+   * or <CODE>null</CODE> if no base version exists.
+   */ 
+  private SortedMap<String,CheckSum>  pLatestCheckSums; 
+
+  /**
+   * Current cache of checksums for files associated with the working version.
+   */ 
+  private CheckSumCache pWorkingCheckSums; 
+
 }
   

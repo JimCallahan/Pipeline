@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.10 2009/07/01 16:43:14 jim Exp $
+// $Id: QueueJobResults.java,v 1.11 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,7 +44,7 @@ class QueueJobResults
    int exitCode
   )
   {
-    this(exitCode, null, null, null, null, null, null); 
+    this(exitCode, null, null, null, null, null, null, null); 
   }
 
   /**
@@ -73,6 +73,9 @@ class QueueJobResults
    * @param pageFaults
    *   The number of major faults which occured for the process and its children which 
    *   have required loading a memory page from disk.
+   * 
+   * @param cache
+   *   The checksums for each of the target files or <CODE>null</CODE> if unknown.
    */ 
   public
   QueueJobResults
@@ -83,10 +86,10 @@ class QueueJobResults
    Long virtualSize, 
    Long residentSize, 
    Long swappedSize, 
-   Long pageFaults   
+   Long pageFaults, 
+   CheckSumCache cache 
   )
   {
-    pTimeStamp    = new Date(); 
     pExitCode     = exitCode;
     pUserTime     = userTime;
     pSystemTime   = systemTime;
@@ -94,6 +97,7 @@ class QueueJobResults
     pResidentSize = residentSize;
     pSwappedSize  = swappedSize;
     pPageFaults   = pageFaults;
+    pCache        = cache;
   }
 
 
@@ -102,18 +106,6 @@ class QueueJobResults
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * Get the time stamp of when the results where recorded.
-   */ 
-  public Date 
-  getTimeStamp() 
-  {
-    return pTimeStamp;
-  } 
-
-
-  /*----------------------------------------------------------------------------------------*/
- 
   /**
    * The exit code of the subprocess generated to execute the job's regeneration action.
    * 
@@ -205,6 +197,20 @@ class QueueJobResults
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the checksums for each of the target files or <CODE>null</CODE> if unknown.
+   */ 
+  public CheckSumCache
+  getCheckSumCache() 
+  {
+    if(pCache != null) 
+      return new CheckSumCache(pCache); 
+    return null;
+  } 
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -217,8 +223,6 @@ class QueueJobResults
   ) 
     throws GlueException
   {
-    encoder.encode("TimeStamp", pTimeStamp.getTime());
-
     if(pExitCode != null) 
       encoder.encode("ExitCode", pExitCode);
     
@@ -239,6 +243,9 @@ class QueueJobResults
 
     if(pSwappedSize != null) 
       encoder.encode("SwappedSize", pSwappedSize);
+
+    if(pCache != null) 
+      encoder.encode("Cache", pCache); 
   }
 
   public void 
@@ -248,14 +255,6 @@ class QueueJobResults
   ) 
     throws GlueException
   {
-    {
-      Long stamp = (Long) decoder.decode("TimeStamp"); 
-      if(stamp == null) 
-	throw new GlueException
-	  ("The \"TimeStamp\" was missing!");
-      pTimeStamp = new Date(stamp);
-    }
-
     {
       Integer code = (Integer) decoder.decode("ExitCode"); 
       if(code != null) 
@@ -297,6 +296,12 @@ class QueueJobResults
       if(size != null) 
 	pSwappedSize = size;
     }
+
+    {
+      CheckSumCache cache = (CheckSumCache) decoder.decode("Cache"); 
+      if(cache != null) 
+        pCache = cache; 
+    }
   }
   
 
@@ -312,11 +317,6 @@ class QueueJobResults
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The timestamp of when the results where recorded.
-   */ 
-  private Date  pTimeStamp;
 
   /**
    * The exit code of the subprocess generated to execute the job's regeneration action or
@@ -359,4 +359,13 @@ class QueueJobResults
    * or <CODE>null</CODE> if unknown.
    */
   private Long pSwappedSize;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The checksums for each of the target files or <CODE>null</CODE> if unknown.
+   */ 
+  private CheckSumCache pCache; 
+
 }

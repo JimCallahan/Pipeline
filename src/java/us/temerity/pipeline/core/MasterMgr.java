@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.285 2009/08/20 04:45:03 jlee Exp $
+// $Id: MasterMgr.java,v 1.286 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -251,7 +251,7 @@ class MasterMgr
    long nodeGCInterval, 
    long restoreCleanupInterval, 
    Path fileStatDir, 
-   Path checksumDir
+   Path checkSumDir
   )
     throws PipelineException 
   { 
@@ -295,7 +295,9 @@ class MasterMgr
 
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
-    pNodeDir = PackageInfo.sNodePath.toFile();
+    pNodeDir = PackageInfo.sNodePath.toFile();  // CHANGE THIS TO A Path!!!
+
+    pCheckSumPath = new AtomicReference<Path>(checkSumDir);
 
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
@@ -311,7 +313,7 @@ class MasterMgr
 
       /* initialize the internal file manager instance */ 
       if(pInternalFileMgr) {
-	pFileMgrDirectClient = new FileMgrDirectClient(fileStatDir, checksumDir);
+	pFileMgrDirectClient = new FileMgrDirectClient(fileStatDir, checkSumDir);
       }
       /* make a connection to the remote file manager */ 
       else {
@@ -319,7 +321,7 @@ class MasterMgr
 	
 	FileMgrNetClient fclient = (FileMgrNetClient) acquireFileMgrClient();
 	try {
-	  fclient.waitForConnection(5000);
+	  fclient.waitForConnection(15000);
 	}
 	finally {
 	  releaseFileMgrClient(fclient);
@@ -327,8 +329,17 @@ class MasterMgr
       }
       
       /* make a connection to the queue manager */ 
-      pQueueMgrClient = new QueueMgrControlClient();
-      pQueueMgrClient.waitForConnection(5000);
+      {
+        pQueueMgrClients = new Stack<QueueMgrControlClient>();
+
+        QueueMgrControlClient qclient = acquireQueueMgrClient();
+        try {
+          qclient.waitForConnection(15000);
+        }
+        finally {
+          releaseQueueMgrClient(qclient);
+        }
+      }
     }
 
     LogMgr.getInstance().logAndFlush
@@ -429,6 +440,9 @@ class MasterMgr
       pWorkingLocks   = new TreeMap<NodeID,ReentrantReadWriteLock>();
       pWorkingBundles = new TreeMap<String,TreeMap<NodeID,WorkingBundle>>();       
 
+      pCheckSumLocks   = new TreeMap<NodeID,ReentrantReadWriteLock>();
+      pCheckSumBundles = new DoubleMap<String,NodeID,CheckSumBundle>();
+
       pDownstreamLocks = new TreeMap<String,ReentrantReadWriteLock>();
       pDownstream      = new TreeMap<String,DownstreamLinks>();
 
@@ -490,14 +504,20 @@ class MasterMgr
   updateAdminPrivileges() 
     throws PipelineException
   {
-    pQueueMgrClient.updateAdminPrivileges(pAdminPrivileges);    
-
-    PluginMgrControlClient client = new PluginMgrControlClient();
+    QueueMgrControlClient qclient = acquireQueueMgrClient();
     try {
-      client.updateAdminPrivileges(pAdminPrivileges);
+      qclient.updateAdminPrivileges(pAdminPrivileges);    
     }
     finally {
-      client.disconnect();
+      releaseQueueMgrClient(qclient);
+    }
+
+    PluginMgrControlClient pclient = new PluginMgrControlClient();
+    try {
+      pclient.updateAdminPrivileges(pAdminPrivileges);
+    }
+    finally {
+      pclient.disconnect();
     }
   }
     
@@ -1167,16 +1187,13 @@ class MasterMgr
 
     File files[] = dir.listFiles(); 
 
-    {
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	if(files[wk].isDirectory()) 
-	  allFiles = false;
-	else if(files[wk].isFile()) 
-	  allDirs = false;
-	else
-	  throw new IllegalStateException(); 
-      }
+    for(File file : files) {
+      if(file.isDirectory()) 
+        allFiles = false;
+      else if(file.isFile()) 
+        allDirs = false;
+      else
+        throw new IllegalStateException(); 
     }
 
     if(allFiles) {
@@ -1185,7 +1202,7 @@ class MasterMgr
       TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
       for(VersionID vid : table.keySet()) {
 	NodeVersion vsn = table.get(vid).getVersion();
-
+      
 	for(LinkVersion link : vsn.getSources()) {
 	  DownstreamLinks dsl = pDownstream.get(link.getName());
 	  if(dsl == null) {
@@ -1200,9 +1217,8 @@ class MasterMgr
       }
     }
     else if(allDirs) {
-      int wk;
-      for(wk=0; wk<files.length; wk++) 
-	initCheckedInNodeDatabase(prefix, files[wk]);
+      for(File file : files) 
+	initCheckedInNodeDatabase(prefix, file);
     }
     else {
       throw new IllegalStateException(); 
@@ -1237,13 +1253,11 @@ class MasterMgr
   ) 
     throws PipelineException 
   {
-    File files[] = dir.listFiles(); 
-    int wk;
-    for(wk=0; wk<files.length; wk++) {
-      if(files[wk].isDirectory()) 
-	initWorkingNodeDatabase(author, view, prefix, files[wk]);
+    for(File file : dir.listFiles()) {
+      if(file.isDirectory()) 
+        initWorkingNodeDatabase(author, view, prefix, file);
       else {
-	String path = files[wk].getPath();
+	String path = file.getPath();
 	if(!path.endsWith(".backup")) {
           String name = path.substring(prefix.length());
 
@@ -1253,6 +1267,10 @@ class MasterMgr
 	    throw new PipelineException
 	      ("I/O ERROR:\n" + 
 	       "  Somehow the working version (" + nodeID + ") was missing!");
+
+          CheckSumCache cache = readCheckSumCache(nodeID); 
+          if(cache == null) 
+            upgradeDeprecatedCheckSumCache(nodeID, mod); 
 	  
 	  for(LinkMod link : mod.getSources()) {
 	    DownstreamLinks dsl = pDownstream.get(link.getName());
@@ -1269,6 +1287,7 @@ class MasterMgr
       }
     }
   }
+
 
 
 
@@ -1313,12 +1332,17 @@ class MasterMgr
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Closing Server Connections...");
 
-    /* close the connection to the file manager */ 
+    /* close the connection(s) to the file manager */ 
     if(!pInternalFileMgr && (pFileMgrNetClients != null)) {
+      boolean first = true;
       while(!pFileMgrNetClients.isEmpty()) {
 	FileMgrNetClient client = pFileMgrNetClients.pop();
 	try {
-	  client.shutdown();
+          if(first) 
+            client.shutdown();
+          else
+            client.disconnect();
+          first = false;
 	}
 	catch(PipelineException ex) {
 	  LogMgr.getInstance().log
@@ -1329,19 +1353,24 @@ class MasterMgr
       }
     }
 
-    /* close the connection to the queue manager */ 
-    if(pQueueMgrClient != null) {
-      try {
-	if(pShutdownJobMgrs.get()) 
-	  pQueueMgrClient.shutdown(true);
-	else 
-	  pQueueMgrClient.shutdown();
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	   ex.getMessage());
-	LogMgr.getInstance().flush();
+    /* close the connection(s) to the queue manager */ 
+    if(pQueueMgrClients != null) {
+      boolean first = true;
+      while(!pQueueMgrClients.isEmpty()) {
+	QueueMgrControlClient client = pQueueMgrClients.pop();
+	try {
+          if(first) 
+            client.shutdown(pShutdownJobMgrs.get());
+          else 
+            client.disconnect();
+          first = false;
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	     ex.getMessage());
+	  LogMgr.getInstance().flush();
+	}
       }
     }
     
@@ -1881,7 +1910,7 @@ class MasterMgr
       controls.setOverhead(pMinimumOverhead.get(), pMaximumOverhead.get()); 
       controls.setNodeGCInterval(pNodeGCInterval.get()); 
       controls.setRestoreCleanupInterval(pRestoreCleanupInterval.get()); 
-      
+
       return new MiscGetMasterControlsRsp(timer, controls);
     }
     catch(PipelineException ex) {
@@ -1947,6 +1976,14 @@ class MasterMgr
 	Long interval = controls.getRestoreCleanupInterval();
 	if(interval != null) 
 	  pRestoreCleanupInterval.set(interval);
+      }
+
+      {
+        Path path = controls.getCheckSumDir();
+        if(path == null) 
+          pCheckSumPath.set(PackageInfo.sProdPath);
+        else 
+          pCheckSumPath.set(path);
       }
 
       FileMgrClient fclient = acquireFileMgrClient();
@@ -8331,6 +8368,21 @@ class MasterMgr
       /* remove the sequence from the node tree */ 
       pNodeTree.removeSecondaryWorkingNodeTreePath(nodeID, fseq);
       
+      /* remove checksums for any obsolete files sequences */ 
+      timer.aquire();
+      ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+      clock.writeLock().lock();
+      try {
+        timer.resume();
+        
+        CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
+        cbundle.getCache().removeAllExcept(mod.getSequences()); 
+        writeCheckSumCache(cbundle.getCache()); 
+      }
+      finally {
+        clock.writeLock().unlock();
+      }  
+
       /* record event */ 
       pPendingEvents.add(new SeqsModifiedNodeEvent(nodeID));
 
@@ -8486,6 +8538,7 @@ class MasterMgr
 	  lock.readLock().unlock();
 	}
       }
+
 
       /* verifying that the new node name doesn't conflict with existing node and
          reserve the new name */ 
@@ -8671,7 +8724,7 @@ class MasterMgr
 	    }
 	    
 	    /* release the old named node */ 
-	    releaseHelper(id, false, false, timer);
+	    releaseHelper(id, false, false, false, timer);
 	  }
 	  
 	  /* rename the files */ 
@@ -8685,20 +8738,85 @@ class MasterMgr
 	    }
 	  }
 	  
-	  /* Now need to update the timestamps in the node mode if the node should be dubious
-	     or stale */
-	  if (updateTimeStamps) {
+	  /* now need to update the timestamps in the node mod if the node should 
+             be dubious or stale */
+	  if(updateTimeStamps) {
 	    nmod = getWorkingBundle(nid).getVersion();
 	    nmod.updateLastCTimeUpdate();
 	    nmod.initTimeStamps();
-	    
-	    /* write the new working version to disk */ 
+
+            /* write the new working version to disk */ 
             writeWorkingVersion(nid, nmod);
             
             /* update the bundle */ 
             bundle.setVersion(nmod);
-	  }
+          }
 	  
+          /* copy checksums from old to new nodes */ 
+          {
+            /* retrieve and remove old cache */ 
+            CheckSumCache ocache = null;
+            {
+              timer.aquire();
+              ReentrantReadWriteLock clock = getCheckSumLock(id);
+              clock.writeLock().lock();
+              try {
+                timer.resume();
+                
+                CheckSumBundle cbundle = getCheckSumBundle(id);   
+                ocache = cbundle.getCache(); 
+
+                timer.aquire();
+                synchronized(pCheckSumBundles) {
+                  timer.resume();
+                  pCheckSumBundles.remove(id.getName(), id); 
+                }
+
+                removeCheckSumCache(id);
+              }
+              finally {
+                clock.writeLock().unlock();
+              } 
+            }
+
+            /* create and save new cache */ 
+            {
+              ArrayList<String> ofnames = new ArrayList<String>();
+              for(FileSeq fseq : omod.getSecondarySequences()) {
+                for(Path path : fseq.getPaths())
+                  ofnames.add(path.toString());
+              }
+                
+              ArrayList<String> nfnames = new ArrayList<String>();
+              {
+                File path = new File(npat.getPrefix());
+                FilePattern pat =
+                  new FilePattern(path.getName(), npat.getPadding(), npat.getSuffix());
+                FileSeq nfseq = new FileSeq(pat, omod.getPrimarySequence().getFrameRange());
+                for(Path npath : nfseq.getPaths()) 
+                  nfnames.add(npath.toString()); 
+              }
+
+              for(Path path : omod.getPrimarySequence().getPaths()) {
+                ofnames.add(path.toString()); 
+                nfnames.add(path.toString()); 
+              }
+
+              timer.aquire();
+              ReentrantReadWriteLock clock = getCheckSumLock(nid);
+              clock.writeLock().lock();
+              try {
+                timer.resume();
+              
+                CheckSumBundle cbundle = getCheckSumBundle(nid);   
+                cbundle.setCache(new CheckSumCache(nid, nfnames, ofnames, ocache));  
+                writeCheckSumCache(cbundle.getCache()); 
+              }
+              finally {
+                clock.writeLock().unlock();
+              } 
+            }
+          }
 	}
 	finally {
 	  nlock.writeLock().unlock();
@@ -8804,7 +8922,8 @@ class MasterMgr
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
       
-      /* Removes the annotations. This is here because you want this to run after 
+      /**
+       * Removes the annotations. This is here because you want this to run after 
        * the post tasks have started in case it throws an error and aborts this
        * method.  If it does throw an error, it will be reported to the user as
        * an actual error, even though all that failed was the annotation removal. 
@@ -8856,6 +8975,7 @@ class MasterMgr
       pDatabaseLock.readLock().unlock();
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -8934,12 +9054,32 @@ class MasterMgr
 	}
       }
 
+      /* remove obsolete frames from checksum cache */ 
+      timer.aquire();
+      ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+      clock.writeLock().lock();
+      try {
+        timer.resume();
+        
+        CheckSumBundle cbundle = getCheckSumBundle(nodeID);   
+        cbundle.getCache().removeAllExcept(mod.getSequences());
+        writeCheckSumCache(cbundle.getCache()); 
+      }
+      finally {
+        clock.writeLock().unlock();
+      } 
+
       /* check for unfinished jobs associated with the obsolete files */ 
       if(!obsolete.isEmpty()) {
-	TreeSet<Long> jobIDs = 
-	  pQueueMgrClient.getUnfinishedJobsForNodeFiles(nodeID, obsolete);
-	if(!jobIDs.isEmpty()) 
-	  return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
+        QueueMgrControlClient qclient = acquireQueueMgrClient();
+        try {
+	  TreeSet<Long> jobIDs = qclient.getUnfinishedJobsForNodeFiles(nodeID, obsolete);
+          if(!jobIDs.isEmpty()) 
+            return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
+        }
+        finally {
+          releaseQueueMgrClient(qclient);
+        }
       }
       
       /* post-op tasks */ 
@@ -9802,7 +9942,9 @@ class MasterMgr
 	writeWorkingVersion(nodeID, mod);	
 	
 	/* create a working bundle for the new working version */ 
+        timer.aquire();
 	synchronized(pWorkingBundles) {
+          timer.resume();
 	  TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 	  if(table == null) {
 	    table = new TreeMap<NodeID,WorkingBundle>();
@@ -9817,8 +9959,8 @@ class MasterMgr
 	/* record event */ 
 	pPendingEvents.add(new RegisteredNodeEvent(nodeID));
 	
-	/* Touch the files if the node mod has no action */
-	if (mod.getAction() == null) {
+	/* touch the files if the node mod has no action */
+	if(mod.getAction() == null) {
 	  FileMgrClient fclient =  acquireFileMgrClient();
 	  try {
 	    fclient.touchAll(nodeID, mod);
@@ -9827,6 +9969,22 @@ class MasterMgr
 	    releaseFileMgrClient(fclient);
 	  }
 	}
+
+        /* create an checksum cache for the new working version */ 
+        {
+          timer.aquire();
+          ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+          clock.writeLock().lock();
+          try {
+            timer.resume();
+
+            CheckSumBundle cbundle = getCheckSumBundle(nodeID);     
+            writeCheckSumCache(cbundle.getCache()); 
+          }
+          finally {
+            clock.writeLock().unlock();
+          }  
+        }
 
 	/* post-op tasks */ 
 	startExtensionTasks(timer, factory);
@@ -9942,7 +10100,7 @@ class MasterMgr
 	NodeLinks links = all.get(name);
 
 	try {
-	  releaseHelper(new NodeID(author, view, name), removeFiles, true, timer);
+	  releaseHelper(new NodeID(author, view, name), removeFiles, true, true, timer);
 	}
 	catch(PipelineException ex) {
 	  failures.add(ex.getMessage());
@@ -10020,22 +10178,29 @@ class MasterMgr
    *   The unique working version identifier.
    * 
    * @param removeFiles
-   *   Should the files associated with the working version be deleted?
+   *   Whether the files associated with the working version be deleted.
    * 
    * @param removeNodeTreePath
-   *   Should the node tree path entries for the working version be removed? 
+   *   Whether the node tree path entries for the working version be removed.
+   * 
+   * @param removeCheckSumCache
+   *   Whether to delete any existing checksum cache for the released node. 
+   *
+   * @param timer
+   *   The task timer. 
    */
   private void 
   releaseHelper
   (
-   NodeID id, 
+   NodeID nodeID, 
    boolean removeFiles, 
    boolean removeNodeTreePath,
+   boolean removeCheckSumCache, 
    TaskTimer timer
   )
     throws PipelineException 
   {
-    String name = id.getName();
+    String name = nodeID.getName();
 
     /* unlink the downstream working versions from the to be released working version */ 
     {
@@ -10046,10 +10211,10 @@ class MasterMgr
 	timer.resume();
 	  
 	DownstreamLinks dsl = getDownstreamLinks(name); 
-        TreeSet<String> targets = dsl.getWorking(id);
+        TreeSet<String> targets = dsl.getWorking(nodeID);
         if(targets != null) {
           for(String target : targets) {
-            NodeID targetID = new NodeID(id, target);
+            NodeID targetID = new NodeID(nodeID, target);
             
             timer.suspend();
             Object obj = unlink(new NodeUnlinkReq(targetID, name));
@@ -10068,32 +10233,34 @@ class MasterMgr
     }
       
     timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(id);
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
     lock.writeLock().lock();
     try {
       timer.resume();
 
-      WorkingBundle bundle = getWorkingBundle(id);
+      WorkingBundle bundle = getWorkingBundle(nodeID);
       if(bundle == null) 
 	throw new PipelineException
-	  ("No working version (" + id + ") exists to be released.");
+	  ("No working version (" + nodeID + ") exists to be released.");
       NodeMod mod = bundle.getVersion();
 	
       /* kill any active jobs associated with the node */
-      killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
+      killActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence());
 	
       /* remove the bundle */ 
+      timer.aquire();
       synchronized(pWorkingBundles) {
+        timer.resume();
 	TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	table.remove(id);
+	table.remove(nodeID);
       }
       
       /* keep track of the change to the node version cache */ 
-      decrementWorkingCounter(id);
+      decrementWorkingCounter(nodeID);
 
       /* remove the working version node file(s) */ 
       {
-	File file   = new File(pNodeDir, id.getWorkingPath().toString());
+	File file   = new File(pNodeDir, nodeID.getWorkingPath().toString());
 	File backup = new File(file + ".backup");
 	  
 	if(file.isFile()) {
@@ -10112,11 +10279,11 @@ class MasterMgr
 	      ("Unable to remove the backup working version file (" + backup + ")!");
 	}
 
-	File root = new File(pNodeDir, 
-			     "working/" + id.getAuthor() + "/" + id.getView());
+	File root = 
+          new File(pNodeDir, "working/" + nodeID.getAuthor() + "/" + nodeID.getView());
 
-	deleteEmptyParentDirs(root, new File(pNodeDir, 
-					     id.getWorkingParent().toString()));
+	deleteEmptyParentDirs(root, 
+                              new File(pNodeDir, nodeID.getWorkingParent().toString()));
       }
       
       /* update the downstream links of this node */ 
@@ -10128,7 +10295,7 @@ class MasterMgr
 	  timer.resume();
 	    
 	  DownstreamLinks links = getDownstreamLinks(name); 
-	  links.removeAllWorking(id);
+	  links.removeAllWorking(nodeID);
 	}  
 	finally {
 	  downstreamLock.writeLock().unlock();
@@ -10145,7 +10312,7 @@ class MasterMgr
 	try {
 	  timer.resume();
 
-	  NodeID sourceID = new NodeID(id, source);
+	  NodeID sourceID = new NodeID(nodeID, source);
 	  DownstreamLinks links = getDownstreamLinks(source); 
 	  links.removeWorking(sourceID, name);
 	}  
@@ -10156,21 +10323,39 @@ class MasterMgr
 	
       /* remove the node tree path */ 
       if(removeNodeTreePath) 
-	pNodeTree.removeWorkingNodeTreePath(id, mod.getSequences());
+	pNodeTree.removeWorkingNodeTreePath(nodeID, mod.getSequences());
 
       /* remove the associated files */ 
       if(removeFiles) {
 	FileMgrClient fclient = acquireFileMgrClient();
 	try {
-	  fclient.removeAll(id, mod.getSequences());
+	  fclient.removeAll(nodeID, mod.getSequences());
 	}
 	finally {
 	  releaseFileMgrClient(fclient);
 	}	
       }
+      
+      /* remove the checksum cache for the released working version */ 
+      if(removeCheckSumCache) {
+        timer.aquire();
+        ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+        clock.writeLock().lock();
+        try {
+          synchronized(pCheckSumBundles) {
+            timer.resume();
+            pCheckSumBundles.remove(name, nodeID); 
+          }
+
+          removeCheckSumCache(nodeID); 
+        }
+        finally {
+          clock.writeLock().unlock();
+        }  
+      }
 
       /* record event */ 
-      pPendingEvents.add(new ReleasedNodeEvent(id));
+      pPendingEvents.add(new ReleasedNodeEvent(nodeID));
     }
     finally {
       lock.writeLock().unlock();
@@ -10273,13 +10458,15 @@ class MasterMgr
 	}
 
 	for(NodeID nodeID : dead) {
-	  releaseHelper(nodeID, removeFiles, true, timer);
+	  releaseHelper(nodeID, removeFiles, true, true, timer);
 	  pWorkingLocks.remove(nodeID);
 	}
 	
 	if(!pWorkingBundles.get(name).isEmpty())
 	  throw new IllegalStateException(); 
 	pWorkingBundles.remove(name);
+
+	pCheckSumBundles.remove(name);
       }
 	
       /* delete the checked-in versions */ 
@@ -10516,12 +10703,16 @@ class MasterMgr
  	}
 
  	if(!fseqs.isEmpty()) {
- 	  TreeMap<String,TreeSet<Long>> jobIDs = 
- 	    pQueueMgrClient.getUnfinishedJobsForNodes
-              (nodeID.getAuthor(), nodeID.getView(), fseqs);
-        
- 	  if(!jobIDs.isEmpty()) 
- 	    return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+          QueueMgrControlClient qclient = acquireQueueMgrClient();
+          try {
+            TreeMap<String,TreeSet<Long>> jobIDs = 
+              qclient.getUnfinishedJobsForNodes(nodeID.getAuthor(), nodeID.getView(), fseqs);
+            if(!jobIDs.isEmpty()) 
+              return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+          }
+          finally {
+            releaseQueueMgrClient(qclient);
+          }
  	}
       }
 
@@ -11097,6 +11288,7 @@ class MasterMgr
       /* get the current timestamp */ 
       long timestamp = TimeStamps.now(); 
 
+      boolean filesCreated = false;
       {
 	FileMgrClient fclient = acquireFileMgrClient();
 	try {
@@ -11112,6 +11304,7 @@ class MasterMgr
 	  /* otherwise, check-out the files */
 	  else {
 	    fclient.checkOut(nodeID, vsn, isFrozen || vsn.isActionEnabled());
+            filesCreated = true;
 	  }
 	}
 	finally {
@@ -11129,7 +11322,9 @@ class MasterMgr
 	addWorkingNodeTreePath(nodeID, nwork.getSequences());
 
 	/* create a new working bundle */ 
+        timer.aquire();
 	synchronized(pWorkingBundles) {
+          timer.resume();
 	  TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 	  if(table == null) {
 	    table = new TreeMap<NodeID,WorkingBundle>();
@@ -11191,6 +11386,24 @@ class MasterMgr
 	    downstreamLock.writeLock().unlock();
 	  }     
 	}
+      }
+
+      /* initialize the checksum cache for the new working version */ 
+      {
+        timer.aquire();
+        ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+        clock.writeLock().lock();
+        try { 
+          timer.resume();
+
+          CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
+          if(filesCreated) 
+            cbundle.setCache(new CheckSumCache(nodeID, vsn)); 
+          writeCheckSumCache(cbundle.getCache()); 
+        }
+        finally {
+          clock.writeLock().unlock();
+        }  
       }
 
       /* record event */ 
@@ -11405,7 +11618,7 @@ class MasterMgr
 		fclient.removeAll(nodeID, work.getSequences());	
 
 	      /* check-out the links to the checked-in files */
-	      fclient.checkOut(nodeID, vsn, true);
+	      fclient.checkOut(nodeID, vsn, true);   
 	    }
 	    finally {
 	      releaseFileMgrClient(fclient);
@@ -11422,7 +11635,9 @@ class MasterMgr
 	    addWorkingNodeTreePath(nodeID, nwork.getSequences());
 	  
 	    /* create a new working bundle */ 
+            timer.aquire();
 	    synchronized(pWorkingBundles) {
+              timer.resume();
 	      TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 	      if(table == null) {
 		table = new TreeMap<NodeID,WorkingBundle>();
@@ -11459,6 +11674,23 @@ class MasterMgr
 	    }
 	  }
 	  
+          /* create or update the checksum cache for the new working version */ 
+          {
+            timer.aquire();
+            ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+            clock.writeLock().lock();
+            try {
+              timer.resume();
+              
+              CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
+              cbundle.setCache(new CheckSumCache(nodeID, vsn)); 
+              writeCheckSumCache(cbundle.getCache()); 
+            }
+            finally {
+              clock.writeLock().unlock();
+            }  
+          }
+
 	  /* record event */ 
 	  pPendingEvents.add(new CheckedOutNodeEvent(nodeID, vid, true, true)); 
 
@@ -11623,6 +11855,63 @@ class MasterMgr
       }
       finally {
 	onOffLock.readLock().unlock();
+      }
+
+      /* copy checksums from the repository versions */ 
+      {
+        /* get the selected checksums from the checked in node versions */ 
+        TreeMap<String,CheckSum> checksums = new TreeMap<String,CheckSum>();
+        {
+          MappedSet<VersionID,String> vfiles = new MappedSet<VersionID,String>(files); 
+          for(VersionID vid : vfiles.keySet()) {
+
+            timer.aquire();
+            ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+            checkedInLock.readLock().lock();
+            try {
+              timer.resume();
+
+              TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+              try {
+                checkedIn = getCheckedInBundles(name);
+              }
+              catch(PipelineException ex) {
+                throw new PipelineException
+                  ("There are no checked-in versions of node (" + name + ") to revert!");
+              }
+            
+              for(String fname : vfiles.get(vid)) {
+                CheckedInBundle bundle = checkedIn.get(vid);
+                if(bundle != null) 
+                  checksums.put(fname, bundle.getVersion().getCheckSum(fname));
+              }
+            }
+            finally {
+              checkedInLock.readLock().unlock();  
+            }
+          }
+        }
+        
+        timer.aquire();
+        ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+        clock.writeLock().lock();
+        try {
+          timer.resume();
+          
+          CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
+          CheckSumCache cache = cbundle.getCache(); 
+          long stamp = System.currentTimeMillis(); 
+          for(String fname : checksums.keySet()) {
+            CheckSum sum = checksums.get(fname); 
+            if(sum != null) 
+              cache.add(fname, new TransientCheckSum(sum, stamp)); 
+          }
+
+          writeCheckSumCache(cache); 
+        }
+        finally {
+          clock.writeLock().unlock();
+        }  
       }
 
       /* post-op tasks */ 
@@ -11821,6 +12110,50 @@ class MasterMgr
 	}
       }
 	
+      /* copy the checksums */ 
+      {
+        /* get a deep copy of the source node's cache to avoid lock contention issues */ 
+        CheckSumCache ocache = null;
+        {
+          timer.aquire();
+          ReentrantReadWriteLock clock = getCheckSumLock(sourceID);
+          clock.writeLock().lock();
+          try {
+            timer.resume();
+
+            CheckSumBundle cbundle = getCheckSumBundle(sourceID);   
+            ocache = new CheckSumCache(cbundle.getCache()); 
+          }
+          finally {
+            clock.writeLock().unlock();
+          }  
+        }
+
+        /* use them to initialize the target node's cache */ 
+        {
+          timer.aquire();
+          ReentrantReadWriteLock clock = getCheckSumLock(targetID);
+          clock.writeLock().lock();
+          try {
+            timer.resume();
+
+            ArrayList<String> ofnames = new ArrayList<String>();
+            ArrayList<String> nfnames = new ArrayList<String>();
+            for(Map.Entry<File,File> entry : files.entrySet()) {
+              ofnames.add(entry.getKey().getPath()); 
+              nfnames.add(entry.getValue().getPath()); 
+            }
+
+            CheckSumBundle cbundle = getCheckSumBundle(targetID);   
+            cbundle.setCache(new CheckSumCache(targetID, nfnames, ofnames, ocache));  
+            writeCheckSumCache(cbundle.getCache()); 
+          }
+          finally {
+            clock.writeLock().unlock();
+          } 
+        }
+      }
+
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
 
@@ -12378,11 +12711,17 @@ class MasterMgr
         BuilderInformation info = new BuilderInformation(false, false, false, cparams);
         MasterMgrClient mclient = new MasterMgrClient();  // MAKE THIS DIRECT!!
 
-        BaseBuilder builder = 
-          new BundleBuilder(mclient, pQueueMgrClient, info, bundle, bundlePath, 
-                            lockedVersions, toolsetRemap, 
-                            selectionKeyRemap, licenseKeyRemap, hardwareKeyRemap);
-        builder.run();
+        QueueMgrControlClient qclient = acquireQueueMgrClient();
+        try {
+          BaseBuilder builder = 
+            new BundleBuilder(mclient, qclient, info, bundle, bundlePath, 
+                              lockedVersions, toolsetRemap, 
+                              selectionKeyRemap, licenseKeyRemap, hardwareKeyRemap);
+          builder.run();
+        } 
+        finally {
+          releaseQueueMgrClient(qclient);
+        }
 
         switch(actOnExist) {
         case CheckOut:
@@ -13282,10 +13621,19 @@ class MasterMgr
       NodeID nodeID = rootNodeID;
 
       /* cache the currently available selection, license and hardware keys */ 
-      ArrayList<SelectionKey> allSelectionKeys = pQueueMgrClient.getSelectionKeys();
-      ArrayList<LicenseKey>   allLicenseKeys   = pQueueMgrClient.getLicenseKeys();
-      ArrayList<HardwareKey>  allHardwareKeys  = pQueueMgrClient.getHardwareKeys();
-
+      ArrayList<SelectionKey> allSelectionKeys = null;
+      ArrayList<LicenseKey>   allLicenseKeys   = null;
+      ArrayList<HardwareKey>  allHardwareKeys  = null;
+      QueueMgrControlClient qclient = acquireQueueMgrClient();
+      try {
+        allSelectionKeys = qclient.getSelectionKeys(); 
+        allLicenseKeys   = qclient.getLicenseKeys();   
+        allHardwareKeys  = qclient.getHardwareKeys();  
+      }
+      finally {
+        releaseQueueMgrClient(qclient);
+      }
+        
       /* as long as there are more root nodes to submit... */ 
       while((nodeID != null) || !assocRoots.isEmpty()) {
         
@@ -13462,7 +13810,7 @@ class MasterMgr
   )
     throws PipelineException 
   {
-    synchronized(pQueueSubmitLock) {
+    synchronized(pQueueSubmitLock) { 
       /* generate jobs */ 
       TreeMap<NodeID,Long[]> extJobIDs = new TreeMap<NodeID,Long[]>();
       TreeMap<NodeID,Long[]> nodeJobIDs = new TreeMap<NodeID,Long[]>();
@@ -13544,8 +13892,14 @@ class MasterMgr
       /* update the job and group IDs file */ 
       writeNextIDs();
       
-      /* submit the jobs and job group */ 
-      pQueueMgrClient.submitJobs(group, jobs.values());
+      /* submit the jobs and job group */  
+      QueueMgrControlClient qclient = acquireQueueMgrClient();
+      try {
+        qclient.submitJobs(group, jobs.values());
+      }
+      finally {
+        releaseQueueMgrClient(qclient);
+      }
       
       return group; 
     }
@@ -14540,7 +14894,14 @@ class MasterMgr
   {
     ArrayList<Long> jobIDs = new ArrayList<Long>();
     ArrayList<JobState> jobStates = new ArrayList<JobState>();
-    pQueueMgrClient.getJobStates(nodeID, stamp, fseq, jobIDs, jobStates);
+
+    QueueMgrControlClient qclient = acquireQueueMgrClient();
+    try {
+      qclient.getJobStates(nodeID, stamp, fseq, jobIDs, jobStates);
+    }
+    finally {
+      releaseQueueMgrClient(qclient);
+    }
 
     int wk = 0;
     for(JobState state : jobStates) {
@@ -14590,29 +14951,35 @@ class MasterMgr
   )
     throws PipelineException 
   {
-    ArrayList<Long> jobIDs = new ArrayList<Long>();
-    ArrayList<JobState> jobStates = new ArrayList<JobState>();
-    pQueueMgrClient.getJobStates(nodeID, stamp, fseq, jobIDs, jobStates);
+    QueueMgrControlClient qclient = acquireQueueMgrClient();
+    try {
+      ArrayList<Long> jobIDs = new ArrayList<Long>();
+      ArrayList<JobState> jobStates = new ArrayList<JobState>();
+      qclient.getJobStates(nodeID, stamp, fseq, jobIDs, jobStates);
 
-    TreeSet<Long> activeIDs = new TreeSet<Long>();
-    int wk = 0;
-    for(JobState state : jobStates) {
-      Long jobID = jobIDs.get(wk);
-      if((state != null) && (jobID != null)) {
-	switch(state) {
-	case Queued:
-	case Preempted:
-	case Paused:
-	case Running:
-	  activeIDs.add(jobID);
-	}
+      TreeSet<Long> activeIDs = new TreeSet<Long>();
+      int wk = 0;
+      for(JobState state : jobStates) {
+        Long jobID = jobIDs.get(wk);
+        if((state != null) && (jobID != null)) {
+          switch(state) {
+          case Queued:
+          case Preempted:
+          case Paused:
+          case Running:
+            activeIDs.add(jobID);
+          }
+        }
+        
+        wk++;
       }
-
-      wk++;
+      
+      if(!activeIDs.isEmpty()) 
+        qclient.killJobs(activeIDs); 
     }
-
-    if(!activeIDs.isEmpty()) 
-      pQueueMgrClient.killJobs(activeIDs);
+    finally {
+      releaseQueueMgrClient(qclient);
+    }
   }
 
     
@@ -14764,8 +15131,14 @@ class MasterMgr
 	
 	ArrayList<Long> jobIDs = new ArrayList<Long>();
 	ArrayList<JobState> jobStates = new ArrayList<JobState>();
-	pQueueMgrClient.getJobStates(nodeID, mod.getTimeStamp(), mod.getPrimarySequence(),
-				     jobIDs, jobStates);
+        QueueMgrControlClient qclient = acquireQueueMgrClient();
+        try {
+          qclient.getJobStates(nodeID, mod.getTimeStamp(), mod.getPrimarySequence(),
+                               jobIDs, jobStates);
+        }
+        finally {
+          releaseQueueMgrClient(qclient);
+        }
 	
 	if(indices == null) {
 	  int wk = 0;
@@ -14826,8 +15199,15 @@ class MasterMgr
            "to either Enable or Terminate the job servers in Limbo where these jobs are " + 
            "running before the state of these jobs can be reliably determined."); 
 
-      if(!activeIDs.isEmpty()) 
-	pQueueMgrClient.killJobs(activeIDs);
+      if(!activeIDs.isEmpty())  {
+        QueueMgrControlClient qclient = acquireQueueMgrClient();
+        try {
+          qclient.killJobs(activeIDs); 
+        }
+        finally {
+          releaseQueueMgrClient(qclient);
+        }
+      }
 
       {
 	FileMgrClient fclient = acquireFileMgrClient();
@@ -14838,7 +15218,24 @@ class MasterMgr
           releaseFileMgrClient(fclient);
 	}
       }
-      
+
+      /* clear the checksum caches for the removed files */ 
+      {
+        timer.aquire();
+        ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+        clock.writeLock().lock();
+        try {
+          timer.resume();
+          
+          CheckSumBundle cbundle = getCheckSumBundle(nodeID);   
+          cbundle.getCache().remove(fseqs); 
+          writeCheckSumCache(cbundle.getCache()); 
+        }
+        finally {
+          clock.writeLock().unlock();
+        } 
+      }
+
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
 
@@ -16732,6 +17129,8 @@ class MasterMgr
 	/* validate the file sequences to be restored */ 
 	TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = 
 	  new TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>();
+        TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> checkSums = 
+          new TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>>(); 
 	long total = 0L;
 	for(String name : versions.keySet()) {
 	  
@@ -16741,7 +17140,6 @@ class MasterMgr
 	  try {
 	    timer.resume();	
 	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-
 	  
 	    for(VersionID vid : versions.get(name)) {
 	      if(!vol.contains(name, vid)) 
@@ -16765,13 +17163,27 @@ class MasterMgr
 		  ("No checked-in version (" + vid + ") of node (" + name + ") exists " + 
 		   "to be restored!");
 
-	      TreeMap<VersionID,TreeSet<FileSeq>> fvsns = fseqs.get(name);
-	      if(fvsns == null) {
-		fvsns = new TreeMap<VersionID,TreeSet<FileSeq>>();
-		fseqs.put(name, fvsns);
-	      }
-	      
-	      fvsns.put(vid, bundle.getVersion().getSequences());
+              NodeVersion vsn = bundle.getVersion();
+
+              {
+                TreeMap<VersionID,TreeSet<FileSeq>> fvsns = fseqs.get(name);
+                if(fvsns == null) {
+                  fvsns = new TreeMap<VersionID,TreeSet<FileSeq>>();
+                  fseqs.put(name, fvsns);
+                }
+                
+                fvsns.put(vid, vsn.getSequences());
+              }
+              
+              {
+                TreeMap<VersionID,SortedMap<String,CheckSum>> cvsns = checkSums.get(name); 
+                if(cvsns == null) {
+                  cvsns = new TreeMap<VersionID,SortedMap<String,CheckSum>>();
+                  checkSums.put(name, cvsns);
+                }
+
+                cvsns.put(vid, vsn.getCheckSums());
+              }
 	    }
 	  }
 	  finally {
@@ -16808,8 +17220,8 @@ class MasterMgr
               if(req.isDryRun()) 
                 dryRunResults = new StringBuilder();
 
-	      output = fclient.extract(archiveName, stamp, fseqs, archiver, env, total, 
-                                       dryRunResults);
+	      output = fclient.extract(archiveName, stamp, fseqs, checkSums, 
+                                       archiver, env, total, dryRunResults);
 
               if(dryRunResults != null) 
                 return new DryRunRsp(timer, dryRunResults.toString()); 
@@ -17665,7 +18077,7 @@ class MasterMgr
 
     timer.aquire();
     ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-    workingLock.writeLock().lock();
+    workingLock.writeLock().lock();  // THIS SHOULD BE A READ-LOCK FOR STATUS ONLY OPS!
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
     if(!isLightweight && nodeOp.writesCheckedIn())
       checkedInLock.writeLock().lock();
@@ -17960,6 +18372,72 @@ class MasterMgr
       /* otherwise, we need to go on and compute the heavyweight per-file and queue 
            related node status information... */ 
       else {
+        /* get per-file jobIDs, states and any checksum updates */ 
+        Long jobIDs[] = null;
+        JobState jobStates[] = null;
+        switch(versionState) {
+        case CheckedIn:
+          {
+            int numFrames = latest.getPrimarySequence().numFrames();
+            jobIDs        = new Long[numFrames];
+            jobStates     = new JobState[numFrames];
+          }
+          break;
+
+        default:
+          {
+            int numFrames = work.getPrimarySequence().numFrames();
+            jobIDs        = new Long[numFrames];
+            jobStates     = new JobState[numFrames];
+            
+            if(!workIsFrozen) {
+              ArrayList<Long> jids   = new ArrayList<Long>();
+              ArrayList<JobState> js = new ArrayList<JobState>();
+              
+              timer.aquire();
+              ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+              clock.writeLock().lock();
+              try {
+                timer.resume();
+              
+                CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
+                CheckSumCache cache = cbundle.getCache();
+
+                CheckSumCache jcache = null;
+                QueueMgrControlClient qclient = acquireQueueMgrClient();
+                try {
+                  jcache = qclient.getJobStatesAndCheckSums
+                    (nodeID, work.getTimeStamp(), work.getPrimarySequence(), 
+                     cache.getLatestUpdates(), jids, js);
+                }
+                finally {
+                  releaseQueueMgrClient(qclient);
+                }
+                  
+                if(!jcache.isEmpty()) {
+                  cache.resetModified(); 
+                  cache.addAll(jcache);
+                  if(cache.wasModified()) {
+                    cbundle.setCache(cache); 
+                    writeCheckSumCache(cache); 
+                  }
+                } 
+              }
+              finally {
+                clock.writeLock().unlock();
+              }  
+ 
+              if(jobIDs.length != jids.size())
+                throw new IllegalStateException(); 
+              jobIDs = jids.toArray(jobIDs);
+              
+              if(jobStates.length != js.size())
+                throw new IllegalStateException(); 
+              jobStates = js.toArray(jobStates);
+            }
+          }
+        }
+
         /* get per-file FileStates and timestamps */ 
         TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
         boolean[] anyMissing = null;
@@ -18002,12 +18480,41 @@ class MasterMgr
                 if(latest != null) 
                   vid = latest.getVersionID();
 
-                Long ctime = null;
-                if(work != null)
-                  ctime = work.getLastCTimeUpdate(); 
+                SortedMap<String,CheckSum> baseCheckSums = null;
+                if(base != null) 
+                  baseCheckSums = base.getCheckSums();
+                
+                SortedMap<String,CheckSum> latestCheckSums = null;
+                if(latest != null) 
+                  latestCheckSums = latest.getCheckSums();
 
-                fclient.states(nodeID, work, versionState, workIsFrozen, vid, 
-                               ctime, fileStates, stamps);
+                timer.aquire();
+                ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+                clock.writeLock().lock();
+                try {
+                  timer.resume();
+
+                  CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
+
+                  CheckSumCache updatedCheckSums = 
+                    fclient.states(nodeID, work, versionState, jobStates, workIsFrozen, vid, 
+                                   baseCheckSums, latestCheckSums, cbundle.getCache(), 
+                                   fileStates, stamps);
+
+                  if(updatedCheckSums.wasModified()) {
+                    try {
+                      cbundle.setCache(updatedCheckSums); 
+                      writeCheckSumCache(updatedCheckSums); 
+                    }
+                    catch(PipelineException ex) {
+                      LogMgr.getInstance().log
+                        (LogMgr.Kind.Sum, LogMgr.Level.Warning, ex.getMessage());
+                    }
+                  }
+                }
+                finally {
+                  clock.writeLock().unlock();
+                }  
 
                 /* if frozen, all the files are just links so use the working time stamp */ 
                 if(workIsFrozen) {
@@ -18205,15 +18712,13 @@ class MasterMgr
         }
 
         /* determine per-file QueueStates */  
-        Long jobIDs[] = null;
         QueueState queueStates[] = null;
         TreeSet<String> staleLinks = new TreeSet<String>(); 
         switch(versionState) {
         case CheckedIn:
           {
             int numFrames = latest.getPrimarySequence().numFrames();
-            jobIDs       = new Long[numFrames];
-            queueStates  = new QueueState[numFrames];
+            queueStates = new QueueState[numFrames];
 
             int wk;
             for(wk=0; wk<queueStates.length; wk++) 
@@ -18238,8 +18743,7 @@ class MasterMgr
 
             if(alwaysFinished) {
               int numFrames = work.getPrimarySequence().numFrames();
-              jobIDs       = new Long[numFrames];
-              queueStates  = new QueueState[numFrames];
+              queueStates = new QueueState[numFrames];
               
               int wk;
               for(wk=0; wk<queueStates.length; wk++) 
@@ -18250,25 +18754,7 @@ class MasterMgr
           /* ask the queue mananager for per-file job information */ 
           if(queueStates == null) {
             int numFrames = work.getPrimarySequence().numFrames();
-            jobIDs      = new Long[numFrames];
             queueStates = new QueueState[numFrames];
-
-            JobState js[] = new JobState[numFrames];
-            if(!workIsFrozen) {
-              ArrayList<Long> jIDs          = new ArrayList<Long>();
-              ArrayList<JobState> jobStates = new ArrayList<JobState>();
-
-              pQueueMgrClient.getJobStates(nodeID, work.getTimeStamp(), 
-                                           work.getPrimarySequence(), jIDs, jobStates);
-
-              if(jobIDs.length != jIDs.size())
-                throw new IllegalStateException(); 
-              jobIDs = jIDs.toArray(jobIDs);
-
-              if(js.length != jobStates.size())
-                throw new IllegalStateException(); 
-              js = jobStates.toArray(js);
-            }
 
             /* process each file to determine its QueueState... */ 
             int wk;
@@ -18276,8 +18762,8 @@ class MasterMgr
 
               /* if there is an enabled action, check for any jobs which are not Finished */ 
               if(work.isActionEnabled()) {
-                if(js[wk] != null) {
-                  switch(js[wk]) {
+                if(jobStates[wk] != null) {
+                  switch(jobStates[wk]) {
                   case Queued:
                   case Preempted:
                     queueStates[wk] = QueueState.Queued;
@@ -19165,6 +19651,56 @@ class MasterMgr
     }
   }
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   Q U E U E   M G R   H E L P E R S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get a connection to the queue manager.
+   */ 
+  private QueueMgrControlClient
+  acquireQueueMgrClient()
+  {
+    synchronized(pQueueMgrClients) {
+      if(pQueueMgrClients.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
+	   "Creating New Queue Manager Client.");
+	LogMgr.getInstance().flush();
+
+	return new QueueMgrControlClient();
+      }
+      else {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
+	   "Reusing File Manager Client: " + (pQueueMgrClients.size()-1) + " inactive");
+	LogMgr.getInstance().flush();
+
+	return pQueueMgrClients.pop();
+      }
+    }
+  }
+
+  /**
+   * Return an inactive connection to the file manager for reuse.
+   */ 
+  private void
+  releaseQueueMgrClient
+  (
+   QueueMgrControlClient client
+  )
+  {
+    synchronized(pQueueMgrClients) {
+      pQueueMgrClients.push(client);
+      
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Finest,
+	 "Freed Queue Manager Client: " + pQueueMgrClients.size() + " inactive");
+      LogMgr.getInstance().flush();
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -19363,6 +19899,30 @@ class MasterMgr
   }
 
   /** 
+   * Lookup the lock for the checksum cache bundle with the given node id.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   */
+  private ReentrantReadWriteLock
+  getCheckSumLock
+  (
+   NodeID id
+  ) 
+  {
+    synchronized(pCheckSumLocks) {
+      ReentrantReadWriteLock lock = pCheckSumLocks.get(id);
+
+      if(lock == null) { 
+	lock = new ReentrantReadWriteLock();
+	pCheckSumLocks.put(id, lock);
+      }
+
+      return lock;
+    }
+  }
+
+  /** 
    * Lookup the lock for the downstream links for the node with the given name.
    * 
    * @param name 
@@ -19483,20 +20043,20 @@ class MasterMgr
    * This method assumes that a read/write lock for the working version has already been 
    * aquired.
    * 
-   * @param id 
+   * @param nodeID 
    *   The unique working version identifier.
    */
   private WorkingBundle
   getWorkingBundle
   (
-   NodeID id
+   NodeID nodeID
   )
     throws PipelineException
   { 
-    if(id == null) 
+    if(nodeID == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
 
-    String name = id.getName();
+    String name = nodeID.getName();
 
     /* lookup the bundle */ 
     WorkingBundle bundle = null;
@@ -19507,7 +20067,7 @@ class MasterMgr
 	pWorkingBundles.put(name, table);
       }
       else {
-	bundle = table.get(id);
+	bundle = table.get(nodeID);
       }
     }
 
@@ -19516,20 +20076,64 @@ class MasterMgr
     }
 
     /* read in the bundle from disk */ 
-    NodeMod mod = readWorkingVersion(id);
+    NodeMod mod = readWorkingVersion(nodeID);
     if(mod == null) 
       throw new PipelineException
 	("No working version of node (" + name + ") exists under the view " + 
-         "(" + id.getView() + ") owned by user (" + id.getAuthor() + ")!");
+         "(" + nodeID.getView() + ") owned by user (" + nodeID.getAuthor() + ")!");
     
     bundle = new WorkingBundle(mod);
 
     synchronized(pWorkingBundles) {
-      pWorkingBundles.get(name).put(id, bundle);
+      pWorkingBundles.get(name).put(nodeID, bundle);
     }
     
     /* keep track of the change to the node version cache */ 
-    incrementWorkingCounter(id); 
+    incrementWorkingCounter(nodeID); 
+
+    return bundle;
+  }
+
+  /** 
+   * Get the checksum cache bundle with the given working version ID.
+   * 
+   * This method assumes that a read/write lock for the checksum cache has already been 
+   * aquired.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   */
+  private CheckSumBundle
+  getCheckSumBundle
+  (
+   NodeID nodeID
+  )
+    throws PipelineException
+  { 
+    if(nodeID == null) 
+      throw new IllegalArgumentException("The working version ID cannot be (null)!");
+
+    String name = nodeID.getName();
+
+    /* lookup the bundle */ 
+    CheckSumBundle bundle = null;
+    synchronized(pCheckSumBundles) {
+      bundle = pCheckSumBundles.get(name, nodeID);
+    }
+
+    if(bundle != null) 
+      return bundle;
+
+    /* read in the bundle from disk */ 
+    CheckSumCache cache = readCheckSumCache(nodeID);
+    if(cache == null) 
+      cache = new CheckSumCache(nodeID); 
+
+    bundle = new CheckSumBundle(cache); 
+
+    synchronized(pCheckSumBundles) {
+      pCheckSumBundles.put(name, nodeID, bundle); 
+    }
 
     return bundle;
   }
@@ -19700,6 +20304,15 @@ class MasterMgr
 	    long cached = 0L;
 	    TreeMap<Long,String> sorted = new TreeMap<Long,String>();
 	    {
+              // THIS LOOKS WRONG IN SEVERAL WAYS: 
+              //
+              // 1. There is no guarentee that the timestamps are unique, so making a table
+              //    indexed by them is a bad idea.
+              // 
+              // 2. Sorting them this way is not efficient.  We should instead build an
+              //    array of a temp class which contains just the timestamp and node name
+              //    then sort it with Arrays.sort(). 
+
 	      TreeSet<String> names = new TreeSet<String>();
 	      names.addAll(pCheckedInBundles.keySet());
 	      names.addAll(pWorkingBundles.keySet());
@@ -21896,6 +22509,33 @@ class MasterMgr
   ) 
     throws PipelineException
   {
+    writeCheckedInVersion(vsn, false); 
+  }
+
+  /**
+   * Write the checked-in version to disk. <P> 
+   * 
+   * This method assumes that the write lock for the table of checked-in versions for
+   * the node already been aquired.
+   * 
+   * @param vsn
+   *   The checked-in version to write.
+   * 
+   * @param allowOverwrite
+   *   Whether allow replacement of an existing checked-in version file. 
+   * 
+   * @throws PipelineException
+   *   If unable to write the checkedi-in version file or create the needed parent 
+   *   directories.
+   */ 
+  private void 
+  writeCheckedInVersion
+  (
+   NodeVersion vsn, 
+   boolean allowOverwrite
+  ) 
+    throws PipelineException
+  {
     LogMgr.getInstance().log
       (LogMgr.Kind.Glu, LogMgr.Level.Finer,
        "Writing Checked-In Version: " + 
@@ -21912,9 +22552,18 @@ class MasterMgr
 	      ("Unable to create checked-in version directory (" + dir + ")!");
       }
       
-      if(file.exists()) 
-	throw new IOException
-	  ("Somehow a checked-in version file (" + file + ") already exists!");
+      if(file.exists()) {
+        if(allowOverwrite) {
+          if(!file.delete()) 
+            throw new IOException
+              ("Unable to remove the existing checked-in version file (" + file + ") " + 
+               "in order to replace it!"); 
+        }
+        else {
+          throw new IOException
+            ("Somehow a checked-in version file (" + file + ") already exists!");
+        }
+      }
       
       try {
         GlueEncoderImpl.encodeFile("NodeVersion", vsn, file);
@@ -21976,7 +22625,7 @@ class MasterMgr
 
       NodeVersion vsn = null;
       try {
-       vsn = (NodeVersion) GlueDecoderImpl.decodeFile("NodeVersion", files[wk]);
+        vsn = (NodeVersion) GlueDecoderImpl.decodeFile("NodeVersion", files[wk]);
       }	
       catch(GlueException ex) {
         throw new PipelineException(ex);
@@ -21987,6 +22636,38 @@ class MasterMgr
 	  ("Somehow the version (" + vsn.getVersionID() + ") of node (" + name + ") " + 
 	   "was represented by more than one file!");
       
+      /* insure that checksums are embedded */ 
+      if(vsn.getCheckSums().isEmpty()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Sum, LogMgr.Level.Warning,
+           "Adding per-file checksums to node version file: " + files[wk]); 
+        
+        try {
+          TreeMap<String,CheckSum> checksums = new TreeMap<String,CheckSum>(); 
+          
+          Path cdir = 
+            new Path(PackageInfo.sProdPath, 
+                     "checksum/repository" + vsn.getName() + "/" + vsn.getVersionID());
+          for(FileSeq fseq : vsn.getSequences()) {
+            for(Path path : fseq.getPaths()) {
+              Path cpath = new Path(cdir, path); 
+              byte[] bytes = CheckSum.readBytes(cpath); 
+              checksums.put(path.toString(), new CheckSum(bytes));
+            }
+          }
+          
+          NodeVersion fixed = new NodeVersion(vsn, checksums); 
+          writeCheckedInVersion(fixed, true); 
+          vsn = fixed;
+        }
+        catch(Exception ex) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Sum, LogMgr.Level.Severe,
+             (Exceptions.getFullMessage
+              ("Unable to add per-file checksums to node version file: " + files[wk], ex)));
+        }
+      }
+
       table.put(vsn.getVersionID(), new CheckedInBundle(vsn));
     }
 
@@ -22175,6 +22856,215 @@ class MasterMgr
     }
   }
       
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the checksum cache for files associated with the working version to disk. <P> 
+   * 
+   * This method assumes that the write lock for the checksum cache version has already been 
+   * aquired.
+   * 
+   * @param cache
+   *   The checksum cache.
+   * 
+   * @throws PipelineException
+   *   If unable to write the cache file or create the needed parent directories.
+   */ 
+  private void 
+  writeCheckSumCache
+  (
+   CheckSumCache cache
+  ) 
+    throws PipelineException
+  {
+    NodeID nodeID = cache.getNodeID();
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Checksum Cache for Working Version: " + nodeID);
+
+    Path ipath = new Path(nodeID.getName());
+    File dir   = new File(pNodeDir, "checksum" + nodeID.getWorkingParent());
+    File file  = new File(dir, ipath.getName()); 
+
+    try {
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdirs()) 
+	    throw new IOException
+	      ("Unable to create working checksum directory (" + dir + ")!");
+      }
+      
+      if(file.exists()) 
+        if(!file.delete()) 
+          throw new PipelineException
+            ("Unable to overwrite the existing checksum cache file (" + file + ")!");
+
+      try {
+        GlueEncoderImpl.encodeFile("CheckSumCache", cache, file);
+      }
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write checksum cache for working version (" + nodeID + ") " + 
+         "to file...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+
+
+  /**
+   * Read the checksum cache for files associated with the working version from disk. <P> 
+   * 
+   * This method assumes that the write lock for the checksum cache has already been 
+   * aquired.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier.
+   * 
+   * @return 
+   *   The checksum cache or <CODE>null</CODE> if no cache file.
+   * 
+   * @throws PipelineException
+   *   If the cache files are corrupted in some manner.
+   */ 
+  private CheckSumCache
+  readCheckSumCache
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    Path ipath = new Path(nodeID.getName());
+    File dir   = new File(pNodeDir, "checksum" + nodeID.getWorkingParent());
+    File file  = new File(dir, ipath.getName()); 
+    
+    if(!file.exists())
+      return null;
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Reading Checksum Cache for Working Version: " + nodeID);
+    
+    try { 
+      return ((CheckSumCache) GlueDecoderImpl.decodeFile("CheckSumCache", file));
+    }
+    catch(GlueException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+   
+  /**
+   * Create a checksum cache for files associated with the working version from the
+   * deprecated per-file binary checksum files. <P> 
+   * 
+   * This method assumes that the write lock for the checksum cache has already been 
+   * aquired.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier.
+   * 
+   * @param mod 
+   *   The working version of the node.
+   * 
+   * @return 
+   *   The checksum cache or <CODE>null</CODE> if no cache file.
+   * 
+   * @throws PipelineException
+   *   If the cache files are corrupted in some manner.
+   */ 
+  private void 
+  upgradeDeprecatedCheckSumCache
+  (
+   NodeID nodeID, 
+   NodeMod mod 
+  ) 
+    throws PipelineException
+  {
+    Path ipath = new Path(nodeID.getName());
+    File dir   = new File(pNodeDir, "checksum" + nodeID.getWorkingParent());
+    File file  = new File(dir, ipath.getName()); 
+    
+    if(file.exists())
+      return; 
+
+    try {
+      CheckSumCache cache = null;
+      
+      Path cdir = new Path(PackageInfo.sProdPath, "checksum" + nodeID.getWorkingParent());
+      for(FileSeq fseq : mod.getSequences()) {
+        for(Path path : fseq.getPaths()) {
+          Path cpath = new Path(cdir, path); 
+          NativeFileStat check = new NativeFileStat(cpath); 
+          
+          if(check.isFile()) {
+            if(cache == null) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Sum, LogMgr.Level.Warning,
+                 "Adding per-file checksums to working cache file: " + file); 
+              cache = new CheckSumCache(nodeID); 
+            }
+            
+            byte[] bytes = CheckSum.readBytes(cpath); 
+            long stamp = check.lastCriticalChange(mod.getLastCTimeUpdate());
+            cache.add(path.toString(), new TransientCheckSum(bytes, stamp)); 
+          }
+        }
+      }
+        
+      if(cache != null) 
+        writeCheckSumCache(cache); 
+    }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Sum, LogMgr.Level.Severe,
+         (Exceptions.getFullMessage
+          ("Unable to add per-file checksums to working checksum cache: " + file, ex)));
+    }
+  }
+   
+  /**
+   * Remove the checksum cache for files associated with the working version to disk. <P> 
+   * 
+   * This method assumes that the write lock for the checksum cache has already been 
+   * aquired.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier.
+   * 
+   * @param cache
+   *   The checksum cache.
+   * 
+   * @throws PipelineException
+   *   If unable to write the cache file or create the needed parent directories.
+   */ 
+  private void 
+  removeCheckSumCache
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Removing Checksum Cache for Working Version: " + nodeID);
+
+    Path ipath = new Path(nodeID.getName());
+    File dir   = new File(pNodeDir, "checksum" + nodeID.getWorkingParent());
+    File file  = new File(dir, ipath.getName()); 
+
+    if(file.exists()) 
+      if(!file.delete()) 
+        throw new PipelineException
+          ("Unable to remove the existing checksum cache file (" + file + ")!");
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -22578,7 +23468,6 @@ class MasterMgr
 	  
 	  /* build the file novelty table */ 
 	  TreeMap<FileSeq,boolean[]> isNovel = new TreeMap<FileSeq,boolean[]>();
-
  	  for(FileSeq fseq : details.getFileStateSequences()) {
  	    FileState[] states = details.getFileState(fseq);
 	    boolean flags[] = new boolean[states.length];
@@ -22607,10 +23496,38 @@ class MasterMgr
 	  }
 
 	  /* check-in the files */ 
+          TreeMap<String,CheckSum> checksums = null;
 	  {
 	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
-	      fclient.checkIn(nodeID, work, vid, latestID, isNovel);
+
+              timer.aquire();
+              ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+              clock.writeLock().lock();
+              try {
+                timer.resume();
+
+                CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
+
+                CheckSumCache updatedCheckSums = 
+                  fclient.checkIn(nodeID, work, vid, latestID, isNovel, cbundle.getCache()); 
+
+                if(updatedCheckSums.wasModified()) {
+                  try {
+                    cbundle.setCache(updatedCheckSums); 
+                    writeCheckSumCache(updatedCheckSums); 
+                  }
+                  catch(PipelineException ex) {
+                    LogMgr.getInstance().log
+                      (LogMgr.Kind.Sum, LogMgr.Level.Warning, ex.getMessage());
+                  }
+                }
+
+                checksums = updatedCheckSums.getVersionCheckSums(); 
+              }
+              finally {
+                clock.writeLock().unlock();
+              }  
 	    }
 	    finally {
 	      releaseFileMgrClient(fclient);
@@ -22619,7 +23536,7 @@ class MasterMgr
 
 	  /* create a new checked-in version and write it disk */ 
 	  NodeVersion vsn = 
-	    new NodeVersion(work, vid, lvids, locked, isNovel, 
+	    new NodeVersion(work, vid, lvids, locked, isNovel, checksums, 
 			    rnodeID.getAuthor(), pRequest.getMessage(), 
 			    rnodeID.getName(), pRootVersionID);
 
@@ -22811,6 +23728,85 @@ class MasterMgr
 
     /**
      * The timestamp of when the version was last accessed.
+     */ 
+    private long  pLastAccess; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The information related to checksums for the files associated with the working version 
+   * of a node for a particular view owned by a particular user.
+   */
+  private class 
+  CheckSumBundle
+  {
+    /** 
+     * Construct a new checksum cache bundle. 
+     */
+    public 
+    CheckSumBundle
+    (
+     NodeID nodeID
+    ) 
+    {
+      pCache = new CheckSumCache(nodeID); 
+      pLastAccess = System.currentTimeMillis();
+    }
+
+    /** 
+     * Construct a new checksum cache bundle. 
+     */
+    public 
+    CheckSumBundle
+    (
+     CheckSumCache cache
+    ) 
+    {
+      pCache = cache; 
+      pLastAccess = System.currentTimeMillis();
+    }
+
+    /**
+     * Get the checksum cache.
+     */
+    public CheckSumCache
+    getCache()
+    {
+      pLastAccess = System.currentTimeMillis();
+      return pCache; 
+    }
+   
+    /**
+     * Set the checksum cache. 
+     */
+    public void
+    setCache
+    (
+     CheckSumCache cache
+    )
+    {
+      pLastAccess = System.currentTimeMillis();
+      pCache = cache; 
+    }
+   
+    /**
+     * Get the timestamp of when the cache was last accessed.
+     */
+    public long
+    getLastAccess()
+    {
+      return pLastAccess;
+    }
+
+    /**
+     * The checksum cache. 
+     */ 
+    private CheckSumCache  pCache; 
+
+    /**
+     * The timestamp of when the cache was last accessed.
      */ 
     private long  pLastAccess; 
   }
@@ -23305,6 +24301,24 @@ class MasterMgr
  
 
   /**
+   * The per-working version checksum cache locks indexed by working version node ID. <P> 
+   * 
+   * These locks protect the checksum caches for files associated with the working versions
+   * of nodes. The per-working version read-lock should be acquired for operations which will 
+   * only access this information. The per-working version write-lock should be aquired when 
+   * creating new checksum caches, modifying the contents of the cache or removing existing 
+   * caches. 
+   */
+  private TreeMap<NodeID,ReentrantReadWriteLock>  pCheckSumLocks;
+  
+  /**
+   * The checksum caches for files associated with each working version of a node 
+   * indexed by fully resolved node name and working version node ID.
+   */ 
+  private DoubleMap<String,NodeID,CheckSumBundle>  pCheckSumBundles;
+ 
+
+  /**
    * The per-node downstream links locks indexed by fully resolved node name. <P> 
    * 
    * These locks protect the cached downstream links of each node. The per-node read-lock 
@@ -23347,14 +24361,20 @@ class MasterMgr
    */ 
   private Stack<FileMgrNetClient>  pFileMgrNetClients;
  
+  /**
+   * An alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for checksum generation traffic.  Setting this to 
+   * <CODE>null</CODE> will cause the default root production directory to be used instead.
+   */ 
+  private AtomicReference<Path> pCheckSumPath;
+
 
   /*----------------------------------------------------------------------------------------*/
   
   /**
    * The connection to the queue manager daemon: <B>plqueuemgr<B>(1).
    */ 
-  private QueueMgrControlClient  pQueueMgrClient;
-  
+  private Stack<QueueMgrControlClient> pQueueMgrClients;
 
   /**
    * A lock used to serialize submissions of jobs to the queue.

@@ -295,6 +295,7 @@ TOKEN :
 | <LOG_NET: 	     "net">     
 | <LOG_PLG: 	     "plg">    
 | <LOG_SUB: 	     "sub">    
+| <LOG_SUM: 	     "sum">       
 | <LOG_EXT: 	     "ext">    
 | <LOG_TIM: 	     "tim">    
 | <LOG_BLD: 	     "bld">    
@@ -606,9 +607,8 @@ LogMgr.Kind LogKind() :
   LogMgr.Kind g;
 }
 {
-  (g=ArgKind() | g=OpsKind() | g=MemKind() | g=NetKind() | 
-   g=SubKind() | g=PlgKind() | g=GluKind() | g=ExtKind() | 
-   g=TimKind() | g=BldKind())
+  (g=ArgKind() | g=OpsKind() | g=MemKind() | g=NetKind() | g=SubKind() | g=SumKind() | 
+   g=PlgKind() | g=GluKind() | g=ExtKind() | g=TimKind() | g=BldKind())
   {
     return g;
   }
@@ -656,6 +656,15 @@ LogMgr.Kind SubKind() :
   <LOG_SUB>
   {
     return LogMgr.Kind.Sub;
+  }
+}
+
+LogMgr.Kind SumKind() : 
+{}
+{
+  <LOG_SUM>
+  {
+    return LogMgr.Kind.Sum;
   }
 }
 

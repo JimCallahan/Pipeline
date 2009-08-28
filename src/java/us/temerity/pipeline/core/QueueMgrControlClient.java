@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.20 2009/02/17 00:44:18 jlee Exp $
+// $Id: QueueMgrControlClient.java,v 1.21 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -95,6 +95,77 @@ class QueueMgrControlClient
   /*----------------------------------------------------------------------------------------*/
   /*   J O B S                                                                              */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the jobs IDs and states for each primary file of the given working version as
+   * well as any checksums already computed by the jobs newer than those currently cached.<P> 
+   * 
+   * The <CODE>fseq</CODE> argument is required because the frame range of the primary file
+   * sequence may have been adjusted after the jobs where submitted. <P> 
+   * 
+   * If any of the members of the output <CODE>jobIDs</CODE> argument are <CODE>null</CODE>, 
+   * then no job exists which regenerates that specific file.  Note that it is possible for 
+   * one job to generate multiple files and therefore have its job ID repeated in the returned
+   * <CODE>jobIDs</CODE> list. <P> 
+   * 
+   * Similarly, if any of the members of the output <CODE>states</CODE> argument are 
+   * <CODE>null</CODE>, then no job exists which regenerates that specific file. <P> 
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   *
+   * @param stamp
+   *   The timestamp of when the working version was created.
+   * 
+   * @param fseq
+   *   The primary file sequence.
+   * 
+   * @param latestUpdates
+   *   The timestamps of each currently cached checksum indexed by primary/secondary file.
+   * 
+   * @param jobIDs
+   *   An empty list which will be filled with the unique job identifiers of the latest 
+   *   job which regenerates each file of the primary file sequence.
+   * 
+   * @param states
+   *   An empty list which will be filled with the JobState of each file of the primary file 
+   *   sequence.
+   * 
+   * @return 
+   *   The newer primary/secondary file checksums.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the job IDs. 
+   */
+  public synchronized CheckSumCache
+  getJobStatesAndCheckSums
+  (
+   NodeID nodeID, 
+   long stamp, 
+   FileSeq fseq, 
+   TreeMap<String,Long> latestUpdates, 
+   ArrayList<Long> jobIDs, 
+   ArrayList<JobState> states 
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueGetJobStatesAndCheckSumsReq req = 
+      new QueueGetJobStatesAndCheckSumsReq(nodeID, stamp, fseq, latestUpdates);
+    
+    Object obj = performTransaction(QueueRequest.GetJobStatesAndCheckSums, req);
+    if(obj instanceof QueueGetJobStatesAndCheckSumsRsp) {
+      QueueGetJobStatesAndCheckSumsRsp rsp = (QueueGetJobStatesAndCheckSumsRsp) obj;
+      jobIDs.addAll(rsp.getJobIDs());
+      states.addAll(rsp.getStates());
+      return rsp.getCheckSumCache();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
 
   /**
    * Get the jobs IDs and states for each primary file of the given working version. <P> 

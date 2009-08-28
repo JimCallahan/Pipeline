@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.20 2009/07/11 10:54:21 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.21 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -177,6 +177,9 @@ class FileMgrNetClient
    * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial 
    * working version. <P> 
    * 
+   * The <CODE>jobStates</CODE> argument may contain <CODE>null</CODE> entries if there are 
+   * no jobs which regenerate the corresponding primary/secondary file.
+   * 
    * The <CODE>states</CODE> and <CODE>timestamps</CODE> arguments should be empty 
    * tables as they are populated by a successful invocation of this method. <P> 
    * 
@@ -193,6 +196,9 @@ class FileMgrNetClient
    *   The relationship between the revision numbers of working and checked-in versions 
    *   of the node.
    * 
+   * @param jobStates 
+   *   The jobs states for each primary/secondary file (if any).
+   * 
    * @param isFrozen
    *   Whether the files associated with the working version are symlinks to the 
    *   checked-in files instead of copies.
@@ -200,8 +206,16 @@ class FileMgrNetClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
-   * @param critical
-   *   The last legitimate change time (ctime) of the file.
+   * @param baseCheckSums
+   *   Read-only checksums for all files associated with the base checked-in version
+   *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param latestCheckSums
+   *   Read-only checksums for all files associated with the latest checked-in version
+   *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param workingCheckSums
+   *   Current cache of checksums for files associated with the working version.
    * 
    * @param states
    *   An empty table which will be filled with the <CODE>FileState</CODE> of each the 
@@ -213,18 +227,24 @@ class FileMgrNetClient
    *   each primary and secondary file associated with the working version indexed by file 
    *   sequence.  
    * 
+   * @return
+   *   The updated cache of checksums for files associated with the working version.
+   * 
    * @throws PipelineException
    *   If unable to compute the file states.
    */ 
-  public synchronized void
+  public synchronized CheckSumCache
   states
   (
    NodeID id, 
    NodeMod mod, 
    VersionState vstate, 
+   JobState jobStates[], 
    boolean isFrozen, 
    VersionID latest, 
-   long critical, 
+   SortedMap<String,CheckSum> baseCheckSums, 
+   SortedMap<String,CheckSum> latestCheckSums, 
+   CheckSumCache workingCheckSums, 
    TreeMap<FileSeq, FileState[]> states, 
    TreeMap<FileSeq, Long[]> timestamps
   ) 
@@ -232,9 +252,13 @@ class FileMgrNetClient
   {
     verifyConnection();
 
+    Long ctime = null;
+    if(mod != null)
+      ctime = mod.getLastCTimeUpdate(); 
+
     FileStateReq req = 
-      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, critical, 
-		       mod.getSequences());
+      new FileStateReq(id, vstate, jobStates, isFrozen, mod.getWorkingID(), latest, ctime, 
+		       mod.getSequences(), baseCheckSums, latestCheckSums, workingCheckSums);
 
     Object obj = performLongTransaction(FileRequest.State, req, 15000, 60000);  
 
@@ -243,9 +267,11 @@ class FileMgrNetClient
       states.putAll(rsp.getFileStates());
       if(rsp.getTimeStamps() != null) 
 	timestamps.putAll(rsp.getTimeStamps());
+      return rsp.getUpdatedCheckSums(); 
     }
     else {
       handleFailure(obj);
+      return null;
     }
   }
 
@@ -272,27 +298,43 @@ class FileMgrNetClient
    *   Whether each file associated with the version contains new data not present in the
    *   previous checked-in version.
    * 
+   * @param workingCheckSums
+   *   Current cache of checksums for files associated with the working version.
+   * 
+   * @return
+   *   The updated cache of checksums for files associated with the working version.
+   * 
    * @throws PipelineException
    *   If unable to check-in the files.
    */
-  public synchronized void 
+  public synchronized CheckSumCache
   checkIn
   (
    NodeID id, 
    NodeMod mod, 
    VersionID vid,
    VersionID latest, 
-   TreeMap<FileSeq,boolean[]> isNovel
+   TreeMap<FileSeq,boolean[]> isNovel, 
+   CheckSumCache workingCheckSums
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.isActionEnabled(), mod.getSequences(), isNovel); 
+      new FileCheckInReq(id, vid, latest, mod.isActionEnabled(), mod.getSequences(), isNovel, 
+                         mod.getLastCTimeUpdate(), workingCheckSums);  
 
     Object obj = performLongTransaction(FileRequest.CheckIn, req, 15000, 60000);  
-    handleSimpleResponse(obj);
+
+    if(obj instanceof FileCheckInRsp) {
+      FileCheckInRsp rsp = (FileCheckInRsp) obj;
+      return rsp.getUpdatedCheckSums(); 
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   }
 
   /**
@@ -1101,6 +1143,11 @@ class FileMgrNetClient
    *   The file sequences to archive indexed by fully resolved node name and checked-in 
    *   revision number.
    * 
+   * @param checkSums
+   *   Read-only checksums for all files associated with the checked-in version
+   *   being extracted indexed by fully resolved node name and checked-in 
+   *   revision number.
+   * 
    * @param archiver
    *   The archiver plugin to use to restore the versions from the archive volume.
    * 
@@ -1124,6 +1171,7 @@ class FileMgrNetClient
    String archiveName, 
    long stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
+   TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> checkSums, 
    BaseArchiver archiver, 
    Map<String,String> env, 
    long size, 
@@ -1134,7 +1182,7 @@ class FileMgrNetClient
     verifyConnection();
 
     FileExtractReq req = 
-      new FileExtractReq(archiveName, stamp, fseqs, archiver, env, size, 
+      new FileExtractReq(archiveName, stamp, fseqs, checkSums, archiver, env, size, 
                          dryRunResults != null);
 
     Object obj = performLongTransaction(FileRequest.Extract, req, 15000, 60000); 

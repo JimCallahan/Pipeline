@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.5 2009/06/04 08:54:53 jim Exp $
+// $Id: MasterControls.java,v 1.6 2009/08/28 02:10:46 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -58,7 +58,7 @@ class MasterControls
    *   to provide an exclusively network for file status query traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
    * 
-   * @param checksumDir
+   * @param checkSumDir
    *   An alternative root production directory accessed via a different NFS mount point
    *   to provide an exclusively network for checksum generation traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
@@ -72,7 +72,7 @@ class MasterControls
    Long nodeGCInterval, 
    Long restoreCleanupInterval, 
    Path fileStatDir, 
-   Path checksumDir
+   Path checkSumDir
   ) 
   {    
     setAverageNodeSize(avgNodeSize); 
@@ -80,7 +80,7 @@ class MasterControls
     setNodeGCInterval(nodeGCInterval); 
     setRestoreCleanupInterval(restoreCleanupInterval); 
     setFileStatDir(fileStatDir);
-    setChecksumDir(checksumDir);
+    setCheckSumDir(checkSumDir);
   }
 
 
@@ -298,9 +298,9 @@ class MasterControls
    *   production directory is being used instead.
    */ 
   public Path
-  getChecksumDir() 
+  getCheckSumDir() 
   {
-    return pChecksumDir;
+    return pCheckSumDir;
   }
 
   /**
@@ -312,12 +312,12 @@ class MasterControls
    *   root production directory.
    */
   public void 
-  setChecksumDir
+  setCheckSumDir
   (
    Path dir
   ) 
   {
-    pChecksumDir = dir; 
+    pCheckSumDir = dir; 
   }
 
 
@@ -370,7 +370,7 @@ class MasterControls
    * to provide an exclusively network for checksum generation traffic.  Setting this to 
    * <CODE>null</CODE> will cause the default root production directory to be used instead.
    */ 
-  private Path pChecksumDir;
+  private Path pCheckSumDir;
 
 }
 

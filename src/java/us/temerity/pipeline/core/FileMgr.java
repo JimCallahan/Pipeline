@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.92 2009/07/11 10:54:21 jim Exp $
+// $Id: FileMgr.java,v 1.93 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -102,53 +102,6 @@ import java.util.regex.*;
  *   In other words, checked-in files are either regular files or one level symbolic links 
  *   to regular files. 
  * </DIV> <P> 
- * 
- * The location of checksum files for the working and checked-in versions: <P> 
- * 
- * <DIV style="margin-left: 40px;">
- *   <I>prod-dir</I>/checksum/ <BR> 
- *   <DIV style="margin-left: 20px;">
- *     working/<I>author</I>/<I>view</I>/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-path</I>/ <BR>
- *       <DIV style="margin-left: 20px;">
- *         <I>node-name</I> <BR>
- *         ... <BR>
- *       </DIV> 
- *       ... <P>
- *     </DIV> 
- * 
- *     repository/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-name</I>/ <BR>
- *       <DIV style="margin-left: 20px;">
- *         <I>revision-number</I> <BR>
- *         <DIV style="margin-left: 20px;">
- *           <I>node-name</I> <BR>
- *           ... <BR>
- *         </DIV> 
- *         ... <BR>
- *       </DIV> 
- *       ... <P> 
- *     </DIV> 
- *   </DIV>
- * </DIV>
- * 
- * Each file associated with a checked-in version of a node has a corresponding checksum 
- * file with the same name as the checked-in file but located under the 
- * (<I>prod-dir</I>/checksum) directory.  These checksum files are generated at 
- * the time of check-in if no working checksum file already exists. <P> 
- * 
- * The files associated with working versions of nodes may also have generated checksum 
- * files.  The working checksum files are generated as a post process after successfully 
- * completing a job which regenerates a working file.  They may also be generated for files 
- * associated with leaf nodes during node status computations.  These working leaf node 
- * checksum files are only generated when the working and checked-in versions of a file 
- * are exactly the same size. <P>
- * 
- * Both kinds of checksums are used by Pipeline to optimize the comparison of large data
- * files associated with nodes.  The {@link CheckSum CheckSum} class configured to use 
- * the 128-bit MD5 message digest algorithm generates all checksums. <P> 
  */
 class FileMgr
   extends BaseMgr
@@ -208,7 +161,7 @@ class FileMgr
     
     /* runtime controls */ 
     pFileStatPath = new AtomicReference<Path>();
-    pChecksumPath = new AtomicReference<Path>();
+    pCheckSumPath = new AtomicReference<Path>();
     setRuntimeControlsHelper(fileStatDir, checksumDir);
 
     /* init file system locks */ 
@@ -243,7 +196,7 @@ class FileMgr
 
     Path checksumPath = null;
     {
-      Path path = pChecksumPath.get();
+      Path path = pCheckSumPath.get();
       if(!path.equals(PackageInfo.sProdPath)) 
         checksumPath = path;
     }
@@ -272,7 +225,7 @@ class FileMgr
     TaskTimer timer = new TaskTimer();
 
     MasterControls controls = req.getControls();
-    setRuntimeControlsHelper(controls.getFileStatDir(), controls.getChecksumDir());
+    setRuntimeControlsHelper(controls.getFileStatDir(), controls.getCheckSumDir());
     
     return new SuccessRsp(timer);
   }
@@ -314,11 +267,11 @@ class FileMgr
     {
       Path path = checksumDir;
       if(path == null) 
-        pChecksumPath.set(PackageInfo.sProdPath);
+        pCheckSumPath.set(PackageInfo.sProdPath);
       else 
-        pChecksumPath.set(path);
+        pCheckSumPath.set(path);
 
-      buf.append("   Checksum Root Directory: " + pChecksumPath.get() + "\n");
+      buf.append("   Checksum Root Directory: " + pCheckSumPath.get() + "\n");
     }
     
     buf.append("--------------------------------"); 
@@ -565,12 +518,16 @@ class FileMgr
       synchronized(workingLock) {
 	timer.resume();
 
-	CheckSum checkSum = new CheckSum(pChecksumPath.get().toFile());
-
 	NodeID nodeID = req.getNodeID(); 
         long ctime = req.getChangeStamp();
+        JobState jobStates[] = req.getJobStates(); 
         VersionID lvid = req.getLatestVersionID();
         VersionID bvid = req.getWorkingVersionID();
+
+        SortedMap<String,CheckSum> lcheck = req.getLatestCheckSums();
+        SortedMap<String,CheckSum> bcheck = req.getBaseCheckSums();
+        CheckSumCache wcheck = req.getWorkingCheckSums();
+        wcheck.resetModified(); 
 
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
 	TreeMap<FileSeq, Long[]> timestamps = new TreeMap<FileSeq, Long[]>();
@@ -716,13 +673,18 @@ class FileMgr
                     else if(work.isAlias(latest))
                       fs[wk] = FileState.Identical;
                     else {
-                      Path wnpath = new Path(nodeID.getWorkingParent(), path);
-                      Path lnpath = new Path(nodeID.getCheckedInPath(lvid), path);
-                      checkSum.refresh(wnpath);
-                      if(checkSum.compare(wnpath, lnpath))
-                        fs[wk] = FileState.Identical;
-                      else 
+                      if(jobStates[wk] == JobState.Running) {
                         fs[wk] = FileState.Modified;
+                      }
+                      else {
+                        String fname = path.toString(); 
+                        wcheck.update(pCheckSumPath.get(), fname, 
+                                      work.lastCriticalChange(ctime)); 
+                        if(wcheck.isIdentical(fname, lcheck.get(fname)))
+                          fs[wk] = FileState.Identical;
+                        else 
+                          fs[wk] = FileState.Modified;
+                      }
                     }
                     
                     stamps[wk] = work.lastCriticalChange(ctime); 
@@ -771,12 +733,13 @@ class FileMgr
                       boolean workEqLatest = false;
                       if(work.isAlias(latest)) 
                         workEqLatest = true;
-                      else if(work.fileSize() == latest.fileSize()) {
-                        Path wnpath = new Path(nodeID.getWorkingParent(), path);
-                        Path lnpath = new Path(nodeID.getCheckedInPath(lvid), path);
-                        checkSum.refresh(wnpath);
+                      else if((work.fileSize() == latest.fileSize()) && 
+                              (jobStates[wk] != JobState.Running)) {
+                        String fname = path.toString(); 
+                        wcheck.update(pCheckSumPath.get(), fname,
+                                      work.lastCriticalChange(ctime)); 
                         workRefreshed = true;
-                        workEqLatest = checkSum.compare(wnpath, lnpath);
+                        workEqLatest = wcheck.isIdentical(fname, lcheck.get(fname));
                       }
                       
                       if(workEqLatest) {
@@ -792,12 +755,13 @@ class FileMgr
                           boolean workEqBase = false;
                           if(work.isAlias(base))
                             workEqBase = true;
-                          else if(work.fileSize() == base.fileSize()) {
-                            Path wnpath = new Path(nodeID.getWorkingParent(), path);
-                            Path bnpath = new Path(nodeID.getCheckedInPath(bvid), path);
+                          else if((work.fileSize() == base.fileSize())  &&
+                                  (jobStates[wk] != JobState.Running)) {
+                            String fname = path.toString(); 
                             if(!workRefreshed) 
-                              checkSum.refresh(wnpath);
-                            workEqBase = checkSum.compare(wnpath, bnpath);
+                              wcheck.update(pCheckSumPath.get(), fname, 
+                                            work.lastCriticalChange(ctime)); 
+                            workEqBase = wcheck.isIdentical(fname, bcheck.get(fname)); 
                           }
                           
                           if(workEqBase)
@@ -821,7 +785,20 @@ class FileMgr
           }
 	}
 
-	return new FileStateRsp(timer, nodeID, states, timestamps);
+        /**
+         * You might be wondering why "wcheck" is read from the FileStateReq, locally 
+         * modified and then passed directly back to FileStateRsp.  If you look at these 
+         * message classes, you'll also notice that its not getting copied but is always 
+         * passed by reference.  This is so that the FileMgrDirectClient can pass the 
+         * working checksum cache around by reference entirely since the locks protecting 
+         * this datastructure inside MasterMgr are always held when this method is called.  
+         * The FileMgrNetClient has no choice but to pass by value as it gets serialized 
+         * and deserialized, but that is unavoidable.  This approach is generally not 
+         * recommended, but since the cache can be large and this is one of the more time 
+         * critical methods in Pipeine, I'm intentionally breaking the rules here.
+         */
+        
+        return new FileStateRsp(timer, nodeID, states, timestamps, wcheck);
       }
     }
     catch(PipelineException ex) {
@@ -872,26 +849,21 @@ class FileMgr
       synchronized(workingLock) {
 	timer.resume();
 
-	CheckSum checkSum = new CheckSum(pChecksumPath.get().toFile());
+        NodeID nodeID = req.getNodeID(); 
+        long ctime = req.getChangeStamp();
+        
+        CheckSumCache wcheck = req.getWorkingCheckSums();
+        wcheck.resetModified(); 
+        
+        Path statPath = new Path(pFileStatPath.get());
 
-	/* refresh the working checksums */ 
-	for(FileSeq fseq : req.getFileSequences()) {
-	  for(File file : fseq.getFiles()) {
-	    File work = new File(req.getNodeID().getWorkingParent().toFile(), file.getPath());
-	    checkSum.refresh(work);
-	  }
-	}
-
-	/* create the repository file and checksum directories
-	     as well any missing subdirectories */ 
+	/* create the repository file directory as well any missing subdirectories */ 
 	VersionID rvid = req.getVersionID();
 	File rdir  = null;
-	File crdir = null;
         File rpath = null;
 	{
-          rpath = req.getNodeID().getCheckedInPath(rvid).toFile();
+          rpath = nodeID.getCheckedInPath(rvid).toFile();
 	  rdir  = new File(pProdDir, rpath.getPath());
-	  crdir = new File(pProdDir, "checksum/" + rpath);
 
 	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
@@ -916,71 +888,85 @@ class FileMgr
 	      throw new PipelineException
 		("Unable to create the repository directory (" + rdir + ")!");
 	    }
-
-	    if(crdir.exists()) {
-	      if(crdir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow the repository checksum directory (" + crdir + ") already " + 
-                   "exists!");
-	      else 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + crdir + ") in the location " + 
-                   "of the repository checksum directory!");
-	    }
-	    
-	    try {
-	      if(!crdir.mkdirs())
-		throw new PipelineException
-		  ("Unable to create the repository checksum directory (" + crdir + ")!");
-	    }
-	    catch (SecurityException ex) {
-	      throw new PipelineException
-		("Unable to create the repository checksum directory (" + crdir + ")!");
-	    }
 	  }
 	}
-	  
+        
+        /* update any out-of-date working checksums */ 
+        {
+          Path wpath = new Path(statPath, nodeID.getWorkingParent());
+          for(FileSeq fseq : req.getFileSequences()) {
+            for(Path path : fseq.getPaths()) {
+              try {
+                NativeFileStat work = new NativeFileStat(new Path(wpath, path));
+                String fname = path.toString(); 
+                wcheck.update(pCheckSumPath.get(), fname, 
+                              work.lastCriticalChange(ctime)); 
+              }
+              catch(IOException ex) {
+                throw new PipelineException
+                  ("Unable to update the checksums for working file (" + path + ") of " + 
+                   "node (" + nodeID + ")!", ex); 
+              }
+            }
+          }
+        }
+
 	/* the latest repository directory */ 
-	VersionID lvid = req.getLatestVersionID();
-	File ldir = null;
-	if(lvid != null) {
-	  ldir = new File(pProdDir, 
-			  req.getNodeID().getCheckedInPath(lvid).toString());
-	  if(!ldir.isDirectory()) {
-	    throw new PipelineException
-	      ("Somehow the latest repository directory (" + ldir + ") was missing!");
-	  }
-	}
-	
-	/* the base repository directory */ 
-	String rbase = rdir.getParent();
+        VersionID lvid = req.getLatestVersionID();
+        File ldir = null;
+        if(lvid != null) {
+          ldir = new File(pProdDir, 
+                          nodeID.getCheckedInPath(lvid).toString());
+          if(!ldir.isDirectory()) {
+            throw new PipelineException
+              ("Somehow the latest repository directory (" + ldir + ") was missing!");
+          }
+        }
 
-	/* the working file and checksum directories */ 
+	/* the base repository directory */ 
+        String rbase = rdir.getParent();
+
+	/* the working file directories */ 
 	File wdir  = null;
-	File cwdir = null;
         File wpath = null;
 	{
-          wpath = req.getNodeID().getWorkingParent().toFile();
+          wpath = nodeID.getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	}
-	
-	/* process the files */ 
-	ArrayList<File> files  = new ArrayList<File>();
-	ArrayList<File> copies = new ArrayList<File>();
-	ArrayList<File> links  = new ArrayList<File>();
+
+	/* determine how to process the files */ 
+	ArrayList<File> filesToCopy = new ArrayList<File>();
+	ArrayList<File> filesToMove = new ArrayList<File>();
+	ArrayList<File> filesToLink = new ArrayList<File>();
 	{
 	  TreeMap<FileSeq,boolean[]> isNovel = req.getIsNovel();
 	  for(FileSeq fseq : req.getFileSequences()) {
 	    boolean flags[] = isNovel.get(fseq);
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
-	      files.add(file);
-
-	      File work = new File(wdir, file.getPath());
-
 	      if(flags[wk]) {
-		copies.add(file);	
+                File work = new File(wdir, file.getPath());
+                if(!work.isFile())
+                  throw new PipelineException
+                    ("Somehow the working file (" + work + ") being checked-in does " + 
+                     "not exist!"); 
+
+                /* we can't move/relink hand edited files or symlinks which are novel */ 
+                boolean mustCopy = false;
+                try {
+                  mustCopy = (!req.hasEnabledAction() || NativeFileSys.isSymlink(work));
+                }
+                catch(IOException ex) {
+                  throw new PipelineException
+                    ("Unable to determine whether the working file (" + work + ") being " + 
+                     "checked-in is a symbolic link or a regular file!"); 
+                }
+
+                if(mustCopy) 
+                  filesToCopy.add(file);
+                else {
+                  filesToMove.add(file);
+                }
 	      }
 	      else {
 		if(ldir == null)
@@ -990,7 +976,7 @@ class FileMgr
 		  String source = NativeFileSys.realpath(latest).getPath();
 		  if(!source.startsWith(rbase))
 		    throw new IllegalStateException(); 
-		  links.add(new File(".." + source.substring(rbase.length())));
+		  filesToLink.add(new File(".." + source.substring(rbase.length())));
 		}
 		catch(IOException ex) {
 		  throw new PipelineException
@@ -1003,96 +989,30 @@ class FileMgr
 	    }
 	  }
 	}
+        
+        Map<String,String> env = System.getenv();
+        
+        Path instsbin = 
+          new Path(PackageInfo.sInstPath, 
+                   PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Opt"); 
 
-	boolean success = false;
+	boolean copyLinkSuccess = false;
 	try {
-	  Map<String,String> env = System.getenv();
+          /* we must copy files which are not procedurally generated and novel */ 
+          if(!filesToCopy.isEmpty()) {
 
-          /* for files that are unique for this version, we copy or move them... */ 
-	  if(!copies.isEmpty()) {
-            
-            /* if the files are procedurally generated, 
-                move instead of copying and then create symlinks to the repository location */
-            if(req.hasEnabledAction()) {
-              Path instsbin = 
-                new Path(PackageInfo.sInstPath, 
-                         PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Opt"); 
-              
-              /* rename the working files into repository ones, 
-                 the underlying "mv" falls back to copying if the working and repository
-                 directories are not on same filesystem */ 
-              {
-                Path plmv = new Path(instsbin, "/sbin/plmv");
-                
-                ArrayList<String> preOpts = new ArrayList<String>();
-                preOpts.add(rdir.getPath());
-              
-                ArrayList<String> args = new ArrayList<String>();
-                for(File file : copies) 
-                  args.add(file.getPath());
-              
-                LinkedList<SubProcessLight> procs = 
-                  SubProcessLight.createMultiSubProcess
-                  ("CheckIn-Move", plmv.toOsString(), preOpts, args, env, wdir);
-              
-                try {	    
-                  for(SubProcessLight proc : procs) {
-                    proc.start();
-                    proc.join();
-                    if(!proc.wasSuccessful()) 
-                      throw new PipelineException
-                        ("Unable to copy files for working version " + 
-                         "(" + req.getNodeID() + ") into the file repository:\n" +
-                         proc.getStdErr());
-                  }
-                }
-                catch(InterruptedException ex) {
-                  throw new PipelineException
-                    ("Interrupted while copying files for working version " +
-                     "(" + req.getNodeID() + ") into the file repository!");
-                }
-              }
-
-              /* change the ownership of the newly moved files to the "pipeline" admin user */ 
-              { 
-                Path plchown = new Path(instsbin, "/sbin/plchown");
-
-                ArrayList<String> args = new ArrayList<String>();
-                args.add(rdir.getPath()); 
-
-                SubProcessLight proc = 
-                  new SubProcessLight("CheckIn-Chown", plchown.toOsString(), args, env, wdir); 
-
-                try {  
-                  proc.start();
-                  proc.join();
-                  if(!proc.wasSuccessful()) 
-                    throw new PipelineException
-                      ("Unable to change the ownership of files newly moved to the " +
-                       "repository directory (" + rdir + "):\n" +
-                       proc.getStdErr());
-                }
-                catch(InterruptedException ex) {
-                  throw new PipelineException
-                    ("Interrupted while change the ownership of files newly moved to the " +
-                     "repository directory (" + rdir + ")!");
-                }	    
-              }
-            }
-
-            /* if this is a hand-edited node, 
-                 just copy the working area files into the repository */ 
-            else {
+            /* copy the files into the repository */ 
+            {
               ArrayList<String> preOpts = new ArrayList<String>();
               preOpts.add("--target-directory=" + rdir);
-	    
+              
               ArrayList<String> args = new ArrayList<String>();
-              for(File file : copies) 
+              for(File file : filesToCopy) 
                 args.add(file.getPath());
               
               LinkedList<SubProcessLight> procs = 
                 SubProcessLight.createMultiSubProcess
-	        ("CheckIn-Copy", "cp", preOpts, args, env, wdir);
+                ("CheckIn-Copy", "cp", preOpts, args, env, wdir);
               
               try {	    
                 for(SubProcessLight proc : procs) {
@@ -1100,108 +1020,50 @@ class FileMgr
                   proc.join();
                   if(!proc.wasSuccessful()) 
                     throw new PipelineException
-                      ("Unable to copy files for working version (" + req.getNodeID() + ") " + 
-                       "into the file repository:\n" +
+                      ("Unable to copy files for working version " + 
+                       "(" + nodeID + ") into the file repository:\n" +
                        proc.getStdErr());
                 }
               }
               catch(InterruptedException ex) {
                 throw new PipelineException
-                  ("Interrupted while copying files for working version " + 
-                   "(" + req.getNodeID() + ") into the file repository!");
+                  ("Interrupted while copying files for working version " +
+                   "(" + nodeID + ") into the file repository!");
               }
             }
 
-            /* post process the moved/copied files */ 
-            ArrayList<File> relinks = new ArrayList<File>();
-	    for(File file : copies) {
-	      File work = new File(wdir, file.getPath());
-	      File repo = new File(rdir, file.getPath());
+            /* verify that the copied files are correct */ 
+            for(File file : filesToCopy) {
+              File work = new File(wdir, file.getPath());
+              File repo = new File(rdir, file.getPath());
 
-	      if(!repo.isFile())
-		throw new PipelineException
-		  ("The newly created repository file (" + repo + ") was missing!\n\n" + 
-		   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-		   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-           
-              /* if its still in the working area then it got copied, 
-                   so make sure it was copied completely */ 
-              if(work.isFile()) {
-                long repoSize = repo.length();
-                long workSize = work.length();
-                if(repoSize != workSize) 
-                  throw new PipelineException
-                    ("The newly created repository file (" + repo + ") was NOT the same " + 
-                     "size as the working area file (" + work + ") being checked-in!  The " + 
-                     "repository file size was (" + repoSize + ") bytes compared to the " + 
-                     "working file size of (" + workSize + ") bytes.\n\n" + 
-                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-              }
-
-              /* if it got moved into the repository it will now be missing from the 
-                 working area, so we need to create symlinks from the working area to 
-                 the new repository location */ 
-              else {
-                relinks.add(file); 
-              }
-
-              /* either way, make the repository file is now read-only! */ 
-	      repo.setReadOnly();
-	    }
-            
-            /* for each file that was moved instead of copied to the repository, 
-                 create relative symlinks from the working files to these checked-in files */ 
-            if(!relinks.isEmpty()) {
-              ArrayList<String> preOpts = new ArrayList<String>();
-              preOpts.add("--symbolic-link");
-              preOpts.add("--remove-destination");
-
-              ArrayList<String> args = new ArrayList<String>();
-              {
-                StringBuilder buf = new StringBuilder();
-                String comps[] = wpath.getPath().split("/");
-                int wk;
-                for(wk=1; wk<comps.length; wk++) 
-                  buf.append("../");
-                buf.append(rpath.getPath().substring(1));
-                String path = buf.toString();
-                
-                for(File file : relinks) 
-                  args.add(path + "/" + file);
-              }
-              
-              ArrayList<String> postOpts = new ArrayList<String>();
-              postOpts.add(".");
-              
-              LinkedList<SubProcessLight> procs = 
-                SubProcessLight.createMultiSubProcess
-                (req.getNodeID().getAuthor(), 
-                 "CheckIn-Relink", "cp", preOpts, args, postOpts, env, wdir);
-              
-              try {
-                for(SubProcessLight proc : procs) {
-                  proc.start();
-                  proc.join();
-                  if(!proc.wasSuccessful()) 
-                    throw new PipelineException
-                      ("Unable to create symbolic links to the repository for the " +
-                       "working version (" + req.getNodeID() + "):\n\n" + 
-                       proc.getStdErr());
-                }	
-              }
-              catch(InterruptedException ex) {
+              if(!repo.isFile())
                 throw new PipelineException
-                  ("Interrupted while creating symbolic links to the repository for the " +
-                   "working version (" + req.getNodeID() + ")!");
-              }
+                  ("The newly created repository file (" + repo + ") was missing!\n\n" + 
+                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+              
+              /* make sure it was copied completely */ 
+              long repoSize = repo.length();
+              long workSize = work.length();
+              if(repoSize != workSize) 
+                throw new PipelineException
+                  ("The newly created repository file (" + repo + ") was NOT the same " + 
+                   "size as the working area file (" + work + ") being checked-in!  The " + 
+                   "repository file size was (" + repoSize + ") bytes compared to the " + 
+                   "working file size of (" + workSize + ") bytes.\n\n" + 
+                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+    
+              /* make sure the repository file is now read-only */ 
+              repo.setReadOnly();
             }
-	  }
+          }
 
-	  /* for files that are the same as another repository version, we just create the 
-             symbolic links between the new and existing repository version files */ 
-	  if(!links.isEmpty()) {
-	    for(File source : links) {
+	  /* all we need to do for files that are the same as another repository version
+             is to just creat a symlink between the new and existing repository files */ 
+	  if(!filesToLink.isEmpty()) {
+	    for(File source : filesToLink) {
 	      try {
 		File target = new File(rdir, source.getName());
 		NativeFileSys.symlink(source, target);
@@ -1209,93 +1071,197 @@ class FileMgr
 	      catch(IOException ex) {
 		throw new PipelineException
 		 ("Unable to create symbolic links for working version " + 
-                  "(" + req.getNodeID() + ") in the file repository:\n" +  
+                  "(" + nodeID + ") in the file repository:\n" +  
 		  ex.getMessage());
 	      }
 	    }
 	  }
 
-	  /* copy the checksums */ 
-	  {
-	    ArrayList<String> preOpts = new ArrayList<String>();
-	    preOpts.add("--target-directory=" + crdir);
-
-	    ArrayList<String> args = new ArrayList<String>();
-	    for(File file : files) 
-	      args.add(file.getPath());
-
-	    LinkedList<SubProcessLight> procs = 
-	      SubProcessLight.createMultiSubProcess
-	        ("CheckIn-CopyCheckSums", "cp", preOpts, args, env, cwdir);
-
-	    try {
-	      for(SubProcessLight proc : procs) {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to copy checksums for working version " + 
-		     "(" + req.getNodeID() + ") into the checksum repository:\n" + 
-		     proc.getStdErr());
-	      }		   
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while copying checksums for working version (" + 
-		 req.getNodeID() + ") into the checksum repository!");
-	    }
-
-	    for(File file : files) {
-	      File repo = new File(crdir, file.getPath());
-
-	      if(!repo.isFile()) 
-		throw new PipelineException
-		  ("The newly created repository checksum (" + repo + ") was missing!\n\n" + 
-		   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-		   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-
-	      repo.setReadOnly();
-	    }
-	  }
-
-	  success = true;
-	}
-	finally {
-	  /* make the repository directories read-only */ 
-	  if(success) {
-	    rdir.setReadOnly();
-	    crdir.setReadOnly();
-	  }
-
+          copyLinkSuccess = true;
+        }
+        finally {
 	  /* cleanup any partial results */ 
-	  else {
-	    for(File file : copies) {
+          if(!copyLinkSuccess) {
+	    for(File file : filesToCopy) {
 	      File rfile = new File(rdir, file.getPath());
 	      if(rfile.exists()) 
 		rfile.delete();
 	    }
 	    
-	    for(File link : links) {
+	    for(File link : filesToLink) {
 	      File rlink = new File(rdir, link.getName());
 	      if(rlink.exists()) 
 		rlink.delete();
 	    }
 
 	    rdir.delete();
-	    
-	    for(FileSeq fseq : req.getFileSequences()) {
-	      for(File file : fseq.getFiles()) {
-		File cfile = new File(crdir, file.getPath());
-		if(cfile.exists()) 
-		  cfile.delete();		
-	      }
-	    }
+          }
+        }
+        
+        /* move/relink files which are procedurally generated and novel */ 
+        if(!filesToMove.isEmpty()) {
+          boolean moveSuccess = false; 
+          try {
+            /* rename the working files into repository ones, 
+               the underlying "mv" falls back to copying if the working and repository
+               directories are not on same filesystem */ 
+            {
+              Path plmv = new Path(instsbin, "/sbin/plmv");
+              
+              ArrayList<String> preOpts = new ArrayList<String>();
+              preOpts.add(rdir.getPath());
+              
+              ArrayList<String> args = new ArrayList<String>();
+              for(File file : filesToMove) 
+                args.add(file.getPath());
+              
+              LinkedList<SubProcessLight> procs = 
+                SubProcessLight.createMultiSubProcess
+                ("CheckIn-Move", plmv.toOsString(), preOpts, args, env, wdir);
+              
+              try {	    
+                for(SubProcessLight proc : procs) {
+                  proc.start();
+                  proc.join();
+                  if(!proc.wasSuccessful()) 
+                    throw new PipelineException
+                      ("Unable to move files for working version " + 
+                       "(" + nodeID + ") into the file repository:\n" +
+                       proc.getStdErr());
+                }
+              }
+              catch(InterruptedException ex) {
+                throw new PipelineException
+                  ("Interrupted while moving files for working version " +
+                   "(" + nodeID + ") into the file repository!");
+              }
+            }
+            
+            /* change the ownership of the newly moved files to 
+               the "pipeline" admin user */ 
+            { 
+              Path plchown = new Path(instsbin, "/sbin/plchown");
+              
+              ArrayList<String> args = new ArrayList<String>();
+              args.add(rdir.getPath()); 
+              
+              SubProcessLight proc = 
+                new SubProcessLight("CheckIn-Chown", plchown.toOsString(), 
+                                    args, env, wdir); 
+              try {  
+                proc.start();
+                proc.join();
+                if(!proc.wasSuccessful()) 
+                  throw new PipelineException
+                    ("Unable to change the ownership of files newly moved to the " +
+                     "repository directory (" + rdir + "):\n" +
+                     proc.getStdErr());
+              }
+              catch(InterruptedException ex) {
+                throw new PipelineException
+                  ("Interrupted while change the ownership of files newly moved to the " +
+                   "repository directory (" + rdir + ")!");
+              }	    
+            }
 
-	    crdir.delete();
-	  }
-	}
+            /* verify that the moved or copy/delete operation was successful */ 
+            for(File file : filesToMove) {
+              File work = new File(wdir, file.getPath());
+              File repo = new File(rdir, file.getPath());
 
-	return new SuccessRsp(timer);
+              if(!repo.isFile())
+                throw new PipelineException
+                  ("The newly created repository file (" + repo + ") was missing!\n\n" + 
+                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+               
+              if(work.isFile()) 
+                throw new PipelineException
+                  ("Somehow the working file (" + work + ") still exists after being moved " + 
+                   "to the repository and renamed to (" + repo + ")!\n\n" + 
+                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+            } 
+
+            moveSuccess = true;
+          }
+          finally {
+            /* rename the repository directory if there was a failure */ 
+            if(!moveSuccess) {
+              Path p = new Path(new Path(rdir), "-" + System.currentTimeMillis() + ".recover");
+              File recover = p.toFile(); 
+              if(!rdir.renameTo(recover))
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+                   "Failed to rename newly created repository directory (" + rdir + ") " +
+                   "to recovery directory (" + recover + ") in response to an exception " + 
+                   "while moving files from the working area!"); 
+            }
+          }
+            
+          /* create relative symlinks from the now missing working file names to their 
+               new checked-in names */ 
+          {
+            ArrayList<String> preOpts = new ArrayList<String>();
+            preOpts.add("--symbolic-link");
+            
+            ArrayList<String> args = new ArrayList<String>();
+            {
+              StringBuilder buf = new StringBuilder();
+              String comps[] = wpath.getPath().split("/");
+              int wk;
+              for(wk=1; wk<comps.length; wk++) 
+                buf.append("../");
+              buf.append(rpath.getPath().substring(1));
+              String path = buf.toString();
+              
+              for(File file : filesToMove) 
+                args.add(path + "/" + file);
+            }
+            
+            ArrayList<String> postOpts = new ArrayList<String>();
+            postOpts.add(".");
+            
+            LinkedList<SubProcessLight> procs = 
+              SubProcessLight.createMultiSubProcess
+              (nodeID.getAuthor(), 
+               "CheckIn-Relink", "cp", preOpts, args, postOpts, env, wdir);
+            
+            try {
+              for(SubProcessLight proc : procs) {
+                proc.start();
+                proc.join();
+                if(!proc.wasSuccessful()) 
+                  throw new PipelineException
+                    ("Unable to create symbolic links to the repository for the " +
+                     "working version (" + nodeID + "):\n\n" + 
+                     proc.getStdErr());
+              }	
+            }
+            catch(InterruptedException ex) {
+              throw new PipelineException
+                ("Interrupted while creating symbolic links to the repository for the " +
+                 "working version (" + nodeID + ")!");
+            }
+          }
+        }
+
+        /* make the repository directory read-only */ 
+        rdir.setReadOnly();
+
+        /**
+         * You might be wondering why "wcheck" is read from the FileCheckInReq, locally 
+         * modified and then passed directly back to FileCheckInRsp.  If you look at these 
+         * message classes, you'll also notice that its not getting copied but is always 
+         * passed by reference.  This is so that the FileMgrDirectClient can pass the 
+         * working checksum cache around by reference entirely since the locks protecting 
+         * this datastructure inside MasterMgr are always held when this method is called.  
+         * The FileMgrNetClient has no choice but to pass by value as it gets serialized 
+         * and deserialized, but that is unavoidable.  This approach is generally not 
+         * recommended, but since the cache can be large and this is one of the more time 
+         * critical methods in Pipeine, I'm intentionally breaking the rules here.
+         */
+	return new FileCheckInRsp(timer, wcheck); 
       }
     }
     catch(PipelineException ex) {
@@ -1308,6 +1274,7 @@ class FileMgr
       checkedInLock.writeLock().unlock();
     }  
   }
+   
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1348,14 +1315,12 @@ class FileMgr
 
 	Map<String,String> env = System.getenv();
 
-	/* verify (or create) the working area file and checksum directories */ 
+	/* verify (or create) the working area file directories */ 
 	File wdir  = null;
-	File cwdir = null;
 	File wpath = null;
 	{
 	  wpath = req.getNodeID().getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
 
 	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
@@ -1372,18 +1337,6 @@ class FileMgr
 	      dirs.add(wdir);
 	    }
 	    
-	    if(cwdir.exists()) {
-	      if(!cwdir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + cwdir + ") in the location " + 
-                   "of the working checksum directory!");
-	    }
-	    else {
-	      if(!cwdir.mkdirs())
-		throw new PipelineException
-		  ("Unable to create the working checksum directory (" + cwdir + ")!");
-	    }
-
 	    if(!dirs.isEmpty()) {
 	      ArrayList<String> preOpts = new ArrayList<String>();
 	      preOpts.add("--parents");
@@ -1419,15 +1372,13 @@ class FileMgr
 	  }
 	}
 
-	/* the repository file and checksum directories */ 
+	/* the repository file directories */ 
 	VersionID rvid = req.getVersionID();
 	File rdir  = null;
-	File crdir = null;
 	File rpath = null;
 	{
 	  rpath = req.getNodeID().getCheckedInPath(rvid).toFile();
 	  rdir  = new File(pProdDir, rpath.getPath());
-	  crdir = new File(pProdDir, "checksum/" + rpath);
 	}
 
 	/* build the list of files to copy */ 
@@ -1536,70 +1487,7 @@ class FileMgr
 	  }
 	}
 
-	/* remove the working checksums */ 
-	if(req.isLinked()) {
-	  ArrayList<String> preOpts = new ArrayList<String>();
-	  preOpts.add("--force");
-
-	  ArrayList<String> args = new ArrayList<String>();
-	  for(File file : files) 
-	    args.add(file.getName());
-
-          LinkedList<SubProcessLight> procs = 
-            SubProcessLight.createMultiSubProcess
-            ("CheckOut-RemoveCheckSums", "rm", preOpts, args, env, cwdir);
-
-	  try {
-	    for(SubProcessLight proc : procs) {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to remove the working checksums for version (" + 
-		   req.getNodeID() + "):\n\n" + 
-		   proc.getStdErr());	
-	    }
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while removing the working checksums for version (" + 
-	       req.getNodeID() + ")!");
-	  }
-	}
-
-	/* otherwise, overwrite the working checksums with the checked-in checksums */ 
-	else {
-	  ArrayList<String> preOpts = new ArrayList<String>();
-	  preOpts.add("--remove-destination");
-	  preOpts.add("--target-directory=" + cwdir);
-
-	  ArrayList<String> args = new ArrayList<String>();
-	  for(File file : files) 
-	    args.add(file.getName());
-
-	  LinkedList<SubProcessLight> procs = 
-	    SubProcessLight.createMultiSubProcess
-	      ("CheckOut-CopyCheckSums", "cp", preOpts, args, env, crdir);
-
-	  try {
-	    for(SubProcessLight proc : procs) {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to copy checksums from the repository for the " +
-		   "working version (" + req.getNodeID() + "):\n\n" + 
-		   proc.getStdErr());	
-	    }
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while copying checksums from the repository for the " +
-	       "working version (" + req.getNodeID() + ")!");
-	  }
-	}
-
-	/* if not symlinks, add write permission to the working files and checksums */ 
+	/* if not symlinks, add write permission to the working files */ 
         if(!req.isLinked()) {
 	  ArrayList<String> preOpts = new ArrayList<String>();
 	  preOpts.add("u+w");
@@ -1628,29 +1516,6 @@ class FileMgr
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
 		("Interrupted while adding write access permission to the files for " + 
-		 "the working version (" + req.getNodeID() + ")!");
-	    }
-	  }
-
-	  {
-	    LinkedList<SubProcessLight> procs = 
-	      SubProcessLight.createMultiSubProcess
-	        ("CheckOut-SetWritableCheckSums", "chmod", preOpts, args, env, cwdir);
-
-	    try {
-	      for(SubProcessLight proc : procs) {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to add write access permission to the checksums for " + 
-		     "the working version (" + req.getNodeID() + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while adding write access permission to the checksums for " + 
 		 "the working version (" + req.getNodeID() + ")!");
 	    }
 	  }
@@ -1702,14 +1567,12 @@ class FileMgr
 	
 	Map<String,String> env = System.getenv();
 
-	/* verify (or create) the working area file and checksum directories */ 
+	/* verify (or create) the working area file directories */ 
 	File wdir  = null;
-	File cwdir = null;
         File wpath = null;
 	{
 	  wpath = req.getNodeID().getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
 
 	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
@@ -1719,23 +1582,11 @@ class FileMgr
 	    if(wdir.exists()) {
 	      if(!wdir.isDirectory()) 
 		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + wdir + 
-		   ") in the location of the working directory!");
+		  ("Somehow there exists a non-directory (" + wdir + ") in the location " +
+                   "of the working directory!");
 	    }
 	    else {
 	      dirs.add(wdir);
-	    }
-
-	    if(cwdir.exists()) {
-	      if(!cwdir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + cwdir + 
-		   ") in the location of the working checksum directory!");
-	    }
-	    else {
-	      if(!cwdir.mkdirs())
-		throw new PipelineException
-		  ("Unable to create the working checksum directory (" + cwdir + ")!");
 	    }
 
 	    if(!dirs.isEmpty()) {
@@ -1855,40 +1706,7 @@ class FileMgr
 	  }
 	}
 
-	/* overwrite the working checksums with the checked-in checksums */ 
-	{
-	  ArrayList<String> preOpts = new ArrayList<String>();
-	  preOpts.add("--force");
-	  preOpts.add("--target-directory=" + cwdir);
-
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.addAll(rfiles);
-
-	  File crdir = new File(pProdDir, "checksum/repository" + req.getNodeID().getName());
-
-	  LinkedList<SubProcessLight> procs = 
-	    SubProcessLight.createMultiSubProcess
-	      ("Revert-CopyCheckSums", "cp", preOpts, args, env, crdir);
-
-	  try {
-	    for(SubProcessLight proc : procs) {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to copy checksums from the repository for the " +
-		   "working version (" + req.getNodeID() + "):\n\n" + 
-		   proc.getStdErr());	
-	    }
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while copying checksums from the repository for the " +
-	       "working version (" + req.getNodeID() + ")!");
-	  }
-	}
-	
-	/* add write permission to the to working files and checksums */ 
+	/* add write permission to the to working files */ 
         {
 	  ArrayList<String> preOpts = new ArrayList<String>();
 	  preOpts.add("u+w");
@@ -1916,29 +1734,6 @@ class FileMgr
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
 		("Interrupted while adding write access permission to the files for " + 
-		 "the working version (" + req.getNodeID() + ")!");
-	    }
-	  }
-
-	  {
-	    LinkedList<SubProcessLight> procs = 
-	      SubProcessLight.createMultiSubProcess
-	        ("Revert-SetWritableCheckSums", "chmod", preOpts, args, env, cwdir);
-
-	    try {
-	      for(SubProcessLight proc : procs) {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to add write access permission to the checksums for " + 
-		     "the working version (" + req.getNodeID() + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while adding write access permission to the checksums for " + 
 		 "the working version (" + req.getNodeID() + ")!");
 	    }
 	  }
@@ -1995,22 +1790,18 @@ class FileMgr
 	
 	Map<String,String> env = System.getenv();
 	
-	/* the source working area file and checksum directories */ 
+	/* the source working area file directories */ 
 	File owdir  = null;
-	File ocwdir = null;
 	{
 	  File wpath = sourceID.getWorkingParent().toFile();
 	  owdir  = new File(pProdDir, wpath.getPath());
-	  ocwdir = new File(pProdDir, "checksum/" + wpath);
 	}
 	
-	/* verify (or create) the target working area file and checksum directories */ 
+	/* verify (or create) the target working area file directories */ 
 	File wdir  = null;
-	File cwdir = null;
 	{
 	  File wpath = targetID.getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	  
 	  synchronized(pMakeDirLock) { 
 	    File dir = null;
@@ -2048,18 +1839,6 @@ class FileMgr
 		  ("Interrupted while creating directories for working version " + 
 		   "(" + targetID + ")!");
 	      }
-	    }
-
-	    if(cwdir.exists()) {
-	      if(!cwdir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + cwdir + 
-		   ") in the location of the working checksum directory!");
-	    }
-	    else {
-	      if(!cwdir.mkdirs())
-		throw new PipelineException
-		  ("Unable to create the working checksum directory (" + cwdir + ")!");
 	    }
 	  }
 	}
@@ -2115,57 +1894,6 @@ class FileMgr
 	    }
 	  }
 	}
-	
-	/* copy each primary checksum */ 
-	{
-	  boolean hasCommands = false;
-	  File script = null;
-	  try {
-	    script = File.createTempFile("Clone-PrimaryCheckSum.", ".bash", pScratchDir);
-	    FileCleaner.add(script);
-
-	    FileWriter out = new FileWriter(script);
-
-	    for(File ofile : files.keySet()) {
-	      File opath = new File(ocwdir, ofile.getName());
-	      if(opath.isFile()) {
-		File file = files.get(ofile);
-		out.write("if ! cp --force " + opath.getPath() + " " + file.getName() +
-			  "; then exit 1; fi\n");
-		hasCommands = true;
-	      }
-	    }
-
-	    out.close();
-	  }
-	  catch(IOException ex) {
-	    throw new PipelineException
-	      ("Unable to write temporary script file (" + script + ")!\n" +
-	       ex.getMessage());
-	  }
-	  
-	  if(hasCommands) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add(script.getPath());
-	    
-	    SubProcessLight proc = 
-	      new SubProcessLight("Clone-PrimaryCheckSum", "bash", args, env, cwdir);
-	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to clone the primary checksums for version " + 
-		   "(" + targetID + "):\n\n" + 
-		   proc.getStdErr());	
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while cloning the primary checksums for version " + 
-		 "(" + targetID + ")!");
-	    }
-	  }
-	}
 
 	/* set write permission to the to working files */ 
         {
@@ -2203,42 +1931,6 @@ class FileMgr
 	    }
 	  }
 	}
-
-	/* set write permission to the to working checksums */ 
-	{
-	  ArrayList<String> preOpts = new ArrayList<String>();
-	  preOpts.add("u+w");
-
-	  ArrayList<String> args = new ArrayList<String>();
-	  for(File file : files.values()) {
-	    File path = new File(cwdir, file.getName());
-	    if(path.isFile()) 
-	      args.add(file.getPath()); 
-	  }
-	    
-	  if(!args.isEmpty()) {
-	    LinkedList<SubProcessLight> procs = 
-	      SubProcessLight.createMultiSubProcess
-	      ("Clone-SetWritableCheckSums", "chmod", preOpts, args, env, cwdir);
-	    
-	    try {
-	      for(SubProcessLight proc : procs) {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to add write access permission to the checksums for " + 
-		     "the working version (" + targetID + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while adding write access permission to the checksums for " + 
-		 "the working version (" + targetID + ")!");
-	    }
-	  }
-	}	
       
 	return new SuccessRsp(timer);
       }
@@ -2350,22 +2042,18 @@ class FileMgr
 	FilePattern npat = req.getFilePattern();
 	NodeID id = new NodeID(req.getNodeID(), npat.getPrefix());
 
-	/* the old working area file and checksum directories */ 
+	/* the old working area file directories */ 
 	File owdir  = null;
-	File ocwdir = null;
 	{
 	  File wpath = req.getNodeID().getWorkingParent().toFile();
 	  owdir  = new File(pProdDir, wpath.getPath());
-	  ocwdir = new File(pProdDir, "checksum/" + wpath);
 	}
 	
-	/* verify (or create) the new working area file and checksum directories */ 
+	/* verify (or create) the new working area file directories */ 
 	File wdir  = null;
-	File cwdir = null;
 	{
 	  File wpath = id.getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	  
 	  synchronized(pMakeDirLock) { 
 	    File dir = null;
@@ -2377,18 +2065,6 @@ class FileMgr
 	    }
 	    else {
 	      dir = wdir; 
-	    }
-	    
-	    if(cwdir.exists()) {
-	      if(!cwdir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + cwdir + ") in the location " + 
-		   "of the working checksum directory!");
-	    }
-	    else {
-	      if(!cwdir.mkdirs())
-		throw new PipelineException
-		  ("Unable to create the working checksum directory (" + cwdir + ")!");
 	    }
 	    
 	    if(dir != null) {
@@ -2536,99 +2212,6 @@ class FileMgr
 	  }
 	}
 
-	/* move each primary checksum */ 
-	{
-	  boolean hasCommands = false;
-	  File script = null;
-	  try {
-	    script = File.createTempFile("Rename-Primary.", ".bash", pScratchDir);
-	    FileCleaner.add(script);
-
-	    FileWriter out = new FileWriter(script);
-
-	    Iterator<File> oiter = opfiles.iterator();
-	    Iterator<File>  iter = pfiles.iterator();
-	    while(oiter.hasNext() && iter.hasNext()) {
-	      File ofile = oiter.next();
-	      File opath = new File(ocwdir, ofile.getName());
-	      
-	      File file = iter.next();
-	      
-	      if(opath.isFile()) {
-		out.write("if ! mv --force " + opath.getPath() + " " + file.getName() +
-			  "; then exit 1; fi\n");
-		hasCommands = true;
-	      }
-	    }
-
-	    out.close();
-	  }
-	  catch(IOException ex) {
-	    throw new PipelineException
-	      ("Unable to write temporary script file (" + script + ")!\n" +
-	       ex.getMessage());
-	  }
-	      
-	  if(hasCommands) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add(script.getPath());
-	    
-	    SubProcessLight proc = 
-	      new SubProcessLight("Rename-PrimaryCheckSum", "bash", args, env, cwdir);
-	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to rename the primary checksums for version " + 
-		   "(" + id + "):\n\n" + 
-		   proc.getStdErr());	
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while renaming the primary checksums for version " +
-		 "(" + id + ")!");
-	    }
-	  }
-	}
-	
-	/* move all of the secondary checksums (if the node directory changed) */ 
-	if(!owdir.equals(wdir)) {
-	  ArrayList<String> preOpts = new ArrayList<String>();
-	  preOpts.add("--force");
-	  preOpts.add("--target-directory=" + cwdir);
-	
-	  ArrayList<String> args = new ArrayList<String>();
-	  for(File file : sfiles) {
-	    File work = new File(ocwdir, file.getPath());
-	    if(work.isFile()) 
-	      args.add(file.getName());
-	  }
-	  
-	  if(!args.isEmpty()) {
-	    LinkedList<SubProcessLight> procs = 
-	      SubProcessLight.createMultiSubProcess
-	        ("Rename-SecondaryCheckSums", "mv", preOpts, args, env, ocwdir);
-
-	    try {
-	      for(SubProcessLight proc : procs) {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to rename the secondary checksums for version " + 
-		     "(" + id + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while renaming the secondary checksums for version (" + id + 
-		 ")!");
-	    }
-	  }
-	}
-
 	return new SuccessRsp(timer);
       }
     }
@@ -2670,14 +2253,12 @@ class FileMgr
       timer.resume();	
 
       String rdir  = (pProdDir + "/repository" + name);
-      String crdir = (pProdDir + "/checksum/repository" + name);
       
       {
 	ArrayList<String> args = new ArrayList<String>();
 	args.add("--recursive");
 	args.add("u+w");
 	args.add(rdir);
-	args.add(crdir);
 	
 	Map<String,String> env = System.getenv();
 	
@@ -2699,15 +2280,11 @@ class FileMgr
 	}
       }
 
-      File rparent = (new File(rdir)).getParentFile();
-      File crparent = (new File(crdir)).getParentFile();      
-
       {
 	ArrayList<String> args = new ArrayList<String>();
 	args.add("--recursive");
 	args.add("--force");
 	args.add(rdir);
-	args.add(crdir);
 	
 	Map<String,String> env = System.getenv();
 	
@@ -2729,11 +2306,8 @@ class FileMgr
 	}
       }
 
-      deleteEmptyParentDirs(new File(pProdDir + "/repository"), 
-			    rparent);
-
-      deleteEmptyParentDirs(new File(pProdDir + "/checksum/repository"), 
-			    crparent);
+      File rparent = (new File(rdir)).getParentFile();  
+      deleteEmptyParentDirs(new File(pProdDir + "/repository"), rparent);
 
       return new SuccessRsp(timer);
     }
@@ -3611,14 +3185,11 @@ class FileMgr
       try {
 	timer.resume();
 
-	/* create the repository file and checksum directories
-	     as well any missing subdirectories */ 
+	/* create the repository file directories as well any missing subdirectories */ 
 	Path rdir  = null;
-	Path crdir = null;
 	{
 	  Path rpath = new Path("/repository/" + name + "/" + vid); 
-	  rdir  = new Path(PackageInfo.sProdPath, rpath);
-	  crdir = new Path(PackageInfo.sProdPath, "checksum/" + rpath);
+	  rdir = new Path(PackageInfo.sProdPath, rpath);
 
 	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
@@ -3644,28 +3215,6 @@ class FileMgr
 	    catch (SecurityException ex) {
 	      throw new PipelineException
 		("Unable to create the repository directory (" + rdir + ")!");
-	    }
-
-            File checkSumDir = crdir.toFile();
-	    if(checkSumDir.exists()) {
-	      if(checkSumDir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow the repository checksum directory (" + crdir + 
-		   ") already exists!");
-	      else 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + crdir + 
-		   ") in the location of the repository checksum directory!");
-	    }
-	    
-	    try {
-	      if(!checkSumDir.mkdirs())
-		throw new PipelineException
-		  ("Unable to create the repository checksum directory (" + crdir + ")!");
-	    }
-	    catch (SecurityException ex) {
-	      throw new PipelineException
-		("Unable to create the repository checksum directory (" + crdir + ")!");
 	    }
 	  }
 	}
@@ -3728,102 +3277,25 @@ class FileMgr
             }
           }
 
-          /* create checksums for these files */ 
-          {
-            for(FileSeq fseq : vsn.getSequences()) {
-              for(Path path : fseq.getPaths()) {
-                Path p = new Path(rdir, path);
-                
-                /* compute checksum */ 
-                byte checksum[] = null;
-                try {
-                  checksum = NativeFileSys.md5sum(p); 
-                }
-                catch(IOException ex) {
-                  throw new PipelineException(ex);
-                }
-                
-                /* write the checksum to file */ 
-                Path sp = new Path(crdir, path);
-                try {
-                  LogMgr.getInstance().log
-                    (LogMgr.Kind.Sum, LogMgr.Level.Finest,
-                     "Writing the checksum file: " + sp);
-                  
-                  FileOutputStream out = new FileOutputStream(sp.toFile());	
-                  try {
-                    out.write(checksum);
-                  }
-                  catch(IOException ex) {
-                    throw new PipelineException
-                      ("Unable to write the checksum file (" + sp + ")!");
-                  }
-                  finally {
-                    out.flush();
-                    out.close();
-                  }
-                }  
-                catch(FileNotFoundException ex) {
-                  throw new PipelineException
-                    ("Could not open the checksum file (" + sp + ")!");
-                }
-                catch(SecurityException ex) {
-                  throw new PipelineException
-                    ("No permission to write the checksum file (" + sp + ")!");
-                } 
-                catch (IOException ex) { 
-                  throw new IllegalStateException();
-                }
-              }
-            }
-            
-            for(FileSeq fseq : vsn.getSequences()) {
-              for(Path path : fseq.getPaths()) {
-                Path p = new Path(crdir, path);
-                File repo = p.toFile();
-                
-                if(!repo.isFile()) 
-                  throw new PipelineException
-                    ("The newly created repository checksum (" + repo + ") was missing!\n\n" + 
-                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-                
-                repo.setReadOnly();
-              }
-            }
-          }
-
 	  success = true;
 	}
 	finally {
 	  /* make the repository directories read-only */ 
-	  if(success) {
+	  if(success) 
 	    rdir.toFile().setReadOnly();
-	    crdir.toFile().setReadOnly();
-	  }
 
 	  /* cleanup any partial results */ 
 	  else { 
             for(FileSeq fseq : vsn.getSequences()) {
               for(Path path : fseq.getPaths()) {
-                {
-                  Path p = new Path(rdir, path);
-                  File file = p.toFile();
-                  if(file.exists()) 
-                    file.delete();
-                }
-
-                {
-                  Path p = new Path(crdir, path);
-                  File file = p.toFile();
-                  if(file.exists()) 
-                    file.delete();
-                }
+                Path p = new Path(rdir, path);
+                File file = p.toFile();
+                if(file.exists()) 
+                  file.delete();
               }
             }
 
 	    rdir.toFile().delete();
-	    crdir.toFile().delete();
 	  }
 	}
       }
@@ -4654,6 +4126,10 @@ class FileMgr
    OfflineProgressTask task
   )
   {
+    /* ignore any aborted check-in recovery directories */ 
+    if(dir.getName().endsWith(".recover")) 
+      return;
+
     task.addTotal();
 
     File files[] = dir.listFiles(); 
@@ -4661,17 +4137,17 @@ class FileMgr
       /* empty directory must be the leaf revision number named directory */ 
       if(files.length == 0) {
         task.addOffline();
-
-	String name = dir.getParent().substring(head);
-	VersionID vid = new VersionID(dir.getName());
-	
-	TreeSet<VersionID> vids = offlined.get(name);
-	if(vids == null) {
-	  vids = new TreeSet<VersionID>();
-	  offlined.put(name, vids);
-	}
-
-	vids.add(vid);
+        
+        String name = dir.getParent().substring(head);
+        VersionID vid = new VersionID(dir.getName());
+        
+        TreeSet<VersionID> vids = offlined.get(name);
+        if(vids == null) {
+          vids = new TreeSet<VersionID>();
+          offlined.put(name, vids);
+        }
+        
+        vids.add(vid);
       }
       
       /* process any subdirectories */ 
@@ -4728,9 +4204,11 @@ class FileMgr
               ("Found a file in the repository (" + vdirs[wk] + ") where there should " +
                "have been a node version directory for the node (" + name + ")!");
           
-          File files[] = vdirs[wk].listFiles(); 
-          if((files != null) && (files.length == 0)) 
-            vids.add(new VersionID(vdirs[wk].getName()));
+          if(!vdirs[wk].getName().endsWith(".recover")) {
+            File files[] = vdirs[wk].listFiles(); 
+            if((files != null) && (files.length == 0)) 
+              vids.add(new VersionID(vdirs[wk].getName()));
+          }
         }
       }
 
@@ -4764,6 +4242,8 @@ class FileMgr
     BaseArchiver archiver = req.getArchiver();
     Map<String,String> env = req.getEnvironment();    
     TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
+    TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> checkSums = 
+      req.getCheckSums();
     boolean dryrun = req.isDryRun(); 
     
     File restoreDir = new File(pProdDir, "restore/" + archiveName + "-" + stamp);
@@ -4911,13 +4391,36 @@ class FileMgr
       }
       
       /* verify that all files where restored and that their checksums are correct */ 
-      {
-	CheckSum checkSum = new CheckSum(pChecksumPath.get().toFile());
-
-	for(File file : files) {
-	  if(!checkSum.validateRestore(restoreDir, file))
-	    throw new PipelineException
-	      ("The restored file (" + file + ") has been corrupted!");
+      { 
+        for(String name : fseqs.keySet()) {
+          TreeMap<VersionID,TreeSet<FileSeq>> vsnSeqs = fseqs.get(name);
+          for(VersionID vid : vsnSeqs.keySet()) {
+            for(FileSeq fseq : vsnSeqs.get(vid)) {
+              for(File file : fseq.getFiles()) {
+                CheckSum vsum = null;
+                try {
+                  vsum = checkSums.get(name).get(vid).get(file.getPath());
+                }
+                catch(NullPointerException ex) {
+                }
+                if(vsum == null) 
+                  throw new PipelineException
+                    ("Somehow there was no checksum for the restored file (" + file + "), " + 
+                     "so its validity cannot be determined!"); 
+                
+                try {
+                  File rfile = new File(restoreDir, name + "/" + vid + "/" + file); 
+                  CheckSum sum = new CheckSum(new Path(rfile)); 
+                  if(!vsum.equals(sum)) 
+                    throw new PipelineException
+                      ("The restored file (" + file + ") has been corrupted!");
+                }
+                catch(IOException ex) {
+                  throw new PipelineException(ex); 
+                }
+              }
+            }
+	  }
 	}
       }
       
@@ -5290,11 +4793,9 @@ class FileMgr
 	
 	/* the working and working checksum directories */ 
 	File wdir  = null;
-	File cwdir = null;
 	{
 	  File wpath = id.getWorkingParent().toFile();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  wdir = new File(pProdDir, wpath.getPath());
 	}
 	
 	/* remove the working files */ 
@@ -5331,45 +4832,6 @@ class FileMgr
 		 id + ")!");
 	    }
 	  }
-	}
-	
-	/* remove the working checksums */ 
-	{
-	  ArrayList<String> preOpts = new ArrayList<String>();
-	  preOpts.add("--force");
-
-	  ArrayList<String> args = new ArrayList<String>();
-	  for(File file : files) {
-	    File cksum = new File(cwdir, file.getPath());
-	    if(cksum.isFile()) 
-	      args.add(file.getName());
-	  }
-	  
-	  if(!args.isEmpty()) {
-	    LinkedList<SubProcessLight> procs = 
-	      SubProcessLight.createMultiSubProcess
-	      ("Remove-CheckSums", "rm", preOpts, args, env, cwdir);
-	    
-	    try {
-	      for(SubProcessLight proc : procs) {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to remove the working checksums for version (" + id + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while removing the working checksums for version " + 
-		 "(" + id + ")!");
-	    }
-	  }
-
-	  deleteEmptyParentDirs
-	    (new File(pProdDir, "checksum/working/" + id.getAuthor() + "/" + id.getView()),
-	     cwdir);
 	}
 	
 	return new SuccessRsp(timer);
@@ -5572,7 +5034,7 @@ class FileMgr
    * to provide an exclusively network for checksum generation traffic.  Setting this to 
    * <CODE>null</CODE> will cause the default root production directory to be used instead.
    */ 
-  private AtomicReference<Path> pChecksumPath;
+  private AtomicReference<Path> pCheckSumPath;
 
 
   /*----------------------------------------------------------------------------------------*/

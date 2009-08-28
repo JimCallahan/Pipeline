@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.17 2009/07/11 10:54:21 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.18 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -60,7 +60,7 @@ class FileMgrDirectClient
   /**
    * Get the current runtime performance controls.
    */ 
-  public synchronized MasterControls
+  public MasterControls
   getRuntimeControls() 
     throws PipelineException 
   {
@@ -78,7 +78,7 @@ class FileMgrDirectClient
   /**
    * Set the current runtime performance controls.
    */ 
-  public synchronized void
+  public void
   setRuntimeControls
   (
    MasterControls controls
@@ -176,6 +176,9 @@ class FileMgrDirectClient
    * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial 
    * working version. <P> 
    * 
+   * The <CODE>jobStates</CODE> argument may contain <CODE>null</CODE> entries if there are 
+   * no jobs which regenerate the corresponding primary/secondary file.
+   * 
    * The <CODE>states</CODE> and <CODE>timestamps</CODE> arguments should be empty 
    * tables as they are populated by a successful invocation of this method. <P> 
    * 
@@ -192,6 +195,9 @@ class FileMgrDirectClient
    *   The relationship between the revision numbers of working and checked-in versions 
    *   of the node.
    * 
+   * @param jobStates 
+   *   The jobs states for each primary/secondary file (if any).
+   * 
    * @param isFrozen
    *   Whether the files associated with the working version are symlinks to the 
    *   checked-in files instead of copies.
@@ -201,6 +207,17 @@ class FileMgrDirectClient
    * 
    * @param critical
    *   The last legitimate change time (ctime) of the file.
+   * 
+   * @param baseCheckSums
+   *   Read-only checksums for all files associated with the base checked-in version
+   *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param latestCheckSums
+   *   Read-only checksums for all files associated with the latest checked-in version
+   *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param workingCheckSums
+   *   Current cache of checksums for files associated with the working version.
    * 
    * @param states
    *   An empty table which will be filled with the <CODE>FileState</CODE> of each the 
@@ -212,26 +229,36 @@ class FileMgrDirectClient
    *   each primary and secondary file associated with the working version indexed by file 
    *   sequence.  
    * 
+   * @return
+   *   The updated cache of checksums for files associated with the working version.
+   * 
    * @throws PipelineException
    *   If unable to compute the file states.
    */ 
-  public void
+  public CheckSumCache
   states
   (
    NodeID id, 
    NodeMod mod, 
    VersionState vstate, 
+   JobState jobStates[], 
    boolean isFrozen, 
    VersionID latest, 
-   long critical, 
+   SortedMap<String,CheckSum> baseCheckSums, 
+   SortedMap<String,CheckSum> latestCheckSums, 
+   CheckSumCache workingCheckSums, 
    TreeMap<FileSeq,FileState[]> states, 
    TreeMap<FileSeq,Long[]> timestamps
   ) 
     throws PipelineException 
   {
+    Long ctime = null;
+    if(mod != null)
+      ctime = mod.getLastCTimeUpdate(); 
+      
     FileStateReq req = 
-      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, critical, 
-		       mod.getSequences());
+      new FileStateReq(id, vstate, jobStates, isFrozen, mod.getWorkingID(), latest, ctime, 
+                       mod.getSequences(), baseCheckSums, latestCheckSums, workingCheckSums);
 
     Object obj = pFileMgr.states(req); 
     if(obj instanceof FileStateRsp) {
@@ -239,9 +266,11 @@ class FileMgrDirectClient
       states.putAll(rsp.getFileStates());
       if(rsp.getTimeStamps() != null) 
 	timestamps.putAll(rsp.getTimeStamps());
+      return rsp.getUpdatedCheckSums(); 
     }
     else {
       handleFailure(obj);
+      return null;
     }
   }
 
@@ -268,25 +297,40 @@ class FileMgrDirectClient
    *   Whether each file associated with the version contains new data not present in the
    *   previous checked-in version.
    * 
+   * @param workingCheckSums
+   *   Current cache of checksums for files associated with the working version.
+   * 
+   * @return
+   *   The updated cache of checksums for files associated with the working version.
+   * 
    * @throws PipelineException
    *   If unable to check-in the files.
    */
-  public void 
+  public CheckSumCache
   checkIn
   (
    NodeID id, 
    NodeMod mod, 
    VersionID vid,
    VersionID latest, 
-   TreeMap<FileSeq,boolean[]> isNovel
+   TreeMap<FileSeq,boolean[]> isNovel, 
+   CheckSumCache workingCheckSums
   ) 
     throws PipelineException 
   {
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.isActionEnabled(), mod.getSequences(), isNovel); 
+      new FileCheckInReq(id, vid, latest, mod.isActionEnabled(), mod.getSequences(), isNovel,
+                         mod.getLastCTimeUpdate(), workingCheckSums); 
 
     Object obj = pFileMgr.checkIn(req);
-    handleSimpleResponse(obj);
+    if(obj instanceof FileCheckInRsp) {
+      FileCheckInRsp rsp = (FileCheckInRsp) obj;
+      return rsp.getUpdatedCheckSums(); 
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   }
 
   /**
@@ -754,7 +798,7 @@ class FileMgrDirectClient
    * @param jarPath
    *   The name of the JAR archive to create.
    */ 
-  public synchronized void 
+  public void 
   extractSiteVersion
   (
    String name, 
@@ -1051,6 +1095,11 @@ class FileMgrDirectClient
    *   The file sequences to archive indexed by fully resolved node name and checked-in 
    *   revision number.
    * 
+   * @param checkSums
+   *   Read-only checksums for all files associated with the checked-in version
+   *   being extracted indexed by fully resolved node name and checked-in 
+   *   revision number.
+   * 
    * @param archiver
    *   The archiver plugin to use to restore the versions from the archive volume.
    * 
@@ -1074,6 +1123,7 @@ class FileMgrDirectClient
    String archiveName, 
    long stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
+   TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> checkSums, 
    BaseArchiver archiver, 
    Map<String,String> env, 
    long size, 
@@ -1082,7 +1132,7 @@ class FileMgrDirectClient
     throws PipelineException 
   {
     FileExtractReq req = 
-      new FileExtractReq(archiveName, stamp, fseqs, archiver, env, size, 
+      new FileExtractReq(archiveName, stamp, fseqs, checkSums, archiver, env, size, 
                          dryRunResults != null);
 
     Object obj = pFileMgr.extract(req);

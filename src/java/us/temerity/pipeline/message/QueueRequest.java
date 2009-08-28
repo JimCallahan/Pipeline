@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.28 2009/05/14 23:30:43 jim Exp $
+// $Id: QueueRequest.java,v 1.29 2009/08/28 02:10:47 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -70,17 +70,17 @@ enum QueueRequest
   GetLicenseKeys,
 
   /**
-   * An instance {@link QueueAddLicenseKeyReq QueueAddLicenseKeyReq} is next.
+   * An instance {@link QueueAddLicenseKeyReq} is next.
    */
   AddLicenseKey, 
   
   /**
-   * An instance {@link QueueRemoveLicenseKeyReq QueueRemoveLicenseKeyReq} is next.
+   * An instance {@link QueueRemoveLicenseKeyReq} is next.
    */
   RemoveLicenseKey, 
 
   /**
-   * An instance {@link QueueSetMaxLicensesReq QueueSetMaxLicensesReq} is next.
+   * An instance {@link QueueSetMaxLicensesReq} is next.
    */
   SetMaxLicenses, 
 
@@ -103,12 +103,12 @@ enum QueueRequest
   GetSelectionKeys,
 
   /**
-   * An instance {@link QueueAddSelectionKeyReq QueueAddSelectionKeyReq} is next.
+   * An instance {@link QueueAddSelectionKeyReq} is next.
    */
   AddSelectionKey, 
   
   /**
-   * An instance {@link QueueRemoveSelectionKeyReq QueueRemoveSelectionKeyReq} is next.
+   * An instance {@link QueueRemoveSelectionKeyReq} is next.
    */
   RemoveSelectionKey, 
 
@@ -126,17 +126,17 @@ enum QueueRequest
   GetSelectionGroups, 
 
   /**
-   * An instance {@link QueueAddSelectionGroupReq QueueAddSelectionGroupReq} is next.
+   * An instance {@link QueueAddSelectionGroupReq} is next.
    */
   AddSelectionGroup, 
 
   /**
-   * An instance {@link QueueRemoveSelectionGroupsReq QueueRemoveSelectionGroupsReq} is next.
+   * An instance {@link QueueRemoveSelectionGroupsReq} is next.
    */
   RemoveSelectionGroups, 
 
   /**
-   * An instance {@link QueueEditSelectionGroupsReq QueueEditSelectionGroupsReq} is next.
+   * An instance {@link QueueEditSelectionGroupsReq} is next.
    */
   EditSelectionGroups, 
   
@@ -153,18 +153,18 @@ enum QueueRequest
   GetSelectionSchedules, 
 
   /**
-   * An instance {@link QueueAddSelectionScheduleReq QueueAddSelectionScheduleReq} is next.
+   * An instance {@link QueueAddSelectionScheduleReq} is next.
    */
   AddSelectionSchedule, 
 
   /**
-   * An instance {@link QueueRemoveSelectionSchedulesReq QueueRemoveSelectionSchedulesReq} 
+   * An instance {@link QueueRemoveSelectionSchedulesReq} 
    * is next.
    */
   RemoveSelectionSchedules, 
 
   /**
-   * An instance {@link QueueEditSelectionSchedulesReq QueueEditSelectionSchedulesReq} 
+   * An instance {@link QueueEditSelectionSchedulesReq} 
    * is next.
    */
   EditSelectionSchedules, 
@@ -209,17 +209,17 @@ enum QueueRequest
   GetHardwareGroups, 
 
   /**
-   * An instance {@link QueueAddHardwareGroupReq QueueAddHardwareGroupReq} is next.
+   * An instance {@link QueueAddHardwareGroupReq} is next.
    */
   AddHardwareGroup, 
 
   /**
-   * An instance {@link QueueRemoveHardwareGroupsReq QueueRemoveHardwareGroupsReq} is next.
+   * An instance {@link QueueRemoveHardwareGroupsReq} is next.
    */
   RemoveHardwareGroups, 
 
   /**
-   * An instance {@link QueueEditHardwareGroupsReq QueueEditHardwareGroupsReq} is next.
+   * An instance {@link QueueEditHardwareGroupsReq} is next.
    */
   EditHardwareGroups, 
   
@@ -250,28 +250,28 @@ enum QueueRequest
   GetHosts, 
 
   /**
-   * An instance {@link QueueAddHostReq QueueAddHostReq} is next.
+   * An instance {@link QueueAddHostReq} is next.
    */
   AddHost, 
 
   /**
-   * An instance {@link QueueRemoveHostsReq QueueRemoveHostsReq} is next.
+   * An instance {@link QueueRemoveHostsReq} is next.
    */
   RemoveHosts, 
 
   /**
-   * An instance {@link QueueEditHostsReq QueueEditHostsReq} is next.
+   * An instance {@link QueueEditHostsReq} is next.
    */
   EditHosts, 
   
   /**
-   * An instance {@link QueueGetHostResourceSamplesReq QueueGetHostResourceSamplesReq} 
+   * An instance {@link QueueGetHostResourceSamplesReq} 
    * is next.
    */
   GetHostResourceSamples, 
   
   /**
-   * An instance {@link QueueGetHostHistogramsReq QueueGetHostHistogramsReq} 
+   * An instance {@link QueueGetHostHistogramsReq} 
    * is next.
    */
   GetHostHistograms, 
@@ -280,19 +280,24 @@ enum QueueRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance {@link QueueGetJobStatesReq QueueGetJobStatesReq} is next.
+   * An instance {@link QueueGetJobStatesAndCheckSums} is next.
+   */
+  GetJobStatesAndCheckSums, 
+
+  /**
+   * An instance {@link QueueGetJobStatesReq} is next.
    */
   GetJobStates, 
 
   /**
-   * An instance {@link QueueGetUnfinishedJobsForNodesReq QueueGetUnfinishedJobsForNodesReq} 
+   * An instance {@link QueueGetUnfinishedJobsForNodesReq} 
    * is next.
    */
   GetUnfinishedJobsForNodes, 
 
   /**
    * An instance 
-   * {@link QueueGetUnfinishedJobsForNodeFilesReq QueueGetUnfinishedJobsForNodeFilesReq} 
+   * {@link QueueGetUnfinishedJobsForNodeFilesReq} 
    * is next.
    */
   GetUnfinishedJobsForNodeFiles, 
@@ -313,12 +318,12 @@ enum QueueRequest
   GetRunningJobStatus, 
 
   /**
-   * An instance {@link QueueGetJobReq QueueGetJobReq} is next.
+   * An instance {@link QueueGetJobReq} is next.
    */
   GetJob, 
 
   /**
-   * An instance {@link QueueGetJobInfoReq QueueGetJobInfoReq} is next.
+   * An instance {@link QueueGetJobInfoReq} is next.
    */
   GetJobInfo, 
 
@@ -329,7 +334,7 @@ enum QueueRequest
 
 
   /**
-   * An instance {@link QueueSubmitJobsReq QueueSubmitJobsReq} is next.
+   * An instance {@link QueueSubmitJobsReq} is next.
    */
   SubmitJobs, 
 
@@ -385,22 +390,22 @@ enum QueueRequest
 
 
   /**
-   * An instance {@link QueueGetJobGroupReq QueueGetJobGroupReq} is next.
+   * An instance {@link QueueGetJobGroupReq} is next.
    */
   GetJobGroup, 
 
   /**
-   * An instance {@link QueueGetJobGroupsReq QueueGetJobGroupsReq} is next.
+   * An instance {@link QueueGetJobGroupsReq} is next.
    */
   GetJobGroups, 
 
   /**
-   * An instance {@link QueueDeleteJobGroupsReq QueueDeleteJobGroupsReq} is next.
+   * An instance {@link QueueDeleteJobGroupsReq} is next.
    */
   DeleteJobGroups, 
 
   /**
-   * An instance {@link QueueDeleteViewJobGroupsReq QueueDeleteViewJobGroupsReq} is next.
+   * An instance {@link QueueDeleteViewJobGroupsReq} is next.
    */
   DeleteViewJobGroups, 
   
@@ -418,7 +423,7 @@ enum QueueRequest
   Disconnect,
 
   /**
-   * An instance of {@link QueueShutdownOptionsReq QueueShutdownOptionsReq} is next.
+   * An instance of {@link QueueShutdownOptionsReq} is next.
    */
   ShutdownOptions, 
 

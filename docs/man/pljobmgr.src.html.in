@@ -183,11 +183,19 @@ initialization of Pipeline plugins.<br>
 <span style="font-weight: bold;"></span></div>
 <span style="font-weight: bold;">sub</span><br>
 <div style="margin-left: 40px;">Logs the launching and monitoring
-of OS level subprocesses.</div>
+of OS level subprocesses.<br>
+</div>
 </div>
 <br>
-<span style="font-weight: bold;"></span>The (<span
- style="font-style: italic;">level</span>) portion of
+<div style="margin-left: 40px;"><span style="font-weight: bold;">sum</span><br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;"></span>Logs
+the activity of checksums used to optimize
+comparisons of the working area and repository files associated with
+nodes.<br>
+<br>
+</div>
+The (<span style="font-style: italic;">level</span>) portion of
 the option's argument can be:<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>

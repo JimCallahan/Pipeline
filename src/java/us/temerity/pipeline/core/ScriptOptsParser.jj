@@ -181,7 +181,7 @@ ScriptOptsParser
   private Long  pRestoreCleanupInterval;
 
   private Path    pFileStatDir;
-  private Path    pChecksumDir;
+  private Path    pCheckSumDir;
 
   /**
    * archive-volume options. 
@@ -3331,7 +3331,7 @@ SetRuntimeMaster()
   pAvgNodeSize = null;
   pRestoreCleanupInterval = null;
   pFileStatDir = null; 
-  pChecksumDir = null; 
+  pCheckSumDir = null; 
 }
 {
   <SET_MASTER_RT> AE() (RuntimeMasterOpts())* 
@@ -3344,7 +3344,7 @@ SetRuntimeMaster()
 
     if((pNodeGCInterval != null) || (pMinOverhead != null) || (pMaxOverhead != null) || 
        (pAvgNodeSize != null) || (pRestoreCleanupInterval != null) || 
-       (pFileStatDir != null) || (pChecksumDir != null)) {
+       (pFileStatDir != null) || (pCheckSumDir != null)) {
 
       MasterControls controls = pMasterMgrClient.getRuntimeControls();
 
@@ -3372,8 +3372,8 @@ SetRuntimeMaster()
       if(pFileStatDir != null)
         controls.setFileStatDir(pFileStatDir);
 
-      if(pChecksumDir != null)
-        controls.setChecksumDir(pChecksumDir);
+      if(pCheckSumDir != null)
+        controls.setCheckSumDir(pCheckSumDir);
 
       pMasterMgrClient.setRuntimeControls(controls);
       noOpts = false;
@@ -3402,7 +3402,7 @@ RuntimeMasterOpts()
 {}
 {
   (RemoteLog() | NodeGCInterval() | MinOverhead() | MaxOverhead() | AvgNodeSize() | 
-   RestoreCleanupInterval() | FileStatDir() | ChecksumDir())
+   RestoreCleanupInterval() | FileStatDir() | CheckSumDir())
   {}
 }
 
@@ -3499,14 +3499,14 @@ void FileStatDir() :
 }
 
 
-void ChecksumDir() :
+void CheckSumDir() :
 {
   Token t;
 }
 {
   <CHECKSUM_DIR> EQ() t=<PATH_ARG> AE()
   { 
-    pChecksumDir = new Path(t.image); 
+    pCheckSumDir = new Path(t.image); 
   }
 }
 

@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.49 2009/07/06 10:25:26 jim Exp $
+// $Id: JobMgr.java,v 1.50 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1208,13 +1208,43 @@ class JobMgr
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
 	   "Finished Job: " + jobID);
       
+        /* make sure all target files of the job exist, 
+             if they are all there compute their checksums... */ 
+        CheckSumCache cache = null;
+        int exitCode = pProc.getExitCode();
+        if(exitCode == BaseSubProcess.SUCCESS) {
+          if(targetsExist(agenda)) {
+            cache = computeCheckSums(agenda);
+          }
+          else {
+            exitCode = 666;
+
+            try {
+              FileWriter out = new FileWriter(errFile, true);
+              out.write
+                ("The job completed normally with a successful exit code, but some or\n" + 
+                 "all of the target files of the job are missing!\n\n" + 
+                 "Marking the job as Failed.");
+              out.flush();
+              out.close();
+            }
+            catch(IOException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+                 "Could not append the warning about missing target files to STDERR file " + 
+                 "(" + errFile + ")!");
+            }
+          }
+        }
+
 	/* record the results */ 
 	{
 	  QueueJobResults results = 
-	    new QueueJobResults(pProc.getExitCode(), 
+	    new QueueJobResults(exitCode, 
 				pProc.getUserTime(), pProc.getSystemTime(), 
 				pProc.getVirtualSize(), pProc.getResidentSize(), 
-				pProc.getSwappedSize(), pProc.getPageFaults());
+				pProc.getSwappedSize(), pProc.getPageFaults(), 
+                                cache);
 
 	  recordResults(results, dir);
 	}
@@ -1224,6 +1254,51 @@ class JobMgr
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage(ex2));
       }
+    }
+
+    private synchronized boolean 
+    targetsExist
+    (
+      ActionAgenda agenda
+    ) 
+    {
+      Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent()); 
+      for(FileSeq fseq : agenda.getTargetSequences()) {
+        for(Path fpath : fseq.getPaths()) {
+          Path path = new Path(wpath, fpath); 
+          if(!path.toFile().exists()) 
+            return false;
+        }
+      }
+
+      return true;
+    }
+
+    private synchronized CheckSumCache
+    computeCheckSums
+    (
+     ActionAgenda agenda
+    ) 
+    {
+      CheckSumCache cache = new CheckSumCache(agenda.getNodeID()); 
+      for(FileSeq fseq : agenda.getTargetSequences()) {
+        for(Path fpath : fseq.getPaths()) {
+          try {
+            cache.update(PackageInfo.sProdPath, fpath.toOsString(), 
+                         System.currentTimeMillis());
+          }
+          catch(IOException ex) {     
+            Path path = new Path(PackageInfo.sProdPath, 
+                                 new Path(agenda.getNodeID().getWorkingParent(), fpath));
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Sum, LogMgr.Level.Warning, 
+               "Unable to compute the checksum for target file (" + fpath + ") of job " + 
+               "(" + agenda.getJobID()  + "):\n\n  " + ex.getMessage()); 
+          }
+        }
+      }
+
+      return cache;
     }
 
     private synchronized void 

@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.16 2007/03/28 19:56:42 jim Exp $
+// $Id: FileStateRsp.java,v 1.17 2009/08/28 02:10:47 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -42,6 +42,9 @@ class FileStateRsp
    * @param timestamps
    *   The last modification timestamp of each the primary and secondary file associated with 
    *   the working version indexed by file sequence or <CODE>null</CODE> if frozen.
+   * 
+   * @param updatedCheckSums
+   *   The updated cache of checksums for files associated with the working version.
    */
   public
   FileStateRsp
@@ -49,7 +52,8 @@ class FileStateRsp
    TaskTimer timer, 
    NodeID id, 
    TreeMap<FileSeq,FileState[]> states,
-   TreeMap<FileSeq,Long[]> timestamps
+   TreeMap<FileSeq,Long[]> timestamps, 
+   CheckSumCache updatedCheckSums
   )
   { 
     super(timer);
@@ -64,15 +68,18 @@ class FileStateRsp
 
     pTimeStamps = timestamps;
 
+    if(updatedCheckSums == null) 
+      throw new IllegalArgumentException("The updated checksums cannot (null)!");
+    pUpdatedCheckSums = updatedCheckSums; 
+
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
       StringBuilder buf = new StringBuilder();
-      buf.append("FileMgr.computeFileStates(): " + id + " ");
+      buf.append("FileMgr.states(): " + id + " ");
       for(FileSeq fseq : states.keySet()) 
 	buf.append("[" + fseq + "]");
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Finest,
 	 buf.toString() + ":\n  " + getTimer());
-      LogMgr.getInstance().flush();
     }
   }
 
@@ -112,7 +119,17 @@ class FileStateRsp
     return pTimeStamps;
   }
 
+  /**
+   * The updated cache of checksums for files associated with the working version.
+   */ 
+  public CheckSumCache
+  getUpdatedCheckSums()
+  {
+    return pUpdatedCheckSums; 
+  }
   
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -144,5 +161,10 @@ class FileStateRsp
    */
   private TreeMap<FileSeq,Long[]>  pTimeStamps; 
 
+  /**
+   * The updated cache of checksums for files associated with the working version.
+   */ 
+  public CheckSumCache  pUpdatedCheckSums; 
+  
 }
   

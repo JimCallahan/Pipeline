@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.47 2009/07/11 10:54:21 jim Exp $
+// $Id: FileMgrClient.java,v 1.48 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -111,6 +111,9 @@ interface FileMgrClient
    * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial 
    * working version. <P> 
    * 
+   * The <CODE>jobStates</CODE> argument may contain <CODE>null</CODE> entries if there are 
+   * no jobs which regenerate the corresponding primary/secondary file.
+   * 
    * The <CODE>states</CODE> and <CODE>timestamps</CODE> arguments should be empty 
    * tables as they are populated by a successful invocation of this method. <P> 
    * 
@@ -127,6 +130,9 @@ interface FileMgrClient
    *   The relationship between the revision numbers of working and checked-in versions 
    *   of the node.
    * 
+   * @param jobStates 
+   *   The jobs states for each primary/secondary file (if any).
+   * 
    * @param isFrozen
    *   Whether the files associated with the working version are symlinks to the 
    *   checked-in files instead of copies.
@@ -134,8 +140,16 @@ interface FileMgrClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
-   * @param ctime
-   *   The last legitimate change time (ctime) of the file.
+   * @param baseCheckSums
+   *   Read-only checksums for all files associated with the base checked-in version
+   *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param latestCheckSums
+   *   Read-only checksums for all files associated with the latest checked-in version
+   *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param workingCheckSums
+   *   Current cache of checksums for files associated with the working version.
    * 
    * @param states
    *   An empty table which will be filled with the <CODE>FileState</CODE> of each the 
@@ -147,20 +161,26 @@ interface FileMgrClient
    *   each primary and secondary file associated with the working version indexed by file 
    *   sequence.  
    * 
+   * @return
+   *   The updated cache of checksums for files associated with the working version.
+   * 
    * @throws PipelineException
    *   If unable to compute the file states.
    */ 
-  public void
+  public CheckSumCache
   states
   (
    NodeID id, 
    NodeMod mod, 
    VersionState vstate, 
+   JobState jobStates[], 
    boolean isFrozen, 
    VersionID latest, 
-   long ctime, 
-   TreeMap<FileSeq, FileState[]> states, 
-   TreeMap<FileSeq, Long[]> timestamps
+   SortedMap<String,CheckSum> baseCheckSums, 
+   SortedMap<String,CheckSum> latestCheckSums, 
+   CheckSumCache workingCheckSums, 
+   TreeMap<FileSeq,FileState[]> states, 
+   TreeMap<FileSeq,Long[]> timestamps
   ) 
     throws PipelineException;
 
@@ -187,17 +207,24 @@ interface FileMgrClient
    *   Whether each file associated with the version contains new data not present in the
    *   previous checked-in version.
    * 
+   * @param workingCheckSums
+   *   Current cache of checksums for files associated with the working version.
+   * 
+   * @return
+   *   The updated cache of checksums for files associated with the working version.
+   * 
    * @throws PipelineException
    *   If unable to check-in the files.
    */
-  public void 
+  public CheckSumCache
   checkIn
   (
    NodeID id, 
    NodeMod mod, 
    VersionID vid,
    VersionID latest, 
-   TreeMap<FileSeq,boolean[]> isNovel
+   TreeMap<FileSeq,boolean[]> isNovel,
+   CheckSumCache workingCheckSums
   ) 
     throws PipelineException;
 
@@ -757,6 +784,11 @@ interface FileMgrClient
    *   The file sequences to archive indexed by fully resolved node name and checked-in 
    *   revision number.
    * 
+   * @param checkSums
+   *   Read-only checksums for all files associated with the checked-in version
+   *   being extracted indexed by fully resolved node name and checked-in 
+   *   revision number.
+   * 
    * @param archiver
    *   The archiver plugin to use to restore the versions from the archive volume.
    * 
@@ -780,6 +812,7 @@ interface FileMgrClient
    String archiveName, 
    long stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
+   TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> checkSums, 
    BaseArchiver archiver, 
    Map<String,String> env, 
    long size, 

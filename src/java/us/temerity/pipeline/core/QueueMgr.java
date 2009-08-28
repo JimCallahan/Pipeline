@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.121 2009/08/20 04:48:07 jlee Exp $
+// $Id: QueueMgr.java,v 1.122 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -572,7 +572,7 @@ class QueueMgr
   establishMasterConnection()
   {
     try {
-      pMasterMgrClient.waitForConnection(5000);
+      pMasterMgrClient.waitForConnection(15000);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
@@ -599,7 +599,7 @@ class QueueMgr
   setShutdownOptions
   (
    boolean shutdownJobMgrs
-  ) 
+  )
   {
     pShutdownJobMgrs.set(shutdownJobMgrs);
   }
@@ -3759,6 +3759,85 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
   /*   J O B S                                                                              */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the jobs IDs and states for each primary file of the given working version as
+   * well as any checksums already computed by the jobs newer than those currently cached.<P> 
+   * 
+   * Any jobs which were submitted before the working version was created will be treated 
+   * as if they didn't exist.  
+   * 
+   * @param req 
+   *   The job states request.
+   *    
+   * @return 
+   *   <CODE>QueueGetJobStatesAndCheckSumsRsp</CODE> if successful.
+   */
+  public Object
+  getJobStatesAndCheckSums
+  (
+   QueueGetJobStatesAndCheckSumsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    NodeID nodeID = req.getNodeID();
+    long stamp = req.getTimeStamp();
+    TreeMap<String,Long> latestUpdates = req.getLatestUpdates(); 
+
+    TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
+    timer.aquire();
+    synchronized(pNodeJobIDs) {
+      timer.resume();
+      TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+      if(table != null) 
+	nodeJobIDs.putAll(table);
+    }
+	  
+    CheckSumCache cache = new CheckSumCache(nodeID); 
+    cache.resetModified(); 
+
+    timer.aquire();  
+    synchronized(pJobInfo) {
+      timer.resume();
+
+      FileSeq fseq = req.getFileSeq();
+      int frames = fseq.numFrames();
+      
+      ArrayList<Long>     jobIDs = new ArrayList<Long>(frames);
+      ArrayList<JobState> states = new ArrayList<JobState>(frames);
+      
+      for(File file : fseq.getFiles()) {
+	Long jobID = nodeJobIDs.get(file);	  
+	JobState jstate = null;
+	{
+	  QueueJobInfo info = null;
+	  if(jobID != null) 
+	    info = pJobInfo.get(jobID);	   
+	  
+	  if((info != null) && (info.getSubmittedStamp() > stamp)) {
+	    jstate = info.getState();
+
+            QueueJobResults results = info.getResults();
+            if(results != null) {
+              CheckSumCache jcache = results.getCheckSumCache();
+              if(jcache != null) {
+                CheckSumCache ncache = new CheckSumCache(latestUpdates, jcache);
+                cache.addAll(ncache); 
+              }
+            }
+          }
+	  else {
+	    jobID = null;
+          }
+	}
+	jobIDs.add(jobID);
+	states.add(jstate);
+      }
+      
+      return new QueueGetJobStatesAndCheckSumsRsp(timer, nodeID, jobIDs, states, cache);
+    }
+  }
 
   /**
    * Get the per-file JobState of each file associated with the given working version and 

@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.27 2009/06/29 00:05:45 jim Exp $
+// $Id: NodeVersion.java,v 1.28 2009/08/28 02:10:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,7 +31,8 @@ class NodeVersion
   public 
   NodeVersion()
   {
-    pSources = new TreeMap<String,LinkVersion>();
+    pSources   = new TreeMap<String,LinkVersion>();
+    pCheckSums = new TreeMap<String,CheckSum>(); 
   }
 
   /**
@@ -52,6 +53,10 @@ class NodeVersion
    * @param isNovel
    *   Whether each file associated with the version contains new data not present in the
    *   previous checked-in version.
+   * 
+   * @param checksums
+   *   The checksums for each file associated with the checked-in version indexed by short
+   *   file name. 
    * 
    * @param author
    *   The name of the user creating the version.
@@ -74,6 +79,7 @@ class NodeVersion
    TreeMap<String,VersionID> lvids,
    TreeMap<String,Boolean> locked,
    TreeMap<FileSeq,boolean[]> isNovel,
+   TreeMap<String,CheckSum> checksums,
    String author, 
    String msg, 
    String rootName, 
@@ -101,6 +107,21 @@ class NodeVersion
     pIsNovel = new TreeMap<FileSeq,boolean[]>();
     for(FileSeq fseq : isNovel.keySet()) 
       pIsNovel.put(fseq, isNovel.get(fseq).clone());
+
+    if(checksums == null) 
+      throw new IllegalArgumentException("The per-file checksums cannot be (null)!"); 
+    pCheckSums = new TreeMap<String,CheckSum>();    
+    for(FileSeq fseq : getSequences()) {
+      for(Path path : fseq.getPaths()) {
+        String fname = path.toString(); 
+        CheckSum sum = checksums.get(fname); 
+        if(sum == null) 
+          throw new IllegalArgumentException
+            ("The checksums provided did not contain the required entry for the file " + 
+             "(" + fname + ") associated with the version!"); 
+        pCheckSums.put(fname, sum); 
+      }
+    }
 
     if(pAction != null) {
       TreeSet<String> dead = new TreeSet<String>();
@@ -163,10 +184,47 @@ class NodeVersion
     pIsNovel = new TreeMap<FileSeq,boolean[]>();
     for(FileSeq fseq : vsn.getSequences()) 
       pIsNovel.put(fseq, vsn.isNovel(fseq).clone());
+
+    pCheckSums = new TreeMap<String,CheckSum>(vsn.getCheckSums());
   }
 
+  /** 
+   * Copy while adding checksums for each file associated with the checked-in version.<P> 
+   * 
+   * This constructor is not normally used, but is provided to support upgrading older 
+   * NodeVersions already stored on disk which lacked checksum information during startup.
+   * 
+   * @param vsn 
+   *   The <CODE>NodeVersion</CODE> to copy.
+   * 
+   * @param checksums
+   *   The checksums for each file associated with the checked-in version indexed by short
+   *   file name. 
+   */ 
+  public 
+  NodeVersion
+  (
+   NodeVersion vsn, 
+   TreeMap<String,CheckSum> checksums 
+  ) 
+  {
+    this(vsn); 
 
+    for(FileSeq fseq : getSequences()) {
+      for(Path path : fseq.getPaths()) {
+        String fname = path.toString(); 
+        CheckSum sum = checksums.get(fname); 
+        if(sum == null) 
+          throw new IllegalArgumentException
+            ("The checksums provided did not contain the required entry for the file " + 
+             "(" + fname + ") associated with the version!"); 
+        pCheckSums.put(fname, sum); 
+      }
+    }
+  }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -301,6 +359,34 @@ class NodeVersion
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the checksum for a file associated with the checked-in version.<P> 
+   * 
+   * @param filename
+   *   The short name of the file.
+   */ 
+  public CheckSum
+  getCheckSum
+  (
+   String filename
+  ) 
+  {
+    return pCheckSums.get(filename); 
+  }
+
+  /**
+   * Get the checksums for each file associated with the checked-in version indexed by short
+   * file name. 
+   */ 
+  public SortedMap<String,CheckSum> 
+  getCheckSums() 
+  {
+    return Collections.unmodifiableSortedMap(pCheckSums); 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R I S O N                                                                  */
@@ -403,6 +489,7 @@ class NodeVersion
       encoder.encode("Sources", pSources);
 
     encoder.encode("IsNovel", pIsNovel);
+    encoder.encode("CheckSums", pCheckSums);
   }
 
 
@@ -435,6 +522,12 @@ class NodeVersion
     if(isNovel == null) 
       throw new GlueException("The \"IsNovel\" was missing!");
     pIsNovel = isNovel;
+
+    /* its possible that they are missing for older versions... */ 
+    TreeMap<String,CheckSum> checksums = 
+      (TreeMap<String,CheckSum>) decoder.decode("CheckSums");
+    if(checksums != null)  
+      pCheckSums = checksums; 
   }
 
 
@@ -478,6 +571,10 @@ class NodeVersion
   )
     throws PipelineException
   {
+    // SHOUDN'T THIS BE A STATIC FACTORY METHOD THAT CREATES A NEW NodeVersion WHICH CONTAINS
+    // THE MODIFICATIONS INSTEAD OF MUTATING AN EXISTING NodeVersion WHICH IS OTHERWISE 
+    // IMMUTATBLE!?
+
     /* record info about original node in a version annotation */ 
     {
       PluginMgrClient client = PluginMgrClient.getInstance();
@@ -595,5 +692,13 @@ class NodeVersion
    * novel.
    */
   private TreeMap<FileSeq,boolean[]>  pIsNovel;
+
+
+  /**
+   * The checksums for each file associated with the checked-in version indexed by short
+   * file name. 
+   */
+  private TreeMap<String,CheckSum>  pCheckSums; 
+
 }
 

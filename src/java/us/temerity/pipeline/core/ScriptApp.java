@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.99 2009/07/26 08:52:20 jlee Exp $
+// $Id: ScriptApp.java,v 1.100 2009/08/28 02:10:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1277,7 +1277,7 @@ class ScriptApp
       if(statDir == null) 
         statDir = PackageInfo.sProdPath;
 
-      Path checksumDir = controls.getChecksumDir();
+      Path checksumDir = controls.getCheckSumDir();
       if(checksumDir == null) 
         checksumDir = PackageInfo.sProdPath;
 
