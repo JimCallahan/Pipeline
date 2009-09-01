@@ -1,4 +1,4 @@
-// $Id: NukeSourceSyncTool.java,v 1.4 2008/07/21 17:31:10 jim Exp $
+// $Id: NukeSourceSyncTool.java,v 1.5 2009/09/01 22:47:31 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeSourceSyncTool.v2_3_4;
 
@@ -1361,8 +1361,11 @@ class NukeSourceSyncTool
 	  dstFileSeq = new FileSeq(fpat, srcFileSeq.getFrameRange());
 	}
 	
-	BaseEditor editor = mclient.getEditorForSuffix(primarySeq.getFilePattern().getSuffix());
-	seqInfo.workingVersion = new NodeMod(nodeID.getName(), primarySeq, null, toolset, editor);
+	BaseEditor editor = 
+          mclient.getEditorForSuffix(primarySeq.getFilePattern().getSuffix());
+
+	seqInfo.workingVersion = 
+          new NodeMod(nodeID.getName(), primarySeq, null, false, toolset, editor);
  	mclient.register(PackageInfo.sUser, pView, seqInfo.workingVersion);
  	seqInfo.doFixPath = true;
 
@@ -1370,9 +1373,9 @@ class NukeSourceSyncTool
  	 * TODO:  Shouldn't we be doing this through Java, in an OS-independent way?
  	 */
 	if (! srcFileSeq.getPath(0).toOsString().equals(dstFileSeq.getPath(0).toOsString())) {
-	  Map<String,String> env = mclient.getToolsetEnvironment(nodeID.getAuthor(), 
-	    							 nodeID.getView(), 
-	    							 seqInfo.workingVersion.getToolset());
+	  Map<String,String> env = 
+            mclient.getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), 
+                                          seqInfo.workingVersion.getToolset());
 	  String dst = dstFileSeq.getPath(0).getParentPath().toOsString();
 	  for (int i=0; i<srcFileSeq.numFrames(); i++) {
 	    ArrayList<String> args = new ArrayList<String>();
@@ -1383,7 +1386,8 @@ class NukeSourceSyncTool
 
 	    log ("cp "+args);
 	    SubProcessLight proc = 
-	      	new SubProcessLight("CopyFrame", "cp", args, env, PackageInfo.sTempPath.toFile());
+	      	new SubProcessLight("CopyFrame", "cp", args, env, 
+                                    PackageInfo.sTempPath.toFile());
 	    try {	    
 	      proc.start();
 	      proc.join();

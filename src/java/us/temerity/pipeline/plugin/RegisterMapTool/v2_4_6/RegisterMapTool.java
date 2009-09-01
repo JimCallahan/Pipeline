@@ -1,4 +1,4 @@
-// $Id: RegisterMapTool.java,v 1.1 2009/06/02 18:16:51 jlee Exp $
+// $Id: RegisterMapTool.java,v 1.2 2009/09/01 22:47:31 jim Exp $
 
 package us.temerity.pipeline.plugin.RegisterMapTool.v2_4_6;
 
@@ -314,7 +314,7 @@ RegisterMapTool
   {
     File f = new File(name);
     FileSeq animSeq = new FileSeq(f.getName(), extention);
-    NodeMod animNode = new NodeMod(name, animSeq, null, toolset, editor);
+    NodeMod animNode = new NodeMod(name, animSeq, null, false, toolset, editor);
     mclient.register(pUser, pView, animNode);
     return animNode;
   }

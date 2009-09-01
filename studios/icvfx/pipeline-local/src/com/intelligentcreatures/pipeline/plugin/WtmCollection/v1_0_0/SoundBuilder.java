@@ -1,4 +1,4 @@
-// $Id: SoundBuilder.java,v 1.5 2008/08/01 20:19:14 jim Exp $
+// $Id: SoundBuilder.java,v 1.6 2009/09/01 22:48:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -268,7 +268,7 @@ class SoundBuilder
 
     		  FileSeq files = new FileSeq(wrkPrefix.substring(wrkPrefix.lastIndexOf("/")+1, wrkPrefix.length()), "aiff");
     		  NodeMod soundNode = new NodeMod(pSoundtrackNodeName, files,
-    				  null, getToolset(), null);
+                                                  null, false, getToolset(), null);
 
     		  pClient.register(getAuthor(), getView(), soundNode);
     		  soundNode.setActionEnabled(false);

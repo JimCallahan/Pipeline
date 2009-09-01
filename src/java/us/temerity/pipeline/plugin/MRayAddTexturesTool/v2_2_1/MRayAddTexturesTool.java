@@ -1,4 +1,4 @@
-// $Id: MRayAddTexturesTool.java,v 1.3 2008/07/21 23:28:13 jim Exp $
+// $Id: MRayAddTexturesTool.java,v 1.4 2009/09/01 22:47:31 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayAddTexturesTool.v2_2_1;
 
@@ -633,7 +633,7 @@ MRayAddTexturesTool
           try {
             String suffix = ifseq.getFilePattern().getSuffix();
             BaseEditor editor = mclient.getEditorForSuffix(suffix);
-            NodeMod mod = new NodeMod(iname, ifseq, null, pToolset, editor);
+            NodeMod mod = new NodeMod(iname, ifseq, null, false, pToolset, editor);
             mclient.register(pAuthor, pView, mod); 
           }
           catch(PipelineException ex) {
@@ -699,7 +699,7 @@ MRayAddTexturesTool
               FilePattern mpat = new FilePattern(ipat.getPrefix(), ipat.getPadding(), "map");
               FileSeq mfseq = new FileSeq(mpat, ifseq.getFrameRange());
               BaseEditor editor = pclient.newEditor("ImfDisp", imfDispVID, "Temerity");
-              NodeMod mod = new NodeMod(tname, mfseq, null, pToolset, editor);
+              NodeMod mod = new NodeMod(tname, mfseq, null, false, pToolset, editor);
               mclient.register(pAuthor, pView, mod);
 
               BaseAction action = 

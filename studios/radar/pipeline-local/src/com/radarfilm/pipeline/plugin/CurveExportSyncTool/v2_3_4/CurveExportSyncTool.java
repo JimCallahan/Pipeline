@@ -161,7 +161,7 @@ class CurveExportSyncTool
 			}
 			if (register) {
 				BaseEditor mayaEditor = plug.newEditor("MayaProject", new VersionID("2.2.1"), "Temerity");
-				animMod = new NodeMod(animFile, new FileSeq(new Path(animFile).getName(), "ma"),null, mod.getToolset(), mayaEditor );
+				animMod = new NodeMod(animFile, new FileSeq(new Path(animFile).getName(), "ma"), null, false, mod.getToolset(), mayaEditor );
 				mclient.register(author, view, animMod);
 			}
 			if (checkLink) {

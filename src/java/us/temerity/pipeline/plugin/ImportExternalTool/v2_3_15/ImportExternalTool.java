@@ -1,4 +1,4 @@
-// $Id: ImportExternalTool.java,v 1.2 2008/07/21 17:31:09 jim Exp $
+// $Id: ImportExternalTool.java,v 1.3 2009/09/01 22:47:31 jim Exp $
 
 package us.temerity.pipeline.plugin.ImportExternalTool.v2_3_15;
 
@@ -427,7 +427,7 @@ class ImportExternalTool
         }
       }
       
-      NodeMod mod = new NodeMod(targetPath.toString(), targetSeq, null, 
+      NodeMod mod = new NodeMod(targetPath.toString(), targetSeq, null, false,  
                                 pToolsetField.getSelected(), editor);
       mclient.register(getAuthor(), getView(), mod);
       
