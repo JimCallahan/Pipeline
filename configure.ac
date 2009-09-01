@@ -1474,7 +1474,7 @@ PLJOBMGR_XMX="-Xmx128M"
 
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_GC_OPTS)
-PLUI_GC_OPTS="${java_gc_opts} -Xms32M -Xmx512M"
+PLUI_GC_OPTS="${java_gc_opts} -Xms32M -Xmx768M"
 AC_MSG_RESULT([$PLUI_GC_OPTS])
 
 AC_MSG_CHECKING([plscript])
