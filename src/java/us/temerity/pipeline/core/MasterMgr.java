@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.287 2009/09/01 10:59:39 jim Exp $
+// $Id: MasterMgr.java,v 1.288 2009/09/01 21:35:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6784,7 +6784,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.writeLock().lock();
+    pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
 	
@@ -6793,20 +6793,11 @@ class MasterMgr
 	  ("Only a user with Node Manager privileges may remove working areas owned " +
 	   "by another user!");
 
-      /* make sure no working versions exist in the view */ 
+      /* release all working versions in the view */ 
       {
 	TreeSet<String> matches = pNodeTree.getMatchingWorkingNodes(author, view, null);
-
-	if(!matches.isEmpty()) {
-	  StringBuilder buf = new StringBuilder();
-	  buf.append
-	    ("The working area view (" + view + ") owned by user (" + author + ") " + 
-	     "cannot be removed because it still contains unreleased nodes!\n\n" + 
-	     "The unreleased node are: ");
-	  for(String name : matches) 
-	    buf.append("\n  " + name);
-	  throw new PipelineException(buf.toString());
-	}
+        for(String name : matches) 
+          releaseHelper(new NodeID(name, author, view), true, true, true, timer);
       }
       
       timer.aquire();
@@ -6828,34 +6819,45 @@ class MasterMgr
 	  removeUser = true;
 	}
 
-	/* remove the working area files directory */ 
-	FileMgrClient fclient = acquireFileMgrClient();
-	try {
-	  fclient.removeWorkingArea(author, removeUser ? null : view);
-	}
-	finally {
-	  releaseFileMgrClient(fclient);
-	}
-      
-	/* remove the empty working area database directory */ 
-	File viewDir = new File(pNodeDir, "working/" + author + "/" + view);
-	if(!viewDir.delete()) 
-	  throw new PipelineException 
-	    ("Unable to remove the working area view database directory (" + viewDir + ")!");
+        /* remove the working area production files directory */ 
+        {
+          FileMgrClient fclient = acquireFileMgrClient();
+          try {
+            fclient.removeWorkingArea(author, removeUser ? null : view);
+          }
+          finally {
+            releaseFileMgrClient(fclient);
+          }
+        }
+        
+	/* remove working area view database directory (if empty) */ 
+        {
+          File dir = new File(pNodeDir, "working/" + author + "/" + view);
+          File files[] = dir.listFiles();
+          if((files != null) && (files.length == 0)) {
+            if(!dir.delete()) 
+              throw new PipelineException 
+                ("Unable to remove the working area view database directory " + 
+                 "(" + dir + ")!");
 
-	/* remove view from the runtime table */ 
-	views.remove(view);
+            /* remove view from the runtime table */ 
+            views.remove(view);
+          }
+        }
 
-	/* if no views remain, remove the user as well */ 
+	/* remove the working area user database directory (if empty) */ 
 	if(views.isEmpty()) {
-	  pWorkingAreaViews.remove(author);
-	  
-	  File userDir = new File(pNodeDir, "working/" + author);
-	  if(!userDir.delete()) 
-	    throw new PipelineException 
-	      ("Unable to remove the working area user database directory " + 
-	       "(" + userDir + ")!");
-	}
+	  File dir = new File(pNodeDir, "working/" + author);  
+          File files[] = dir.listFiles();
+          if((files != null) && (files.length == 0)) {
+            if(!dir.delete()) 
+              throw new PipelineException 
+                ("Unable to remove the working area user database directory " + 
+                 "(" + dir + ")!");
+
+            pWorkingAreaViews.remove(author);
+          }
+        }
       }
       
       /* post-op tasks */ 
@@ -6867,7 +6869,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }
   }  
 
