@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.13 2009/06/18 08:42:52 jlee Exp $
+// $Id: JExportPanel.java,v 1.14 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -86,6 +86,12 @@ class JExportPanel
 	{
 	  JPanel tpanel = (JPanel) comps[0];
 	  JPanel vpanel = (JPanel) comps[1];
+	  
+	  pIntermediateField = 
+	    UIFactory.createTitledBooleanField(tpanel, "Intermediate Files:", pTSize, 
+					       vpanel, pVSize);
+	  
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	  pToolsetField = 
 	    UIFactory.createTitledBooleanField(tpanel, "Toolset:", pTSize, 
@@ -276,6 +282,15 @@ class JExportPanel
   /*   A C C E S                                                                            */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Whether to export the intermediate files parameter.
+   */ 
+  public boolean 
+  exportIntermediate() 
+  {
+    return pIntermediateField.getValue();
+  }
+    
   /**
    * Whether to export the toolset parameter.
    */ 
@@ -542,6 +557,7 @@ class JExportPanel
 
     /* properties panel */ 
     {
+      pIntermediateField.setValue(false); 
       pToolsetField.setValue(false);
       pEditorField.setValue(false);
     }
@@ -877,7 +893,7 @@ class JExportPanel
       }
     } 
 
-    /* Per-Version annotations*/
+    /* per-version annotations */
     {
       pVersionAnnotationFields.clear();
       TreeMap<String, BaseAnnotation> annots = node.getAnnotations();
@@ -1030,6 +1046,7 @@ class JExportPanel
   {
     boolean exportAll = pExportAllField.getValue();
     
+    pIntermediateField.setValue(exportAll);
     pToolsetField.setValue(exportAll);
     pEditorField.setValue(exportAll);
 
@@ -1099,6 +1116,11 @@ class JExportPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to export the intermediate files property.
+   */ 
+  private JBooleanField  pIntermediateField; 
 
   /**
    * Whether to export the toolset property.

@@ -1,4 +1,4 @@
-// $Id: FileCheckInReq.java,v 1.8 2009/08/28 02:10:47 jim Exp $
+// $Id: FileCheckInReq.java,v 1.9 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,6 +51,10 @@ class FileCheckInReq
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
+   * @param isIntermediate 
+   *   Whether the file sequences managed by this node are intermediate in nature and 
+   *   therefore should never be saved/restored along with the repository version.
+   * 
    * @param hasEnabledAction
    *   Whether the working version being checked-in has an enabled action.
    * 
@@ -73,6 +77,7 @@ class FileCheckInReq
    NodeID id, 
    VersionID vid, 
    VersionID latest, 
+   boolean isIntermediate, 
    boolean hasEnabledAction, 
    TreeSet<FileSeq> fseqs, 
    TreeMap<FileSeq,boolean[]> isNovel, 
@@ -89,6 +94,8 @@ class FileCheckInReq
     pVersionID = vid;
 
     pLatestVersionID = latest;
+
+    pIsIntermediate = isIntermediate; 
     pHasEnabledAction = hasEnabledAction;
 
     if(fseqs == null) 
@@ -147,6 +154,16 @@ class FileCheckInReq
     return pHasEnabledAction; 
   }
   
+  /**
+   * Whether the file sequences managed by this node are intermediate in nature and 
+   * therefore should never be saved/restored along with the repository version.
+   */
+  public boolean 
+  isIntermediate() 
+  {
+    return pIsIntermediate; 
+  }
+
   /**
    * Gets the primary and secondary file sequences associated with the working version.
    */
@@ -212,6 +229,12 @@ class FileCheckInReq
    */
   private VersionID  pLatestVersionID;
   
+  /**
+   * Whether the file sequences managed by this node are intermediate in nature and 
+   * therefore should never be saved/restored along with the repository version.
+   */ 
+  private boolean  pIsIntermediate; 
+
   /**
    * Whether the working version being checked-in has an enabled action.
    */

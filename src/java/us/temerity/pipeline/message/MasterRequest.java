@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.67 2009/05/18 06:03:45 jesse Exp $
+// $Id: MasterRequest.java,v 1.68 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -640,10 +640,14 @@ enum MasterRequest
   GetAllCheckedIn, 
 
   /**
-   * An instance of {@link NodeGetCheckedInVersionIDsReq} 
-   * is next.
+   * An instance of {@link NodeGetVersionIDsReq} is next.
    */
   GetCheckedInVersionIDs, 
+
+  /**
+   * An instance of {@link NodeGetInVersionIDsReq} is next.
+   */
+  GetIntermediateVersionIDs, 
 
   /**
    * An instance of {@link NodeGetHistoryReq} is next.

@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.40 2009/08/19 23:07:25 jim Exp $
+// $Id: PanelUpdater.java,v 1.41 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -651,6 +651,13 @@ class PanelUpdater
 	      
 	      master.updatePanelOp(pGroupID, "Updating Offlined Versions...");
 	      pOfflineVersionIDs = mclient.getOfflineVersionIDs(pDetailedNodeName);
+
+              if(pNodeFilesPanel != null) {
+                master.updatePanelOp(pGroupID, "Updating Intermediate Versions...");
+                pOfflineOrIntermediateVersionIDs = new TreeSet<VersionID>(pOfflineVersionIDs);
+                pOfflineOrIntermediateVersionIDs.addAll
+                  (mclient.getIntermediateVersionIDs(pDetailedNodeName)); 
+              }
 	    }
 	  }
 	}
@@ -973,7 +980,7 @@ class PanelUpdater
 	/* node files */ 
 	if(pNodeFilesPanel != null) 
 	  pNodeFilesPanel.applyPanelUpdates
-	    (pAuthor, pView, pDetailedNode, pFileNovelty, pOfflineVersionIDs);
+	    (pAuthor, pView, pDetailedNode, pFileNovelty, pOfflineOrIntermediateVersionIDs);
 	
 	/* node links */ 
 	if(pNodeLinksPanel != null) 
@@ -1189,6 +1196,11 @@ class PanelUpdater
    * The revision nubers of all offline checked-in versions of the given node.
    */ 
   private TreeSet<VersionID>  pOfflineVersionIDs;
+
+  /**
+   * The revision nubers of all offline or intermediate checked-in versions of the given node.
+   */ 
+  private TreeSet<VersionID>  pOfflineOrIntermediateVersionIDs;
 
 
   /*----------------------------------------------------------------------------------------*/

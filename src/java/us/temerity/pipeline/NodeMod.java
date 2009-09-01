@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.65 2009/06/01 02:54:22 jesse Exp $
+// $Id: NodeMod.java,v 1.66 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -60,6 +60,10 @@ class NodeMod
    * @param secondary 
    *   The secondary file sequences associated with the node.
    * 
+   * @param isIntermediate 
+   *   Whether the file sequences managed by this node are intermediate in nature and 
+   *   therefore should never be saved/restored along with the repository version.
+   * 
    * @param toolset 
    *   The named execution environment under which editor and action are run.
    * 
@@ -92,6 +96,7 @@ class NodeMod
    String name, 
    FileSeq primary,
    Set<FileSeq> secondary, 
+   boolean isIntermediate, 
    String toolset, 
    BaseEditor editor, 
    BaseAction action, 
@@ -103,7 +108,7 @@ class NodeMod
   ) 
   {
     super(name, 
-	  primary, secondary, 
+	  primary, secondary, isIntermediate, 
 	  toolset, editor, action, isActionEnabled, jobReqs, overflow, execution, batchSize);
     
     pSources = new TreeMap<String,LinkMod>();
@@ -128,6 +133,10 @@ class NodeMod
    * @param secondary 
    *   The secondary file sequences associated with the node.
    * 
+   * @param isIntermediate 
+   *   Whether the file sequences managed by this node are intermediate in nature and 
+   *   therefore should never be saved/restored along with the repository version.
+   * 
    * @param toolset 
    *   The named execution environment under which editor and action are run.
    * 
@@ -140,13 +149,12 @@ class NodeMod
    String name, 
    FileSeq primary,
    Set<FileSeq> secondary, 
+   boolean isIntermediate, 
    String toolset, 
    BaseEditor editor
   ) 
   {
-    super(name, 
-	  primary, secondary, 
-	  toolset, editor);
+    super(name, primary, secondary, isIntermediate, toolset, editor);
     
     pSources = new TreeMap<String,LinkMod>();
     initTimeStamps();
@@ -737,6 +745,25 @@ class NodeMod
     updateLastMod();
   }
 
+  /**
+   * Set whether the file sequences managed by this node are intermediate in nature and 
+   * therefore should never be saved/restored along with the repository version.
+   */ 
+  public void 
+  setIntermediate
+  (
+   boolean intermediate
+  )
+  {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
+    pIsIntermediate = intermediate; 
+
+    updateLastMod();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1133,6 +1160,7 @@ class NodeMod
    * 
    * <DIV style="margin-left: 40px;">
    *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
+   *   Whether these files sequences are intermediate. <BR>
    *   The toolset environment under which editors and actions are run. <BR>
    *   The editor plugin used to edit the data files associated with the node.<BR>
    *   The regeneration action and its single and per-dependency parameters. <BR>
@@ -1186,6 +1214,13 @@ class NodeMod
       if(!pSecondarySeqs.equals(secondary)) {
 	pSecondarySeqs = new TreeSet(secondary);
 	critical = true;
+      }
+    }
+
+    {
+      if(isIntermediate() != mod.isIntermediate()) {
+        pIsIntermediate = mod.isIntermediate();
+        modified = true;
       }
     }
 

@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.18 2009/08/28 02:10:46 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.19 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -205,12 +205,15 @@ class FileMgrDirectClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
-   * @param critical
-   *   The last legitimate change time (ctime) of the file.
+   * @param isBaseIntermediate
+   *   Is the base version an intermediate node with no repository files.
    * 
    * @param baseCheckSums
    *   Read-only checksums for all files associated with the base checked-in version
    *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param isLatestIntermediate
+   *   Is the latest version an intermediate node with no repository files.
    * 
    * @param latestCheckSums
    *   Read-only checksums for all files associated with the latest checked-in version
@@ -244,7 +247,9 @@ class FileMgrDirectClient
    JobState jobStates[], 
    boolean isFrozen, 
    VersionID latest, 
+   boolean isBaseIntermediate, 
    SortedMap<String,CheckSum> baseCheckSums, 
+   boolean isLatestIntermediate, 
    SortedMap<String,CheckSum> latestCheckSums, 
    CheckSumCache workingCheckSums, 
    TreeMap<FileSeq,FileState[]> states, 
@@ -258,7 +263,8 @@ class FileMgrDirectClient
       
     FileStateReq req = 
       new FileStateReq(id, vstate, jobStates, isFrozen, mod.getWorkingID(), latest, ctime, 
-                       mod.getSequences(), baseCheckSums, latestCheckSums, workingCheckSums);
+                       mod.getSequences(), isBaseIntermediate, baseCheckSums, 
+                       isLatestIntermediate, latestCheckSums, workingCheckSums);
 
     Object obj = pFileMgr.states(req); 
     if(obj instanceof FileStateRsp) {
@@ -319,8 +325,9 @@ class FileMgrDirectClient
     throws PipelineException 
   {
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.isActionEnabled(), mod.getSequences(), isNovel,
-                         mod.getLastCTimeUpdate(), workingCheckSums); 
+      new FileCheckInReq(id, vid, latest, mod.isIntermediate(), mod.isActionEnabled(), 
+                         mod.getSequences(), isNovel, mod.getLastCTimeUpdate(), 
+                         workingCheckSums); 
 
     Object obj = pFileMgr.checkIn(req);
     if(obj instanceof FileCheckInRsp) {
@@ -346,7 +353,6 @@ class FileMgrDirectClient
    * @param isLinked
    *   Whether the files associated with the working version should be symlinks to the 
    *   checked-in files instead of copies.
-   * 
    * 
    * @throws PipelineException
    *   If unable to check-out the files.

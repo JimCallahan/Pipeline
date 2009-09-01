@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingAreasEditingReq.java,v 1.1 2006/12/31 20:44:53 jim Exp $
+// $Id: NodeGetByNameReq.java,v 1.1 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,16 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   G E T   W O R K I N G   A R E A S   E D I T I N G   R E Q                    */
+/*   N O D E   G E T   B Y   N A M E   R E Q                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get the table of the working areas in which the given node is currently being 
- * edited. 
+ * A request to get a response based on a fully resolved node name.<P> 
+ *
+ * @see MasterMgr
  */
 public
-class NodeGetWorkingAreasEditingReq
+class NodeGetByNameReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,13 +32,13 @@ class NodeGetWorkingAreasEditingReq
    *   The fully resolved node name.
    */
   public
-  NodeGetWorkingAreasEditingReq
+  NodeGetByNameReq
   (
    String name
   )
   { 
     if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
+      throw new IllegalArgumentException("The name cannot be (null)!");
     pName = name;
   }
 
@@ -62,7 +63,7 @@ class NodeGetWorkingAreasEditingReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -1931326424692547327L;
+  private static final long serialVersionUID = -176492426579416319L;
 
   
 
@@ -71,7 +72,7 @@ class NodeGetWorkingAreasEditingReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The unique working version identifier.
+   * The fully resolved node name.
    */ 
   private String  pName;
 

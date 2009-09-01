@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.25 2009/06/18 08:42:52 jlee Exp $
+// $Id: JCloneDialog.java,v 1.26 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -562,18 +562,24 @@ class JCloneDialog
       MasterMgrClient client = master.acquireMasterMgrClient();
       try {
         /* node properties */ 
+        boolean isIntermediate = false;
+        if(pExportPanel.exportIntermediate()) 
+          isIntermediate = pNode.isIntermediate();
+        
+        String toolset = null;
+        if(pExportPanel.exportToolset()) 
+          toolset = pNode.getToolset();
+        else 
+          toolset = client.getDefaultToolsetName();
+        
         BaseEditor editor = null;
         if(pExportPanel.exportEditor()) 
           editor = pNode.getEditor();
         else if(suffix != null) 
           editor = client.getEditorForSuffix(suffix);
 
-        String toolset = null;
-        if(pExportPanel.exportToolset()) 
-          toolset = pNode.getToolset();
-        else 
-          toolset = client.getDefaultToolsetName();
-        mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
+        mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), isIntermediate, 
+                          toolset, editor);
       }
       finally {
         master.releaseMasterMgrClient(client);

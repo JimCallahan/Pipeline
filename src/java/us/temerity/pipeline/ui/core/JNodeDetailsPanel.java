@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.63 2009/08/19 23:39:06 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.64 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,6 +30,7 @@ import javax.swing.text.*;
  * The node properties displayed include: <BR>
  * 
  * <DIV style="margin-left: 40px;">
+ *   Whether the file sequences associated with the node are intermediate. <BR>
  *   The toolset environment under which editors and actions are run. <BR>
  *   The name of the editor plugin used to edit the data files associated with the node. <BR>
  *   The regeneration action and its single and per-dependency parameters. <BR>
@@ -240,6 +241,71 @@ class JNodeDetailsPanel
 
 		  hbox.add(field);
 		}
+		vpanel.add(hbox);
+	      }
+	    }
+
+	    UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+	    /* intermediate files */ 
+	    { 
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		{
+		  JLabel label = UIFactory.createFixedLabel
+		    ("Intermediate Files:", sTSize, JLabel.RIGHT, 
+		     "Whether the file sequences managed by this node are intermediate " + 
+                     "(temporary) in nature and therefore should never be saved/restored " + 
+                     "along with repository versions.");
+		  pIntermediateTitle = label;
+		  hbox.add(label);
+		}
+		tpanel.add(hbox);
+	      }
+	      
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+
+		{
+		  ArrayList<String> values = new ArrayList<String>();
+		  values.add("-");
+		  
+		  JBooleanField field = UIFactory.createBooleanField(sVSize);
+		  pWorkingIntermediateField = field;
+		  
+		  field.setActionCommand("intermediate-changed");
+		  field.addActionListener(this);
+
+		  hbox.add(field);
+		}
+		
+		hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		{
+		  JButton btn = new JButton();		 
+		  pSetIntermediateButton = btn;
+		  btn.setName("SmallLeftArrowButton");
+		  
+		  Dimension size = new Dimension(12, 12);
+		  btn.setMinimumSize(size);
+		  btn.setMaximumSize(size);
+		  btn.setPreferredSize(size);
+	    
+		  btn.setActionCommand("set-intermediate");
+		  btn.addActionListener(this);
+		  
+		  hbox.add(btn);
+		} 
+
+		hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		{
+		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+		  pCheckedInIntermediateField = field;
+
+		  hbox.add(field);
+		}
+		
 		vpanel.add(hbox);
 	      }
 	    }
@@ -1898,6 +1964,34 @@ class JNodeDetailsPanel
       else 
 	pPropertyStateField.setText("-");
       
+      /* intermediate */ 
+      {
+	pWorkingIntermediateField.removeActionListener(this);
+	{
+	  if(work != null) 
+	    pWorkingIntermediateField.setValue(work.isIntermediate());
+	  else 
+	    pWorkingIntermediateField.setValue(null);
+
+	  pWorkingIntermediateField.setEnabled(!isLocked() && !pIsFrozen && (work != null));
+	}
+	pWorkingIntermediateField.addActionListener(this);
+	
+	pSetIntermediateButton.setEnabled
+	  (!isLocked() && !pIsFrozen && (work != null) && (latest != null));
+	
+	{
+	  if(latest != null) 
+	    pCheckedInIntermediateField.setText(latest.isIntermediate() ? "YES" : "no");
+	  else 
+	    pCheckedInIntermediateField.setText("-");
+
+	  pCheckedInIntermediateField.setEnabled(latest != null);
+	}
+
+	updateIntermediateColors();
+      }
+
       /* toolset */ 
       {
 	pWorkingToolsetField.removeActionListener(this);
@@ -2199,6 +2293,12 @@ class JNodeDetailsPanel
 
     /* properties panel */ 
     {
+      /* intermediate */ 
+      {
+        pCheckedInIntermediateField.setText(vsn.isIntermediate() ? "YES" : "no");
+        updateIntermediateColors();
+      }
+
       /* toolset */ 
       {
 	if(vsn.getToolset() != null)
@@ -2312,6 +2412,24 @@ class JNodeDetailsPanel
     }
   }
 
+  /**
+   * Update the appearance of the intermediate fields after a change of value.
+   */ 
+  private void 
+  updateIntermediateColors() 
+  {
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wtset = pWorkingIntermediateField.getValue() ? "YES" : "no";
+      String ctset = pCheckedInIntermediateField.getText();
+      if(!ctset.equals(wtset))
+	color = Color.cyan;
+    }
+
+    pIntermediateTitle.setForeground(color);
+    pWorkingIntermediateField.setForeground(color);
+    pCheckedInIntermediateField.setForeground(color);
+  }
 
   /**
    * Update the appearance of the toolset fields after a change of value.
@@ -4145,6 +4263,10 @@ class JNodeDetailsPanel
     String cmd = e.getActionCommand();
     if(cmd.equals("update-version")) 
       updateVersion();
+    else if(cmd.equals("set-intermediate")) 
+      doSetIntermediate();
+    else if(cmd.equals("intermediate-changed")) 
+      doIntermediateChanged(true);
     else if(cmd.equals("set-toolset")) 
       doSetToolset();
     else if(cmd.equals("toolset-changed")) 
@@ -4313,6 +4435,10 @@ class JNodeDetailsPanel
 
 	  /* properties panel */ 
 	  {
+            Boolean isIntermediate = pWorkingIntermediateField.getValue();
+            if(isIntermediate != null) 
+              mod.setIntermediate(isIntermediate);
+
 	    String toolset = pWorkingToolsetField.getSelected();
 	    if((toolset != null) && !toolset.equals("-"))
 	      mod.setToolset(toolset);
@@ -4551,6 +4677,44 @@ class JNodeDetailsPanel
 	}
       }
     }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working intermediate field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetIntermediate()
+  { 
+    pWorkingIntermediateField.removeActionListener(this);
+    {
+      boolean isIntermediate = false;
+      String str = pCheckedInIntermediateField.getText();
+      if((str != null) && str.equals("YES"))
+        isIntermediate = true;
+        
+      pWorkingIntermediateField.setValue(isIntermediate); 
+    }
+    pWorkingIntermediateField.addActionListener(this);
+  
+    doIntermediateChanged(true);
+  }
+
+  /**
+   * Update the appearance of the intermediate field after a change of value.
+   */ 
+  private void 
+  doIntermediateChanged
+  (
+   boolean modified
+  ) 
+  {
+    if(modified) 
+      unsavedChange("Intermediate Files"); 
+
+    updateIntermediateColors();
   }
 
 
@@ -5940,7 +6104,7 @@ class JNodeDetailsPanel
                 value = field.getText();	  
               }
               else if(aparam instanceof StringAnnotationParam) {
-                JTextField field = (JTextField) comps[1];
+                JTextField field = (JTextField) comps[1];  
                 value = field.getText();	  
               }
               else if(aparam instanceof ParamNameAnnotationParam) {
@@ -7636,9 +7800,25 @@ class JNodeDetailsPanel
 
 
   /**
-   * The editor help button.
-   */
-  private JButton  pEditorHelpButton;
+   * The intermediate title label.
+   */ 
+  private JLabel  pIntermediateTitle;
+
+  /**
+   * The working intermediate field.
+   */ 
+  private JBooleanField pWorkingIntermediateField;
+
+  /**
+   * The set intermediate button.
+   */ 
+  private JButton  pSetIntermediateButton;
+
+  /**
+   * The checked-in intermediate field.
+   */ 
+  private JTextField pCheckedInIntermediateField;
+
 
   /**
    * The toolset title label.
@@ -7660,6 +7840,11 @@ class JNodeDetailsPanel
    */ 
   private JTextField pCheckedInToolsetField;
 
+
+  /**
+   * The editor help button.
+   */
+  private JButton  pEditorHelpButton;
 
   /**
    * The editor title label.

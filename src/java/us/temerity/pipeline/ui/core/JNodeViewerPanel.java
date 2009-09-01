@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.142 2009/08/19 23:44:46 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.143 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5011,6 +5011,7 @@ class JNodeViewerPanel
 
     TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
     TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
+    TreeMap<String,TreeSet<VersionID>> inter    = new TreeMap<String,TreeSet<VersionID>>();
 
     TreeMap<String,TreeMap<VersionID,LogMessage>> messages = 
       new TreeMap<String,TreeMap<VersionID,LogMessage>>();
@@ -5021,6 +5022,7 @@ class JNodeViewerPanel
           try {
             versions.put(name, client.getCheckedInVersionIDs(name));
             offline.put(name, client.getOfflineVersionIDs(name));
+            inter.put(name, client.getIntermediateVersionIDs(name));
 	    messages.put(name, client.getHistory(name));
           }
           catch (PipelineException ex) {
@@ -5037,7 +5039,7 @@ class JNodeViewerPanel
     if(pCheckOutDialog == null) 
       pCheckOutDialog = new JCheckOutDialog(getTopFrame());
 
-    pCheckOutDialog.updateVersions(versions, offline, messages);
+    pCheckOutDialog.updateVersions(versions, offline, inter, messages);
     pCheckOutDialog.setVisible(true);	
     if(pCheckOutDialog.wasConfirmed()) {
       CheckOutTask task = 
@@ -5066,6 +5068,7 @@ class JNodeViewerPanel
     TreeMap<String,VersionID> base = new TreeMap<String,VersionID>();
     TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
     TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
+    TreeMap<String,TreeSet<VersionID>> inter    = new TreeMap<String,TreeSet<VersionID>>();
     TreeMap<String,VersionID> lockedVersionIDs = new TreeMap<String,VersionID>();
 
     try {
@@ -5090,6 +5093,7 @@ class JNodeViewerPanel
           try {
             versions.put(name, client.getCheckedInVersionIDs(name));
             offline.put(name, client.getOfflineVersionIDs(name));
+            inter.put(name, client.getIntermediateVersionIDs(name));
           }
           catch (PipelineException ex) {
             master.showErrorDialog(ex);
@@ -5110,7 +5114,7 @@ class JNodeViewerPanel
     if(pLockDialog == null) 
       pLockDialog = new JLockDialog(getTopFrame());
 
-    pLockDialog.updateVersions(base, versions, offline);
+    pLockDialog.updateVersions(base, versions, offline, inter);
     pLockDialog.setVisible(true);	
     if(pLockDialog.wasConfirmed()) {
       TreeMap<String,VersionID> versionIDs = pLockDialog.getVersionIDs();
@@ -6146,6 +6150,9 @@ class JNodeViewerPanel
 
 	      /* node properties */ 
 	      {
+                if(pExportDialog.exportIntermediate()) 
+                  tmod.setIntermediate(smod.isIntermediate());
+
 		if(pExportDialog.exportToolset()) 
 		  tmod.setToolset(smod.getToolset());
 
@@ -6273,7 +6280,8 @@ class JNodeViewerPanel
 	      
 	      /* copy the annotations*/
 	      {
-		TreeMap<String, BaseAnnotation> annots = client.getAnnotations(smod.getName());
+		TreeMap<String, BaseAnnotation> annots = 
+                  client.getAnnotations(smod.getName());
 		for (String aname : annots.keySet()) {
 		  if (pExportDialog.exportNodeAnnotation(aname)) {
 		    BaseAnnotation an = annots.get(aname);

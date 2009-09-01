@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.140 2009/07/26 07:21:32 jlee Exp $
+// $Id: MasterMgrClient.java,v 1.141 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3665,7 +3665,7 @@ class MasterMgrClient
   {
     verifyConnection();
     
-    NodeGetWorkingAreasContainingReq req = new NodeGetWorkingAreasContainingReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = performTransaction(MasterRequest.GetWorkingAreasContaining, req);
     if(obj instanceof NodeGetWorkingAreasRsp) {
@@ -4063,7 +4063,7 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    NodeGetAnnotationsReq req = new NodeGetAnnotationsReq(name); 
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = performTransaction(MasterRequest.GetAnnotations, req);
     if(obj instanceof NodeGetAnnotationsRsp) {
@@ -4314,7 +4314,7 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    NodeRemoveAnnotationsReq req = new NodeRemoveAnnotationsReq(name); 
+    NodeRemoveAnnotationsReq req = new NodeRemoveAnnotationsReq(name);
 
     Object obj = performTransaction(MasterRequest.RemoveAnnotations, req);
     handleSimpleResponse(obj);
@@ -5084,11 +5084,43 @@ class MasterMgrClient
   {
     verifyConnection();
 	 
-    NodeGetCheckedInVersionIDsReq req = new NodeGetCheckedInVersionIDsReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = performTransaction(MasterRequest.GetCheckedInVersionIDs, req);
-    if(obj instanceof NodeGetCheckedInVersionIDsRsp) {
-      NodeGetCheckedInVersionIDsRsp rsp = (NodeGetCheckedInVersionIDsRsp) obj;
+    if(obj instanceof NodeGetVersionIDsRsp) {
+      NodeGetVersionIDsRsp rsp = (NodeGetVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+  /** 
+   * Get the revision numbers of all checked-in versions of a node do not save 
+   * intermediate (temporary) version of files in the repository. <P>
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public synchronized TreeSet<VersionID>
+  getIntermediateVersionIDs
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetIntermediateVersionIDs, req);
+    if(obj instanceof NodeGetVersionIDsRsp) {
+      NodeGetVersionIDsRsp rsp = (NodeGetVersionIDsRsp) obj;
       return rsp.getVersionIDs();      
     }
     else {
@@ -5154,7 +5186,7 @@ class MasterMgrClient
   {
     verifyConnection();
 	 
-    NodeGetAllCheckedInReq req = new NodeGetAllCheckedInReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = performTransaction(MasterRequest.GetAllCheckedIn, req);
     if(obj instanceof NodeGetAllCheckedInRsp) {
@@ -5188,7 +5220,7 @@ class MasterMgrClient
   {
     verifyConnection();
 	 
-    NodeGetHistoryReq req = new NodeGetHistoryReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = performTransaction(MasterRequest.GetHistory, req);
     if(obj instanceof NodeGetHistoryRsp) {
@@ -5223,7 +5255,7 @@ class MasterMgrClient
   {
     verifyConnection();
     
-    NodeGetCheckedInFileNoveltyReq req = new NodeGetCheckedInFileNoveltyReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
     
     Object obj = performTransaction(MasterRequest.GetCheckedInFileNovelty, req);
     if(obj instanceof NodeGetCheckedInFileNoveltyRsp) {
@@ -5258,7 +5290,7 @@ class MasterMgrClient
   {
     verifyConnection();
     
-    NodeGetCheckedInLinksReq req = new NodeGetCheckedInLinksReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
     
     Object obj = performTransaction(MasterRequest.GetCheckedInLinks, req);
     if(obj instanceof NodeGetCheckedInLinksRsp) {
@@ -6283,8 +6315,9 @@ class MasterMgrClient
       newSeq = new FileSeq(pat, range);
     }
 
-    NodeMod newMod = new NodeMod(newName, newSeq, oldMod.getSecondarySequences(),
-				 oldMod.getToolset(), oldMod.getEditor());
+    NodeMod newMod = 
+      new NodeMod(newName, newSeq, oldMod.getSecondarySequences(), oldMod.isIntermediate(), 
+                  oldMod.getToolset(), oldMod.getEditor());
 
     register(author, view, newMod);
 
@@ -7162,7 +7195,7 @@ class MasterMgrClient
   {
     verifyConnection();
     
-    NodeGetWorkingAreasEditingReq req = new NodeGetWorkingAreasEditingReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = performTransaction(MasterRequest.GetWorkingAreasEditing, req);
     if(obj instanceof NodeGetWorkingAreasRsp) {
@@ -8011,11 +8044,11 @@ class MasterMgrClient
   {
     verifyConnection();
 	 
-    NodeGetOfflineVersionIDsReq req = new NodeGetOfflineVersionIDsReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = performTransaction(MasterRequest.GetOfflineVersionIDs, req);
-    if(obj instanceof NodeGetOfflineVersionIDsRsp) {
-      NodeGetOfflineVersionIDsRsp rsp = (NodeGetOfflineVersionIDsRsp) obj;
+    if(obj instanceof NodeGetVersionIDsRsp) {
+      NodeGetVersionIDsRsp rsp = (NodeGetVersionIDsRsp) obj;
       return rsp.getVersionIDs();      
     }
     else {

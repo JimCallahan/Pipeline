@@ -1,4 +1,4 @@
-// $Id: MasterMgrDirectLightClient.java,v 1.4 2009/03/25 22:02:24 jim Exp $
+// $Id: MasterMgrDirectLightClient.java,v 1.5 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -660,7 +660,7 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {
-    NodeGetWorkingAreasContainingReq req = new NodeGetWorkingAreasContainingReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = pMasterMgr.getWorkingAreasContaining(req);
     if(obj instanceof NodeGetWorkingAreasRsp) {
@@ -981,7 +981,7 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {
-    NodeGetAnnotationsReq req = new NodeGetAnnotationsReq(name); 
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = pMasterMgr.getAnnotations(req);
     if(obj instanceof NodeGetAnnotationsRsp) {
@@ -1237,11 +1237,41 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {	 
-    NodeGetCheckedInVersionIDsReq req = new NodeGetCheckedInVersionIDsReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = pMasterMgr.getCheckedInVersionIDs(req);
-    if(obj instanceof NodeGetCheckedInVersionIDsRsp) {
-      NodeGetCheckedInVersionIDsRsp rsp = (NodeGetCheckedInVersionIDsRsp) obj;
+    if(obj instanceof NodeGetVersionIDsRsp) {
+      NodeGetVersionIDsRsp rsp = (NodeGetVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+  /** 
+   * Get the revision numbers of all checked-in versions of a node do not save 
+   * intermediate (temporary) version of files in the repository. <P>
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public TreeSet<VersionID>
+  getIntermediateVersionIDs
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
+
+    Object obj = pMasterMgr.getIntermediateVersionIDs(req);
+    if(obj instanceof NodeGetVersionIDsRsp) {
+      NodeGetVersionIDsRsp rsp = (NodeGetVersionIDsRsp) obj;
       return rsp.getVersionIDs();      
     }
     else {
@@ -1303,7 +1333,7 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {	 
-    NodeGetAllCheckedInReq req = new NodeGetAllCheckedInReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = pMasterMgr.getAllCheckedInVersions(req);
     if(obj instanceof NodeGetAllCheckedInRsp) {
@@ -1335,7 +1365,7 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {	 
-    NodeGetHistoryReq req = new NodeGetHistoryReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = pMasterMgr.getHistory(req);
     if(obj instanceof NodeGetHistoryRsp) {
@@ -1368,7 +1398,7 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {    
-    NodeGetCheckedInFileNoveltyReq req = new NodeGetCheckedInFileNoveltyReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
     
     Object obj = pMasterMgr.getCheckedInFileNovelty(req); 
     if(obj instanceof NodeGetCheckedInFileNoveltyRsp) {
@@ -1401,7 +1431,7 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {    
-    NodeGetCheckedInLinksReq req = new NodeGetCheckedInLinksReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
     
     Object obj = pMasterMgr.getCheckedInLinks(req);
     if(obj instanceof NodeGetCheckedInLinksRsp) {
@@ -1526,7 +1556,7 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {
-    NodeGetWorkingAreasEditingReq req = new NodeGetWorkingAreasEditingReq(name);
+    NodeGetByNameReq req = new NodeGetByNameReq(name);
 
     Object obj = pMasterMgr.getWorkingAreasEditing(req); 
     if(obj instanceof NodeGetWorkingAreasRsp) {

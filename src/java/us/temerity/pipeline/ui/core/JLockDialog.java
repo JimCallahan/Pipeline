@@ -1,4 +1,4 @@
-// $Id: JLockDialog.java,v 1.7 2009/07/13 17:26:02 jlee Exp $
+// $Id: JLockDialog.java,v 1.8 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -115,13 +115,18 @@ class JLockDialog
    * @param offline
    *   The revision nubers of all offline checked-in versions the nodes indexed by fully
    *   resolved node name.
+   *
+   * @param inter
+   *   The revision nubers of all intermediate checked-in versions the nodes indexed by fully
+   *   resolved node name.
    */ 
   public void 
   updateVersions
   (
    TreeMap<String,VersionID> base, 
    TreeMap<String,TreeSet<VersionID>> versions, 
-   TreeMap<String,TreeSet<VersionID>> offline
+   TreeMap<String,TreeSet<VersionID>> offline,
+   TreeMap<String,TreeSet<VersionID>> inter
   )
   {
     pVersionIDs.clear(); 
@@ -165,8 +170,11 @@ class JLockDialog
 	      String extra = "";
 	      {
 		TreeSet<VersionID> ovids = offline.get(name);
+		TreeSet<VersionID> ivids = inter.get(name);
 		if((ovids != null) && ovids.contains(vid))
 		  extra = " - Offline";
+                else if((ivids != null) && ivids.contains(vid))
+		  extra = " - Intermediate";
 	      }
 		
 	      values.add("v" + vid + extra);

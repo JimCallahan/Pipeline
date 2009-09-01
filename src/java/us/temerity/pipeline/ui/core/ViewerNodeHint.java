@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.10 2008/07/21 17:31:10 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.11 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -704,7 +704,7 @@ class ViewerNodeHint
 	  else 
 	    scale = 48.0 * pParent.getCanvasScale() * prefs.getDetailHintSize();
 
-          gl.glTranslated(pPos.x(), pPos.y()-0.6, 0.0);
+          gl.glTranslated(pPos.x(), pPos.y()-0.65, 0.0);
           gl.glScaled(scale, scale, scale); 
           gl.glTranslated(0.0, -0.8*sTextHeight-sBorder, 0.0);
 	}

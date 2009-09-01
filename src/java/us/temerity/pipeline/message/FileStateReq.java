@@ -1,4 +1,4 @@
-// $Id: FileStateReq.java,v 1.9 2009/08/28 02:10:47 jim Exp $
+// $Id: FileStateReq.java,v 1.10 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -56,9 +56,15 @@ class FileStateReq
    * @param fseqs 
    *   The primary and secondary file sequences associated with the working version.
    * 
+   * @param isBaseIntermediate
+   *   Is the base version an intermediate node with no repository files.
+   * 
    * @param baseCheckSums
    *   Read-only checksums for all files associated with the base checked-in version
    *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param isLatestIntermediate
+   *   Is the latest version an intermediate node with no repository files.
    * 
    * @param latestCheckSums
    *   Read-only checksums for all files associated with the latest checked-in version
@@ -78,7 +84,9 @@ class FileStateReq
    VersionID latest, 
    long ctime, 
    TreeSet<FileSeq> fseqs,
+   boolean isBaseIntermediate, 
    SortedMap<String,CheckSum> baseCheckSums, 
+   boolean isLatestIntermediate, 
    SortedMap<String,CheckSum> latestCheckSums, 
    CheckSumCache workingCheckSums
   )
@@ -135,8 +143,10 @@ class FileStateReq
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
     pFileSeqs = fseqs;
 
-    pBaseCheckSums   = baseCheckSums;
-    pLatestCheckSums = latestCheckSums;
+    pIsBaseIntermediate   = isBaseIntermediate; 
+    pBaseCheckSums        = baseCheckSums;
+    pIsLatestIntermediate = isBaseIntermediate; 
+    pLatestCheckSums      = latestCheckSums;
 
     if(workingCheckSums == null) 
       throw new IllegalArgumentException("The working checksum cache cannot be (null)!");
@@ -224,6 +234,15 @@ class FileStateReq
   }
 
   /**
+   * Is the base version an intermediate node with no repository files.
+   */
+  public boolean
+  isBaseIntermediate()
+  {
+    return pIsBaseIntermediate; 
+  }
+
+  /**
    * Read-only checksums for all files associated with the base checked-in version
    * or <CODE>null</CODE> if no base version exists.
    */
@@ -234,8 +253,17 @@ class FileStateReq
   }
 
   /**
+   * Is the latest version an intermediate node with no repository files.
+   */
+  public boolean
+  isLatestIntermediate()
+  {
+    return pIsLatestIntermediate; 
+  }
+
+  /**
    * Read-only checksums for all files associated with the latest checked-in version
-   * or <CODE>null</CODE> if no base version exists.
+   * or <CODE>null</CODE> if no latest version exists.
    */ 
   public SortedMap<String,CheckSum> 
   getLatestCheckSums()
@@ -311,14 +339,24 @@ class FileStateReq
   private TreeSet<FileSeq>  pFileSeqs;
 
   /**
+   * Is the base version an intermediate node with no repository files.
+   */ 
+  private boolean pIsBaseIntermediate; 
+
+  /**
    * Read-only checksums for all files associated with the base checked-in version
    * or <CODE>null</CODE> if no base version exists.
    */
   private SortedMap<String,CheckSum>  pBaseCheckSums; 
 
   /**
+   * Is the latest version an intermediate node with no repository files.
+   */ 
+  private boolean pIsLatestIntermediate; 
+
+  /**
    * Read-only checksums for all files associated with the latest checked-in version
-   * or <CODE>null</CODE> if no base version exists.
+   * or <CODE>null</CODE> if no latest version exists.
    */ 
   private SortedMap<String,CheckSum>  pLatestCheckSums; 
 

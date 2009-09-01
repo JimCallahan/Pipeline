@@ -1,4 +1,4 @@
-// $Id: MasterMgrLightClient.java,v 1.5 2009/04/07 07:59:53 jim Exp $
+// $Id: MasterMgrLightClient.java,v 1.6 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -842,6 +842,23 @@ interface MasterMgrLightClient
    String name
   ) 
     throws PipelineException;
+
+  /** 
+   * Get the revision numbers of all checked-in versions of a node do not save 
+   * intermediate (temporary) version of files in the repository. <P>
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public TreeSet<VersionID>
+  getIntermediateVersionIDs
+  ( 
+   String name
+  ) 
+    throws PipelineException; 
 
   /** 
    * Get the checked-in version of a node. <P> 

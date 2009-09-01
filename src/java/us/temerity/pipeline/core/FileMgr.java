@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.93 2009/08/28 02:10:46 jim Exp $
+// $Id: FileMgr.java,v 1.94 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -524,6 +524,9 @@ class FileMgr
         VersionID lvid = req.getLatestVersionID();
         VersionID bvid = req.getWorkingVersionID();
 
+        boolean linter = req.isLatestIntermediate();
+        boolean binter = req.isBaseIntermediate();
+
         SortedMap<String,CheckSum> lcheck = req.getLatestCheckSums();
         SortedMap<String,CheckSum> bcheck = req.getBaseCheckSums();
         CheckSumCache wcheck = req.getWorkingCheckSums();
@@ -578,10 +581,13 @@ class FileMgr
                 
                 int wk = 0;
                 for(Path path : fseq.getPaths()) {
-                  NativeFileStat work   = new NativeFileStat(new Path(wpath, path));
+                  NativeFileStat work = new NativeFileStat(new Path(wpath, path));
                   NativeFileStat latest = new NativeFileStat(new Path(lpath, path));
-		
-                  if(!latest.isFile()) {
+                  
+                  String fname = path.toString(); 
+                  CheckSum lsum = lcheck.get(fname); 
+
+                  if((linter && (lsum == null)) || (!linter && !latest.isFile())) {
                     fs[wk] = FileState.Obsolete;
                     stamps[wk] = work.lastCriticalChange(ctime); 
                   }
@@ -590,16 +596,27 @@ class FileMgr
                     fs[wk] = FileState.Missing;  
                   }
                   else {
-                    if(work.isAlias(latest))
-                      fs[wk] = FileState.Identical;
-                    else 
-                      fs[wk] = FileState.NeedsCheckOut;
+                    if(linter) {
+                      wcheck.update(pCheckSumPath.get(), fname, 
+                                    work.lastCriticalChange(ctime)); 
+                      if(wcheck.isIdentical(fname, lsum)) 
+                        fs[wk] = FileState.Identical;
+                      else 
+                        fs[wk] = FileState.NeedsCheckOut;
+                    }
+                    else {
+                      if(work.isAlias(latest))
+                        fs[wk] = FileState.Identical;
+                      else 
+                        fs[wk] = FileState.NeedsCheckOut;
+                    }
+
                     stamps[wk] = work.lastCriticalChange(ctime); 
                   }
 
                   wk++;
                 }
-                
+               
                 states.put(fseq, fs);
                 timestamps.put(fseq, stamps);
               }
@@ -666,27 +683,34 @@ class FileMgr
                   else {
                     NativeFileStat latest = new NativeFileStat(new Path(lpath, path));
 
-                    if(!latest.isFile()) 
-                      fs[wk] = FileState.Added;
-                    else if(work.fileSize() != latest.fileSize()) 
-                      fs[wk] = FileState.Modified;
-                    else if(work.isAlias(latest))
-                      fs[wk] = FileState.Identical;
-                    else {
-                      if(jobStates[wk] == JobState.Running) {
-                        fs[wk] = FileState.Modified;
-                      }
-                      else {
-                        String fname = path.toString(); 
-                        wcheck.update(pCheckSumPath.get(), fname, 
-                                      work.lastCriticalChange(ctime)); 
-                        if(wcheck.isIdentical(fname, lcheck.get(fname)))
-                          fs[wk] = FileState.Identical;
-                        else 
-                          fs[wk] = FileState.Modified;
-                      }
-                    }
+                    String fname = path.toString(); 
+                    CheckSum lsum = lcheck.get(fname); 
                     
+                    if(linter) {
+                      if(lsum == null) 
+                        fs[wk] = FileState.Added;
+                      else if(jobStates[wk] == JobState.Running) 
+                        fs[wk] = FileState.Modified;
+                    }
+                    else {
+                      if(!latest.isFile()) 
+                        fs[wk] = FileState.Added;
+                      else if((work.fileSize() != latest.fileSize()) || 
+                              (jobStates[wk] == JobState.Running))
+                        fs[wk] = FileState.Modified;
+                      else if(work.isAlias(latest))
+                        fs[wk] = FileState.Identical;
+                    }
+
+                    if(fs[wk] == null) {
+                      wcheck.update(pCheckSumPath.get(), fname, 
+                                    work.lastCriticalChange(ctime)); 
+                      if(wcheck.isIdentical(fname, lsum)) 
+                        fs[wk] = FileState.Identical;
+                      else 
+                        fs[wk] = FileState.Modified;
+                    }
+
                     stamps[wk] = work.lastCriticalChange(ctime); 
                   }
                   
@@ -722,8 +746,12 @@ class FileMgr
                     NativeFileStat latest = new NativeFileStat(new Path(lpath, path));
                     NativeFileStat base   = new NativeFileStat(new Path(bpath, path));
 
-                    if(!latest.isFile()) {
-                      if(!base.isFile()) 
+                    String fname = path.toString(); 
+                    CheckSum lsum = lcheck.get(fname); 
+                    CheckSum bsum = bcheck.get(fname); 
+
+                    if((linter && (lsum == null)) || (!linter && !latest.isFile())) {
+                      if((binter && (bsum == null)) || (!binter && !base.isFile())) 
                         fs[wk] = FileState.Added;
                       else 
                         fs[wk] = FileState.Obsolete;
@@ -731,39 +759,36 @@ class FileMgr
                     else {
                       boolean workRefreshed = false;
                       boolean workEqLatest = false;
-                      if(work.isAlias(latest)) 
+                      if(!linter && work.isAlias(latest)) 
                         workEqLatest = true;
-                      else if((work.fileSize() == latest.fileSize()) && 
+                      else if((linter || (work.fileSize() == latest.fileSize())) && 
                               (jobStates[wk] != JobState.Running)) {
-                        String fname = path.toString(); 
                         wcheck.update(pCheckSumPath.get(), fname,
                                       work.lastCriticalChange(ctime)); 
                         workRefreshed = true;
-                        workEqLatest = wcheck.isIdentical(fname, lcheck.get(fname));
+                        workEqLatest = wcheck.isIdentical(fname, lsum);
                       }
-                      
-                      if(workEqLatest) {
+
+                      if(workEqLatest) 
                         fs[wk] = FileState.Identical;
-                      }
-                      else if(!base.isFile()) {
+                      else if((binter && (bsum == null)) || (!binter && !base.isFile())) 
                         fs[wk] = FileState.Conflicted;
-                      }
-                      else { 
-                        if(base.isAlias(latest))
+                      else {
+                        if(((linter || binter) && bsum.equals(lsum)) ||
+                           ((!linter && !binter) && base.isAlias(latest)))
                           fs[wk] = FileState.Modified;
                         else {
                           boolean workEqBase = false;
-                          if(work.isAlias(base))
+                          if(!binter && work.isAlias(base))
                             workEqBase = true;
-                          else if((work.fileSize() == base.fileSize())  &&
+                          else if((binter || (work.fileSize() == base.fileSize())) && 
                                   (jobStates[wk] != JobState.Running)) {
-                            String fname = path.toString(); 
                             if(!workRefreshed) 
                               wcheck.update(pCheckSumPath.get(), fname, 
                                             work.lastCriticalChange(ctime)); 
-                            workEqBase = wcheck.isIdentical(fname, bcheck.get(fname)); 
+                            workEqBase = wcheck.isIdentical(fname, bsum); 
                           }
-                          
+
                           if(workEqBase)
                             fs[wk] = FileState.NeedsCheckOut;
                           else 
@@ -771,7 +796,7 @@ class FileMgr
                         }
                       }
                     }
-
+                      
                     stamps[wk] = work.lastCriticalChange(ctime); 
                   }
                   
@@ -911,340 +936,345 @@ class FileMgr
           }
         }
 
-	/* the latest repository directory */ 
-        VersionID lvid = req.getLatestVersionID();
-        File ldir = null;
-        if(lvid != null) {
-          ldir = new File(pProdDir, 
-                          nodeID.getCheckedInPath(lvid).toString());
-          if(!ldir.isDirectory()) {
-            throw new PipelineException
-              ("Somehow the latest repository directory (" + ldir + ") was missing!");
+        /* skip file processing for intermediate nodes... */ 
+        if(!req.isIntermediate()) {
+
+          /* the latest repository directory */ 
+          VersionID lvid = req.getLatestVersionID();
+          File ldir = null;
+          if(lvid != null) {
+            ldir = new File(pProdDir, 
+                            nodeID.getCheckedInPath(lvid).toString());
+            if(!ldir.isDirectory()) {
+              throw new PipelineException
+                ("Somehow the latest repository directory (" + ldir + ") was missing!");
+            }
           }
-        }
 
-	/* the base repository directory */ 
-        String rbase = rdir.getParent();
+          /* the base repository directory */ 
+          String rbase = rdir.getParent();
 
-	/* the working file directories */ 
-	File wdir  = null;
-        File wpath = null;
-	{
-          wpath = nodeID.getWorkingParent().toFile();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	}
+          /* the working file directories */ 
+          File wdir  = null;
+          File wpath = null;
+          {
+            wpath = nodeID.getWorkingParent().toFile();
+            wdir  = new File(pProdDir, wpath.getPath());
+          }
 
-	/* determine how to process the files */ 
-	ArrayList<File> filesToCopy = new ArrayList<File>();
-	ArrayList<File> filesToMove = new ArrayList<File>();
-	ArrayList<File> filesToLink = new ArrayList<File>();
-	{
-	  TreeMap<FileSeq,boolean[]> isNovel = req.getIsNovel();
-	  for(FileSeq fseq : req.getFileSequences()) {
-	    boolean flags[] = isNovel.get(fseq);
-	    int wk = 0;
-	    for(File file : fseq.getFiles()) {
-	      if(flags[wk]) {
-                File work = new File(wdir, file.getPath());
-                if(!work.isFile())
+          /* determine how to process the files */ 
+          ArrayList<File> filesToCopy = new ArrayList<File>();
+          ArrayList<File> filesToMove = new ArrayList<File>();
+          ArrayList<File> filesToLink = new ArrayList<File>();
+          {
+            TreeMap<FileSeq,boolean[]> isNovel = req.getIsNovel();
+            for(FileSeq fseq : req.getFileSequences()) {
+              boolean flags[] = isNovel.get(fseq);
+              int wk = 0;
+              for(File file : fseq.getFiles()) {
+                if(flags[wk]) {
+                  File work = new File(wdir, file.getPath());
+                  if(!work.isFile())
+                    throw new PipelineException
+                      ("Somehow the working file (" + work + ") being checked-in does " + 
+                       "not exist!"); 
+
+                  /* we can't move/relink hand edited files or symlinks which are novel */ 
+                  boolean mustCopy = false;
+                  try {
+                    mustCopy = (!req.hasEnabledAction() || NativeFileSys.isSymlink(work));
+                  }
+                  catch(IOException ex) {
+                    throw new PipelineException
+                      ("Unable to determine whether the working file (" + work + ") being " + 
+                       "checked-in is a symbolic link or a regular file!"); 
+                  }
+
+                  if(mustCopy) 
+                    filesToCopy.add(file);
+                  else {
+                    filesToMove.add(file);
+                  }
+                }
+                else {
+                  if(ldir == null)
+                    throw new IllegalStateException(); 
+                  File latest = new File(ldir, file.getPath());
+                  try {
+                    String source = NativeFileSys.realpath(latest).getPath();
+                    if(!source.startsWith(rbase))
+                      throw new IllegalStateException(); 
+                    filesToLink.add(new File(".." + source.substring(rbase.length())));
+                  }
+                  catch(IOException ex) {
+                    throw new PipelineException
+                      ("Unable to resolve the real path to the repository " + 
+                       "file (" + latest + ")!");
+                  }
+                }
+
+                wk++;
+              }
+            }
+          }
+        
+          Map<String,String> env = System.getenv();
+        
+          Path instsbin = 
+            new Path(PackageInfo.sInstPath, 
+                     PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Opt"); 
+
+          boolean copyLinkSuccess = false;
+          try {
+            /* we must copy files which are not procedurally generated and novel */ 
+            if(!filesToCopy.isEmpty()) {
+
+              /* copy the files into the repository */ 
+              {
+                ArrayList<String> preOpts = new ArrayList<String>();
+                preOpts.add("--target-directory=" + rdir);
+              
+                ArrayList<String> args = new ArrayList<String>();
+                for(File file : filesToCopy) 
+                  args.add(file.getPath());
+              
+                LinkedList<SubProcessLight> procs = 
+                  SubProcessLight.createMultiSubProcess
+                  ("CheckIn-Copy", "cp", preOpts, args, env, wdir);
+              
+                try {	    
+                  for(SubProcessLight proc : procs) {
+                    proc.start();
+                    proc.join();
+                    if(!proc.wasSuccessful()) 
+                      throw new PipelineException
+                        ("Unable to copy files for working version " + 
+                         "(" + nodeID + ") into the file repository:\n" +
+                         proc.getStdErr());
+                  }
+                }
+                catch(InterruptedException ex) {
                   throw new PipelineException
-                    ("Somehow the working file (" + work + ") being checked-in does " + 
-                     "not exist!"); 
+                    ("Interrupted while copying files for working version " +
+                     "(" + nodeID + ") into the file repository!");
+                }
+              }
 
-                /* we can't move/relink hand edited files or symlinks which are novel */ 
-                boolean mustCopy = false;
+              /* verify that the copied files are correct */ 
+              for(File file : filesToCopy) {
+                File work = new File(wdir, file.getPath());
+                File repo = new File(rdir, file.getPath());
+
+                if(!repo.isFile())
+                  throw new PipelineException
+                    ("The newly created repository file (" + repo + ") was missing!\n\n" + 
+                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+              
+                /* make sure it was copied completely */ 
+                long repoSize = repo.length();
+                long workSize = work.length();
+                if(repoSize != workSize) 
+                  throw new PipelineException
+                    ("The newly created repository file (" + repo + ") was NOT the same " + 
+                     "size as the working area file (" + work + ") being checked-in!  The " + 
+                     "repository file size was (" + repoSize + ") bytes compared to the " + 
+                     "working file size of (" + workSize + ") bytes.\n\n" + 
+                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+    
+                /* make sure the repository file is now read-only */ 
+                repo.setReadOnly();
+              }
+            }
+
+            /* all we need to do for files that are the same as another repository version
+               is to just creat a symlink between the new and existing repository files */ 
+            if(!filesToLink.isEmpty()) {
+              for(File source : filesToLink) {
                 try {
-                  mustCopy = (!req.hasEnabledAction() || NativeFileSys.isSymlink(work));
+                  File target = new File(rdir, source.getName());
+                  NativeFileSys.symlink(source, target);
                 }
                 catch(IOException ex) {
                   throw new PipelineException
-                    ("Unable to determine whether the working file (" + work + ") being " + 
-                     "checked-in is a symbolic link or a regular file!"); 
+                    ("Unable to create symbolic links for working version " + 
+                     "(" + nodeID + ") in the file repository:\n" +  
+                     ex.getMessage());
                 }
-
-                if(mustCopy) 
-                  filesToCopy.add(file);
-                else {
-                  filesToMove.add(file);
-                }
-	      }
-	      else {
-		if(ldir == null)
-		  throw new IllegalStateException(); 
-		File latest = new File(ldir, file.getPath());
-		try {
-		  String source = NativeFileSys.realpath(latest).getPath();
-		  if(!source.startsWith(rbase))
-		    throw new IllegalStateException(); 
-		  filesToLink.add(new File(".." + source.substring(rbase.length())));
-		}
-		catch(IOException ex) {
-		  throw new PipelineException
-		    ("Unable to resolve the real path to the repository " + 
-		     "file (" + latest + ")!");
-		}
-	      }
-
-	      wk++;
-	    }
-	  }
-	}
-        
-        Map<String,String> env = System.getenv();
-        
-        Path instsbin = 
-          new Path(PackageInfo.sInstPath, 
-                   PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Opt"); 
-
-	boolean copyLinkSuccess = false;
-	try {
-          /* we must copy files which are not procedurally generated and novel */ 
-          if(!filesToCopy.isEmpty()) {
-
-            /* copy the files into the repository */ 
-            {
-              ArrayList<String> preOpts = new ArrayList<String>();
-              preOpts.add("--target-directory=" + rdir);
-              
-              ArrayList<String> args = new ArrayList<String>();
-              for(File file : filesToCopy) 
-                args.add(file.getPath());
-              
-              LinkedList<SubProcessLight> procs = 
-                SubProcessLight.createMultiSubProcess
-                ("CheckIn-Copy", "cp", preOpts, args, env, wdir);
-              
-              try {	    
-                for(SubProcessLight proc : procs) {
-                  proc.start();
-                  proc.join();
-                  if(!proc.wasSuccessful()) 
-                    throw new PipelineException
-                      ("Unable to copy files for working version " + 
-                       "(" + nodeID + ") into the file repository:\n" +
-                       proc.getStdErr());
-                }
-              }
-              catch(InterruptedException ex) {
-                throw new PipelineException
-                  ("Interrupted while copying files for working version " +
-                   "(" + nodeID + ") into the file repository!");
               }
             }
 
-            /* verify that the copied files are correct */ 
-            for(File file : filesToCopy) {
-              File work = new File(wdir, file.getPath());
-              File repo = new File(rdir, file.getPath());
-
-              if(!repo.isFile())
-                throw new PipelineException
-                  ("The newly created repository file (" + repo + ") was missing!\n\n" + 
-                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-              
-              /* make sure it was copied completely */ 
-              long repoSize = repo.length();
-              long workSize = work.length();
-              if(repoSize != workSize) 
-                throw new PipelineException
-                  ("The newly created repository file (" + repo + ") was NOT the same " + 
-                   "size as the working area file (" + work + ") being checked-in!  The " + 
-                   "repository file size was (" + repoSize + ") bytes compared to the " + 
-                   "working file size of (" + workSize + ") bytes.\n\n" + 
-                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-    
-              /* make sure the repository file is now read-only */ 
-              repo.setReadOnly();
-            }
-          }
-
-	  /* all we need to do for files that are the same as another repository version
-             is to just creat a symlink between the new and existing repository files */ 
-	  if(!filesToLink.isEmpty()) {
-	    for(File source : filesToLink) {
-	      try {
-		File target = new File(rdir, source.getName());
-		NativeFileSys.symlink(source, target);
-	      }
-	      catch(IOException ex) {
-		throw new PipelineException
-		 ("Unable to create symbolic links for working version " + 
-                  "(" + nodeID + ") in the file repository:\n" +  
-		  ex.getMessage());
-	      }
-	    }
-	  }
-
-          copyLinkSuccess = true;
-        }
-        finally {
-	  /* cleanup any partial results */ 
-          if(!copyLinkSuccess) {
-	    for(File file : filesToCopy) {
-	      File rfile = new File(rdir, file.getPath());
-	      if(rfile.exists()) 
-		rfile.delete();
-	    }
-	    
-	    for(File link : filesToLink) {
-	      File rlink = new File(rdir, link.getName());
-	      if(rlink.exists()) 
-		rlink.delete();
-	    }
-
-	    rdir.delete();
-          }
-        }
-        
-        /* move/relink files which are procedurally generated and novel */ 
-        if(!filesToMove.isEmpty()) {
-          boolean moveSuccess = false; 
-          try {
-            /* rename the working files into repository ones, 
-               the underlying "mv" falls back to copying if the working and repository
-               directories are not on same filesystem */ 
-            {
-              Path plmv = new Path(instsbin, "/sbin/plmv");
-              
-              ArrayList<String> preOpts = new ArrayList<String>();
-              preOpts.add(rdir.getPath());
-              
-              ArrayList<String> args = new ArrayList<String>();
-              for(File file : filesToMove) 
-                args.add(file.getPath());
-              
-              LinkedList<SubProcessLight> procs = 
-                SubProcessLight.createMultiSubProcess
-                ("CheckIn-Move", plmv.toOsString(), preOpts, args, env, wdir);
-              
-              try {	    
-                for(SubProcessLight proc : procs) {
-                  proc.start();
-                  proc.join();
-                  if(!proc.wasSuccessful()) 
-                    throw new PipelineException
-                      ("Unable to move files for working version " + 
-                       "(" + nodeID + ") into the file repository:\n" +
-                       proc.getStdErr());
-                }
-              }
-              catch(InterruptedException ex) {
-                throw new PipelineException
-                  ("Interrupted while moving files for working version " +
-                   "(" + nodeID + ") into the file repository!");
-              }
-            }
-            
-            /* change the ownership of the newly moved files to 
-               the "pipeline" admin user */ 
-            { 
-              Path plchown = new Path(instsbin, "/sbin/plchown");
-              
-              ArrayList<String> args = new ArrayList<String>();
-              args.add(rdir.getPath()); 
-              
-              SubProcessLight proc = 
-                new SubProcessLight("CheckIn-Chown", plchown.toOsString(), 
-                                    args, env, wdir); 
-              try {  
-                proc.start();
-                proc.join();
-                if(!proc.wasSuccessful()) 
-                  throw new PipelineException
-                    ("Unable to change the ownership of files newly moved to the " +
-                     "repository directory (" + rdir + "):\n" +
-                     proc.getStdErr());
-              }
-              catch(InterruptedException ex) {
-                throw new PipelineException
-                  ("Interrupted while change the ownership of files newly moved to the " +
-                   "repository directory (" + rdir + ")!");
-              }	    
-            }
-
-            /* verify that the moved or copy/delete operation was successful */ 
-            for(File file : filesToMove) {
-              File work = new File(wdir, file.getPath());
-              File repo = new File(rdir, file.getPath());
-
-              if(!repo.isFile())
-                throw new PipelineException
-                  ("The newly created repository file (" + repo + ") was missing!\n\n" + 
-                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-               
-              if(work.isFile()) 
-                throw new PipelineException
-                  ("Somehow the working file (" + work + ") still exists after being moved " + 
-                   "to the repository and renamed to (" + repo + ")!\n\n" + 
-                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-            } 
-
-            moveSuccess = true;
+            copyLinkSuccess = true;
           }
           finally {
-            /* rename the repository directory if there was a failure */ 
-            if(!moveSuccess) {
-              Path p = new Path(new Path(rdir), "-" + System.currentTimeMillis() + ".recover");
-              File recover = p.toFile(); 
-              if(!rdir.renameTo(recover))
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
-                   "Failed to rename newly created repository directory (" + rdir + ") " +
-                   "to recovery directory (" + recover + ") in response to an exception " + 
-                   "while moving files from the working area!"); 
+            /* cleanup any partial results */ 
+            if(!copyLinkSuccess) {
+              for(File file : filesToCopy) {
+                File rfile = new File(rdir, file.getPath());
+                if(rfile.exists()) 
+                  rfile.delete();
+              }
+	    
+              for(File link : filesToLink) {
+                File rlink = new File(rdir, link.getName());
+                if(rlink.exists()) 
+                  rlink.delete();
+              }
+
+              rdir.delete();
             }
           }
-            
-          /* create relative symlinks from the now missing working file names to their 
-               new checked-in names */ 
-          {
-            ArrayList<String> preOpts = new ArrayList<String>();
-            preOpts.add("--symbolic-link");
-            
-            ArrayList<String> args = new ArrayList<String>();
-            {
-              StringBuilder buf = new StringBuilder();
-              String comps[] = wpath.getPath().split("/");
-              int wk;
-              for(wk=1; wk<comps.length; wk++) 
-                buf.append("../");
-              buf.append(rpath.getPath().substring(1));
-              String path = buf.toString();
-              
-              for(File file : filesToMove) 
-                args.add(path + "/" + file);
-            }
-            
-            ArrayList<String> postOpts = new ArrayList<String>();
-            postOpts.add(".");
-            
-            LinkedList<SubProcessLight> procs = 
-              SubProcessLight.createMultiSubProcess
-              (nodeID.getAuthor(), 
-               "CheckIn-Relink", "cp", preOpts, args, postOpts, env, wdir);
-            
+        
+          /* move/relink files which are procedurally generated and novel */ 
+          if(!filesToMove.isEmpty()) {
+            boolean moveSuccess = false; 
             try {
-              for(SubProcessLight proc : procs) {
-                proc.start();
-                proc.join();
-                if(!proc.wasSuccessful()) 
+              /* rename the working files into repository ones, 
+                 the underlying "mv" falls back to copying if the working and repository
+                 directories are not on same filesystem */ 
+              {
+                Path plmv = new Path(instsbin, "/sbin/plmv");
+              
+                ArrayList<String> preOpts = new ArrayList<String>();
+                preOpts.add(rdir.getPath());
+              
+                ArrayList<String> args = new ArrayList<String>();
+                for(File file : filesToMove) 
+                  args.add(file.getPath());
+              
+                LinkedList<SubProcessLight> procs = 
+                  SubProcessLight.createMultiSubProcess
+                  ("CheckIn-Move", plmv.toOsString(), preOpts, args, env, wdir);
+              
+                try {	    
+                  for(SubProcessLight proc : procs) {
+                    proc.start();
+                    proc.join();
+                    if(!proc.wasSuccessful()) 
+                      throw new PipelineException
+                        ("Unable to move files for working version " + 
+                         "(" + nodeID + ") into the file repository:\n" +
+                         proc.getStdErr());
+                  }
+                }
+                catch(InterruptedException ex) {
                   throw new PipelineException
-                    ("Unable to create symbolic links to the repository for the " +
-                     "working version (" + nodeID + "):\n\n" + 
-                     proc.getStdErr());
-              }	
+                    ("Interrupted while moving files for working version " +
+                     "(" + nodeID + ") into the file repository!");
+                }
+              }
+            
+              /* change the ownership of the newly moved files to 
+                 the "pipeline" admin user */ 
+              { 
+                Path plchown = new Path(instsbin, "/sbin/plchown");
+              
+                ArrayList<String> args = new ArrayList<String>();
+                args.add(rdir.getPath()); 
+              
+                SubProcessLight proc = 
+                  new SubProcessLight("CheckIn-Chown", plchown.toOsString(), 
+                                      args, env, wdir); 
+                try {  
+                  proc.start();
+                  proc.join();
+                  if(!proc.wasSuccessful()) 
+                    throw new PipelineException
+                      ("Unable to change the ownership of files newly moved to the " +
+                       "repository directory (" + rdir + "):\n" +
+                       proc.getStdErr());
+                }
+                catch(InterruptedException ex) {
+                  throw new PipelineException
+                    ("Interrupted while change the ownership of files newly moved to the " +
+                     "repository directory (" + rdir + ")!");
+                }	    
+              }
+
+              /* verify that the moved or copy/delete operation was successful */ 
+              for(File file : filesToMove) {
+                File work = new File(wdir, file.getPath());
+                File repo = new File(rdir, file.getPath());
+
+                if(!repo.isFile())
+                  throw new PipelineException
+                    ("The newly created repository file (" + repo + ") was missing!\n\n" + 
+                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+               
+                if(work.isFile()) 
+                  throw new PipelineException
+                    ("Somehow the working file (" + work + ") still exists after being " + 
+                     "moved to the repository and renamed to (" + repo + ")!\n\n" + 
+                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+              } 
+
+              moveSuccess = true;
             }
-            catch(InterruptedException ex) {
-              throw new PipelineException
-                ("Interrupted while creating symbolic links to the repository for the " +
-                 "working version (" + nodeID + ")!");
+            finally {
+              /* rename the repository directory if there was a failure */ 
+              if(!moveSuccess) {
+                Path p = new Path(new Path(rdir), 
+                                  "-" + System.currentTimeMillis() + ".recover");
+                File recover = p.toFile(); 
+                if(!rdir.renameTo(recover))
+                  LogMgr.getInstance().log
+                    (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+                     "Failed to rename newly created repository directory (" + rdir + ") " +
+                     "to recovery directory (" + recover + ") in response to an exception " + 
+                     "while moving files from the working area!"); 
+              }
+            }
+            
+            /* create relative symlinks from the now missing working file names to their 
+               new checked-in names */ 
+            {
+              ArrayList<String> preOpts = new ArrayList<String>();
+              preOpts.add("--symbolic-link");
+            
+              ArrayList<String> args = new ArrayList<String>();
+              {
+                StringBuilder buf = new StringBuilder();
+                String comps[] = wpath.getPath().split("/");
+                int wk;
+                for(wk=1; wk<comps.length; wk++) 
+                  buf.append("../");
+                buf.append(rpath.getPath().substring(1));
+                String path = buf.toString();
+              
+                for(File file : filesToMove) 
+                  args.add(path + "/" + file);
+              }
+            
+              ArrayList<String> postOpts = new ArrayList<String>();
+              postOpts.add(".");
+            
+              LinkedList<SubProcessLight> procs = 
+                SubProcessLight.createMultiSubProcess
+                (nodeID.getAuthor(), 
+                 "CheckIn-Relink", "cp", preOpts, args, postOpts, env, wdir);
+            
+              try {
+                for(SubProcessLight proc : procs) {
+                  proc.start();
+                  proc.join();
+                  if(!proc.wasSuccessful()) 
+                    throw new PipelineException
+                      ("Unable to create symbolic links to the repository for the " +
+                       "working version (" + nodeID + "):\n\n" + 
+                       proc.getStdErr());
+                }	
+              }
+              catch(InterruptedException ex) {
+                throw new PipelineException
+                  ("Interrupted while creating symbolic links to the repository for the " +
+                   "working version (" + nodeID + ")!");
+              }
             }
           }
-        }
+        } // if(!req.isIntermediate())
 
         /* make the repository directory read-only */ 
         rdir.setReadOnly();
@@ -1372,19 +1402,19 @@ class FileMgr
 	  }
 	}
 
-	/* the repository file directories */ 
-	VersionID rvid = req.getVersionID();
-	File rdir  = null;
-	File rpath = null;
-	{
-	  rpath = req.getNodeID().getCheckedInPath(rvid).toFile();
-	  rdir  = new File(pProdDir, rpath.getPath());
-	}
-
-	/* build the list of files to copy */ 
-	ArrayList<File> files = new ArrayList<File>();
+        /* the repository file directories */ 
+        VersionID rvid = req.getVersionID();
+        File rdir  = null;
+        File rpath = null;
         {
-          /* if ignoring existing, we should only proceed if the working are file is either
+          rpath = req.getNodeID().getCheckedInPath(rvid).toFile();
+          rdir  = new File(pProdDir, rpath.getPath());
+        }
+          
+        /* build the list of files to copy */ 
+        ArrayList<File> files = new ArrayList<File>();
+        {
+          /* if ignoring existing, we should only proceed if the working area file is either
              a symlink or is missing altogether leaving regular working area files as-is */ 
           if(req.ignoreExisting()) {
             for(FileSeq fseq : req.getFileSequences()) {
@@ -1499,8 +1529,8 @@ class FileMgr
 	  if(req.getWritable()) {
 	    LinkedList<SubProcessLight> procs = 
 	      SubProcessLight.createMultiSubProcess
-	        (req.getNodeID().getAuthor(), 
-		 "CheckOut-SetWritable", "chmod", preOpts, args, env, wdir);
+              (req.getNodeID().getAuthor(), 
+               "CheckOut-SetWritable", "chmod", preOpts, args, env, wdir);
 
 	    try {
 	      for(SubProcessLight proc : procs) {

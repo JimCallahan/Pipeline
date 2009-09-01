@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.104 2009/07/06 10:25:26 jim Exp $
+// $Id: MasterMgrServer.java,v 1.105 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1106,8 +1106,7 @@ class MasterMgrServer
 
               case GetWorkingAreasContaining:
                 {
-                  NodeGetWorkingAreasContainingReq req = 
-                    (NodeGetWorkingAreasContainingReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getWorkingAreasContaining(req));
                   objOut.flush(); 
                 }
@@ -1177,7 +1176,7 @@ class MasterMgrServer
 
               case GetAnnotations:
                 {
-                  NodeGetAnnotationsReq req = (NodeGetAnnotationsReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getAnnotations(req));
                   objOut.flush(); 
                 }
@@ -1303,7 +1302,7 @@ class MasterMgrServer
 	    
               case GetAllCheckedIn:
                 {
-                  NodeGetAllCheckedInReq req = (NodeGetAllCheckedInReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getAllCheckedInVersions(req));
                   objOut.flush(); 
                 }
@@ -1311,16 +1310,23 @@ class MasterMgrServer
 
               case GetCheckedInVersionIDs:
                 {
-                  NodeGetCheckedInVersionIDsReq req = 
-                    (NodeGetCheckedInVersionIDsReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getCheckedInVersionIDs(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetIntermediateVersionIDs:
+                {
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getIntermediateVersionIDs(req));
                   objOut.flush(); 
                 }
                 break;
 
               case GetHistory:
                 {
-                  NodeGetHistoryReq req = (NodeGetHistoryReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getHistory(req));
                   objOut.flush(); 
                 }
@@ -1328,8 +1334,7 @@ class MasterMgrServer
 
               case GetCheckedInFileNovelty:
                 {
-                  NodeGetCheckedInFileNoveltyReq req = 
-                    (NodeGetCheckedInFileNoveltyReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getCheckedInFileNovelty(req));
                   objOut.flush(); 
                 }
@@ -1337,8 +1342,7 @@ class MasterMgrServer
 
               case GetCheckedInLinks:
                 {
-                  NodeGetCheckedInLinksReq req = 
-                    (NodeGetCheckedInLinksReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getCheckedInLinks(req));
                   objOut.flush(); 
                 }
@@ -1593,8 +1597,7 @@ class MasterMgrServer
 	      
               case GetWorkingAreasEditing: 
                 {
-                  NodeGetWorkingAreasEditingReq req = 
-                    (NodeGetWorkingAreasEditingReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getWorkingAreasEditing(req));
                   objOut.flush(); 
                 }
@@ -1670,8 +1673,7 @@ class MasterMgrServer
 
               case GetOfflineVersionIDs:
                 {
-                  NodeGetOfflineVersionIDsReq req = 
-                    (NodeGetOfflineVersionIDsReq) objIn.readObject();
+                  NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getOfflineVersionIDs(req));
                   objOut.flush(); 
                 }

@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInVersionIDsRsp.java,v 1.2 2005/01/22 06:10:10 jim Exp $
+// $Id: NodeGetVersionIDsRsp.java,v 1.1 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   G E T   C H E C K E D - I N   V E R S I O N   I D S   R S P                  */
+/*   N O D E   G E T   V E R S I O N   I D S   R S P                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a 
- * {@link NodeGetCheckedInVersionIDsReq NodeGetCheckedInVersionIDsReq} request.
- */
+ * A successful response which returns a set of node revision numbers. 
+ */ 
 public
-class NodeGetCheckedInVersionIDsRsp
+class NodeGetVersionIDsRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -34,7 +33,7 @@ class NodeGetCheckedInVersionIDsRsp
    *   The revision numbers. 
    */
   public
-  NodeGetCheckedInVersionIDsRsp
+  NodeGetVersionIDsRsp
   (
    TaskTimer timer, 
    TreeSet<VersionID> vids
@@ -43,7 +42,7 @@ class NodeGetCheckedInVersionIDsRsp
     super(timer);
 
     if(vids == null) 
-      throw new IllegalArgumentException("The checked-in version cannot be (null)!");
+      throw new IllegalArgumentException("The versions cannot be (null)!");
     pVersionIDs = vids;
   }
 
@@ -68,7 +67,7 @@ class NodeGetCheckedInVersionIDsRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -1463601240093751827L;
+  private static final long serialVersionUID = -8059160295401593619L;
 
   
 

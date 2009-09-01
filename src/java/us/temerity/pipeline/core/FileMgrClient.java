@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.48 2009/08/28 02:10:46 jim Exp $
+// $Id: FileMgrClient.java,v 1.49 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -140,9 +140,15 @@ interface FileMgrClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
+   * @param isBaseIntermediate
+   *   Is the base version an intermediate node with no repository files.
+   * 
    * @param baseCheckSums
    *   Read-only checksums for all files associated with the base checked-in version
    *   or <CODE>null</CODE> if no base version exists.
+   * 
+   * @param isLatestIntermediate
+   *   Is the latest version an intermediate node with no repository files.
    * 
    * @param latestCheckSums
    *   Read-only checksums for all files associated with the latest checked-in version
@@ -176,7 +182,9 @@ interface FileMgrClient
    JobState jobStates[], 
    boolean isFrozen, 
    VersionID latest, 
+   boolean isBaseIntermediate, 
    SortedMap<String,CheckSum> baseCheckSums, 
+   boolean isLatestIntermediate, 
    SortedMap<String,CheckSum> latestCheckSums, 
    CheckSumCache workingCheckSums, 
    TreeMap<FileSeq,FileState[]> states, 

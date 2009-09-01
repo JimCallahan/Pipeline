@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.12 2009/07/13 17:26:02 jlee Exp $
+// $Id: JCheckOutDialog.java,v 1.13 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -212,12 +212,17 @@ class JCheckOutDialog
    * @param offline
    *   The revision nubers of all offline checked-in versions the nodes indexed by fully
    *   resolved node name.
+   * 
+   * @param inter
+   *   The revision nubers of all intermediate checked-in versions the nodes indexed by fully
+   *   resolved node name.
    */ 
   public void 
   updateVersions
   (
    TreeMap<String,TreeSet<VersionID>> versions, 
    TreeMap<String,TreeSet<VersionID>> offline, 
+   TreeMap<String,TreeSet<VersionID>> inter, 
    TreeMap<String,TreeMap<VersionID,LogMessage>> checkedInMessages
   )
   {
@@ -261,8 +266,11 @@ class JCheckOutDialog
 	      String extra = "";
 	      {
 		TreeSet<VersionID> ovids = offline.get(name);
+		TreeSet<VersionID> ivids = inter.get(name);
 		if((ovids != null) && ovids.contains(vid))
 		  extra = " - Offline";
+                else if((ivids != null) && ivids.contains(vid))
+		  extra = " - Intermediate";
 	      }
 		
 	      values.add("v" + vid + extra);

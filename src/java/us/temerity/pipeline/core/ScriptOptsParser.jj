@@ -240,6 +240,8 @@ ScriptOptsParser
   private String     pAuthor; 
   private String     pView; 
   private TreeSet    pSections; 
+
+  private Boolean    pIsIntermediate;                               
   private String     pToolset;
 
   private String     pEditorName;
@@ -428,7 +430,8 @@ TOKEN :
 | <AUTHOR:             "--author">          	: USER_NAME_SEP 	      
 | <VIEW2:              "--view">            	: VIEW_NAME_SEP 	      
 | <SHOW:               "--show">            	: SECTION_SEP   	      
-| <HIDE:               "--hide">            	: SECTION_SEP   	      
+| <HIDE:               "--hide">            	: SECTION_SEP   	
+| <INTERMEDIATE:       "--intermediate">  	: BOOLEAN_SEP	            
 | <TOOLSET2:           "--toolset">         	: TOOLSET_NAME_SEP	      
 | <NO_ACTION:          "--no-action">       				      
 | <ACTION2:            "--action">          	: ACTION_NAME_SEP	      
@@ -5428,14 +5431,18 @@ WorkingRegister()
 {
   String name = null;
 
-  pAuthor     = PackageInfo.sUser;
-  pView       = "default";
-  pFileSeq    = null;
-  pToolset    = null;
+  pAuthor = PackageInfo.sUser;
+  pView   = "default";
+
+  pFileSeq        = null;
+  pIsIntermediate = false; 
+
+  pToolset = null;
 
   pEditorName      = null;
   pEditorVersionID = null;
   pEditorVendor    = null;
+
   pNoAction        = null;
   pActionName      = null;
   pActionVersionID = null; 
@@ -5463,7 +5470,7 @@ WorkingRegister()
         ("The --fseq option is required!");
 
     pApp.workingVersionRegister
-     (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, 
+    (new NodeID(pAuthor, pView, name), pFileSeq, pIsIntermediate, pToolset, 
       pEditorName, pEditorVersionID, pEditorVendor, 
       pNoAction, pActionName, pActionVersionID, pActionVendor, 
       pActionEnabled, pParams, pSourceParams, 
@@ -5484,7 +5491,7 @@ WorkingRegisterOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | FSeq() | Toolset() | Editor() | 
+  (Author() | View() | FSeq() | Toolset() | Intermediate() | Editor() | 
    Action() | ActionEnabled() | Param() | SourceParam() | 
    Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
@@ -5587,13 +5594,17 @@ WorkingSet()
 {
   String name = null;
 
-  pAuthor      = PackageInfo.sUser;
-  pView        = "default";
-  pToolset     = null;
+  pAuthor = PackageInfo.sUser;
+  pView   = "default";
+
+  pIsIntermediate = null;
+  
+  pToolset = null;
 
   pEditorName      = null;
   pEditorVersionID = null;
   pEditorVendor    = null;
+
   pNoAction        = null;
   pActionName      = null;
   pActionVersionID = null; 
@@ -5617,7 +5628,7 @@ WorkingSet()
   <WORKING_SET> EQ() name=NodeName() AE() (WorkingSetOpts())*
   {
     pApp.workingVersionSet
-      (new NodeID(pAuthor, pView, name), pToolset, 
+      (new NodeID(pAuthor, pView, name), pIsIntermediate, pToolset, 
        pEditorName, pEditorVersionID, pEditorVendor, 
        pNoAction, pActionName, pActionVersionID, pActionVendor, 
        pActionEnabled, pParams, pSourceParams, 
@@ -5638,7 +5649,7 @@ WorkingSetOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | Toolset() | Editor() | 
+  (Author() | View() | Intermediate() | Toolset() | Editor() | 
    NoAction() | Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
    Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
@@ -7548,6 +7559,18 @@ Wait() :
   <WAIT> AE()
   {
     pWait = true;
+  }
+}
+
+void 
+Intermediate() : 
+{
+  boolean inter;
+}
+{
+  <INTERMEDIATE> EQ() inter=BooleanLiteral() AE()
+  {
+    pIsIntermediate = inter;
   }
 }
 

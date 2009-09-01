@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.37 2009/08/10 20:50:13 jesse Exp $
+// $Id: BaseStage.java,v 1.38 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -518,7 +518,7 @@ class BaseStage
   {
     Path p = new Path(name);
     FileSeq fSeq = new FileSeq(p.getName(), suffix);
-    NodeMod nodeMod = new NodeMod(name, fSeq, null, getToolset(), editor);
+    NodeMod nodeMod = new NodeMod(name, fSeq, null, false, getToolset(), editor);  
     pClient.register(getAuthor(), getView(), nodeMod);
     return nodeMod;
   }
@@ -574,7 +574,7 @@ class BaseStage
     FilePattern pat = new FilePattern(p.getName(), pad, suffix);
     FrameRange range = new FrameRange(startFrame, endFrame, step);
     FileSeq fSeq = new FileSeq(pat, range);
-    NodeMod nodeMod = new NodeMod(name, fSeq, null, getToolset(), editor);
+    NodeMod nodeMod = new NodeMod(name, fSeq, null, false, getToolset(), editor);
     pClient.register(getAuthor(), getView(), nodeMod);
     return nodeMod;
   }
@@ -633,8 +633,8 @@ class BaseStage
       pat = new FilePattern(name, oldPat.getSuffix());
     }
     FileSeq newSeq = new FileSeq(pat, range);
-    NodeMod newMod = new NodeMod(newName, newSeq, oldMod.getSecondarySequences(), 
-      oldMod.getToolset(), oldMod.getEditor());
+    NodeMod newMod = new NodeMod(newName, newSeq, oldMod.getSecondarySequences(), false, 
+                                 oldMod.getToolset(), oldMod.getEditor());
     pClient.register(getAuthor(), getView(), newMod);
     if (cloneLinks)
     {

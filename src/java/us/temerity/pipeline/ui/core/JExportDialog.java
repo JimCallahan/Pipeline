@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.12 2009/06/18 08:42:52 jlee Exp $
+// $Id: JExportDialog.java,v 1.13 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -75,6 +75,15 @@ class JExportDialog
   /*   A C C E S                                                                            */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Whether to export the intermediate files parameter.
+   */ 
+  public boolean 
+  exportIntermediate() 
+  {
+    return pExportPanel.exportIntermediate(); 
+  }
+    
   /**
    * Whether to export the toolset parameter.
    */ 

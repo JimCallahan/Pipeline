@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.15 2009/06/01 05:48:29 jesse Exp $
+// $Id: ViewerNode.java,v 1.16 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -335,17 +335,20 @@ class ViewerNode
 	if(details != null) {
 	  NodeCommon com = null;
 	  boolean hasSources = false;
+          boolean isIntermediate = false;
 	  {
 	    NodeMod mod = details.getWorkingVersion();
 	    if(mod != null) {
 	      com = mod;
 	      hasSources = mod.hasSources();
+              isIntermediate = mod.isIntermediate();
 	    }
 	    else {
 	      NodeVersion vsn = details.getLatestVersion();
 	      if(vsn != null) {
 		com = vsn;
 		hasSources = vsn.hasSources();
+                isIntermediate = vsn.isIntermediate();
 	      }
 	    }
 	  }
@@ -365,6 +368,18 @@ class ViewerNode
 	    }
 	    gl.glEnd();
 	  }
+
+          if(isIntermediate && prefs.getDrawIntermediate()) {
+	    gl.glBegin(gl.GL_LINES);
+	    {
+              gl.glColor3d(modeColor.r(), modeColor.g(), modeColor.b());
+
+	      double s = prefs.getIntermediateSize(); 
+	      gl.glVertex2d(-s, -0.55);
+	      gl.glVertex2d( s, -0.55);
+	    }
+	    gl.glEnd();
+          }
 	}
       }
 

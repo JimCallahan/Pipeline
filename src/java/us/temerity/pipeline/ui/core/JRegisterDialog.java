@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.24 2009/03/24 01:21:21 jesse Exp $
+// $Id: JRegisterDialog.java,v 1.25 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -179,6 +179,18 @@ class JRegisterDialog
 	  
 	  field.addActionListener(this);
 	  field.setActionCommand("update-editor");
+	}
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+	{
+          JBooleanField field = 
+            UIFactory.createTitledBooleanField
+            (tpanel, "Intermediate Files:", sTSize, vpanel, sVSize, 
+             "Whether the file sequences managed by this node are intermediate " + 
+             "(temporary) in nature and therefore should never be saved/restored along " + 
+             "with repository versions."); 
+          pIntermediateField = field;
 	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -795,6 +807,8 @@ class JRegisterDialog
 
       FileSeq primary = new FileSeq(fpat, frange);
 
+      boolean isIntermediate = pIntermediateField.getValue(); 
+
       String toolset = pToolsetField.getSelected();
       if((toolset == null) || toolset.equals("-")) 			      
 	throw new PipelineException
@@ -809,7 +823,8 @@ class JRegisterDialog
 	  editor = PluginMgrClient.getInstance().newEditor(ename, evid, evendor);
       }
 
-      pNodeMod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
+      pNodeMod = new NodeMod(name, primary, new TreeSet<FileSeq>(), isIntermediate, 
+                             toolset, editor);
     }
     catch(Exception ex) {
       showErrorDialog(ex);
@@ -999,6 +1014,11 @@ class JRegisterDialog
    * The filename suffix.
    */ 
   private JAlphaNumField  pSuffixField;
+  
+  /**
+   * The intermediate files flag. 
+   */ 
+  private JBooleanField  pIntermediateField; 
   
   /**
    * The toolset name.

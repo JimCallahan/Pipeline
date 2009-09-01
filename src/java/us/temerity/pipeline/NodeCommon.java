@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.35 2009/06/06 01:13:54 jim Exp $
+// $Id: NodeCommon.java,v 1.36 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -69,6 +69,10 @@ class NodeCommon
    * @param secondary 
    *   The secondary file sequences associated with the node.
    * 
+   * @param isIntermediate 
+   *   Whether the file sequences managed by this node are intermediate in nature and 
+   *   therefore should never be saved/restored along with the repository version.
+   * 
    * @param toolset 
    *   The named execution environment under which editor and action are run.
    * 
@@ -101,6 +105,7 @@ class NodeCommon
    String name, 
    FileSeq primary,
    Set<FileSeq> secondary, 
+   boolean isIntermediate, 
    String toolset, 
    BaseEditor editor, 
    BaseAction action, 
@@ -113,7 +118,7 @@ class NodeCommon
   {
     super(name);
 
-    init(primary, secondary, 
+    init(primary, secondary, isIntermediate,  
 	 toolset, editor, action, isActionEnabled, jobReqs, overflow, execution, batchSize);
   }
 
@@ -136,6 +141,10 @@ class NodeCommon
    * @param secondary 
    *   The secondary file sequences associated with the node.
    * 
+   * @param isIntermediate 
+   *   Whether the file sequences managed by this node are intermediate in nature and 
+   *   therefore should never be saved/restored along with the repository version.
+   * 
    * @param toolset 
    *   The named execution environment under which editor and action are run.
    * 
@@ -148,13 +157,14 @@ class NodeCommon
    String name, 
    FileSeq primary,
    Set<FileSeq> secondary, 
+   boolean isIntermediate, 
    String toolset, 
    BaseEditor editor
   ) 
   {
     super(name);
 
-    init(primary, secondary, 
+    init(primary, secondary, isIntermediate, 
 	 toolset, editor, null, false, null, null, null, null);
   }
 
@@ -171,8 +181,9 @@ class NodeCommon
   {
     super(com.getName());
     
-    pPrimarySeq    = com.getPrimarySequence();
-    pSecondarySeqs = new TreeSet(com.getSecondarySequences());
+    pPrimarySeq     = com.getPrimarySequence();
+    pSecondarySeqs  = new TreeSet(com.getSecondarySequences());
+    pIsIntermediate = com.isIntermediate(); 
     
     pToolset         = com.getToolset();
     pEditor          = com.getEditor();    
@@ -193,6 +204,7 @@ class NodeCommon
   (
    FileSeq primary,
    Set<FileSeq> secondary, 
+   boolean isIntermediate, 
    String toolset, 
    BaseEditor editor,
    BaseAction action, 
@@ -234,6 +246,8 @@ class NodeCommon
       }
     }
     
+    pIsIntermediate = isIntermediate; 
+
     if(toolset == null) 
       throw new IllegalArgumentException
 	("The toolset cannot be (null)!");
@@ -323,8 +337,20 @@ class NodeCommon
 
     return true;
   }
-  
-  
+
+  /**
+   * Whether the file sequences managed by this node are intermediate in nature and 
+   * therefore should never be saved/restored along with the repository version.
+   */
+  public boolean 
+  isIntermediate() 
+  {
+    return pIsIntermediate; 
+  }
+ 
+ 
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * Get the name of the execution environment under which to execute the editor program and 
    * the regeneration action. 
@@ -335,6 +361,8 @@ class NodeCommon
     return pToolset;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Get editor plugin instance used to edit the files associated with the node.
@@ -351,6 +379,8 @@ class NodeCommon
     return null;
   }
 
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Whether this node has a regeneration action which his currently active.
@@ -505,6 +535,7 @@ class NodeCommon
     return (super.equals(com) && 
 	    pPrimarySeq.equals(com.pPrimarySeq) && 
 	    pSecondarySeqs.equals(com.pSecondarySeqs) && 
+            (pIsIntermediate == com.pIsIntermediate) && 
 	    pToolset.equals(com.pToolset) && 
 	    (((pEditor == null) && (com.pEditor == null)) || 
 	     ((pEditor != null) && pEditor.equals(com.pEditor))) &&
@@ -583,6 +614,8 @@ class NodeCommon
   {
     out.writeObject(pPrimarySeq);
     out.writeObject(pSecondarySeqs);
+    out.writeBoolean(pIsIntermediate); 
+
     out.writeObject(pToolset);
     
     BaseEditor editor = null;
@@ -623,6 +656,8 @@ class NodeCommon
   {
     pPrimarySeq = (FileSeq) in.readObject();
     pSecondarySeqs = (TreeSet<FileSeq>) in.readObject();
+    pIsIntermediate = in.readBoolean();
+
     pToolset = (String) in.readObject();
 
     BaseEditor editor = (BaseEditor) in.readObject();
@@ -703,6 +738,8 @@ class NodeCommon
     if(!pSecondarySeqs.isEmpty()) 
       encoder.encode("SecondarySeqs", pSecondarySeqs);
 
+    encoder.encode("IsIntermediate", pIsIntermediate);
+
     encoder.encode("Toolset", pToolset);
 
     if(pEditor != null) 
@@ -758,6 +795,10 @@ class NodeCommon
     if(secondary != null) 
       pSecondarySeqs = secondary;
     
+    Boolean inter = (Boolean) decoder.decode("IsIntermediate");
+    if(inter != null) 
+      pIsIntermediate = inter;
+
     String toolset = (String) decoder.decode("Toolset");
     if(toolset == null) 
       throw new GlueException("The \"Toolset\" was missing or (null)!");
@@ -993,8 +1034,15 @@ class NodeCommon
    * component of the node name.
    */
   protected TreeSet<FileSeq>  pSecondarySeqs;   
+  
+  /**
+   * Whether the file sequences managed by this node are intermediate in nature and 
+   * therefore should never be saved/restored along with the repository version.
+   */ 
+  protected boolean  pIsIntermediate; 
 
 
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The name of the execution environment under which to execute the editor program and 
@@ -1002,12 +1050,18 @@ class NodeCommon
    */ 
   protected String  pToolset;            
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The editor plugin instance used to edit/view the files associated with this
    * version of the node. If <CODE>null</CODE>, there is no editor for this version 
    * of the node.
    */ 
   protected BaseEditor  pEditor;         
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * The action plugin instance used to regeneration the files associated with this 
@@ -1055,7 +1109,9 @@ class NodeCommon
    */ 
   protected Integer  pBatchSize;          
 
- 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * The annotation plugin instances associated with this version of the node indexed
    * by the name of the annotations. 

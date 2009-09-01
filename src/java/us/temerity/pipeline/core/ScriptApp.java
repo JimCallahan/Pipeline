@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.100 2009/08/28 02:10:47 jim Exp $
+// $Id: ScriptApp.java,v 1.101 2009/09/01 10:59:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2525,8 +2525,20 @@ class ScriptApp
       buf.append
 	("\n\n" + 
 	 pad("-- Properties ", '-', 80) + "\n" +
-	 "Toolset           : " + com.getToolset() + "\n" +
-	 "Editor            : " + com.getEditor());
+         "Intermediate      : " + (com.isIntermediate() ? "YES" : "no") + "\n" +
+         "Toolset           : " + com.getToolset() + "\n" +
+         "Editor            : ");
+
+      BaseEditor editor = com.getEditor(); 
+      if(editor != null) {
+        buf.append
+          (editor.getName() + "\n" +
+	   "Version           : " + editor.getVersionID() + "\n" + 
+	   "Vendor            : " + editor.getVendor()); 
+      }
+      else {
+        buf.append("-"); 
+      }
     }
        
     if(sections.contains("act")) {
@@ -2538,6 +2550,7 @@ class ScriptApp
 	buf.append
 	  ("Action            : " + action.getName() + "\n" +
 	   "Version           : " + action.getVersionID() + "\n" + 
+	   "Vendor            : " + action.getVendor() + "\n" + 
 	   "Enabled           : " + (com.isActionEnabled() ? "YES" : "no"));
 	
 	if(action.hasSingleParams()) 
@@ -2668,6 +2681,7 @@ class ScriptApp
   (
    NodeID nodeID, 
    FileSeq primary, 
+   boolean isIntermediate, 
    String toolset, 
    String editorName, 
    VersionID editorVersionID, 
@@ -2705,7 +2719,6 @@ class ScriptApp
       if(tset == null) 
 	tset = client.getDefaultToolsetName();
 
-
       BaseEditor editor = null;
       {
 	if(editorName == null) {
@@ -2719,7 +2732,8 @@ class ScriptApp
 	}
       }
       
-      mod = new NodeMod(nodeID.getName(), primary, new TreeSet<FileSeq>(), tset, editor);
+      mod = new NodeMod(nodeID.getName(), primary, new TreeSet<FileSeq>(), 
+                        isIntermediate, tset, editor);
 
       setActionProperties
 	(mod, noAction, actionName, actionVersionID, actionVendor, actionEnabled, 
@@ -2747,6 +2761,7 @@ class ScriptApp
   workingVersionSet
   (
    NodeID nodeID, 
+   Boolean isIntermediate, 
    String toolset, 
    String editorName, 
    VersionID editorVersionID, 
@@ -2777,6 +2792,9 @@ class ScriptApp
     try {
       /* properties */ 
       {
+        if(isIntermediate != null) 
+          mod.setIntermediate(isIntermediate); 
+
 	if(toolset != null) {
 	  if(!client.getToolsetNames().contains(toolset)) 
 	    throw new PipelineException 
