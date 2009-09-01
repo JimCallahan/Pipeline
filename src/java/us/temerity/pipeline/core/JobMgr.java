@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.50 2009/08/28 02:10:46 jim Exp $
+// $Id: JobMgr.java,v 1.51 2009/09/01 19:26:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1217,7 +1217,7 @@ class JobMgr
             cache = computeCheckSums(agenda);
           }
           else {
-            exitCode = 666;
+            exitCode = 667;
 
             try {
               FileWriter out = new FileWriter(errFile, true);
