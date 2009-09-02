@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.288 2009/09/01 21:35:21 jim Exp $
+// $Id: MasterMgr.java,v 1.289 2009/09/02 02:08:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -18596,10 +18596,17 @@ class MasterMgr
 
                   CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
 
+                  boolean binter = false;
+                  if(base != null) 
+                    binter = base.isIntermediate();
+
+                  boolean linter = false;
+                  if(latest != null) 
+                    linter = latest.isIntermediate();
+
                   CheckSumCache updatedCheckSums = 
                     fclient.states(nodeID, work, versionState, jobStates, workIsFrozen, vid, 
-                                   base.isIntermediate(), baseCheckSums, 
-                                   latest.isIntermediate(), latestCheckSums, 
+                                   binter, baseCheckSums, linter, latestCheckSums, 
                                    cbundle.getCache(), fileStates, stamps);
 
                   if(updatedCheckSums.wasModified()) {
