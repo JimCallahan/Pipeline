@@ -194,7 +194,7 @@ public class BuildHeadTurntableTool extends BaseTool{
 	{
 		File f = new File(name);
 		FileSeq fSeq = new FileSeq(f.getName(), extension);
-		NodeMod animNode = new NodeMod(name, fSeq, null, pToolset, editor);
+		NodeMod animNode = new NodeMod(name, fSeq, null, false, pToolset, editor);
 		mclient.register(pUser, pView, animNode);
 		return animNode;
 	}//end registerNode
@@ -207,7 +207,7 @@ public class BuildHeadTurntableTool extends BaseTool{
 		FilePattern pat = new FilePattern(p.getName(), pad, extention);
 		FrameRange range = new FrameRange(startF, endf, byF);
 		FileSeq animSeq = new FileSeq(pat, range);
-		NodeMod animNode = new NodeMod(name, animSeq, null, pToolset, editor);
+		NodeMod animNode = new NodeMod(name, animSeq, null, false, pToolset, editor);
 		mclient.register(pUser, pView, animNode);
 		return animNode;
 	}//end registerSequence

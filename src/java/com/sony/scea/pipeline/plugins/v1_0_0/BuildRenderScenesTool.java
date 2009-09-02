@@ -1221,7 +1221,7 @@ public class BuildRenderScenesTool extends BaseTool implements ActionListener
       {
     File f = new File(name);
     FileSeq animSeq = new FileSeq(f.getName(), extention);
-    NodeMod animNode = new NodeMod(name, animSeq, null, toolset, editor);
+    NodeMod animNode = new NodeMod(name, animSeq, null, false, toolset, editor);
     client.register(pUser, pView, animNode);
     return animNode;
       }
@@ -1255,7 +1255,7 @@ public class BuildRenderScenesTool extends BaseTool implements ActionListener
     FilePattern pat = new FilePattern(f.getName(), 4, extention);
     FrameRange range = new FrameRange(start, end, 1);
     FileSeq animSeq = new FileSeq(pat, range);
-    NodeMod animNode = new NodeMod(name, animSeq, null, toolset, editor);
+    NodeMod animNode = new NodeMod(name, animSeq, null, false, toolset, editor);
     client.register(pUser, pView, animNode);
     return animNode;
       }

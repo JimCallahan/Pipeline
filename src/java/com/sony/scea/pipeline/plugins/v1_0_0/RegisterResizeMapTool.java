@@ -1,4 +1,4 @@
-// $Id: RegisterResizeMapTool.java,v 1.2 2008/08/01 21:28:51 jesse Exp $
+// $Id: RegisterResizeMapTool.java,v 1.3 2009/09/02 17:16:17 jesse Exp $
 
 package com.sony.scea.pipeline.plugins.v1_0_0;
 
@@ -281,7 +281,7 @@ RegisterResizeMapTool
   {
     File f = new File(name);
     FileSeq animSeq = new FileSeq(f.getName(), extention);
-    NodeMod animNode = new NodeMod(name, animSeq, null, toolset, editor);
+    NodeMod animNode = new NodeMod(name, animSeq, null, false, toolset, editor);
     mclient.register(pUser, pView, animNode);
     return animNode;
   }

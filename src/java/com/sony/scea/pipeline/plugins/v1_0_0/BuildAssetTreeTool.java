@@ -754,7 +754,7 @@ public class BuildAssetTreeTool extends BaseTool
    {
       Path f = new Path(name);
       FileSeq animSeq = new FileSeq(f.getName(), extention);
-      NodeMod animNode = new NodeMod(name, animSeq, null, toolset, editor);
+      NodeMod animNode = new NodeMod(name, animSeq, null, false, toolset, editor);
       mclient.register(user, view, animNode);
       return animNode;
    }

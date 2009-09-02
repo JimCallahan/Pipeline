@@ -588,7 +588,7 @@ public class SelectiveTextureResizeTool extends BaseTool {
 	{
 		File f = new File(name);
 		FileSeq animSeq = new FileSeq(f.getName(), extention);
-		NodeMod animNode = new NodeMod(name, animSeq, null, pToolset, editor);
+		NodeMod animNode = new NodeMod(name, animSeq, null, false, pToolset, editor);
 		mclient.register(pUser, pView, animNode);
 		return animNode;
 	}

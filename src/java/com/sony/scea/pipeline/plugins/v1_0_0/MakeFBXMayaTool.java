@@ -36,7 +36,7 @@ public
 	{
 		File f = new File(name);
 		FileSeq fSeq = new FileSeq(f.getName(), extension);
-		NodeMod animNode = new NodeMod(name, fSeq, null, pToolset, editor);
+		NodeMod animNode = new NodeMod(name, fSeq, null, false, pToolset, editor);
 		mclient.register(pUser, pView, animNode);
 		return animNode;
 	}//end registerNode
