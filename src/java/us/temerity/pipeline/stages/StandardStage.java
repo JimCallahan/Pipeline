@@ -357,6 +357,8 @@ class StandardStage
   private void
   init()
   {
+    pIsIntermediate = false;
+    
     pNodeAdded     = false;
     pNodeConformed = false;
     pNodeSkipped   = false;
@@ -593,7 +595,7 @@ class StandardStage
   {
     if(pRegisteredNodeName == null)
       return null;
-    NodeMod toReturn = registerNode(pRegisteredNodeName, pSuffix, pEditor);
+    NodeMod toReturn = registerNode(pRegisteredNodeName, pSuffix, pEditor, pIsIntermediate);
     pNodeAdded = true;
     pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
     return toReturn;
@@ -617,7 +619,7 @@ class StandardStage
     if(pRegisteredNodeName == null)
       return null;
     NodeMod toReturn = 
-      registerSequence(pRegisteredNodeName, pPadding, pSuffix, pEditor, 
+      registerSequence(pRegisteredNodeName, pPadding, pSuffix, pEditor, pIsIntermediate, 
 	               pFrameRange.getStart(), pFrameRange.getEnd(), pFrameRange.getBy());
     pNodeAdded = true;
     pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
@@ -628,6 +630,34 @@ class StandardStage
   
   /*----------------------------------------------------------------------------------------*/
   /*  A C C E S S                                                                           */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Return the current is intermediate setting of the stage.
+   * <p>
+   * This does not necessarily correspond to the actual setting on the node that was 
+   * constructed with this stage, since it is possible to change this setting after 
+   * {@link #build()} has been called.  This represents what setting will be used if the
+   * {@link #build()} method is actually called.
+   */
+  public final boolean
+  isIntermediate()
+  {
+    return pIsIntermediate;
+  }
+  
+  /**
+   * Set whether the stage should build an intermediate node or a normal node.
+   */
+  public final void
+  setIntermediate
+  (
+    boolean isIntermediate  
+  )
+  {
+    pIsIntermediate = isIntermediate;
+  }
+  
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -678,4 +708,5 @@ class StandardStage
   private boolean pNodeConformed;
   private boolean pNodeSkipped; 
   
+  private boolean pIsIntermediate;
 }

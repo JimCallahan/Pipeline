@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.18 2009/08/12 20:33:05 jesse Exp $
+// $Id: TemplateStage.java,v 1.19 2009/09/02 19:23:18 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -152,6 +152,8 @@ class TemplateStage
         ("The node (" + pRegisteredNodeName + ") has a TemplateExternal annotation associated " +
          "with it, but this builder is not being run on a Unix/Linux machine.  " +
          "External Sequence support only exists on Unix-derivative operating systems" );
+    
+    setIntermediate(pSourceMod.isIntermediate());
     
     pUnlinkNodes = new MappedSet<String, String>();
     pTemplateNodesToUnlink = new TreeSet<String>();

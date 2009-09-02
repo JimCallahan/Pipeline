@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.38 2009/09/01 10:59:39 jim Exp $
+// $Id: BaseStage.java,v 1.39 2009/09/02 19:23:18 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -496,11 +496,17 @@ class BaseStage
    * registerSequence method if you need a single file with a frame number. 
    * 
    * @param name
-   *        The full node name of the new node.
+   *  The full node name of the new node.
+   * 
    * @param suffix
-   *        The filename suffix for the new node.
+   *   The filename suffix for the new node.
+   * 
    * @param editor
-   *        The Editor for the new node.
+   *  The Editor for the new node.
+   *  
+   * @param isIntermediate
+   *   Is the node an intermediate node.
+   * 
    * @return 
    *   The {@link NodeMod} representing the newly registered node.
    *   
@@ -512,13 +518,14 @@ class BaseStage
   (
     String name, 
     String suffix, 
-    BaseEditor editor
+    BaseEditor editor,
+    boolean isIntermediate
   )
     throws PipelineException
   {
     Path p = new Path(name);
     FileSeq fSeq = new FileSeq(p.getName(), suffix);
-    NodeMod nodeMod = new NodeMod(name, fSeq, null, false, getToolset(), editor);  
+    NodeMod nodeMod = new NodeMod(name, fSeq, null, isIntermediate, getToolset(), editor);  
     pClient.register(getAuthor(), getView(), nodeMod);
     return nodeMod;
   }
@@ -531,25 +538,28 @@ class BaseStage
    * a node without frame numbers, use the registerNode method.
    * 
    * @param name
-   *        The full node name of the new node.
+   *   The full node name of the new node.
    * 
    * @param pad
-   *        The amount of padding for the frame numbering
+   *   The amount of padding for the frame numbering
    * 
    * @param suffix
-   *        The filename extension for the new node.
+   *   The filename extension for the new node.
    * 
    * @param editor
-   *        The Editor for the new node.
+   *   The Editor for the new node.
+   *   
+   * @param isIntermediate
+   *   Is the node an intermediate node.
    * 
    * @param startFrame
-   *        The starting frame for the sequence.
+   *   The starting frame for the sequence.
    * 
    * @param endFrame
-   *        The ending frame for the sequence.
+   *   The ending frame for the sequence.
    * 
    * @param step
-   *        The step for the sequence.
+   *   The step for the sequence.
    * 
    * @return 
    *   The {@link NodeMod} representing the newly registered node.
@@ -564,6 +574,7 @@ class BaseStage
     int pad, 
     String suffix, 
     BaseEditor editor,
+    boolean isIntermediate,
     int startFrame, 
     int endFrame, 
     int step
@@ -574,7 +585,7 @@ class BaseStage
     FilePattern pat = new FilePattern(p.getName(), pad, suffix);
     FrameRange range = new FrameRange(startFrame, endFrame, step);
     FileSeq fSeq = new FileSeq(pat, range);
-    NodeMod nodeMod = new NodeMod(name, fSeq, null, false, getToolset(), editor);
+    NodeMod nodeMod = new NodeMod(name, fSeq, null, isIntermediate, getToolset(), editor);
     pClient.register(getAuthor(), getView(), nodeMod);
     return nodeMod;
   }
@@ -633,8 +644,9 @@ class BaseStage
       pat = new FilePattern(name, oldPat.getSuffix());
     }
     FileSeq newSeq = new FileSeq(pat, range);
-    NodeMod newMod = new NodeMod(newName, newSeq, oldMod.getSecondarySequences(), false, 
-                                 oldMod.getToolset(), oldMod.getEditor());
+    NodeMod newMod = new NodeMod(newName, newSeq, oldMod.getSecondarySequences(), 
+                                 oldMod.isIntermediate(), oldMod.getToolset(), 
+                                 oldMod.getEditor());
     pClient.register(getAuthor(), getView(), newMod);
     if (cloneLinks)
     {
