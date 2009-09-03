@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.143 2009/09/01 10:59:39 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.144 2009/09/03 17:45:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6649,12 +6649,19 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pGroupID, "Releasing Nodes...")) {
-        MasterMgrClient client = master.acquireMasterMgrClient();
-	try {
-
-	  if(!pNames.isEmpty()) 
-	    client.release(pAuthor, pView, pNames, pRemoveFiles);
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+        if(master.beginPanelOp(pGroupID, "Releasing Nodes...")) {
+          try {
+            if(!pNames.isEmpty()) 
+              client.release(pAuthor, pView, pNames, pRemoveFiles);
+            
+            if(pRemoveArea) 
+              client.removeWorkingArea(pAuthor, pView);
+          }
+          finally {
+            master.endPanelOp(pGroupID, "Done.");
+          }
 
 	  if(pRemoveArea) {
 	    client.removeWorkingArea(pAuthor, pView);
@@ -6674,15 +6681,14 @@ class JNodeViewerPanel
 	  else {
 	    setAuthorView(pAuthor, pView);
 	  }
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.releaseMasterMgrClient(client);
-	  master.endPanelOp(pGroupID, "Done.");
-	}
+        }
+      }
+      catch(PipelineException ex) {
+        master.showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
       }
     }
 
