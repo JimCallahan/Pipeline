@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.41 2009/09/01 10:59:39 jim Exp $
+// $Id: PanelUpdater.java,v 1.42 2009/09/03 17:46:07 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -655,8 +655,13 @@ class PanelUpdater
               if(pNodeFilesPanel != null) {
                 master.updatePanelOp(pGroupID, "Updating Intermediate Versions...");
                 pOfflineOrIntermediateVersionIDs = new TreeSet<VersionID>(pOfflineVersionIDs);
-                pOfflineOrIntermediateVersionIDs.addAll
-                  (mclient.getIntermediateVersionIDs(pDetailedNodeName)); 
+                try {
+                  pOfflineOrIntermediateVersionIDs.addAll
+                    (mclient.getIntermediateVersionIDs(pDetailedNodeName)); 
+                }
+                catch(PipelineException ex) {
+                  /* in case no checked-in versions exist */ 
+                }
               }
 	    }
 	  }
