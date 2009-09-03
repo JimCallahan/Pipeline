@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.289 2009/09/02 02:08:11 jim Exp $
+// $Id: MasterMgr.java,v 1.290 2009/09/03 16:43:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9204,7 +9204,8 @@ class MasterMgr
   }  
     
   /** 
-   * Get the revision numbers of all checked-in versions of the given node. <P> 
+   * Get the revision numbers of all checked-in versions of a node do not save 
+   * intermediate (temporary) version of files in the repository. <P>
    * 
    * @param req 
    *   The get checked-in version request.
@@ -9231,7 +9232,6 @@ class MasterMgr
 
       TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
       TreeSet<VersionID> vids = new TreeSet<VersionID>(); 
-
       for(Map.Entry<VersionID,CheckedInBundle> entry : checkedIn.entrySet()) {
         if(entry.getValue().getVersion().isIntermediate()) 
           vids.add(entry.getKey());
