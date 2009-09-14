@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.25 2009/08/26 02:50:44 jlee Exp $
+// $Id: JNodeBrowserPanel.java,v 1.26 2009/09/14 03:48:43 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -85,6 +85,20 @@ class JNodeBrowserPanel
 
       pViewsEditingMenu = new JMenu("Views Editing");
       pPanelPopup.add(pViewsEditingMenu);
+
+      pPanelPopup.addSeparator();
+
+      item = new JMenuItem("Register...");
+      pRegisterItem = item;
+      item.setActionCommand("register");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      item = new JMenuItem("Clone...");
+      pCloneItem = item;
+      item.setActionCommand("clone");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
 
       pPanelPopup.addSeparator();
 
@@ -287,6 +301,47 @@ class JNodeBrowserPanel
       super.setAuthorView(author, view);  
 
     updateSelection(selected);
+  }
+
+  /**
+   * Warn about unsaved changes in dependent node detail panels prior to an panel operation.
+   * 
+   * @return 
+   *   Whether previously unsaved changes where applied.
+   */ 
+  public boolean 
+  warnUnsavedDetailPanelChangesBeforeOp
+  (
+   String opname
+  ) 
+  {
+    UIMaster master = UIMaster.getInstance();
+
+    {
+      JNodeDetailsPanel panel = master.getNodeDetailsPanels().getPanel(getGroupID());
+      if((panel != null) && panel.warnUnsavedChangesBeforeOp(opname))
+        return true;
+    }
+    
+    {
+      JNodeHistoryPanel panel = master.getNodeHistoryPanels().getPanel(getGroupID());
+      if((panel != null) && panel.warnUnsavedChangesBeforeOp(opname))
+        return true;
+    }
+    
+    {
+      JNodeFilesPanel panel = master.getNodeFilesPanels().getPanel(getGroupID());
+      if((panel != null) && panel.warnUnsavedChangesBeforeOp(opname))
+        return true;
+    }
+    
+    {
+      JNodeLinksPanel panel = master.getNodeLinksPanels().getPanel(getGroupID());
+      if((panel != null) && panel.warnUnsavedChangesBeforeOp(opname))
+        return true;
+    }
+    
+    return false; 
   }
 
 
@@ -643,6 +698,14 @@ class JNodeBrowserPanel
     updateMenuToolTip
       (pNodeFilterItem, prefs.getNodeBrowserNodeFilter(), 
        "Show the node filter dialog."); 
+
+    updateMenuToolTip
+      (pRegisterItem, null,
+       "Register a new node.");
+
+    updateMenuToolTip
+      (pCloneItem, null,
+       "Register a new node which is a clone of the current primary selection."); 
   }
 
 
@@ -864,6 +927,9 @@ class JNodeBrowserPanel
 		    MouseEvent.SHIFT_DOWN_MASK |
 		    MouseEvent.ALT_DOWN_MASK |
 		    MouseEvent.CTRL_DOWN_MASK);
+
+	pPrimaryNodeComp = null;
+	pPrimaryNodePath = null;
 	
 	/* BUTTON3: panel popup menu */ 
 	if((mods & (on1 | off1)) == on1) {
@@ -881,6 +947,9 @@ class JNodeBrowserPanel
 	      case WorkingOtherCheckedInNone:
 		sname = treePathToNodeName(tpath);
 	      }
+
+	      pPrimaryNodeComp = comp;
+	      pPrimaryNodePath = treePathToNodeName(tpath);
 	    }
 	  }
 	  
@@ -890,6 +959,25 @@ class JNodeBrowserPanel
 	  master.rebuildWorkingAreaEditingMenu
 	    (pGroupID, sname, pViewsEditingMenu, this);
 
+	  boolean isOverNode = true;
+	  boolean isRegisterIn = false;
+	  if(pPrimaryNodeComp != null) {
+	    switch(pPrimaryNodeComp.getState()) {
+	    case Branch:
+	      isOverNode = false;
+	    }
+
+	    isRegisterIn = true;
+	  }
+	  else
+	    isOverNode = false;
+
+	  if(isRegisterIn)
+	    pRegisterItem.setText("Register In...");
+	  else
+	    pRegisterItem.setText("Register...");
+
+	  pCloneItem.setEnabled(isOverNode);
 	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
 	else {
@@ -999,7 +1087,11 @@ class JNodeBrowserPanel
     else if(cmd.startsWith("expand-selected"))
       doExpandSelected();
     else if(cmd.startsWith("author-view:")) 
-      doChangeAuthorView(cmd.substring(12));    
+      doChangeAuthorView(cmd.substring(12));
+    else if(cmd.startsWith("register"))
+      doRegister();
+    else if(cmd.startsWith("clone"))
+      doClone();
   }
 
 
@@ -1047,6 +1139,121 @@ class JNodeBrowserPanel
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       setAuthorView(author, view);       
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Register a new node.
+   */ 
+  private synchronized void 
+  doRegister() 
+  {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Register")) 
+      return;
+
+    if(pRegisterDialog == null) 
+      pRegisterDialog = new JRegisterDialog(pGroupID, getTopFrame());
+
+    String prefix = null;
+    if(pPrimaryNodeComp != null) {
+      switch(pPrimaryNodeComp.getState()) {
+      case Branch:
+	{
+	  prefix = pPrimaryNodePath + "/";
+	}
+	break;
+      default:
+	{
+	  prefix = pPrimaryNodePath.substring(0, pPrimaryNodePath.lastIndexOf('/') + 1);
+	}
+      }
+    }
+
+    pRegisterDialog.updateNode(pAuthor, pView, prefix);
+    pRegisterDialog.setVisible(true); 
+
+    TreeSet<String> names = pRegisterDialog.getRegistered();
+    if(!names.isEmpty()) {
+      pSelected.addAll(names);
+      updatePanels();
+    }
+  }
+
+  /**
+   * Register a new node based on the primary selected node.
+   */ 
+  private synchronized void 
+  doClone() 
+  {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Clone")) 
+      return;
+
+    boolean selectionModified = false;
+
+    if(pPrimaryNodeComp != null) {
+      switch(pPrimaryNodeComp.getState()) {
+      case Branch:
+	return;
+      }
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+	NodeStatus status = client.status
+	  (new NodeID(pAuthor, pView, pPrimaryNodePath), true, DownstreamMode.All);
+
+	NodeDetailsLight details = status.getLightDetails();
+	if(details != null) {
+	  NodeCommon node = details.getWorkingVersion();
+	  boolean hasWorkingVersion = false;
+
+	  if(node == null)
+	    node = details.getLatestVersion();
+	  else
+	    hasWorkingVersion = true;
+
+	  if(node == null)
+	    return;
+
+	  NodeTreeComp workingSources = null;
+	  TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+	    for(String sname : node.getSourceNames())
+	      paths.put(sname, false);
+	      
+	  workingSources = client.updatePaths(pAuthor, pView, paths);
+
+	  if(workingSources == null)
+	    throw new PipelineException
+	      ("Unable to obtain a NodeTreeComp for the sources of " + 
+	       "(" + node.getName() + ")!");
+
+	  if(pCloneDialog == null) 
+	    pCloneDialog = new JCloneDialog(pGroupID, getTopFrame());
+
+	  pCloneDialog.updateNode(pAuthor, pView, node, workingSources, hasWorkingVersion);
+	  pCloneDialog.setVisible(true);
+
+	  TreeSet<String> names = pCloneDialog.getRegistered();
+	  if(!names.isEmpty()) {
+	    pSelected.addAll(names);
+	    selectionModified = true;
+	  }
+	}
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+	return;
+      }
+      finally {
+	master.releaseMasterMgrClient(client);
+      }
+    }
+
+    if(selectionModified)
+      updatePanels();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1142,11 +1349,32 @@ class JNodeBrowserPanel
    */ 
   private JMenuItem  pNodeFilterItem;
   private JMenuItem  pExpandSelectedItem;
-
+  private JMenuItem  pRegisterItem;
+  private JMenuItem  pCloneItem;
 
   /**
    * The editor dialog for node filters.
    */ 
   private JNodeBrowserFilterDialog  pFilterDialog; 
+
+  /**
+   * The register node dialog.
+   */ 
+  private JRegisterDialog  pRegisterDialog;
+
+  /**
+   * The clone node dialog.
+   */ 
+  private JCloneDialog  pCloneDialog;
+
+  /**
+   * The NodeTreeComp of the tree element right clicked over.
+   */
+  private NodeTreeComp  pPrimaryNodeComp;
+
+  /**
+   * The node path of the tree element right clicked over.
+   */
+  private String  pPrimaryNodePath;
 
 }

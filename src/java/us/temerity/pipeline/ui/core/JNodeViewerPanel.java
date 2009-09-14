@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.144 2009/09/03 17:45:43 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.145 2009/09/14 03:48:43 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4442,7 +4442,7 @@ class JNodeViewerPanel
     if(pRegisterDialog == null) 
       pRegisterDialog = new JRegisterDialog(pGroupID, getTopFrame());
 
-    pRegisterDialog.updateNode(pAuthor, pView);
+    pRegisterDialog.updateNode(pAuthor, pView, null);
     pRegisterDialog.setVisible(true); 
 
     TreeSet<String> names = pRegisterDialog.getRegistered();

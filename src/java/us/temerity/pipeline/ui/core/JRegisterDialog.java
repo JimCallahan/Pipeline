@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.25 2009/09/01 10:59:39 jim Exp $
+// $Id: JRegisterDialog.java,v 1.26 2009/09/14 03:48:43 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -284,16 +284,23 @@ class JRegisterDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the UI components based on the given node version.
+   * Update the UI components based on the given author and view.
    * 
-   * @param node
-   *   The node version.
+   * @param author
+   *   The current author.
+   *
+   * @param view
+   *   The current view.
+   *
+   * @param prefix
+   *   The starting path for registering nodes.  Can be null.
    */ 
   public void 
   updateNode
   (
    String author, 
-   String view
+   String view, 
+   String prefix
   )
   {  
     pAuthor = author; 
@@ -340,6 +347,16 @@ class JRegisterDialog
 
       master.updateEditorPluginField(pChannel, pToolsetField.getSelected(), pEditorField);
     }
+
+    /* The paramter "prefix" is a String rather than a Path object because 
+         Path.toString() removes the "/" of Path objects that are a directory 
+	 rather than a file.  Since the prefix is sent from the Node Browser and 
+	 the register dialog is in ui.core I am trusting that the path being 
+	 passed is a legal one.  Something I will explore later if Path.toString() 
+	 can preserve the final "/" and if there is a demand for such a feature 
+	 in other parts of Pipeline.  For now using pPrefixField.setText() works. */
+    if(prefix != null)
+      pPrefixField.setText(prefix);
 
     pFileSeqDialog.updateHeader(author, view);
     pRootPath = new Path(PackageInfo.sWorkPath, author + "/" + view);
