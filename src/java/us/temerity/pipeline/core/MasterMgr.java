@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.290 2009/09/03 16:43:45 jim Exp $
+// $Id: MasterMgr.java,v 1.291 2009/09/15 20:09:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15389,9 +15389,11 @@ class MasterMgr
 	args.add(backupFile.toString());
 	args.add("annotations"); 
 	args.add("archives"); 
+	args.add("checksum"); 
 	args.add("downstream"); 
 	args.add("etc"); 
 	args.add("events"); 
+	args.add("plugins"); 
 	args.add("repository"); 
 	args.add("toolsets"); 
 	args.add("working"); 
