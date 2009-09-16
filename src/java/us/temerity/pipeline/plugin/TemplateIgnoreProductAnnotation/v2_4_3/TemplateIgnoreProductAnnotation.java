@@ -1,4 +1,4 @@
-// $Id: TemplateIgnoreProductAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
+// $Id: TemplateIgnoreProductAnnotation.java,v 1.3 2009/09/16 23:38:14 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateIgnoreProductAnnotation.v2_4_3;
 
@@ -39,7 +39,7 @@ class TemplateIgnoreProductAnnotation
       AnnotationParam param =
         new StringAnnotationParam
         (aLinkName,
-         "The name of the linked mode which can be ignored.",
+         "The name of the linked node which can be ignored.",
          null);
       addParam(param);
     }
