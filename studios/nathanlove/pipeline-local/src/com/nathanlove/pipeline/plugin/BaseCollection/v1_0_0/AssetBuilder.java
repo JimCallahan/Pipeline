@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.5 2009/05/12 03:22:29 jesse Exp $
+// $Id: AssetBuilder.java,v 1.6 2009/09/16 23:37:27 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -445,6 +445,13 @@ class AssetBuilder
     {
       super("SecondFinalizePass", 
             "The AssetBuilder pass that cleans everything else.");
+    }
+
+    @Override
+    public TreeSet<String> 
+    nodesDependedOn()
+    {
+      return null;
     }
     
     @Override
