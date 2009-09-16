@@ -1,4 +1,4 @@
-// $Id: JobProfile.java,v 1.3 2009/07/02 00:23:21 jim Exp $
+// $Id: JobProfile.java,v 1.4 2009/09/16 03:48:17 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -94,6 +94,8 @@ JobProfile
     pMaxLoad   = jreqs.getMaxLoad();
     pMinMemory = jreqs.getMinMemory();
     pMinDisk   = jreqs.getMinDisk();
+    
+    pJobGroupID = job.getJobGroupID();
   }
 
   
@@ -246,6 +248,15 @@ JobProfile
   {
     return pTimeStamp; 
   }
+  
+  /**
+   * Get the id of the job group that this job belongs to.
+   */
+  public long
+  getJobGroupID()
+  {
+    return pJobGroupID;
+  }
 
 
   
@@ -320,6 +331,11 @@ JobProfile
    * The timestamp of when the job was submitted.
    */ 
   private long pTimeStamp; 
+  
+  /**
+   * The id of the job group that this job belongs to.
+   */
+  private long pJobGroupID;
 
   
   /*----------------------------------------------------------------------------------------*/

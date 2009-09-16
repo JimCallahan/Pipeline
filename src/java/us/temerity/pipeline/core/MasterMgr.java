@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.291 2009/09/15 20:09:17 jim Exp $
+// $Id: MasterMgr.java,v 1.292 2009/09/16 03:48:17 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13886,7 +13886,9 @@ class MasterMgr
       TreeSet<Long> rootJobIDs = new TreeSet<Long>();
       TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
       
-      submitJobs(status, indices, 
+      Long jobGroupID = pNextJobGroupID++;
+      
+      submitJobs(status, jobGroupID, indices, 
 		 true, batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
 		 selectionKeys, licenseKeys, hardwareKeys,
                  allSelectionKeys, allLicenseKeys, allHardwareKeys, 
@@ -13952,7 +13954,7 @@ class MasterMgr
       
       /* create the job group */ 
       QueueJobGroup group = 
-	new QueueJobGroup(pNextJobGroupID++, status.getNodeID(), 
+	new QueueJobGroup(jobGroupID, status.getNodeID(), 
 			  status.getHeavyDetails().getWorkingVersion().getToolset(), 
 			  targetSeq, orderedRootIDs, externalIDs, 
 			  new TreeSet<Long>(jobs.keySet()));
@@ -13970,7 +13972,7 @@ class MasterMgr
       }
       
       return group; 
-    }
+    } //synchronized(pQueueSubmitLock) 
   }  
 
   /**
@@ -13987,10 +13989,13 @@ class MasterMgr
    * 
    * @param status
    *   The current node status.
+   *   
+   * @param jobGroupID
+   *   The id of the job group that these jobs should belong to.
    * 
    * @param indices
    *   The file sequence indices of the files to regenerate.
-   * 
+   *   
    * @param isRoot
    *   The this the root node of the job submission tree?
    * 
@@ -14049,29 +14054,30 @@ class MasterMgr
   private void 
   submitJobs
   (
-   NodeStatus status, 
-   TreeSet<Integer> indices, 
-   boolean isRoot, 
-   Integer batchSize, 
-   Integer priority, 
-   Integer rampUp,
-   Float maxLoad,              
-   Long minMemory,              
-   Long minDisk,  
-   Set<String> selectionKeys,
-   Set<String> licenseKeys,
-   Set<String> hardwareKeys,
-   ArrayList<SelectionKey> allSelectionKeys, 
-   ArrayList<LicenseKey> allLicenseKeys, 
-   ArrayList<HardwareKey> allHardwareKeys,
-   TreeMap<NodeID,Long[]> extJobIDs,   
-   TreeMap<NodeID,Long[]> nodeJobIDs,   
-   TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
-   TreeSet<Long> rootJobIDs,    
-   TreeMap<Long,QueueJob> jobs, 
-   TreeSet<String> assocRoots, 
-   ArrayList<String> exceptions,
-   TaskTimer timer 
+    NodeStatus status, 
+    Long jobGroupID,
+    TreeSet<Integer> indices, 
+    boolean isRoot, 
+    Integer batchSize, 
+    Integer priority, 
+    Integer rampUp,
+    Float maxLoad,              
+    Long minMemory,              
+    Long minDisk,  
+    Set<String> selectionKeys,
+    Set<String> licenseKeys,
+    Set<String> hardwareKeys,
+    ArrayList<SelectionKey> allSelectionKeys, 
+    ArrayList<LicenseKey> allLicenseKeys, 
+    ArrayList<HardwareKey> allHardwareKeys,
+    TreeMap<NodeID,Long[]> extJobIDs,   
+    TreeMap<NodeID,Long[]> nodeJobIDs,   
+    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
+    TreeSet<Long> rootJobIDs,    
+    TreeMap<Long,QueueJob> jobs, 
+    TreeSet<String> assocRoots, 
+    ArrayList<String> exceptions,
+    TaskTimer timer 
   ) 
     throws PipelineException
   {
@@ -14114,7 +14120,7 @@ class MasterMgr
       }
       
       if(anyRef || !work.isActionEnabled()) {
-        collectNoActionJobs(status, isRoot, 
+        collectNoActionJobs(status, jobGroupID, isRoot, 
                             allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                             extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                             jobs, assocRoots, exceptions, timer);
@@ -14409,7 +14415,7 @@ class MasterMgr
               TreeSet<Integer> lindices = sourceIndices.get(link.getName());
               if((lindices != null) && (!lindices.isEmpty())) {
                 NodeStatus lstatus = status.getSource(link.getName());
-                submitJobs(lstatus, lindices, 
+                submitJobs(lstatus, jobGroupID, lindices, 
                            false, null, null, null, null, null, null, null, null, null,
                            allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                            extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
@@ -14574,7 +14580,7 @@ class MasterMgr
 	    }
 	  }
 	  
-	  QueueJob job = new QueueJob(agenda, action, jreqs, sourceIDs);
+	  QueueJob job = new QueueJob(jobGroupID, agenda, action, jreqs, sourceIDs);
 
           if (first) {
             /* perform all server-side key calculations */
@@ -14762,6 +14768,9 @@ class MasterMgr
    * @param status
    *   The current node status.
    * 
+   * @param jobGroupID
+   *   The ID of the job group that will contain this jobs.
+   * 
    * @param isRoot
    *   The this the root node of the job submission tree?
    * 
@@ -14802,6 +14811,7 @@ class MasterMgr
   collectNoActionJobs
   (
    NodeStatus status, 
+   Long jobGroupID,
    boolean isRoot, 
    ArrayList<SelectionKey> allSelectionKeys, 
    ArrayList<LicenseKey> allLicenseKeys, 
@@ -14849,7 +14859,7 @@ class MasterMgr
           NodeStatus lstatus = status.getSource(link.getName());
           NodeID lnodeID = lstatus.getNodeID();
           
-          submitJobs(lstatus, null, 
+          submitJobs(lstatus, jobGroupID, null, 
                      false, null, null, null, null, null, null, null, null, null,
                      allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                      extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 

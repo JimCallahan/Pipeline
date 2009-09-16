@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.15 2009/06/04 08:57:48 jim Exp $
+// $Id: QueueJob.java,v 1.16 2009/09/16 03:48:17 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -34,6 +34,9 @@ class QueueJob
   /**
    * Construct a new job.
    * 
+   * @param jobGroupID
+   *   The ID of the job group that contains this job.
+   * 
    * @param agenda
    *   The agenda to be accomplished by the job.
    * 
@@ -41,7 +44,7 @@ class QueueJob
    *   The action plugin instance used to execute the job.
    * 
    * @param jreqs 
-   *   The requirements that a server must meet in order to be eligable to run the job.
+   *   The requirements that a server must meet in order to be eligible to run the job.
    * 
    * @param sourceIDs
    *   The unique identifiers of the upstream jobs which must be executed before this job.
@@ -49,10 +52,11 @@ class QueueJob
   public
   QueueJob
   (
-   ActionAgenda agenda, 
-   BaseAction action, 
-   JobReqs jreqs,
-   TreeSet<Long> sourceIDs
+    long jobGroupID,
+    ActionAgenda agenda, 
+    BaseAction action, 
+    JobReqs jreqs,
+    TreeSet<Long> sourceIDs
   ) 
   {
     if(agenda == null) 
@@ -70,6 +74,8 @@ class QueueJob
     pSourceJobIDs = new TreeSet<Long>();
     if(sourceIDs != null) 
       pSourceJobIDs.addAll(sourceIDs);
+    
+    pJobGroupID = jobGroupID;
   }
 
   
@@ -149,6 +155,36 @@ class QueueJob
   }
   
   /**
+   * Get the ID of the parent job group or <code>-1</code> if the job group was not set when 
+   * the job was submitted.
+   */
+  public long
+  getJobGroupID()
+  {
+    return pJobGroupID;
+  }
+  
+  /**
+   * Set the ID of the parent job group.
+   * <p>
+   * This code exists so that the queue manager can correct jobs that were created before 
+   * the job group ID was incorporated into jobs.  Users should not need to call this method 
+   * from their code. Developers should not need to call this method, except in the  
+   * initialization of the queue manager.
+   * <p>
+   * This method will be removed from the API at some point in the future.  
+   */
+  @Deprecated
+  public void
+  setJobGroupID
+  (
+    long id  
+  )
+  {
+    pJobGroupID = id;
+  }
+  
+  /**
    * Returns a copy of this job that can only be used for querying information.
    * <p>
    * The {@link JobReqs} and the {@link BaseAction} are both copies of the information
@@ -162,9 +198,9 @@ class QueueJob
     JobReqs newReqs = (JobReqs) pJobReqs.clone();
     TreeSet<Long> newIDs = new TreeSet<Long>();
     newIDs.addAll(pSourceJobIDs);
-    return new QueueJob(pActionAgenda, newAction, newReqs, newIDs);
+    return new QueueJob(pJobGroupID, pActionAgenda, newAction, newReqs, newIDs);
 
-    // THIS DOES NOT PROPERTY COPY ACTION PARAMETERS!!!!
+    //FIXME THIS DOES NOT PROPERLY COPY ACTION PARAMETERS!!!!
   }
 
 
@@ -195,6 +231,7 @@ class QueueJob
 
     out.writeObject(pJobReqs);
     out.writeObject(pSourceJobIDs);
+    out.writeObject(pJobGroupID);
   }
 
   /**
@@ -234,6 +271,7 @@ class QueueJob
 
     pJobReqs = (JobReqs) in.readObject();
     pSourceJobIDs = (TreeSet<Long>) in.readObject();
+    pJobGroupID = (Long) in.readObject();
   }
 
 
@@ -252,6 +290,7 @@ class QueueJob
     encoder.encode("ActionAgenda", pActionAgenda);
     encoder.encode("Action", new BaseAction(pAction));
     encoder.encode("JobRequirements", pJobReqs);
+    encoder.encode("JobGroupID", pJobGroupID);
     
     if(!pSourceJobIDs.isEmpty())
       encoder.encode("SourceJobIDs", pSourceJobIDs);
@@ -293,6 +332,12 @@ class QueueJob
       pSourceJobIDs = ids;
     else 
       pSourceJobIDs = new TreeSet<Long>();
+    
+    Long jobGroupID = (Long) decoder.decode("JobGroupID");
+    if (jobGroupID == null)
+      pJobGroupID = -1;
+    else
+      pJobGroupID = jobGroupID;
   }
   
 
@@ -319,7 +364,7 @@ class QueueJob
   private BaseAction  pAction;       
 
   /**
-   * The requirements that a server must meet in order to be eligable to run the job.
+   * The requirements that a server must meet in order to be eligible to run the job.
    */
   private JobReqs  pJobReqs; 
 
@@ -327,5 +372,12 @@ class QueueJob
    * The unique identifiers of the upstream jobs which must be executed before this job.
    */
   private TreeSet<Long>  pSourceJobIDs; 
-
+  
+  /**
+   * The id of the job group that this job belongs to.
+   * <p> 
+   * This may be -1 for jobs which were submitted before job submission was changed to include 
+   * the job group. 
+   */
+  private long pJobGroupID;
 }
