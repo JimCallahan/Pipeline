@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.111 2009/08/19 23:41:19 jim Exp $
+// $Id: UIMaster.java,v 1.112 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3751,13 +3751,23 @@ class UIMaster
   }
   
   /**
-   * Show the manage hardware keys and groups.
+   * Show the manage hardware keys and groups dialog.
    */ 
   public void 
   showManageHardwareKeysDialog()
   {
     pManageHardwareKeysDialog.updateAll();
     pManageHardwareKeysDialog.setVisible(true);
+  } 
+  
+  /**
+   * Show the manage dispatch controls dialog.
+   */ 
+  public void 
+  showManageDispatchControlsDialog()
+  {
+    pManageDispatchControlsDialog.updateAll();
+    pManageDispatchControlsDialog.setVisible(true);
   }  
 
   /**
@@ -5081,6 +5091,7 @@ class UIMaster
 	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
 	pManageHardwareKeysDialog  = new JManageHardwareKeysDialog();
+	pManageDispatchControlsDialog = new JManageDispatchControlsDialog();
 
 	pQueueJobsDialog = new JQueueJobsDialog(pFrame);
 	pChangeJobReqsDialog = new JChangeJobReqsDialog(pFrame);
@@ -5788,6 +5799,7 @@ class UIMaster
 	pResourceUsageHistoryDialog.updateUserPrefs();
 	pManageSelectionKeysDialog.updateUserPrefs();
 	pManageHardwareKeysDialog.updateUserPrefs();
+	pManageDispatchControlsDialog.updateUserPrefs();
 
 	{
 	  ToolTipManager mgr = ToolTipManager.sharedInstance();
@@ -7389,9 +7401,14 @@ class UIMaster
   private JManageSelectionKeysDialog  pManageSelectionKeysDialog;
   
   /**
-   * The manage hardware keys and groups.
+   * The manage hardware keys and groups dialog.
    */ 
   private JManageHardwareKeysDialog  pManageHardwareKeysDialog;
+  
+  /**
+   * The manage dispatch controls dialog.
+   */ 
+  private JManageDispatchControlsDialog pManageDispatchControlsDialog;
 
   /**
    * The queue job submission dialog.

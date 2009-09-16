@@ -1,4 +1,4 @@
-// $Id: SelectionSchedule.java,v 1.6 2007/11/30 20:14:24 jesse Exp $
+// $Id: SelectionSchedule.java,v 1.7 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -42,7 +42,7 @@ class SelectionSchedule
   public
   SelectionSchedule
   (
-   String name
+    String name
   ) 
   {
     super(name);
@@ -61,8 +61,8 @@ class SelectionSchedule
   public
   SelectionSchedule
   (
-   String name, 
-   SelectionSchedule schedule
+    String name, 
+    SelectionSchedule schedule
   ) 
   {
     super(name);
@@ -222,12 +222,75 @@ class SelectionSchedule
   public String
   activeGroup
   (
-   long stamp 
+    long stamp 
   )
   {
     for(SelectionRule rule : pRules) {
       if(rule.isActive(stamp)) 
 	return rule.getGroup();
+    }
+
+    return null;
+  }
+  
+  /**
+   * Get the name of the dispatch control active for the given point in time (milliseconds 
+   * since midnight, January 1, 1970 UTC).
+   * <p>
+   * @return
+   *   The name of the dispatch control or <CODE>null</CODE> if none is active.
+   */ 
+  public String
+  activeDispatchControl
+  (
+    long stamp 
+  )
+  {
+    for(SelectionRule rule : pRules) {
+      if(rule.isActive(stamp)) 
+        return rule.getDispatchControl();
+    }
+
+    return null;
+  }
+  
+  /**
+   * Get the name of the user balance group active for the given point in time (milliseconds 
+   * since midnight, January 1, 1970 UTC).
+   * <p>
+   * @return
+   *   The name of the user balance group or <CODE>null</CODE> if none is active.
+   */ 
+  public String
+  activeUserBalance
+  (
+    long stamp 
+  )
+  {
+    for(SelectionRule rule : pRules) {
+      if(rule.isActive(stamp)) 
+        return rule.getUserBalance();
+    }
+
+    return null;
+  }
+  
+  /**
+   * Get the name of the job group favor method active for the given point in time 
+   * (milliseconds since midnight, January 1, 1970 UTC).
+   * <p>
+   * @return
+   *   The name of the job group favor method or <CODE>null</CODE> if none is active.
+   */ 
+  public JobGroupFavorMethod
+  activeFavorMethod
+  (
+    long stamp 
+  )
+  {
+    for(SelectionRule rule : pRules) {
+      if(rule.isActive(stamp)) 
+        return rule.getFavorMethod();
     }
 
     return null;
@@ -330,10 +393,10 @@ class SelectionSchedule
   /*----------------------------------------------------------------------------------------*/
   /*   E D I T   S T A T E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
-   * Returns the {@link EditableState} that indicates when the selection group of a host with this
-   * schedule will be editable.
+   * Returns the {@link EditableState} that indicates when the selection group of a host with
+   * this schedule will be editable.
    */
   public EditableState
   getGroupEditState
@@ -352,6 +415,60 @@ class SelectionSchedule
 	active = true;
       if (active && any)
 	return EditableState.Automatic;
+    }
+    if (!active && any)
+      return EditableState.SemiAutomatic;
+    return EditableState.Manual;
+  }
+
+  /**
+   * Returns the {@link EditableState} that indicates when the dispatch control of a host with
+   * this schedule will be editable.
+   */
+  public EditableState
+  getDispatchControlEditState
+  (
+    long stamp  
+  )
+  {
+    SelectionRule currentRule = activeRule(stamp);
+    boolean active = false;
+    boolean any = false;
+    for(SelectionRule rule : pRules) {
+      String value = rule.getDispatchControl(); 
+      if (value != null)
+        any = true;
+      if(currentRule == rule && value != null)
+        active = true;
+      if (active && any)
+        return EditableState.Automatic;
+    }
+    if (!active && any)
+      return EditableState.SemiAutomatic;
+    return EditableState.Manual;
+  }
+  
+  /**
+   * Returns the {@link EditableState} that indicates when the user balance group of a host 
+   * with this schedule will be editable.
+   */
+  public EditableState
+  getUserBalanceEditState
+  (
+    long stamp  
+  )
+  {
+    SelectionRule currentRule = activeRule(stamp);
+    boolean active = false;
+    boolean any = false;
+    for(SelectionRule rule : pRules) {
+      String value = rule.getUserBalance(); 
+      if (value != null)
+        any = true;
+      if(currentRule == rule && value != null)
+        active = true;
+      if (active && any)
+        return EditableState.Automatic;
     }
     if (!active && any)
       return EditableState.SemiAutomatic;
@@ -440,6 +557,33 @@ class SelectionSchedule
   }
   
   /**
+   * Returns the {@link EditableState} that indicates when the favor method of a host with this
+   * schedule will be editable.
+   */
+  public EditableState
+  getFavorMethodEditState
+  (
+    long stamp  
+  )
+  {
+    SelectionRule currentRule = activeRule(stamp);
+    boolean active = false;
+    boolean any = false;
+    for(SelectionRule rule : pRules) {
+      JobGroupFavorMethod value = rule.getFavorMethod();
+      if (value != null)
+        any = true;
+      if(currentRule == rule && value != null)
+        active = true;
+      if (active && any)
+        return EditableState.Automatic;
+    }
+    if (!active && any)
+      return EditableState.SemiAutomatic;
+    return EditableState.Manual;
+  }
+  
+  /**
    * Returns the {@link EditableState} that indicates when the slots of a host with this
    * schedule will be editable.
    */
@@ -472,6 +616,7 @@ class SelectionSchedule
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public void 
   toGlue
   ( 
@@ -485,6 +630,7 @@ class SelectionSchedule
       encoder.encode("Rules", pRules);    
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public void 
   fromGlue

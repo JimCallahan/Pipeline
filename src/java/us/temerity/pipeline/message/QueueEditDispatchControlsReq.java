@@ -1,22 +1,20 @@
-// $Id: QueueRemoveSelectionSchedulesReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueEditDispatchControlsReq.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
-
-import java.io.*;
 import java.util.*;
 
+import us.temerity.pipeline.*;
+
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   R E M O V E   S E L E C T I O N   S C H E D U L E S   R E Q                */
+/*   Q U E U E   E D I T   D I S P A T C H   C O N T R O L S   R E Q                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the given existing selection schedule. <P> 
+ * A request to change the criteria order for the specified dispatch controls. <P> 
  */
 public 
-class QueueRemoveSelectionSchedulesReq
+class QueueEditDispatchControlsReq
   extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
@@ -26,21 +24,21 @@ class QueueRemoveSelectionSchedulesReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param names
-   *   The names of the selection schedules. 
+   * @param controls
+   *   The dispatch controls to modify.
    */
   public
-  QueueRemoveSelectionSchedulesReq
+  QueueEditDispatchControlsReq
   (
-   TreeSet<String> names
+    Collection<DispatchControl> controls
   )
   { 
     super();
 
-    if(names == null) 
+    if(controls == null) 
       throw new IllegalArgumentException
-	("The selection schedule names cannot be (null)!");
-    pNames = names;
+	("The dispatch controls cannot be (null)!");
+    pControls = controls;
   }
 
 
@@ -50,12 +48,12 @@ class QueueRemoveSelectionSchedulesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the names of the selection schedules. 
+   * Get the dispatch controls to modify.
    */
-  public TreeSet<String>
-  getNames() 
+  public Collection<DispatchControl> 
+  getDispatchControls()
   {
-    return pNames; 
+    return pControls; 
   }
 
   
@@ -64,7 +62,7 @@ class QueueRemoveSelectionSchedulesReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5482747758091456795L;
+  private static final long serialVersionUID = -1044840010541894682L;
 
   
 
@@ -73,9 +71,7 @@ class QueueRemoveSelectionSchedulesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The names of the selection schedules. 
+   * The dispatch controls to modify.
    */ 
-  private TreeSet<String>  pNames; 
-
+  private Collection<DispatchControl>  pControls; 
 }
-  

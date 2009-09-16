@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.50 2009/05/14 23:30:43 jim Exp $
+// $Id: QueueMgrClient.java,v 1.51 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -171,9 +171,9 @@ class QueueMgrClient
 
     QueueGetKeyNamesReq req = new QueueGetKeyNamesReq(userChoosableOnly);
     Object obj = performTransaction(QueueRequest.GetLicenseKeyNames, req);
-    if(obj instanceof QueueGetKeyNamesRsp) {
-      QueueGetKeyNamesRsp rsp = (QueueGetKeyNamesRsp) obj;
-      return rsp.getKeyNames();
+    if(obj instanceof QueueGetNamesRsp) {
+      QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
+      return rsp.getNames();
     }
     else {
       handleFailure(obj);
@@ -362,9 +362,9 @@ class QueueMgrClient
 
     QueueGetKeyNamesReq req = new QueueGetKeyNamesReq(userChoosableOnly);
     Object obj = performTransaction(QueueRequest.GetSelectionKeyNames, req);
-    if(obj instanceof QueueGetKeyNamesRsp) {
-      QueueGetKeyNamesRsp rsp = (QueueGetKeyNamesRsp) obj;
-      return rsp.getKeyNames();
+    if(obj instanceof QueueGetNamesRsp) {
+      QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
+      return rsp.getNames();
     }
     else {
       handleFailure(obj);
@@ -499,8 +499,8 @@ class QueueMgrClient
     verifyConnection();
 
     Object obj = performTransaction(QueueRequest.GetSelectionGroupNames, null);
-    if(obj instanceof QueueGetSelectionGroupNamesRsp) {
-      QueueGetSelectionGroupNamesRsp rsp = (QueueGetSelectionGroupNamesRsp) obj;
+    if(obj instanceof QueueGetNamesRsp) {
+      QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
       return rsp.getNames();
     }
     else {
@@ -553,7 +553,7 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    QueueAddSelectionGroupReq req = new QueueAddSelectionGroupReq(gname);
+    QueueAddByNameReq req = new QueueAddByNameReq(gname, "selection group");
     Object obj = performTransaction(QueueRequest.AddSelectionGroup, req);
     handleSimpleResponse(obj);
   }
@@ -598,7 +598,7 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    QueueRemoveSelectionGroupsReq req = new QueueRemoveSelectionGroupsReq(gnames);
+    QueueRemoveByNameReq req = new QueueRemoveByNameReq(gnames, "selection groups");
     Object obj = performTransaction(QueueRequest.RemoveSelectionGroups, req);
     handleSimpleResponse(obj);
   }
@@ -667,8 +667,8 @@ class QueueMgrClient
     verifyConnection();
 
     Object obj = performTransaction(QueueRequest.GetSelectionScheduleNames, null);
-    if(obj instanceof QueueGetSelectionScheduleNamesRsp) {
-      QueueGetSelectionScheduleNamesRsp rsp = (QueueGetSelectionScheduleNamesRsp) obj;
+    if(obj instanceof QueueGetNamesRsp) {
+      QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
       return rsp.getNames();
     }
     else {
@@ -731,7 +731,7 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    QueueAddSelectionScheduleReq req = new QueueAddSelectionScheduleReq(sname);
+    QueueAddByNameReq req = new QueueAddByNameReq(sname, "selection schedule");
     Object obj = performTransaction(QueueRequest.AddSelectionSchedule, req);
     handleSimpleResponse(obj);
   }
@@ -776,7 +776,7 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    QueueRemoveSelectionSchedulesReq req = new QueueRemoveSelectionSchedulesReq(snames);
+    QueueRemoveByNameReq req = new QueueRemoveByNameReq(snames, "selection schedules");
     Object obj = performTransaction(QueueRequest.RemoveSelectionSchedules, req);
     handleSimpleResponse(obj);
   }
@@ -847,9 +847,9 @@ class QueueMgrClient
 
     QueueGetKeyNamesReq req = new QueueGetKeyNamesReq(userChoosableOnly);
     Object obj = performTransaction(QueueRequest.GetHardwareKeyNames, req);
-    if(obj instanceof QueueGetKeyNamesRsp) {
-      QueueGetKeyNamesRsp rsp = (QueueGetKeyNamesRsp) obj;
-      return rsp.getKeyNames();
+    if(obj instanceof QueueGetNamesRsp) {
+      QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
+      return rsp.getNames();
     }
     else {
       handleFailure(obj);
@@ -965,7 +965,6 @@ class QueueMgrClient
     handleSimpleResponse(obj);
   }  
 
-
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -984,8 +983,8 @@ class QueueMgrClient
     verifyConnection();
 
     Object obj = performTransaction(QueueRequest.GetHardwareGroupNames, null);
-    if(obj instanceof QueueGetHardwareGroupNamesRsp) {
-      QueueGetHardwareGroupNamesRsp rsp = (QueueGetHardwareGroupNamesRsp) obj;
+    if(obj instanceof QueueGetNamesRsp) {
+      QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
       return rsp.getNames();
     }
     else {
@@ -1038,7 +1037,7 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    QueueAddHardwareGroupReq req = new QueueAddHardwareGroupReq(gname);
+    QueueAddByNameReq req = new QueueAddByNameReq(gname, "hardware group");
     Object obj = performTransaction(QueueRequest.AddHardwareGroup, req);
     handleSimpleResponse(obj);
   }
@@ -1083,7 +1082,7 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    QueueRemoveHardwareGroupsReq req = new QueueRemoveHardwareGroupsReq(gnames);
+    QueueRemoveByNameReq req = new QueueRemoveByNameReq(gnames, "hardware groups");
     Object obj = performTransaction(QueueRequest.RemoveHardwareGroups, req);
     handleSimpleResponse(obj);
   }
@@ -1133,8 +1132,336 @@ class QueueMgrClient
     handleSimpleResponse(obj);
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing dispatch controls. 
+   * 
+   * @return
+   *   The dispatch control names. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeSet<String> 
+  getDispatchControlNames() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetDispatchControlNames, null);
+    if(obj instanceof QueueGetNamesRsp) {
+      QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+  
+  /**
+   * Get the current criteria list for all existing control groups. 
+   * 
+   * @return
+   *   The dispatch controls indexed by group name. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeMap<String, DispatchControl> 
+  getDispatchControls() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetDispatchControls, null);
+    if(obj instanceof QueueGetDispatchControlsRsp) {
+      QueueGetDispatchControlsRsp rsp = (QueueGetDispatchControlsRsp) obj;
+      return rsp.getDispatchControls();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+  
+  /**
+   * Add a new dispatch control. <P> 
+   * 
+   * @param cname
+   *   The name of the new dispatch control. 
+   * 
+   * @throws PipelineException
+   *   If a dispatch control already exists with the given name. 
+   */ 
+  public synchronized void
+  addDispatchControl
+  (
+    String cname
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueAddByNameReq req = new QueueAddByNameReq(cname, "dispatch control");
+    Object obj = performTransaction(QueueRequest.AddDispatchControl, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the given existing dispatch control. <P> 
+   * 
+   * @param cname
+   *   The name of the dispatch control. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the dispatch control.
+   */ 
+  public synchronized void
+  removeDispatchControl
+  (
+    String cname
+  ) 
+    throws PipelineException 
+  {
+    TreeSet<String> cnames = new TreeSet<String>();
+    cnames.add(cname);
+    
+    removeDispatchControls(cnames);
+  }
+  
+  /**
+   * Remove the given existing dispatch controls. <P> 
+   * 
+   * @param cnames
+   *   The names of the dispatch controls. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the dispatch controls.
+   */ 
+  public synchronized void
+  removeDispatchControls
+  (
+    TreeSet<String> cnames
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    
+    QueueRemoveByNameReq req = new QueueRemoveByNameReq(cnames, "dispatch controls");
+    Object obj = performTransaction(QueueRequest.RemoveDispatchControls, req);
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Change the criteria list for the given dispatch control. <P> 
+   * 
+   * For an detailed explanation of how dispatch controls are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param group
+   *   The dispatch controls to modify.
+   */ 
+  public synchronized void
+  editDispatchControl
+  (
+    DispatchControl group
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<DispatchControl> controls = new ArrayList<DispatchControl>();
+    controls.add(group);
+
+    editDispatchControls(controls);
+  }
+  
+  /**
+   * Change the criteria list for the given dispatch controls. <P> 
+   * 
+   * For an detailed explanation of how dispatch controls are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param controls
+   *   The dispatch controls to modify.
+   */ 
+  public synchronized void
+  editDispatchControls
+  (
+    Collection<DispatchControl> controls
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    
+    QueueEditDispatchControlsReq req = new QueueEditDispatchControlsReq(controls);
+    Object obj = performTransaction(QueueRequest.EditDispatchControls, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing user balance groups. 
+   * 
+   * @return
+   *   The user balance group names. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeSet<String> 
+  getUserBalanceGroupNames() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetUserBalanceGroupNames, null);
+    if(obj instanceof QueueGetNamesRsp) {
+      QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+  
+  /**
+   * Get the current user weighting for all existing user balance groups. 
+   * 
+   * @return
+   *   The groups indexed by group name. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeMap<String, UserBalanceGroup> 
+  getUserBalanceGroups() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetUserBalanceGroups, null);
+    if(obj instanceof QueueGetUserBalanceGroupsRsp) {
+      QueueGetUserBalanceGroupsRsp rsp = (QueueGetUserBalanceGroupsRsp) obj;
+      return rsp.getUserBalanceGroups();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+  
+  /**
+   * Add a new user balance group. <P> 
+   * 
+   * @param cname
+   *   The name of the new group. 
+   * 
+   * @throws PipelineException
+   *   If a group already exists with the given name. 
+   */ 
+  public synchronized void
+  addUserBalanceGroup
+  (
+    String cname
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueAddByNameReq req = new QueueAddByNameReq(cname, "user balance group");
+    Object obj = performTransaction(QueueRequest.AddUserBalanceGroup, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the given existing user balance control. <P> 
+   * 
+   * @param cname
+   *   The name of the group. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the user balance group.
+   */ 
+  public synchronized void
+  removeUserBalanceGroup
+  (
+    String cname
+  ) 
+    throws PipelineException 
+  {
+    TreeSet<String> cnames = new TreeSet<String>();
+    cnames.add(cname);
+    
+    removeUserBalanceGroups(cnames);
+  }
+  
+  /**
+   * Remove the given existing user balance groups. <P> 
+   * 
+   * @param cnames
+   *   The names of the groups. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the user balance groups.
+   */ 
+  public synchronized void
+  removeUserBalanceGroups
+  (
+    TreeSet<String> cnames
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    
+    QueueRemoveByNameReq req = new QueueRemoveByNameReq(cnames, "user balance groups");
+    Object obj = performTransaction(QueueRequest.RemoveUserBalanceGroups, req);
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Change the user weighting for the given user balance group. <P> 
+   * 
+   * @param group
+   *   The user balance group to modify.
+   */ 
+  public synchronized void
+  editUserBalanceGroup
+  (
+    UserBalanceGroup group
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<UserBalanceGroup> groups = new ArrayList<UserBalanceGroup>();
+    groups.add(group);
+
+    editUserBalanceGroups(groups);
+  }
+  
+  /**
+   * Change the user weighting for the given user balance groups. <P> 
+   * 
+   * @param controls
+   *   The groups to modify.
+   */ 
+  public synchronized void
+  editUserBalanceGroups
+  (
+    Collection<UserBalanceGroup> controls
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    
+    QueueEditUserBalanceGroupsReq req = new QueueEditUserBalanceGroupsReq(controls);
+    Object obj = performTransaction(QueueRequest.EditUserBalanceGroups, req); 
+    handleSimpleResponse(obj);
+  }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S E R V E R   E X T E N S I O N S                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -1326,7 +1653,7 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    QueueAddHostReq req = new QueueAddHostReq(hostname);
+    QueueAddByNameReq req = new QueueAddByNameReq(hostname, "hostname");
     Object obj = performTransaction(QueueRequest.AddHost, req);
     handleSimpleResponse(obj);
   }
@@ -1353,7 +1680,7 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    QueueRemoveHostsReq req = new QueueRemoveHostsReq(hostnames);
+    QueueRemoveByNameReq req = new QueueRemoveByNameReq(hostnames, "hostnames");
     Object obj = performTransaction(QueueRequest.RemoveHosts, req);
     handleSimpleResponse(obj);
   }

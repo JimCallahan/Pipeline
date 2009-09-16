@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.10 2008/07/14 15:06:36 jim Exp $
+// $Id: QueueHostInfo.java,v 1.11 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -31,12 +31,16 @@ class QueueHostInfo
   QueueHostInfo()
   {
     pStatus = QueueHostStatus.Shutdown; 
-    pHoldTimeStamp = 0L; 
+    pHoldTimeStamp = 0L;
+    pFavorMethod = JobGroupFavorMethod.None;
     pGroupState = EditableState.Manual;
     pStatusState = EditableState.Manual;
     pReservationState = EditableState.Manual;
     pSlotState = EditableState.Manual;
     pOrderState = EditableState.Manual;
+    pDispatchState = EditableState.Manual;
+    pFavorState = EditableState.Manual;
+    pUserState = EditableState.Manual;
   }
 
   /**
@@ -49,8 +53,7 @@ class QueueHostInfo
    *   The current operational status of the host.
    * 
    * @param reservation
-   *   The name of the reserving user 
-   *   or <CODE>null</CODE> if the host is not reserved.
+   *   The name of the reserving user or <CODE>null</CODE> if the host is not reserved.
    * 
    * @param order 
    *   The order in which job servers are processed by the dispatcher.
@@ -62,16 +65,15 @@ class QueueHostInfo
    *   The operating system type.
    * 
    * @param numProcs
-   *   The number of processors on the host 
-   *   or <CODE>null</CODE> if unknown.
+   *   The number of processors on the host or <CODE>null</CODE> if unknown.
    * 
    * @param totalMem
    *   The total amount of memory (in bytes) on the host 
    *   or <CODE>null</CODE> if unknown.
    * 
    * @param totalDisk
-   *   The total amount of temporary disk space (in bytes) on the host 
-   *   or <CODE>null</CODE> if unknown.
+   *   The total amount of temporary disk space (in bytes) on the host or <CODE>null</CODE> 
+   *   if unknown.
    * 
    * @param hold 
    *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when all ramp-up 
@@ -80,13 +82,28 @@ class QueueHostInfo
    * @param sample
    *   The latest sample or <CODE>null</CODE> if there are no samples.
    * 
+   * @param dispatchControl
+   *   The name of the current dispatch control or <code>null</code> if not a member of any
+   *   dispatch control.
+   * 
    * @param group
-   *   The name of the current selection group 
-   *   or <CODE>null</CODE> not a member of any selection group. 
+   *   The name of the current selection group or <CODE>null</CODE> if not a member of any 
+   *   selection group. 
    * 
    * @param schedule
-   *   The name of the current selection schedule 
-   *   or <CODE>null</CODE> if the choice of selection group is currently manual.
+   *   The name of the current selection schedule or <CODE>null</CODE> if the choice of 
+   *   selection group is currently manual.
+   *   
+   * @param hardwareGroup
+   *   The name of the current hardware group or <CODE>null</CODE> if not a member of any 
+   *   hardware group.
+   * 
+   * @param userBalanceGroup
+   *   The name of the current user balance group or <code>null</code> if not a member of any
+   *   user balance group. 
+   * 
+   * @param favorMethod 
+   *   The job group favor method.
    *   
    * @param groupState
    *   Is the selection group of this host editable. 
@@ -102,6 +119,15 @@ class QueueHostInfo
    *   
    * @param slotState
    *   Is the number of slots on this host editable.
+   *   
+   * @param dispatchState
+   *   Is the dispatch control on this host editable.
+   *   
+   * @param userState
+   *   Is the user balance group on this host editable.
+   *   
+   * @param favorState
+   *   Is the job group favor method on this host editable.
    */ 
   public
   QueueHostInfo
@@ -116,15 +142,21 @@ class QueueHostInfo
    Long totalMem, 
    Long totalDisk, 
    Long hold, 
-   ResourceSample sample, 
+   ResourceSample sample,
+   String dispatchControl,
    String group,
    String schedule,
    String hardwareGroup,
+   String userBalanceGroup,
+   JobGroupFavorMethod favorMethod,
    EditableState groupState,
    EditableState statusState,
    EditableState reservationState,
    EditableState orderState,
-   EditableState slotState
+   EditableState slotState,
+   EditableState dispatchState,
+   EditableState userState,
+   EditableState favorState
   ) 
   {
     super(name);
@@ -154,12 +186,19 @@ class QueueHostInfo
     pSelectionGroup = group; 
     pSelectionSchedule = schedule; 
     pHardwareGroup = hardwareGroup;
+    pUserBalanceGroup = userBalanceGroup;
+    pDispatchControl = dispatchControl;
+    
+    pFavorMethod = favorMethod;
     
     pGroupState = groupState;
     pStatusState = statusState;
     pReservationState = reservationState;
     pSlotState = slotState;
     pOrderState = orderState;
+    pDispatchState = dispatchState;
+    pFavorState = favorState;
+    pUserState = userState;
   }
 
   /**
@@ -189,7 +228,8 @@ class QueueHostInfo
   isPending()
   {
     return (isStatusPending() || pReservationPending || pOrderPending || pJobSlotsPending ||
-	    pSelectionSchedulePending || pSelectionGroupPending || pHardwareGroupPending);
+	    pSelectionSchedulePending || pSelectionGroupPending || pHardwareGroupPending ||
+	    pFavorMethodPending || pDispatchControlPending || pUserBalanceGroupPending);
   }
    
 
@@ -317,6 +357,8 @@ class QueueHostInfo
     pGroupState = groupState;
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Is the reservation status of the host editable.
    */
@@ -337,6 +379,8 @@ class QueueHostInfo
   {
     pReservationState = reservationState;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Is the status of the host editable.
@@ -358,6 +402,8 @@ class QueueHostInfo
   {
     pStatusState = statusState;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Is the number of slots on the host editable.
@@ -379,6 +425,8 @@ class QueueHostInfo
   {
     pSlotState = slotState;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Is the order of the host editable.
@@ -400,7 +448,76 @@ class QueueHostInfo
   {
     pOrderState = orderState;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Is the dispatch control of the host editable.
+   */
+  public EditableState 
+  getDispatchState()
+  {
+    return pDispatchState;
+  }
+
+  /**
+   * Set the dispatch control of the host.
+   */
+  public void 
+  setDispatchState
+  (
+    EditableState dispatchState
+  )
+  {
+    pDispatchState = dispatchState;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the favor method of the host editable.
+   */
+  public EditableState 
+  getFavorState()
+  {
+    return pFavorState;
+  }
+
+  /**
+   * Set the favor method state of the host.
+   */
+  public void 
+  setFavorState
+  (
+    EditableState favorState
+  )
+  {
+    pFavorState = favorState;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the user balance group of the host editable.
+   */
+  public EditableState 
+  getUserBalanceState()
+  {
+    return pUserState;
+  }
+
+  /**
+   * Set the user balance group state of the host.
+   */
+  public void 
+  setUserBalanceState
+  (
+    EditableState userState
+  )
+  {
+    pUserState = userState;
+  }
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -439,7 +556,6 @@ class QueueHostInfo
   {
     return pOrderPending;
   }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -482,8 +598,6 @@ class QueueHostInfo
   {
     return pJobSlotsPending;
   }
-
-  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -534,7 +648,6 @@ class QueueHostInfo
   {
     return pTotalDisk;
   }
-
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -600,7 +713,6 @@ class QueueHostInfo
   {
     return pSelectionSchedulePending;
   }
-  
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -674,12 +786,125 @@ class QueueHostInfo
     return pHardwareGroupPending;
   }
   
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the current favor method. 
+   */ 
+  public synchronized JobGroupFavorMethod
+  getFavorMethod() 
+  {
+    return pFavorMethod;
+  }
 
+  /**
+   * Set the favor method.
+   * 
+   * @throws IllegalArgumentException
+   *   If a <code>null</code> value is passed in for favor method.
+   */ 
+  public synchronized void
+  setFavorMethod
+  (
+    JobGroupFavorMethod favorMethod
+  ) 
+  {
+    if(favorMethod == null) 
+      throw new IllegalArgumentException
+        ("The job group favor method cannot be (null)!");
+    
+    pFavorMethod = favorMethod;
+    pFavorMethodPending = true;
+  }
+
+  /**
+   * Whether a change in favor group is pending.
+   */ 
+  public synchronized boolean
+  isFavorMethodPending()
+  {
+    return pFavorMethodPending;
+  }  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the current user balance group. 
+   * 
+   * @return
+   *   The user balance group or <CODE>null</CODE> not a member of any user balance group.
+   */ 
+  public synchronized String
+  getUserBalanceGroup() 
+  {
+    return pUserBalanceGroup;
+  }
+
+  /**
+   * Set the name of the current user balance group or <CODE>null</CODE> to clear.
+   */ 
+  public synchronized void
+  setUserBalanceGroup
+  (
+   String name
+  ) 
+  {
+    pUserBalanceGroup = name;
+    pUserBalanceGroupPending = true;
+  }
+
+  /**
+   * Whether a change in user balance group is pending.
+   */ 
+  public synchronized boolean
+  isUserBalanceGroupPending()
+  {
+    return pUserBalanceGroupPending;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the current dispatch control. 
+   * 
+   * @return
+   *   The dispatch control or <CODE>null</CODE> not a member of any dispatch control.
+   */ 
+  public synchronized String
+  getDispatchControl() 
+  {
+    return pDispatchControl;
+  }
+
+  /**
+   * Set the name of the current dispatch control or <CODE>null</CODE> to clear.
+   */ 
+  public synchronized void
+  setDispatchControl
+  (
+   String name
+  ) 
+  {
+    pDispatchControl = name;
+    pDispatchControlPending = true;
+  }
+
+  /**
+   * Whether a change in dispatch control is pending.
+   */ 
+  public synchronized boolean
+  isDispatchControlPending()
+  {
+    return pDispatchControlPending;
+  }
+  
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public void 
   toGlue
   ( 
@@ -698,8 +923,12 @@ class QueueHostInfo
     encoder.encode("SelectionSchedule", pSelectionSchedule);
     encoder.encode("SelectionGroup", pSelectionGroup);
     encoder.encode("HardwareGroup", pHardwareGroup);
+    encoder.encode("FavorMethod", pFavorMethod);
+    encoder.encode("DispatchControl", pDispatchControl);
+    encoder.encode("UserBalanceGroup", pUserBalanceGroup);
   }
 
+  @Override
   public void 
   fromGlue
   (
@@ -725,9 +954,18 @@ class QueueHostInfo
       throw new GlueException("The \"JobSlots\" was missing!");
     pJobSlots = slots;
 
+    /* Allows null values since this was added in after QHI's already existed.  The default 
+     * constructor method guarantees that there is a suitable default value.
+     */
+    JobGroupFavorMethod favorMethod = (JobGroupFavorMethod) decoder.decode("FavorMethod");
+    if (favorMethod != null)
+      pFavorMethod = favorMethod;
+
     pSelectionSchedule = (String) decoder.decode("SelectionSchedule"); 
     pSelectionGroup    = (String) decoder.decode("SelectionGroup");
     pHardwareGroup     = (String) decoder.decode("HardwareGroup");
+    pDispatchControl   = (String) decoder.decode("DispatchControl");
+    pUserBalanceGroup  = (String) decoder.decode("UserBalanceGroup");
   }
   
   
@@ -782,7 +1020,6 @@ class QueueHostInfo
   private int     pJobSlots; 
   private boolean pJobSlotsPending; 
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -805,7 +1042,6 @@ class QueueHostInfo
    */ 
   private Long  pTotalDisk;
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -818,7 +1054,6 @@ class QueueHostInfo
    * The latest resource usage sample or <CODE>null</CODE> if no samples exist.
    */ 
   private ResourceSample  pSample;
-
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -841,7 +1076,27 @@ class QueueHostInfo
    * hardware group. 
    */ 
   private String  pHardwareGroup; 
-  private boolean pHardwareGroupPending; 
+  private boolean pHardwareGroupPending;
+  
+  /**
+   * The name of the current dispatch control or <code>null</code> if no dispatch control
+   * is assigned to this host. 
+   */
+  private String  pDispatchControl;
+  private boolean pDispatchControlPending;
+  
+  /**
+   * The name of the current user balance group or <CODE>null</CODE> not a member of any 
+   * user balance group. 
+   */
+  private String  pUserBalanceGroup;
+  private boolean pUserBalanceGroupPending;
+  
+  /**
+   * The favor method of the host.
+   */
+  private JobGroupFavorMethod pFavorMethod;
+  private boolean             pFavorMethodPending;
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -879,4 +1134,19 @@ class QueueHostInfo
    * This is being set by the scheduler when the schedule on the machine is being applied. 
    */
   private EditableState pGroupState;
+  
+  /**
+   * Is the dispatch control of the machine editable?
+   */
+  private EditableState pDispatchState;
+
+  /**
+   * Is the favor group of the machine editable?
+   */
+  private EditableState pFavorState;
+ 
+  /**
+   * Is the user balance group of the machine editable?
+   */
+  private EditableState pUserState;
 }

@@ -1,10 +1,8 @@
-// $Id: JobRank.java,v 1.2 2009/07/02 00:23:21 jim Exp $
+// $Id: JobRank.java,v 1.3 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
-
-import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   J O B   R A N K                                                                        */
@@ -41,11 +39,60 @@ JobRank
   /**
    * Get the unique job identifier.
    */ 
-  public long
+  public final long
   getJobID() 
   {
     return pJobID; 
   }
+
+  
+  /**
+   * Get the job's selection score.
+   */
+  public final int 
+  getScore()
+  {
+    return pScore;
+  }
+
+
+
+  
+  /**
+   * Get the job group percentage done.
+   */
+  public final double 
+  getPercent()
+  {
+    return pPercent;
+  }
+
+
+
+  
+  /**
+   * Get the job's priority.
+   */
+  public final int 
+  getPriority()
+  {
+    return pPriority;
+  }
+
+
+
+  
+  /**
+   * Get the job submission time.
+   */
+  public final long 
+  getTimeStamp()
+  {
+    return pTimeStamp;
+  }
+  
+
+
 
   /**
    * Set the complete set of values used to rank jobs.
@@ -81,6 +128,8 @@ JobRank
     pPriority  = priority; 
     pTimeStamp = stamp;
   }
+  
+  
 
   
 
@@ -145,7 +194,7 @@ JobRank
    JobRank rank
   )
   {
-    /* selection score is in decending order */ 
+    /* selection score is in descending order */ 
     if(pScore > rank.pScore) 
       return -1; 
     else if(pScore < rank.pScore) 
@@ -157,7 +206,7 @@ JobRank
       else if((rank.pPercent - pPercent) >= sEpsilon) 
         return 1;
       else {
-        /* job priority is in decending order */ 
+        /* job priority is in descending order */ 
         if(pPriority > rank.pPriority) 
           return -1; 
         else if(pPriority < rank.pPriority) 
@@ -184,7 +233,7 @@ JobRank
   /**
    * The smallest difference in floating point value considered to be different.
    */ 
-  private static final double sEpsilon = 0.000001;
+  public static final double sEpsilon = 0.000001;
 
   
   /*----------------------------------------------------------------------------------------*/

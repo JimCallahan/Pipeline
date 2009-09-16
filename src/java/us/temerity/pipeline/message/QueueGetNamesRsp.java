@@ -1,46 +1,56 @@
-// $Id: QueueRemoveSelectionGroupsReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueGetNamesRsp.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
+import java.util.TreeSet;
 
-import java.io.*;
-import java.util.*;
+import us.temerity.pipeline.LogMgr;
+import us.temerity.pipeline.TaskTimer;
 
-/*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   R E M O V E   S E L E C T I O N  G R O U P   R E Q                         */
-/*------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------*/
+/*   Q U E U E   G E T   Q U E U E   C O N T R O L   N A M E S   R S P                         */
+/*---------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the given existing selection group. <P> 
+ * Get the names of all existing queue controls. 
  */
-public 
-class QueueRemoveSelectionGroupsReq
-  extends PrivilegedReq
+public
+class QueueGetNamesRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request. <P> 
+   * Constructs a new response.
+   * 
+   * @param timer 
+   *   The timing statistics for a task.
    * 
    * @param names
-   *   The names of the selection groups. 
-   */
+   *   The names. 
+   *   
+   * @param controlName
+   *   The name of the control, used for error reporting.
+   */ 
   public
-  QueueRemoveSelectionGroupsReq
+  QueueGetNamesRsp
   (
-   TreeSet<String> names
+   TaskTimer timer, 
+   TreeSet<String> names,
+   String controlName
   )
   { 
-    super();
+    super(timer);
 
     if(names == null) 
-      throw new IllegalArgumentException
-	("The selection group names cannot be (null)!");
+      throw new IllegalArgumentException("The " + controlName + " names cannot be (null)!");
     pNames = names;
+
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "QueueMgr.get" + controlName + "():\n  " + getTimer());
   }
 
 
@@ -50,21 +60,21 @@ class QueueRemoveSelectionGroupsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the names of the selection groups. 
+   * Gets the queue control names.
    */
   public TreeSet<String>
   getNames() 
   {
-    return pNames; 
+    return pNames;
   }
-
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -658680859843217398L;
+  private static final long serialVersionUID = -3867183433750364027L;
 
   
 
@@ -73,9 +83,7 @@ class QueueRemoveSelectionGroupsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The names of the selection groups. 
+   * The hardware group names. 
    */ 
-  private TreeSet<String>  pNames; 
-
+  private TreeSet<String>  pNames;
 }
-  

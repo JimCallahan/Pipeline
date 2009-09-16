@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.12 2009/07/01 16:43:14 jim Exp $
+// $Id: QueueHost.java,v 1.13 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -72,12 +72,18 @@ class QueueHost
     pSelectionSchedule = qinfo.getSelectionSchedule();
     pSelectionGroup    = qinfo.getSelectionGroup();
     pHardwareGroup     = qinfo.getHardwareGroup();
+    pFavorMethod       = qinfo.getFavorMethod();
+    pUserBalanceGroup  = qinfo.getUserBalanceGroup();
+    pDispatchControl   = qinfo.getDispatchControl();
     
     pSlotState = qinfo.getSlotsState();
     pStatusState = qinfo.getStatusState();
     pOrderState = qinfo.getOrderState();
     pReservationState = qinfo.getReservationState();
     pGroupState = qinfo.getGroupState();
+    pDispatchState = qinfo.getDispatchState();
+    pFavorState = qinfo.getFavorState();
+    pUserState = qinfo.getUserBalanceState();
   }
 
 
@@ -94,12 +100,17 @@ class QueueHost
     pLastModified = System.currentTimeMillis(); 
 
     pHoldTimeStamps = new TreeMap<Long,Long>();
+    
+    pFavorMethod = JobGroupFavorMethod.None;
 
     pGroupState = EditableState.Manual;
     pStatusState = EditableState.Manual;
     pReservationState = EditableState.Manual;
     pSlotState = EditableState.Manual;
     pOrderState = EditableState.Manual;
+    pDispatchState = EditableState.Manual;
+    pFavorState = EditableState.Manual;
+    pUserState = EditableState.Manual;
   }
 
 
@@ -144,6 +155,7 @@ class QueueHost
   /**
    * Set the current operational status of the host.
    */ 
+  @SuppressWarnings("incomplete-switch")
   public synchronized void
   setStatus
   (
@@ -340,7 +352,75 @@ class QueueHost
     pGroupState = groupState;
   }
 
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Is the dispatch control on the host editable.
+   */
+  public synchronized EditableState 
+  getDispatchState()
+  {
+    return pDispatchState;
+  }
+
+  /**
+   * Set whether the dispatch control of the host is editable.
+   */
+  public synchronized void 
+  setDispatchState
+  (
+    EditableState dispatchState
+  )
+  {
+    pDispatchState = dispatchState;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the user balance group on the host editable.
+   */
+  public synchronized EditableState 
+  getUserBalanceState()
+  {
+    return pUserState;
+  }
+
+  /**
+   * Set whether the user balance state of the host is editable.
+   */
+  public synchronized void 
+  setUserBalanceState
+  (
+    EditableState userState
+  )
+  {
+    pUserState = userState;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the favor method on the host editable.
+   */
+  public synchronized EditableState 
+  getFavorState()
+  {
+    return pFavorState;
+  }
+
+  /**
+   * Set whether the favor method of the host is editable.
+   */
+  public synchronized void 
+  setFavorState
+  (
+    EditableState favorState
+  )
+  {
+    pFavorState = favorState;
+  }
+  
   /*----------------------------------------------------------------------------------------*/
 
 
@@ -709,6 +789,88 @@ class QueueHost
   {
     pHardwareGroup = name;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the current favor method. 
+   */ 
+  public synchronized JobGroupFavorMethod
+  getFavorMethod() 
+  {
+    return pFavorMethod;
+  }
+
+  /**
+   * Set the favor method.
+   * 
+   * @throws IllegalArgumentException
+   *   If a <code>null</code> value is passed in for favor method.
+   */ 
+  public synchronized void
+  setFavorMethod
+  (
+    JobGroupFavorMethod favorMethod
+  ) 
+  {
+    if(favorMethod == null) 
+      throw new IllegalArgumentException
+        ("The job group favor method cannot be (null)!");
+    
+    pFavorMethod = favorMethod;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the current user balance group. 
+   * 
+   * @return
+   *   The user balance group or <CODE>null</CODE> not a member of any user balance group.
+   */ 
+  public synchronized String
+  getUserBalanceGroup() 
+  {
+    return pUserBalanceGroup;
+  }
+
+  /**
+   * Set the name of the current user balance group or <CODE>null</CODE> to clear.
+   */ 
+  public synchronized void
+  setUserBalanceGroup
+  (
+    String name
+  ) 
+  {
+    pUserBalanceGroup = name;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the current dispatch control. 
+   * 
+   * @return
+   *   The dispatch control or <CODE>null</CODE> not a member of any dispatch control.
+   */ 
+  public synchronized String
+  getDispatchControl() 
+  {
+    return pDispatchControl;
+  }
+
+  /**
+   * Set the name of the current dispatch control or <CODE>null</CODE> to clear.
+   */ 
+  public synchronized void
+  setDispatchControl
+  (
+    String name
+  ) 
+  {
+    pDispatchControl = name;
+  }
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -746,8 +908,9 @@ class QueueHost
     LogMgr lmgr = LogMgr.getInstance();
 
     ResourceSample sample = getLatestSample();
+    boolean opsFinest = lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest);
     if(sample == null) {
-      if(lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+      if(opsFinest) {
         lmgr.log(LogMgr.Kind.Ops, LogMgr.Level.Finest,
                  "Available Slots [" + getName() + "]:  No Samples Yet.  " + 
                  "Jobs = " + pNumJobs);      
@@ -758,7 +921,7 @@ class QueueHost
 
     long now = TimeStamps.now();
     if((now - sample.getTimeStamp()) > PackageInfo.sCollectorInterval) {
-      if(lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+      if(opsFinest) {
         lmgr.log(LogMgr.Kind.Ops, LogMgr.Level.Finest,
                  "Available Slots [" + getName() + "]:  Old Sample.  " + 
                  "Jobs = " + pNumJobs);      
@@ -768,7 +931,7 @@ class QueueHost
     }
     
     if(getHold() > now) { 
-      if(lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+      if(opsFinest) {
         lmgr.log(LogMgr.Kind.Ops, LogMgr.Level.Finest,
                  "Available Slots [" + getName() + "]:  On Hold.  " + 
                  "Jobs = " + pNumJobs);  
@@ -783,7 +946,7 @@ class QueueHost
       return 0; 
     }
 
-    if(lmgr.isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
+    if(opsFinest) {
       lmgr.logAndFlush(LogMgr.Kind.Ops, LogMgr.Level.Finest,
                        "Available Slots [" + getName() + "]:  " + 
                        "Jobs = " + pNumJobs + "  " + 
@@ -809,10 +972,10 @@ class QueueHost
     return new QueueHostInfo
       (pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
        pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
-       getHold(), pSample, pSelectionGroup, pSelectionSchedule, pHardwareGroup,
-       pGroupState, pStatusState, pReservationState, pOrderState, pSlotState); 
+       getHold(), pSample, pDispatchControl, pSelectionGroup, pSelectionSchedule, 
+       pHardwareGroup, pUserBalanceGroup, pFavorMethod, pGroupState, pStatusState, 
+       pReservationState, pOrderState, pSlotState, pDispatchState, pUserState, pFavorState); 
   }
-
 
 
 
@@ -820,6 +983,7 @@ class QueueHost
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public void 
   toGlue
   ( 
@@ -838,8 +1002,12 @@ class QueueHost
     encoder.encode("SelectionSchedule", pSelectionSchedule);
     encoder.encode("SelectionGroup", pSelectionGroup);
     encoder.encode("HardwareGroup", pHardwareGroup);
+    encoder.encode("FavorMethod", pFavorMethod);
+    encoder.encode("DispatchControl", pDispatchControl);
+    encoder.encode("UserBalanceGroup", pUserBalanceGroup);
   }
 
+  @Override
   public void 
   fromGlue
   (
@@ -862,10 +1030,19 @@ class QueueHost
     if(slots == null) 
       throw new GlueException("The \"JobSlots\" was missing!");
     pJobSlots = slots;
+    
+    /* Allows null values since this was added in after QHI's already existed.  The default 
+     * constructor method guarantees that there is a suitable default value.
+     */
+    JobGroupFavorMethod favorMethod = (JobGroupFavorMethod) decoder.decode("FavorMethod");
+    if (favorMethod != null)
+      pFavorMethod = favorMethod;
 
     pSelectionSchedule = (String) decoder.decode("SelectionSchedule"); 
     pSelectionGroup    = (String) decoder.decode("SelectionGroup"); 
     pHardwareGroup     = (String) decoder.decode("HardwareGroup");
+    pDispatchControl   = (String) decoder.decode("DispatchControl");
+    pUserBalanceGroup  = (String) decoder.decode("UserBalanceGroup");
   }
   
   
@@ -992,7 +1169,7 @@ class QueueHost
    * The maximum number jobs the host may be assigned.
    */ 
   private int  pJobSlots; 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1056,6 +1233,23 @@ class QueueHost
    */ 
   private String pHardwareGroup;
   
+  /**
+   * The job group favor method.
+   */  
+  private JobGroupFavorMethod  pFavorMethod;
+  
+  /**
+   * The name of the current user balance group or <CODE>null</CODE> not a member of any 
+   * user balance group. 
+   */
+  private String  pUserBalanceGroup;
+  
+  /**
+   * The name of the current dispatch control or <code>null</code> if no dispatch control
+   * is assigned to this host. 
+   */
+  private String  pDispatchControl;
+  
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -1092,5 +1286,27 @@ class QueueHost
    * This is being set by the scheduler when the schedule on the machine is being applied. 
    */
   private EditableState pGroupState;
-
+  
+  /**
+   * Is the dispatch control on the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pDispatchState;
+  
+  
+  /**
+   * Is the job group favor method on the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pFavorState;
+  
+  
+  /**
+   * Is the user balance group on the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pUserState;
 }

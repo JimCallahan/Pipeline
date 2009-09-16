@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.64 2009/08/19 23:43:57 jim Exp $
+// $Id: JManagerPanel.java,v 1.65 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -11,9 +11,8 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.apps.BaseApp;
+import us.temerity.pipeline.apps.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.laf.*;
 import us.temerity.pipeline.ui.*;
@@ -427,6 +426,12 @@ class JManagerPanel
 	item.setActionCommand("manage-hardware-keys");
 	item.addActionListener(this);
 	sub.add(item); 
+	
+	item = new JMenuItem("Dispatch Controls...");
+	pDispatchControlsItem = item;
+        item.setActionCommand("manage-dispatch-controls");
+        item.addActionListener(this);
+        sub.add(item); 
 
 	sub.addSeparator();
 
@@ -1176,6 +1181,9 @@ class JManagerPanel
     updateMenuToolTip
       (pHardwareKeysItem, prefs.getShowManageHardwareKeys(), 
        "Manage the hardware keys and groups.");
+    updateMenuToolTip
+      (pDispatchControlsItem, prefs.getShowManageDispatchControls(), 
+       "Manage the dispatch controls.");
     
     updateMenuToolTip
       (pServerExtensionsItem, prefs.getShowManageServerExtensions(), 
@@ -1914,6 +1922,16 @@ class JManagerPanel
         master.showManageSelectionKeysDialog();
         return true;
       }
+      else if((prefs.getShowManageHardwareKeys() != null) &&
+        prefs.getShowManageHardwareKeys().wasPressed(e)) {
+        master.showManageHardwareKeysDialog();
+        return true;
+      }
+      else if((prefs.getShowManageDispatchControls() != null) &&
+        prefs.getShowManageDispatchControls().wasPressed(e)) {
+        master.showManageDispatchControlsDialog();
+        return true;
+      }
 
       else if((prefs.getShowManageServerExtensions() != null) &&
               prefs.getShowManageServerExtensions().wasPressed(e)) {
@@ -2138,6 +2156,8 @@ class JManagerPanel
         master.showManageSelectionKeysDialog();
       else if(cmd.equals("manage-hardware-keys"))
         master.showManageHardwareKeysDialog();
+      else if(cmd.equals("manage-dispatch-controls"))
+        master.showManageDispatchControlsDialog();
 
       else if(cmd.equals("server-extensions"))
         master.showManageServerExtensionsDialog(); 
@@ -3984,6 +4004,7 @@ class JManagerPanel
   private JMenuItem  pLicenseKeysItem;
   private JMenuItem  pSelectionKeysItem;
   private JMenuItem  pHardwareKeysItem;
+  private JMenuItem  pDispatchControlsItem;
 
   private JMenuItem  pServerExtensionsItem;
   private JMenuItem  pBackupDatabaseItem;

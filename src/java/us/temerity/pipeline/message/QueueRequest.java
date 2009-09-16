@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.29 2009/08/28 02:10:47 jim Exp $
+// $Id: QueueRequest.java,v 1.30 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -126,12 +126,12 @@ enum QueueRequest
   GetSelectionGroups, 
 
   /**
-   * An instance {@link QueueAddSelectionGroupReq} is next.
+   * An instance {@link QueueAddByNameReq} is next.
    */
   AddSelectionGroup, 
 
   /**
-   * An instance {@link QueueRemoveSelectionGroupsReq} is next.
+   * An instance {@link QueueRemoveByNameReq} is next.
    */
   RemoveSelectionGroups, 
 
@@ -153,13 +153,12 @@ enum QueueRequest
   GetSelectionSchedules, 
 
   /**
-   * An instance {@link QueueAddSelectionScheduleReq} is next.
+   * An instance {@link QueueAddByNameReq} is next.
    */
   AddSelectionSchedule, 
 
   /**
-   * An instance {@link QueueRemoveSelectionSchedulesReq} 
-   * is next.
+   * An instance {@link QueueRemoveByNameReq} is next.
    */
   RemoveSelectionSchedules, 
 
@@ -209,12 +208,12 @@ enum QueueRequest
   GetHardwareGroups, 
 
   /**
-   * An instance {@link QueueAddHardwareGroupReq} is next.
+   * An instance {@link QueueAddByNameReq} is next.
    */
   AddHardwareGroup, 
 
   /**
-   * An instance {@link QueueRemoveHardwareGroupsReq} is next.
+   * An instance {@link QueueRemoveByNameReq} is next.
    */
   RemoveHardwareGroups, 
 
@@ -223,9 +222,61 @@ enum QueueRequest
    */
   EditHardwareGroups, 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of all existing dispatch controls. 
+   */ 
+  GetDispatchControlNames, 
+
+  /**
+   * Get all the current dispatch controls. 
+   */ 
+  GetDispatchControls, 
+
+  /**
+   * An instance {@link QueueAddByNameReq} is next.
+   */
+  AddDispatchControl, 
+
+  /**
+   * An instance {@link QueueRemoveByNameReq} is next.
+   */
+  RemoveDispatchControls, 
+
+  /**
+   * An instance {@link QueueEditDispatchControlsReq} is next.
+   */
+  EditDispatchControls, 
 
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * Get the names of all existing user balance groups. 
+   */ 
+  GetUserBalanceGroupNames, 
+
+  /**
+   * Get all the current user balance groups. 
+   */ 
+  GetUserBalanceGroups, 
+
+  /**
+   * An instance {@link QueueAddByNameReq} is next.
+   */
+  AddUserBalanceGroup, 
+
+  /**
+   * An instance {@link QueueRemoveByNameReq} is next.
+   */
+  RemoveUserBalanceGroups, 
+
+  /**
+   * An instance {@link QueueEditUserBalanceGroupsReq} is next.
+   */
+  EditUserBalanceGroups, 
+
+  /*----------------------------------------------------------------------------------------*/
   /**
    * Get the current queue extension configurations.
    */
@@ -250,12 +301,12 @@ enum QueueRequest
   GetHosts, 
 
   /**
-   * An instance {@link QueueAddHostReq} is next.
+   * An instance {@link QueueAddByNameReq} is next.
    */
   AddHost, 
 
   /**
-   * An instance {@link QueueRemoveHostsReq} is next.
+   * An instance {@link QueueRemoveByNameReq} is next.
    */
   RemoveHosts, 
 
@@ -280,7 +331,7 @@ enum QueueRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance {@link QueueGetJobStatesAndCheckSums} is next.
+   * An instance {@link QueueGetJobStatesAndCheckSumsReq} is next.
    */
   GetJobStatesAndCheckSums, 
 

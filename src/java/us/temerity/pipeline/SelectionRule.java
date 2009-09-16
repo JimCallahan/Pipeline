@@ -1,4 +1,4 @@
-// $Id: SelectionRule.java,v 1.3 2007/11/20 05:42:08 jesse Exp $
+// $Id: SelectionRule.java,v 1.4 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -60,7 +60,7 @@ class SelectionRule
    * 
    * @return
    *   The selection group, {@link #aNone} if the rule removes the selection group,
-   *   or <CODE>null</CODE> if this rule is not effecting selection groups.
+   *   or <CODE>null</CODE> if this rule is not affecting selection groups.
    */ 
   public String
   getGroup() 
@@ -75,14 +75,98 @@ class SelectionRule
   public void
   setGroup
   (
-   String name
+    String name
   ) 
   {
     pGroup = name;
   }
   
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the dispatch control which is activated by this rule.
+   * 
+   * @return
+   *   The dispatch control, {@link #aNone} if the rule removes the dispatch control,
+   *   or <CODE>null</CODE> if this rule is not affecting selection groups.
+   */ 
+  public String
+  getDispatchControl() 
+  {
+    return pDispatchControl;
+  }
+
+  /**
+   * Set the name of the dispatch control which is activated by this rule, {@link #aNone} 
+   * to have it sets no control or <CODE>null</CODE> to disable this rule.
+   */ 
+  public void
+  setDispatchControl
+  (
+    String name
+  ) 
+  {
+    pDispatchControl = name;
+  }
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the user balance group which is activated by this rule.
+   * 
+   * @return
+   *   The user balance group, {@link #aNone} if the rule removes the user balance group,
+   *   or <CODE>null</CODE> if this rule is not affecting user balance groups.
+   */ 
+  public String
+  getUserBalance() 
+  {
+    return pUserBalance;
+  }
+
+  /**
+   * Set the name of the user balance group which is activated by this rule, {@link #aNone} 
+   * to have it set no user balance or <CODE>null</CODE> to disable this rule.
+   */ 
+  public void
+  setUserBalance
+  (
+    String name
+  ) 
+  {
+    pUserBalance = name;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the job group favor method which is activated by this rule.
+   * 
+   * @return
+   *   The favor method or <CODE>null</CODE> if this rule is not affecting 
+   *   user balance groups.
+   */ 
+  public JobGroupFavorMethod
+  getFavorMethod() 
+  {
+    return pFavorMethod;
+  }
+
+  /**
+   * Set the job group favor method which is activated by this rule or <CODE>null</CODE> to 
+   * disable this rule.
+   */ 
+  public void
+  setFavorMethod
+  (
+    JobGroupFavorMethod favor
+  ) 
+  {
+    pFavorMethod = favor;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the {@link QueueHostStatus} which is implemented by this rule.
    * 
@@ -225,6 +309,7 @@ class SelectionRule
   /**
    * Return a deep copy of this object.
    */
+  @Override
   public Object 
   clone()
   {
@@ -249,6 +334,7 @@ class SelectionRule
     encoder.encode("RemoveReservation", pRemoveReservation);
     encoder.encode("Order", pOrder);
     encoder.encode("Slots", pSlots);
+    encoder.encode("Dispatch", pDispatchControl);
   }
 
   public void 
@@ -266,6 +352,7 @@ class SelectionRule
     pRemoveReservation = tempValue;
     pOrder = (Integer) decoder.decode("Order");
     pSlots = (Integer) decoder.decode("Slots");
+    pDispatchControl = (String) decoder.decode("Dispatch");
   }
   
   
@@ -288,6 +375,22 @@ class SelectionRule
   protected String pGroup; 
   
   /**
+   * The name of the dispatch control which is activated by this rule.
+   */ 
+  protected String pDispatchControl;
+  
+  /**
+   * The name of the user balance group which is activated by this rule.
+   */ 
+  protected String pUserBalance; 
+  
+  /**
+   * The favor method the machine should have or <code>null</code> if the rule should not
+   * affect the favor method.
+   */
+  protected JobGroupFavorMethod pFavorMethod;
+  
+  /**
    * How the rule should manipulate the Status of machines.
    */
   protected QueueHostStatus pServerStatus;
@@ -297,8 +400,16 @@ class SelectionRule
    */
   protected boolean pRemoveReservation;
   
+  /**
+   * The order the machine should have or <code>null</code> if the rule should not
+   * affect the order.
+   */
   protected Integer pOrder;
   
+  /**
+   * The number of slots the machine should have or <code>null</code> if the rule should not
+   * affect the number of slots.
+   */
   protected Integer pSlots;
   
   public static final String aNone = "[None]";

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.101 2009/09/01 10:59:39 jim Exp $
+// $Id: ScriptApp.java,v 1.102 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1937,10 +1937,11 @@ class ScriptApp
       else if(noSelectionSchedule)
 	scheduleModified = true;
 
-      // TODO, fix this so that you can set hardware keys from plscript.
+      //FIXME fix this so that you can set hardware keys from plscript.
       QueueHostMod change = 
 	new QueueHostMod(status, reserve, setReserve,  order, slots, 
-			 group, groupModified, schedule, scheduleModified, null, false); 
+			 group, groupModified, schedule, scheduleModified, 
+			 null, false, null, false, null, false, null); 
 
       TreeMap<String,QueueHostMod> changes = new TreeMap<String,QueueHostMod>();
       changes.put(hname, change);

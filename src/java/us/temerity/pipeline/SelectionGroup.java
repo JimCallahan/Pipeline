@@ -1,11 +1,10 @@
-// $Id: SelectionGroup.java,v 1.6 2009/06/04 08:52:34 jim Exp $
+// $Id: SelectionGroup.java,v 1.7 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.*;
-
 import java.util.*;
-import java.io.*;
+
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S E L E C T I O N   G R O U P                                                          */
@@ -70,8 +69,6 @@ class SelectionGroup
 
     for(String key : group.getKeys()) 
       addBias(key, group.getBias(key));
-
-    pFavorMethod = group.getFavorMethod();
   }
 
   /**
@@ -96,7 +93,6 @@ class SelectionGroup
   init() 
   {
     pSelectionBiases = new TreeMap<String,Integer>();
-    pFavorMethod = JobGroupFavorMethod.None;
   }
 
 
@@ -179,33 +175,6 @@ class SelectionGroup
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Get the job group favor method.
-   */ 
-  public synchronized JobGroupFavorMethod
-  getFavorMethod() 
-  {
-    return pFavorMethod;
-  }
-
-  /**
-   * Set the job group favor method.
-   */ 
-  public synchronized void 
-  setFavorMethod
-  ( 
-   JobGroupFavorMethod method
-  ) 
-  {
-    if(method == null) 
-      throw new IllegalArgumentException
-	("The job group favor method cannot be (null)!");
-    pFavorMethod = method; 
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   S E L E C T I O N                                                            */
@@ -253,6 +222,7 @@ class SelectionGroup
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public void 
   toGlue
   ( 
@@ -264,10 +234,10 @@ class SelectionGroup
     
     if(!pSelectionBiases.isEmpty()) 
       encoder.encode("SelectionBiases", pSelectionBiases);
-    
-    encoder.encode("FavorMethod", pFavorMethod);
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
   public void 
   fromGlue
   (
@@ -281,10 +251,6 @@ class SelectionGroup
       (TreeMap<String,Integer>) decoder.decode("SelectionBiases"); 
     if(biases != null) 
       pSelectionBiases = biases;
-
-    JobGroupFavorMethod method = (JobGroupFavorMethod) decoder.decode("FavorMethod"); 
-    if(method != null) 
-      pFavorMethod = method;
   }
   
   
@@ -305,10 +271,5 @@ class SelectionGroup
    * The selection key biases of the host indexed by selection key name.
    */ 
   private TreeMap<String,Integer>  pSelectionBiases; 
-
-  /**
-   * The job group favor method.
-   */  
-  private JobGroupFavorMethod  pFavorMethod;
 
 }

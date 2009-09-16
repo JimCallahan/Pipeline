@@ -1,8 +1,10 @@
-// $Id: QueueHostMod.java,v 1.6 2009/07/01 16:43:14 jim Exp $
+// $Id: QueueHostMod.java,v 1.7 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline;
 
 import java.io.Serializable;
+
+import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   H O S T   M O D                                                            */
@@ -46,8 +48,7 @@ class QueueHostMod
    * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
    * 
    * @param statusChange
-   *   Change to the operational status of the host 
-   *   or <CODE>null</CODE> to leave unchanged.
+   *   Change to the operational status of the host or <CODE>null</CODE> to leave unchanged.
    * 
    * @param reservation
    *   The name of the reserving user 
@@ -77,21 +78,51 @@ class QueueHostMod
    * 
    * @param scheduleModified
    *   Whether the selection schedule should be modified.
+   *   
+   * @param hardware
+   *   The name of the current hardware group or <code>null</code> if the host should not
+   *   have a hardware group.
+   *   
+   * @param hardwareModified
+   *   Whether the hardware group should be modified.
+   *   
+   * @param dispatch
+   *   The name of the current dispatch control or <code>null</code> if the host should not
+   *   have a dispatch control.
+   *   
+   * @param dispatchModified
+   *   Whether the dispatch control should be modified.
+   *   
+   * @param userBalance
+   *   The name of the current user balance group or <code>null</code> if the host should not
+   *   have a user balance group.
+   *   
+   * @param userBalanceModified
+   *   Whether the user balance group should be modified.
+   *   
+   * @param favorMethod 
+   *   The job group favor method the host will use  
+   *   or <CODE>null</CODE> to leave it unchanged.
    */ 
   public
   QueueHostMod
   (
-   QueueHostStatusChange statusChange, 
-   String reservation, 
-   boolean reservationModified, 
-   Integer order, 
-   Integer slots, 
-   String group, 
-   boolean groupModified, 
-   String schedule, 
-   boolean scheduleModified,
-   String hardware,
-   boolean hardwareModified
+    QueueHostStatusChange statusChange, 
+    String reservation, 
+    boolean reservationModified, 
+    Integer order, 
+    Integer slots, 
+    String group, 
+    boolean groupModified, 
+    String schedule, 
+    boolean scheduleModified,
+    String hardware,
+    boolean hardwareModified,
+    String dispatch,
+    boolean dispatchModified,
+    String userBalance,
+    boolean userBalanceModified,
+    JobGroupFavorMethod favorMethod
   ) 
   {
     pStatusChange = statusChange;
@@ -111,11 +142,22 @@ class QueueHostMod
     pSelectionSchedule = schedule; 
     pSelectionScheduleModified = scheduleModified;
     
-    pGroupState = EditableState.Manual;
-    pStatusState = EditableState.Manual;
-    pReservationState = EditableState.Manual;
-    pSlotState = EditableState.Manual;
-    pOrderState = EditableState.Manual;
+    pDispatchControl = dispatch;
+    pDispatchControlModified = dispatchModified;
+    
+    pUserBalance = userBalance;
+    pUserBalanceModified = userBalanceModified;
+    
+    pFavorMethod = favorMethod;
+    
+    pGroupState           = EditableState.Manual;
+    pStatusState          = EditableState.Manual;
+    pReservationState     = EditableState.Manual;
+    pSlotState            = EditableState.Manual;
+    pOrderState           = EditableState.Manual;
+    pDispatchControlState = EditableState.Manual;
+    pUserBalanceState     = EditableState.Manual;
+    pFavorMethodState     = EditableState.Manual;
     
     pAllowedStatus = null;
   }
@@ -129,7 +171,8 @@ class QueueHostMod
    QueueHostStatusChange statusChange
   ) 
   {
-    this(statusChange, null, false, null, null, null, false, null, false, null, false);
+    this(statusChange, null, false, null, null, null, false, null, 
+         false, null, false, null, false, null, false, null);
   }
   
   
@@ -154,7 +197,7 @@ class QueueHostMod
   public synchronized void
   setStatus
   (
-   QueueHostStatusChange change
+    QueueHostStatusChange change
   ) 
   {
     pStatusChange = change;
@@ -197,8 +240,6 @@ class QueueHostMod
     return pReservationModified; 
   }
 
-
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -222,7 +263,29 @@ class QueueHostMod
     return (pOrder != null); 
   }
 
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Get the new favor method for this host.
+   * 
+   * @return 
+   *   The favor method.
+   */ 
+  public synchronized JobGroupFavorMethod
+  getFavorMethod() 
+  {
+    return pFavorMethod;
+  }
+
+  /**
+   * Whether the favor method should be changed.
+   */ 
+  public synchronized boolean
+  isFavorMethodModified()
+  {
+    return (pFavorMethod != null); 
+  }
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -320,6 +383,54 @@ class QueueHostMod
   }
   
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the name of the new dispatch control. 
+   * 
+   * @return
+   *   The dispatch control or 
+   *   <CODE>null</CODE> if the host should not have a dispatch control.
+   */ 
+  public synchronized String
+  getDispatchControl() 
+  {
+    return pDispatchControl;
+  }
+
+  /**
+   * Whether a change in dispatch control is pending.
+   */ 
+  public synchronized boolean
+  isDispatchControlModified() 
+  {
+    return pDispatchControlModified; 
+  }
+  
+/*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the name of the new user balance group. 
+   * 
+   * @return
+   *   The user balance group or 
+   *   <CODE>null</CODE> if the host should not have a user balance group.
+   */ 
+  public synchronized String
+  getUserBalanceGroup() 
+  {
+    return pUserBalance;
+  }
+
+  /**
+   * Whether a change in the user balance group is pending.
+   */ 
+  public synchronized boolean
+  isUserBalanceGroupModified() 
+  {
+    return pUserBalanceModified; 
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Is the selection group of the host editable.
@@ -342,6 +453,8 @@ class QueueHostMod
     pGroupState = groupState;
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Is the reservation status of the host editable.
    */
@@ -362,6 +475,8 @@ class QueueHostMod
   {
     pReservationState = reservationState;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Is the status of the host editable.
@@ -383,6 +498,8 @@ class QueueHostMod
   {
     pStatusState = statusState;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Is the number of slots on the host editable.
@@ -404,6 +521,8 @@ class QueueHostMod
   {
     pSlotState = slotState;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Is the order of the host editable.
@@ -425,7 +544,76 @@ class QueueHostMod
   {
     pOrderState = orderState;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Is the dispatch control of the host editable.
+   */
+  public EditableState 
+  getDispatchControlState()
+  {
+    return pDispatchControlState;
+  }
 
+  /**
+   * Set the editable state of the host's dispatch control 
+   */
+  public void 
+  setDispatchControlState
+  (
+    EditableState dispatchState
+  )
+  {
+    pDispatchControlState = dispatchState;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the user balance group of the host editable?
+   */
+  public EditableState 
+  getUserBalanceState()
+  {
+    return pUserBalanceState;
+  }
+
+  /**
+   * Set the editable state of the host's user balance group.
+   */
+  public void 
+  setUserBalanceState
+  (
+    EditableState userState
+  )
+  {
+    pDispatchControlState = userState;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the favor method of the host editable?
+   */
+  public EditableState 
+  getFavorState()
+  {
+    return pFavorMethodState;
+  }
+
+  /**
+   * Set the editable state of the host's user favor method.
+   */
+  public void 
+  setFavorState
+  (
+    EditableState favorState
+  )
+  {
+    pFavorMethodState = favorState;
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -488,6 +676,40 @@ class QueueHostMod
       }
     }
     
+    /* Group */
+    boolean dispatchChanged = false;
+    String newDispatch= null;
+    {
+      String current = info.getDispatchControl();
+      String sch = sched.getScheduledDispatchControl(sname);
+     
+      if (sch != null) {
+        if (sch.equals(SelectionRule.aNone) && current != null)
+          dispatchChanged = true;
+        else if (current == null || !sch.equals(current)) {
+          dispatchChanged = true;
+          newDispatch = sch;
+        }
+      }
+    }
+    
+    /* User Balance Group */
+    boolean userChanged = false;
+    String newUser = null;
+    {
+      String current = info.getUserBalanceGroup();
+      String sch = sched.getScheduledUserBalance(sname);
+     
+      if (sch != null) {
+        if (sch.equals(SelectionRule.aNone) && current != null)
+          userChanged = true;
+        else if (current == null || !sch.equals(current)) {
+          userChanged = true;
+          newUser = sch;
+        }
+      }
+    }
+    
     /* Order */
     Integer newOrder = null;
     {
@@ -519,6 +741,16 @@ class QueueHostMod
       }
     }
     
+    /* favor method */
+    JobGroupFavorMethod newFavor = null;
+    {
+      JobGroupFavorMethod current = info.getFavorMethod();
+      JobGroupFavorMethod sch = sched.getScheduledFavorMethod(sname);
+      
+      if (sch != null && sch != current)
+        newFavor = sch;
+    }
+    
     boolean scheduleChanged = false;
     {
       String current = info.getSelectionSchedule();
@@ -529,7 +761,9 @@ class QueueHostMod
     QueueHostMod mod = 
       new QueueHostMod(changedStatus, newReservation, reserveChanged, 
 	               newOrder, newSlots, newGroup, groupChanged, 
-	               sname, scheduleChanged, null, false);
+	               sname, scheduleChanged, null, false, 
+	               newDispatch, dispatchChanged,
+	               newUser, userChanged, newFavor);
     mod.pAllowedStatus = allowedStatus;
     setModStateFromSched(mod, sched, sname);
     
@@ -562,6 +796,9 @@ class QueueHostMod
     mod.setSlotsState(sched.getScheduledSlotsState(sname));
     mod.setStatusState(sched.getScheduledStatusState(sname));
     mod.setReservationState(sched.getScheduledReservationState(sname));
+    mod.setDispatchControlState(sched.getScheduledDispatchControlState(sname));
+    mod.setUserBalanceState(sched.getScheduledUserBalanceState(sname));
+    mod.setFavorState(sched.getScheduledFavorMethodState(sname));
   }
   
   /**
@@ -611,6 +848,11 @@ class QueueHostMod
       if (otherMod.pJobSlots != null)
 	scheduledMod.pJobSlots = new Integer(otherMod.pJobSlots);
     
+    if (scheduledMod.getFavorState() != EditableState.Automatic)
+      if (otherMod.pFavorMethod != null)
+        scheduledMod.pFavorMethod = otherMod.pFavorMethod;
+
+    
     if (scheduledMod.getGroupState() != EditableState.Automatic) {
       if (otherMod.isSelectionGroupModified()) {
 	scheduledMod.pSelectionGroupModified = true;
@@ -618,6 +860,26 @@ class QueueHostMod
 	  scheduledMod.pSelectionGroup = null;
 	else
 	  scheduledMod.pSelectionGroup = new String(otherMod.pSelectionGroup);
+      }
+    }
+    
+    if (scheduledMod.getDispatchControlState() != EditableState.Automatic) {
+      if (otherMod.isDispatchControlModified()) {
+        scheduledMod.pDispatchControlModified = true;
+        if (otherMod.pDispatchControl == null)
+          scheduledMod.pDispatchControl = null;
+        else
+          scheduledMod.pDispatchControl = new String(otherMod.pDispatchControl);
+      }
+    }
+    
+    if (scheduledMod.getUserBalanceState() != EditableState.Automatic) {
+      if (otherMod.isUserBalanceGroupModified()) {
+        scheduledMod.pUserBalanceModified = true;
+        if (otherMod.pUserBalance == null)
+          scheduledMod.pUserBalance = null;
+        else
+          scheduledMod.pUserBalance = new String(otherMod.pUserBalance);
       }
     }
     
@@ -634,6 +896,7 @@ class QueueHostMod
     scheduledMod.pHardwareGroup = otherMod.pHardwareGroup;
     scheduledMod.pHardwareGroupModified = otherMod.pHardwareGroupModified;
   }
+  
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -696,6 +959,26 @@ class QueueHostMod
    */ 
   private String   pSelectionSchedule; 
   private boolean  pSelectionScheduleModified;
+
+  /**
+   * The name of the new dispatch control or <CODE>null</CODE> if the host should not have a
+   * dispatch control.
+   */ 
+  private String   pDispatchControl; 
+  private boolean  pDispatchControlModified; 
+  
+  /**
+   * The name of the new user balance group or <CODE>null</CODE> if the host should not have a
+   * user balance group.
+   */
+  private String   pUserBalance; 
+  private boolean  pUserBalanceModified; 
+  
+  /**
+   * The name of the favor method or <CODE>null</CODE> if the favor method is not being
+   * modified.
+   */ 
+  private JobGroupFavorMethod pFavorMethod; 
   
   /*----------------------------------------------------------------------------------------*/
   
@@ -733,5 +1016,26 @@ class QueueHostMod
    * This is being set by the scheduler when the schedule on the machine is being applied. 
    */
   private EditableState pGroupState;
+
+  /**
+   * Is the dispatch control of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pDispatchControlState;
+  
+  /**
+   * Is the user balance group of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pUserBalanceState;
+  
+  /**
+   * Is the favor method of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pFavorMethodState;
 
 }

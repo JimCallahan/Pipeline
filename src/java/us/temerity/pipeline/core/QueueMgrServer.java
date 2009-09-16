@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.68 2009/08/28 02:10:46 jim Exp $
+// $Id: QueueMgrServer.java,v 1.69 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -458,8 +458,8 @@ class QueueMgrServer
 
               case AddSelectionGroup:
                 {
-                  QueueAddSelectionGroupReq req = 
-                    (QueueAddSelectionGroupReq) objIn.readObject();
+                  QueueAddByNameReq req = 
+                    (QueueAddByNameReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.addSelectionGroup(req));
                   objOut.flush(); 
                 }
@@ -467,8 +467,8 @@ class QueueMgrServer
 
               case RemoveSelectionGroups:
                 {
-                  QueueRemoveSelectionGroupsReq req = 
-                    (QueueRemoveSelectionGroupsReq) objIn.readObject();
+                  QueueRemoveByNameReq req = 
+                    (QueueRemoveByNameReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.removeSelectionGroups(req));
                   objOut.flush(); 
                 }
@@ -501,8 +501,8 @@ class QueueMgrServer
 
               case AddSelectionSchedule:
                 {
-                  QueueAddSelectionScheduleReq req = 
-                    (QueueAddSelectionScheduleReq) objIn.readObject();
+                  QueueAddByNameReq req = 
+                    (QueueAddByNameReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.addSelectionSchedule(req));
                   objOut.flush(); 
                 }
@@ -510,8 +510,8 @@ class QueueMgrServer
 
               case RemoveSelectionSchedules:
                 {
-                  QueueRemoveSelectionSchedulesReq req = 
-                    (QueueRemoveSelectionSchedulesReq) objIn.readObject();
+                  QueueRemoveByNameReq req = 
+                    (QueueRemoveByNameReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.removeSelectionSchedules(req));
                   objOut.flush(); 
                 }
@@ -590,8 +590,8 @@ class QueueMgrServer
 
               case AddHardwareGroup:
                 {
-                  QueueAddHardwareGroupReq req = 
-                    (QueueAddHardwareGroupReq) objIn.readObject();
+                  QueueAddByNameReq req = 
+                    (QueueAddByNameReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.addHardwareGroup(req));
                   objOut.flush(); 
                 }
@@ -599,8 +599,8 @@ class QueueMgrServer
 
               case RemoveHardwareGroups:
                 {
-                  QueueRemoveHardwareGroupsReq req = 
-                    (QueueRemoveHardwareGroupsReq) objIn.readObject();
+                  QueueRemoveByNameReq req = 
+                    (QueueRemoveByNameReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.removeHardwareGroups(req));
                   objOut.flush(); 
                 }
@@ -615,6 +615,89 @@ class QueueMgrServer
                 }
                 break;
 
+                /*-- DISPATCH CONTROLS -------------------------------------------------------*/
+              case GetDispatchControlNames:
+                {
+                  objOut.writeObject(pQueueMgr.getDispatchControlNames());
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetDispatchControls:
+                {
+                  objOut.writeObject(pQueueMgr.getDispatchControls());
+                  objOut.flush(); 
+                }
+                break;
+
+              case AddDispatchControl:
+                {
+                  QueueAddByNameReq req = 
+                    (QueueAddByNameReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.addDispatchControl(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case RemoveDispatchControls:
+                {
+                  QueueRemoveByNameReq req = 
+                    (QueueRemoveByNameReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.removeDispatchControls(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case EditDispatchControls:
+                {
+                  QueueEditDispatchControlsReq req = 
+                    (QueueEditDispatchControlsReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.editDispatchControls(req));
+                  objOut.flush(); 
+                }
+                break;
+                
+                /*-- USER BALANCE GROUPS -----------------------------------------------------*/
+              case GetUserBalanceGroupNames:
+                {
+                  objOut.writeObject(pQueueMgr.getUserBalanceGroupNames());
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetUserBalanceGroups:
+                {
+                  objOut.writeObject(pQueueMgr.getUserBalanceGroups());
+                  objOut.flush(); 
+                }
+                break;
+
+              case AddUserBalanceGroup:
+                {
+                  QueueAddByNameReq req = 
+                    (QueueAddByNameReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.addUserBalanceGroup(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case RemoveUserBalanceGroups:
+                {
+                  QueueRemoveByNameReq req = 
+                    (QueueRemoveByNameReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.removeUserBalanceGroups(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case EditUserBalanceGroups:
+                {
+                  QueueEditUserBalanceGroupsReq req = 
+                    (QueueEditUserBalanceGroupsReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.editUserBalanceGroups(req));
+                  objOut.flush(); 
+                }
+                break;
 
 
               /*-- SERVER EXTENSIONS -------------------------------------------------------*/
@@ -655,7 +738,7 @@ class QueueMgrServer
 
               case AddHost:
                 {
-                  QueueAddHostReq req = (QueueAddHostReq) objIn.readObject();
+                  QueueAddByNameReq req = (QueueAddByNameReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.addHost(req));
                   objOut.flush(); 
                 }
@@ -663,7 +746,8 @@ class QueueMgrServer
 
               case RemoveHosts:
                 {
-                  QueueRemoveHostsReq req = (QueueRemoveHostsReq) objIn.readObject();
+                  QueueRemoveByNameReq req = 
+                    (QueueRemoveByNameReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.removeHosts(req));
                   objOut.flush(); 
                 }

@@ -1,21 +1,20 @@
-// $Id: QueueGetKeyNamesRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
+// $Id: QueueGetUserBalanceGroupsRsp.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.message;
 
-import java.util.TreeSet;
+import java.util.TreeMap;
 
-import us.temerity.pipeline.LogMgr;
-import us.temerity.pipeline.TaskTimer;
+import us.temerity.pipeline.*;
 
-/*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   K E Y   N A M E S   R S P                                          */
-/*------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------*/
+/*   Q U E U E   G E T   U S E R   B A L A N C E   G R O U P S   R S P                         */
+/*---------------------------------------------------------------------------------------------*/
 
 /**
- * Get the names of the currently defined selection, license or hardware keys. 
+ * Get all the current dispatch controls.  
  */
 public
-class QueueGetKeyNamesRsp
+class QueueGetUserBalanceGroupsRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -28,25 +27,25 @@ class QueueGetKeyNamesRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param names
-   *   The hardware key names
+   * @param controls
+   *   The hardware groups indexed by group name. 
    */ 
   public
-  QueueGetKeyNamesRsp
+  QueueGetUserBalanceGroupsRsp
   (
-   TaskTimer timer, 
-   TreeSet<String> names
+    TaskTimer timer, 
+    TreeMap<String, UserBalanceGroup> groups
   )
   { 
     super(timer);
 
-    if(names == null) 
-      throw new IllegalArgumentException("The key names cannot be (null)!");
-    pKeyNames = names;
+    if(groups == null) 
+      throw new IllegalArgumentException("The user balance groups cannot be (null)!");
+    pUserBalanceGroups = groups;
 
     LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "QueueMgr.getKeyNames():\n  " + getTimer());
+       "QueueMgr.getUserBalanceGroups():\n  " + getTimer());
   }
 
 
@@ -56,12 +55,12 @@ class QueueGetKeyNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the key names.
+   * Gets the current user balance groups indexed by group name. 
    */
-  public TreeSet<String>
-  getKeyNames() 
+  public TreeMap<String, UserBalanceGroup>
+  getUserBalanceGroups() 
   {
-    return pKeyNames;
+    return pUserBalanceGroups;
   }
   
 
@@ -70,7 +69,7 @@ class QueueGetKeyNamesRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 3674289882026123612L;
+  private static final long serialVersionUID = 8626063505873641592L;
 
   
 
@@ -79,9 +78,7 @@ class QueueGetKeyNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The key names.
+   * The current user balance groups indexed by group name. 
    */ 
-  private TreeSet<String>  pKeyNames; 
-
+  private TreeMap<String, UserBalanceGroup>  pUserBalanceGroups;
 }
-  

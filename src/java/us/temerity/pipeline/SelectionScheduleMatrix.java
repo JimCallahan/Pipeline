@@ -1,4 +1,4 @@
-// $Id: SelectionScheduleMatrix.java,v 1.1 2007/11/30 20:06:24 jesse Exp $
+// $Id: SelectionScheduleMatrix.java,v 1.2 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -12,8 +12,8 @@ import java.util.*;
  *  Generates a matrix of all the value mappings of all the selection schedules at
  *  a given point in time.
  */
-public class 
-SelectionScheduleMatrix
+public 
+class SelectionScheduleMatrix
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -83,6 +83,8 @@ SelectionScheduleMatrix
     recompute();
   }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -215,6 +217,86 @@ SelectionScheduleMatrix
     return pScheduledReservationState.get(sname);
   }
   
+/*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Gets the dispatch control setting for the given schedule.
+   */
+  public String
+  getScheduledDispatchControl
+  (
+    String sname  
+  )
+  {
+    return pScheduledDispatchControl.get(sname);
+  }
+  
+  /**
+   * Gets the editable state of the dispatch control field for the given schedule.
+   */
+  public EditableState
+  getScheduledDispatchControlState
+  (
+    String sname  
+  )
+  {
+    return pScheduledDispatchControlState.get(sname);
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the user balance group setting for the given schedule.
+   */
+  public String
+  getScheduledUserBalance
+  (
+    String sname  
+  )
+  {
+    return pScheduledUserBalance.get(sname);
+  }
+  
+  /**
+   * Gets the editable state of the user balance group field for the given schedule.
+   */
+  public EditableState
+  getScheduledUserBalanceState
+  (
+    String sname  
+  )
+  {
+    return pScheduledUserBalanceState.get(sname);
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the favor method setting for the given schedule.
+   */
+  public JobGroupFavorMethod
+  getScheduledFavorMethod
+  (
+    String sname  
+  )
+  {
+    return pScheduledFavorMethod.get(sname);
+  }
+  
+  /**
+   * Gets the editable state of the favor method field for the given schedule.
+   */
+  public EditableState
+  getScheduledFavorMethodState
+  (
+    String sname  
+  )
+  {
+    return pScheduledFavorMethodState.get(sname);
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Gets a list of all the schedules contained in this matrix.
    */
@@ -224,6 +306,8 @@ SelectionScheduleMatrix
     return Collections.unmodifiableSet(pSchedules.keySet());
   }
   
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   P R I V A T E   M E T H O D S                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -231,16 +315,30 @@ SelectionScheduleMatrix
   private void
   recompute()
   {
-    pScheduledGroups = new TreeMap<String, String>();
-    pScheduledGroupsState = new TreeMap<String, EditableState>();
-    pScheduledOrder = new TreeMap<String, Integer>();
-    pScheduledOrderState = new TreeMap<String, EditableState>();
-    pScheduledSlots = new TreeMap<String, Integer>();
-    pScheduledSlotsState = new TreeMap<String, EditableState>();
-    pScheduledStatus = new TreeMap<String, QueueHostStatus>();
-    pScheduledStatusState = new TreeMap<String, EditableState>();
-    pScheduledReservation = new TreeMap<String, Boolean>();
-    pScheduledReservationState = new TreeMap<String, EditableState>();
+    pScheduledGroups               = new TreeMap<String, String>();
+    pScheduledGroupsState          = new TreeMap<String, EditableState>();
+    
+    pScheduledOrder                = new TreeMap<String, Integer>();
+    pScheduledOrderState           = new TreeMap<String, EditableState>();
+    
+    pScheduledSlots                = new TreeMap<String, Integer>();
+    pScheduledSlotsState           = new TreeMap<String, EditableState>();
+    
+    pScheduledStatus               = new TreeMap<String, QueueHostStatus>();
+    pScheduledStatusState          = new TreeMap<String, EditableState>();
+    
+    pScheduledReservation          = new TreeMap<String, Boolean>();
+    pScheduledReservationState     = new TreeMap<String, EditableState>();
+    
+    pScheduledDispatchControl      = new TreeMap<String, String>();
+    pScheduledDispatchControlState = new TreeMap<String, EditableState>();
+    
+    pScheduledUserBalance          = new TreeMap<String, String>();
+    pScheduledUserBalanceState     = new TreeMap<String, EditableState>();
+    
+    pScheduledFavorMethod          = new TreeMap<String, JobGroupFavorMethod>();
+    pScheduledFavorMethodState     = new TreeMap<String, EditableState>();
+    
     
     for(SelectionSchedule sched : pSchedules.values()) {
       String name = sched.getName();
@@ -254,6 +352,12 @@ SelectionScheduleMatrix
       pScheduledOrderState.put(name, sched.getOrderEditState(pNow));
       pScheduledSlots.put(name, sched.activeSlots(pNow));
       pScheduledSlotsState.put(name, sched.getSlotsEditState(pNow));
+      pScheduledDispatchControl.put(name, sched.activeDispatchControl(pNow));
+      pScheduledDispatchControlState.put(name, sched.getDispatchControlEditState(pNow));
+      pScheduledUserBalance.put(name, sched.activeUserBalance(pNow));
+      pScheduledUserBalanceState.put(name, sched.getUserBalanceEditState(pNow));
+      pScheduledFavorMethod.put(name, sched.activeFavorMethod(pNow));
+      pScheduledFavorMethodState.put(name, sched.getFavorMethodEditState(pNow));
     }
   }
 
@@ -264,14 +368,25 @@ SelectionScheduleMatrix
   
   private TreeMap<String,String> pScheduledGroups;
   private TreeMap<String, EditableState> pScheduledGroupsState;
+
   private TreeMap<String, QueueHostStatus> pScheduledStatus;
   private TreeMap<String, EditableState> pScheduledStatusState;
+  
   private TreeMap<String, Boolean> pScheduledReservation;
   private TreeMap<String, EditableState> pScheduledReservationState;
+  
   private TreeMap<String, Integer> pScheduledOrder;
   private TreeMap<String, EditableState> pScheduledOrderState;
+  
   private TreeMap<String, Integer> pScheduledSlots;
   private TreeMap<String, EditableState> pScheduledSlotsState;
   
+  private TreeMap<String, String> pScheduledDispatchControl;
+  private TreeMap<String, EditableState> pScheduledDispatchControlState;
   
+  private TreeMap<String, String> pScheduledUserBalance;
+  private TreeMap<String, EditableState> pScheduledUserBalanceState;
+  
+  private TreeMap<String, JobGroupFavorMethod> pScheduledFavorMethod;
+  private TreeMap<String, EditableState> pScheduledFavorMethodState;
 }

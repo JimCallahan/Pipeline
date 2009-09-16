@@ -1,22 +1,18 @@
-// $Id: QueueAddSelectionGroupReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueRemoveByNameReq.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
-
-import java.io.*;
-import java.util.*;
+import java.util.TreeSet;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   A D D   S E L E C T I O N   G R U O P   R E Q                              */
+/*   Q U E U E   R E M O V E   B Y   N A M E   R E Q                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to add a new selection group. <P> 
+ * A request to remove the given existing queue controls. <P> 
  */
 public 
-class QueueAddSelectionGroupReq
+class QueueRemoveByNameReq
   extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
@@ -26,21 +22,25 @@ class QueueAddSelectionGroupReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param hostname
-   *   The name of the new selection group. 
+   * @param names
+   *   The names of the queue controls.
+   *   
+   * @param controlName
+   *   The name of queue control, used for error messages.
    */
   public
-  QueueAddSelectionGroupReq
+  QueueRemoveByNameReq
   (
-   String name
+    TreeSet<String> names,
+    String controlName
   )
   { 
     super();
 
-    if(name == null) 
+    if(names == null) 
       throw new IllegalArgumentException
-	("The selection group name cannot be (null)!");
-    pName = name;
+	("The " + controlName + " names cannot be (null)!");
+    pNames = names;
   }
 
 
@@ -50,12 +50,12 @@ class QueueAddSelectionGroupReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the name of the new selection group. 
+   * Gets the names of the queue controls. 
    */
-  public String
-  getName() 
+  public TreeSet<String>
+  getNames() 
   {
-    return pName; 
+    return pNames; 
   }
 
   
@@ -64,7 +64,7 @@ class QueueAddSelectionGroupReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -811900877800565544L;
+  private static final long serialVersionUID = 6588712620718799232L;
 
   
 
@@ -73,9 +73,7 @@ class QueueAddSelectionGroupReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the new selection group. 
+   * The names of the hardware groups. 
    */ 
-  private String  pName; 
-
+  private TreeSet<String>  pNames; 
 }
-  

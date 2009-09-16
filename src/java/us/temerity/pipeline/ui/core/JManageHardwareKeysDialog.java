@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.8 2009/08/19 23:53:51 jim Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.9 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -394,21 +394,21 @@ class JManageHardwareKeysDialog
     boolean showTooltips = prefs.getShowMenuToolTips();
        
     updateMenuToolTip
-      (showTooltips, pKeysAddItem, prefs.getSelectionKeysAdd(),
-       "Add a new selection key.");
+      (showTooltips, pKeysAddItem, prefs.getHardwareKeysAdd(),
+       "Add a new hardware key.");
     updateMenuToolTip
-      (showTooltips, pKeysRemoveItem, prefs.getSelectionKeysRemove(),
-       "Remove the selected selection keys.");
+      (showTooltips, pKeysRemoveItem, prefs.getHardwareKeysRemove(),
+       "Remove the selected hardware keys.");
 
     updateMenuToolTip
-      (showTooltips, pGroupsAddItem, prefs.getSelectionGroupsAdd(),
-       "Add a new selection group.");
+      (showTooltips, pGroupsAddItem, prefs.getHardwareGroupsAdd(),
+       "Add a new hardware group.");
     updateMenuToolTip
-      (showTooltips, pGroupsCloneItem, prefs.getSelectionGroupsClone(),
-       "Add a new selection group which is a copy of the selected group.");
+      (showTooltips, pGroupsCloneItem, prefs.getHardwareGroupsClone(),
+       "Add a new hardware group which is a copy of the selected group.");
     updateMenuToolTip
-      (showTooltips, pGroupsRemoveItem, prefs.getSelectionGroupsRemove(),
-       "Remove the selected selection groups.");
+      (showTooltips, pGroupsRemoveItem, prefs.getHardwareKeysRemove(),
+       "Remove the selected hardware groups.");
   }
 
   

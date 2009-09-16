@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.20 2009/08/19 23:53:51 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.21 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -218,7 +218,7 @@ class JQueueJobServersPanel
       }
     }
 
-    updateJobs(false, null, null, null, null, null, null, null);
+    updateJobs(false, null, null, null, null, null, null, null, null, null);
   }
 
 
@@ -262,7 +262,7 @@ class JQueueJobServersPanel
   public void
   setGroupID
   (
-   int groupID
+    int groupID
   )
   {
     UIMaster master = UIMaster.getInstance();
@@ -405,6 +405,9 @@ class JQueueJobServersPanel
    * @param selectionSchedules
    *   The valid selection schedule names. 
    *   
+   * @param dispatchControls
+   *   The valid dispatch control names.
+   *   
    * @param matrix
    *   The matrix used to determine which schedule maps to what group.
    */ 
@@ -421,6 +424,8 @@ class JQueueJobServersPanel
    TreeSet<String> selectionGroups, 
    TreeSet<String> selectionSchedules,
    TreeSet<String> hardwareGroups,
+   TreeSet<String> dispatchControls,
+   TreeSet<String> userBalanceGroups,
    SelectionScheduleMatrix matrix
   )
   {
@@ -430,7 +435,8 @@ class JQueueJobServersPanel
     pMatrix = matrix;
 
     updateJobs(filtered, hosts, samples, 
-               workGroups, workUsers, selectionGroups, selectionSchedules, hardwareGroups);
+               workGroups, workUsers, selectionGroups, selectionSchedules, 
+               hardwareGroups, dispatchControls, userBalanceGroups);
   }
 
   /**
@@ -517,25 +523,30 @@ class JQueueJobServersPanel
    *   
    * @param hardwareGroups
    *   The valid hardware group names.
+   *   
+   * @param dispatchControls
+   *   The valid dispatch control names.
    */ 
   public synchronized void
   updateJobs
   (
-   boolean filtered, 
-   TreeMap<String,QueueHostInfo> hosts, 
-   TreeMap<String,ResourceSampleCache>  samples, 
-   Set<String> workGroups, 
-   Set<String> workUsers,
-   TreeSet<String> selectionGroups, 
-   TreeSet<String> selectionSchedules,
-   TreeSet<String> hardwareGroups
+    boolean filtered, 
+    TreeMap<String,QueueHostInfo> hosts, 
+    TreeMap<String,ResourceSampleCache>  samples, 
+    Set<String> workGroups, 
+    Set<String> workUsers,
+    TreeSet<String> selectionGroups, 
+    TreeSet<String> selectionSchedules,
+    TreeSet<String> hardwareGroups,
+    TreeSet<String> dispatchControls,
+    TreeSet<String> userBalanceGroups
   ) 
   {
     updatePrivileges();
 
     /* job server panel */ 
     if((hosts != null) && (selectionGroups != null) && (selectionSchedules != null) && 
-       (hardwareGroups != null )) {
+       (hardwareGroups != null ) && (dispatchControls != null)) {
       pHeaderLabel.setText("Queue Servers:" + 
                            (filtered ? ("  ( " + hosts.size() + " matched )") : ""));  
 
@@ -547,8 +558,8 @@ class JQueueJobServersPanel
       }
 
       pHostsTableModel.setQueueHosts(names, hosts, samples, workGroups, workUsers, 
-                                     selectionGroups, selectionSchedules, hardwareGroups, 
-                                     pPrivilegeDetails);
+                                     selectionGroups, selectionSchedules, hardwareGroups,
+                                     dispatchControls, userBalanceGroups, pPrivilegeDetails);
       
       pHostsTablePanel.tableStructureChanged();  
     }

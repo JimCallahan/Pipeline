@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.23 2009/08/19 23:53:51 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.24 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -480,7 +480,7 @@ class JManageSelectionKeysDialog
   private void 
   updateJobBrowsers() 
   {
-    // FIX THIS!!!
+    // FIXME FIX THIS!!!
 
 //     UIMaster master = UIMaster.getInstance();
 //     QueueMgrClient client = master.getQueueMgrClient();

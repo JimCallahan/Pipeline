@@ -1,13 +1,12 @@
-// $Id: PanelUpdater.java,v 1.42 2009/09/03 17:46:07 jim Exp $
+// $Id: PanelUpdater.java,v 1.43 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import java.util.*;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P A N E L   U P D A T E R                                                              */
@@ -32,8 +31,8 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeBrowserPanel panel,
-   boolean forceUpdate
+    JNodeBrowserPanel panel,
+    boolean forceUpdate
   ) 
   {
     initPanels(panel);
@@ -84,7 +83,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeViewerPanel panel
+    JNodeViewerPanel panel
   ) 
   {
     this(panel, false, true, null, false);
@@ -96,8 +95,8 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeViewerPanel panel, 
-   TreeSet<String> postUpdateSelected   
+    JNodeViewerPanel panel, 
+    TreeSet<String> postUpdateSelected   
   ) 
   {
     this(panel, false, true, null, false);
@@ -147,11 +146,11 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeViewerPanel panel,
-   boolean detailsOnly, 
-   boolean lightweight, 
-   TreeSet<String> heavyRoots, 
-   boolean downstreamOnly
+    JNodeViewerPanel panel,
+    boolean detailsOnly, 
+    boolean lightweight, 
+    TreeSet<String> heavyRoots, 
+    boolean downstreamOnly
   ) 
   {
     pNodeDetailsOnly = detailsOnly; 
@@ -169,7 +168,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeDetailsPanel panel
+    JNodeDetailsPanel panel
   ) 
   {
     pLightweightNodeStatus = true;
@@ -182,7 +181,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeFilesPanel panel
+    JNodeFilesPanel panel
   ) 
   {
     pLightweightNodeStatus = true;
@@ -195,7 +194,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeLinksPanel panel
+    JNodeLinksPanel panel
   ) 
   {
     pLightweightNodeStatus = true;
@@ -208,7 +207,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeHistoryPanel panel
+    JNodeHistoryPanel panel
   ) 
   {
     pLightweightNodeStatus = true;
@@ -221,7 +220,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JNodeAnnotationsPanel panel
+    JNodeAnnotationsPanel panel
   ) 
   {
     pLightweightNodeStatus = true;
@@ -235,7 +234,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JQueueJobServerStatsPanel panel
+    JQueueJobServerStatsPanel panel
   ) 
   {
     initPanels(panel);
@@ -247,7 +246,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JQueueJobServersPanel panel
+    JQueueJobServersPanel panel
   ) 
   {
     initPanels(panel);
@@ -259,8 +258,8 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JQueueJobSlotsPanel panel, 
-   Long selected
+    JQueueJobSlotsPanel panel, 
+    Long selected
   ) 
   {
     pJobSlotsSelectionOnly = (selected != null); 
@@ -274,8 +273,8 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JQueueJobBrowserPanel panel,
-   boolean selectionOnly
+    JQueueJobBrowserPanel panel,
+    boolean selectionOnly
   ) 
   {
     pJobBrowserSelectionOnly = selectionOnly; 
@@ -289,8 +288,8 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JQueueJobViewerPanel panel,
-   boolean detailsOnly
+    JQueueJobViewerPanel panel,
+    boolean detailsOnly
   ) 
   {
     pJobDetailsOnly = detailsOnly; 
@@ -303,7 +302,7 @@ class PanelUpdater
   public
   PanelUpdater
   (
-   JQueueJobDetailsPanel panel
+    JQueueJobDetailsPanel panel
   ) 
   {
     initPanels(panel);
@@ -318,7 +317,7 @@ class PanelUpdater
   private void 
   initPanels
   (
-   JTopLevelPanel panel
+    JTopLevelPanel panel
   ) 
   { 
     UIMaster master = UIMaster.getInstance();  
@@ -736,6 +735,8 @@ class PanelUpdater
 		pSelectionGroups    = qclient.getSelectionGroupNames();
 		pSelectionSchedules = qclient.getSelectionScheduleNames();
 		pHardwareGroups     = qclient.getHardwareGroupNames();
+		pDispatchControls   = qclient.getDispatchControlNames();
+		pUserBalanceGroups  = qclient.getUserBalanceGroupNames();
 		pScheduleMatrix     = qclient.getSelectionScheduleMatrix();
 
 		/* add full intervals for missing hosts */ 
@@ -1017,7 +1018,7 @@ class PanelUpdater
 	      pQueueJobServersPanel.applyPanelUpdates
 		(pAuthor, pView, pServersFiltered, pHosts, pSamples, 
 		 pWorkGroups, pWorkUsers, pSelectionGroups, pSelectionSchedules, 
-		 pHardwareGroups, pScheduleMatrix);
+		 pHardwareGroups, pDispatchControls, pUserBalanceGroups, pScheduleMatrix);
 	    
 	    /* job slots */ 
 	    if(pQueueJobSlotsPanel != null) 
@@ -1324,12 +1325,22 @@ class PanelUpdater
   /**
    * The current hardware groups,
    */
-  private TreeSet<String>  pHardwareGroups;
+  private TreeSet<String> pHardwareGroups;
+  
+  /**
+   * The current dispatch controls,
+   */
+  private TreeSet<String> pDispatchControls;
+  
+  /**
+   * The current user balance groups,
+   */
+  private TreeSet<String> pUserBalanceGroups;
   
   /**
    * The names of the user work groups.
    */
-  private Set<String>  pWorkGroups; 
+  private Set<String> pWorkGroups; 
   
   /**
    * The names of the work group members.
@@ -1340,12 +1351,12 @@ class PanelUpdater
   /**
    * The IDs of all selected job groups; 
    */ 
-  private TreeSet<Long>  pSelectedJobGroupIDs; 
+  private TreeSet<Long> pSelectedJobGroupIDs; 
 
   /**
    * The ID of a single just selected job group, otherwise <CODE>null</CODE>.
    */ 
-  private Long  pJustSelectedJobGroupID; 
+  private Long pJustSelectedJobGroupID; 
 
   /**
    * The ID of the job last selected in the job slots panel. 

@@ -1,22 +1,20 @@
-// $Id: QueueGetSelectionGroupNamesRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
+// $Id: QueueGetDispatchControlsRsp.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
+import java.util.TreeMap;
 
-import java.io.*;
-import java.util.*;
+import us.temerity.pipeline.*;
 
-/*-----------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   S E L E C T I O N   G R O U P   N A M E S   R S P                       */
-/*-----------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------*/
+/*   Q U E U E   G E T   D I S P A T C H   C O N T R O L S   R S P                             */
+/*---------------------------------------------------------------------------------------------*/
 
 /**
- * Get the names of all existing selection groups. 
+ * Get all the current dispatch controls.  
  */
 public
-class QueueGetSelectionGroupNamesRsp
+class QueueGetDispatchControlsRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,25 +27,25 @@ class QueueGetSelectionGroupNamesRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param names
-   *   The selection groups names. 
+   * @param controls
+   *   The dispatch controls indexed by group name. 
    */ 
   public
-  QueueGetSelectionGroupNamesRsp
+  QueueGetDispatchControlsRsp
   (
    TaskTimer timer, 
-   TreeSet<String> names
+   TreeMap<String, DispatchControl> controls
   )
   { 
     super(timer);
 
-    if(names == null) 
-      throw new IllegalArgumentException("The selection group names cannot be (null)!");
-    pNames = names;
+    if(controls == null) 
+      throw new IllegalArgumentException("The dispatch controls cannot be (null)!");
+    pDispatchControls = controls;
 
     LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "QueueMgr.getSelectionGroups():\n  " + getTimer());
+       "QueueMgr.getDispatchControls():\n  " + getTimer());
   }
 
 
@@ -57,12 +55,12 @@ class QueueGetSelectionGroupNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the selection group names.
+   * Gets the current dispatch controls indexed by control name. 
    */
-  public TreeSet<String>
-  getNames() 
+  public TreeMap<String, DispatchControl>
+  getDispatchControls() 
   {
-    return pNames;
+    return pDispatchControls;
   }
   
 
@@ -71,7 +69,7 @@ class QueueGetSelectionGroupNamesRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 7515242617431268156L;
+  private static final long serialVersionUID = -2812689159737885851L;
 
   
 
@@ -80,9 +78,7 @@ class QueueGetSelectionGroupNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The selection group names. 
+   * The current dispatch controls indexed by control name. 
    */ 
-  private TreeSet<String>  pNames;
-
+  private TreeMap<String, DispatchControl>  pDispatchControls;
 }
-  

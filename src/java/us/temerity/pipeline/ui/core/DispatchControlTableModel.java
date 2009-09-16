@@ -1,4 +1,4 @@
-// $Id: SelectionGroupsTableModel.java,v 1.8 2009/09/16 03:54:40 jesse Exp $
+// $Id: DispatchControlTableModel.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -10,17 +10,17 @@ import javax.swing.table.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.ui.AbstractSortableTableModel.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S E L E C T I O N   G R O U P S   T A B L E   M O D E L                                */
+/*   D I S P A T C H   C O N T R O L   T A B L E   M O D E L                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A {@link SortableTableModel SortableTableModel} which contains a set of 
- * {@link SelectionGroup SelectionGroup} instances.
+ * A {@link SortableTableModel} which contains a set of {@link DispatchControl} instances.
  */ 
-public
-class SelectionGroupsTableModel
+public 
+class DispatchControlTableModel
   extends AbstractSortableTableModel
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,9 +31,9 @@ class SelectionGroupsTableModel
    * Construct a table model.
    */
   public 
-  SelectionGroupsTableModel
+  DispatchControlTableModel
   (
-    JManageSelectionKeysDialog parent
+    JManageDispatchControlsDialog parent
   ) 
   {
     super();
@@ -44,25 +44,17 @@ class SelectionGroupsTableModel
 
       pPrivilegeDetails = new PrivilegeDetails();    
 
-      pSelectionGroups       = new ArrayList<SelectionGroup>();
-      pSelectionKeys         = new ArrayList<String>();
-      pSelectionDescriptions = new ArrayList<String>();
+      pDispatchControls = new ArrayList<DispatchControl>();
       
       pEditedIndices = new TreeSet<Integer>();
     }
-
+    
     /* all columns are dynamic, just initialize the shared renderers/editors */ 
-    pSelectionBiasRenderer = new JSimpleTableCellRenderer("Green", JLabel.CENTER);
-    {
-      JIntegerTableCellEditor bias = new JIntegerTableCellEditor(120, JLabel.CENTER);
-      bias.setName("GreenEditableTextField");
-      pSelectionBiasEditor = bias;
-    }
-
-    pNameRenderer = new JSimpleTableCellRenderer(JLabel.CENTER);
+    pCriteriaRenderer = new JSimpleTableCellRenderer("Green", JLabel.CENTER);
+    pNameRenderer     = new JSimpleTableCellRenderer(JLabel.CENTER);
   }
- 
-
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -71,37 +63,24 @@ class SelectionGroupsTableModel
   /**
    * Set table data.
    *
-   * @param groups
-   *   Current selection groups indexed by group name.
-   * 
-   * @param keys
-   *   The valid selection key descriptions indexed by key name.
+   * @param controls
+   *   Current dispatch controls indexed by group name.
    * 
    * @param privileges
    *   The details of the administrative privileges granted to the current user. 
    */ 
   public void 
-  setSelectionGroups
+  setDispatchControls
   (
-    TreeMap<String,SelectionGroup> groups, 
-    TreeMap<String,String> keys, 
+    TreeMap<String, DispatchControl> controls, 
     PrivilegeDetails privileges
   ) 
   {
-    pSelectionGroups.clear();
-    if(groups != null)
-      pSelectionGroups.addAll(groups.values());
+    pDispatchControls.clear();
+    if(controls!= null)
+      pDispatchControls.addAll(controls.values());
     
-    pNumRows = pSelectionGroups.size();
-
-    pSelectionKeys.clear();
-    pSelectionDescriptions.clear();
-    if(keys != null) {
-      for(Map.Entry<String,String> entry : keys.entrySet()) {
-        pSelectionKeys.add(entry.getKey()); 
-        pSelectionDescriptions.add(entry.getValue()); 
-      }
-    }
+    pNumRows = pDispatchControls.size();
 
     pPrivilegeDetails = privileges;     
 
@@ -110,63 +89,45 @@ class SelectionGroupsTableModel
     sort();
     fireTableStructureChanged(); 
   }
-
-  
-  /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Get the name of the selection group on the given row.
+   * Get the name of the dispatch control on the given row.
    */
   public String
-  getGroupName
+  getControlName
   (
     int row
   ) 
   { 
-    SelectionGroup group = pSelectionGroups.get(pRowToIndex[row]);
-    if(group != null) 
-      return group.getName();
+    DispatchControl control = pDispatchControls.get(pRowToIndex[row]);
+    if(control!= null) 
+      return control.getName();
     return null;
   }
-
+  
   /** 
-   * Get the selection group on the given row.
+   * Get the dispatch control on the given row.
    */
-  public SelectionGroup
-  getGroup
+  public DispatchControl
+  getControl
   (
     int row
   ) 
   { 
-    return pSelectionGroups.get(pRowToIndex[row]);
-  }
-
-  /** 
-   * Get the names of the selection groups in the current sorted order.
-   */
-  public ArrayList<String>
-  getGroupNames() 
-  { 
-    ArrayList<String> names = new ArrayList<String>();
-
-    int row;
-    for(row=0; row<pSelectionGroups.size(); row++) 
-      names.add(pSelectionGroups.get(pRowToIndex[row]).getName());
-
-    return names;
+    return pDispatchControls.get(pRowToIndex[row]);
   }
   
   /**
-   * Get the modified selection groups. 
+   * Get the modified dispatch controls. 
    */ 
-  public ArrayList<SelectionGroup> 
-  getModifiedGroups() 
+  public ArrayList<DispatchControl> 
+  getModifiedControls() 
   {
-    ArrayList<SelectionGroup> edited = new ArrayList<SelectionGroup>();
+    ArrayList<DispatchControl> edited = new ArrayList<DispatchControl>();
     for(Integer idx : pEditedIndices) {
-      SelectionGroup group = pSelectionGroups.get(idx);
-      if(group != null) 
-	edited.add(group); 
+      DispatchControl control = pDispatchControls.get(idx);
+      if(control != null) 
+        edited.add(control); 
     }
     
     if(!edited.isEmpty()) 
@@ -175,21 +136,6 @@ class SelectionGroupsTableModel
     return null;
   }
   
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the names of the current selection key bias columns.
-   */ 
-  public TreeSet<String> 
-  getSelectionKeys() 
-  {
-    TreeSet<String> names = new TreeSet<String>(pSelectionKeys);
-    return names;
-  }
-  
-
-
   /*----------------------------------------------------------------------------------------*/
   /*   S O R T I N G                                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -197,32 +143,29 @@ class SelectionGroupsTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  @SuppressWarnings("unchecked")
   @Override
   public void 
   sort()
   {
     IndexValue cells[] = new IndexValue[pNumRows]; 
     int idx = 0;
-    for(SelectionGroup group : pSelectionGroups) {
+    for(DispatchControl control : pDispatchControls) {
       Comparable value = null;
       switch(pSortColumn) {
       case 0:
-	value = group.getName(); 
-	break;
-
+        value = control.getName(); 
+        break;
+        
       default:
-	{
-	  String kname = pSelectionKeys.get(pSortColumn-1);
-	  if(kname != null) 
-	    value = group.getBias(kname);
-    	}
+        {
+          value = 
+            control.getCriteria().toArray(new DispatchCriteria[0])[pSortColumn-1].toString();
+        }
       }
-      
       cells[idx] = new IndexValue(idx, value); 
       idx++;
     }
-
+    
     Comparator<IndexValue> comp = 
       pSortAscending ? new AscendingIndexValue() : new DescendingIndexValue(); 
     Arrays.sort(cells, comp);
@@ -234,9 +177,119 @@ class SelectionGroupsTableModel
 
     fireTableDataChanged();
   }
-
   
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   E D I T I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Move the criteria in the specified column up one level in the control in the given row.
+   * 
+   * @param col
+   *   The column containing the criteria to move.
+   * 
+   * @param row
+   *   The row the control being edited is in.
+   */
+  public void
+  moveUp
+  (
+    int col,
+    int row
+  )
+  {
+    DispatchControl control = getControl(row);
+    DispatchCriteria crit = control.getCriteria(col - 1);
+    control.moveUp(crit);
+    
+    pEditedIndices.add(row);
+    pParent.doEdited();
+
+    sort();
+  }
+  
+  /**
+   * Move the criteria in the specified column down one level in the control in the given row.
+   * 
+   * @param col
+   *   The column containing the criteria to move.
+   * 
+   * @param row
+   *   The row the control being edited is in.
+   */
+  public void
+  moveDown
+  (
+    int col,
+    int row
+  )
+  {
+    DispatchControl control = getControl(row);
+    DispatchCriteria crit = control.getCriteria(col - 1);
+    control.moveDown(crit);
+    
+    pEditedIndices.add(row);
+    pParent.doEdited();
+    
+    sort();
+  }
+
+  /**
+   * Move the criteria in the specified column to the top in the control in the given row.
+   * 
+   * @param col
+   *   The column containing the criteria to move.
+   * 
+   * @param row
+   *   The row the control being edited is in.
+   */
+  public void
+  makeTop
+  (
+    int col,
+    int row
+  )
+  {
+    DispatchControl control = getControl(row);
+    DispatchCriteria crit = control.getCriteria(col - 1);
+    control.makeTop(crit);
+    
+    pEditedIndices.add(row);
+    pParent.doEdited();
+    
+    sort();
+  }
+  
+  /**
+   * Move the criteria in the specified column to the bottom in the control in the given row.
+   * 
+   * @param col
+   *   The column containing the criteria to move.
+   * 
+   * @param row
+   *   The row the control being edited is in.
+   */
+  public void
+  makeBottom
+  (
+    int col,
+    int row
+  )
+  {
+    DispatchControl control = getControl(row);
+    DispatchCriteria crit = control.getCriteria(col - 1);
+    control.makeBottom(crit);
+    
+    pEditedIndices.add(row);
+    pParent.doEdited();
+    
+    sort();
+  }
+  
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S O R T A B L E   T A B L E   M O D E L   O V E R R I D E S                          */
   /*----------------------------------------------------------------------------------------*/
@@ -259,13 +312,13 @@ class SelectionGroupsTableModel
       return new Vector3i(120);
     }
   }
-
+  
   /**
    * Returns the color prefix used to determine the synth style of the header button for 
    * the given column.
    */ 
   @Override
-  public String 	
+  public String         
   getColumnColorPrefix
   (
     int col
@@ -279,12 +332,12 @@ class SelectionGroupsTableModel
       return "Green"; 
     }
   }
-
+  
   /**
    * Returns the description of the column columnIndex used in tool tips.
    */ 
   @Override
-  public String 	
+  public String         
   getColumnDescription
   (
     int col
@@ -292,10 +345,10 @@ class SelectionGroupsTableModel
   {
     switch(col) {
     case 0:
-      return "The name of the selection group."; 
+      return "The name of the dispatch criteria."; 
       
     default:
-      return pSelectionDescriptions.get(col-1);
+      return "Right-click to move criteria up or down in this control.";
     }
   }
   
@@ -314,7 +367,7 @@ class SelectionGroupsTableModel
       return pNameRenderer;
 
     default:
-      return pSelectionBiasRenderer; 
+      return pCriteriaRenderer; 
     }
   }
 
@@ -328,17 +381,11 @@ class SelectionGroupsTableModel
     int col   
   )
   {
-    switch(col) {
-    case 0:
-      return null;
-
-    default:
-      return pSelectionBiasEditor; 
-    }
+    return null;
   }
 
-
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
@@ -348,19 +395,13 @@ class SelectionGroupsTableModel
    */
   @SuppressWarnings("unchecked")
   @Override
-  public Class 	
+  public Class  
   getColumnClass
   (
     int col
   )
   {
-    switch(col) {
-    case 0:
-      return String.class; 
-      
-    default:
-      return Integer.class;
-    }
+    return String.class; 
   }
   
   /**
@@ -370,157 +411,74 @@ class SelectionGroupsTableModel
   public int
   getColumnCount()
   {
-    return pSelectionKeys.size() + 1;
+    return DispatchCriteria.values().length + 1;
   }
 
   /**
    * Returns the name of the column at columnIndex.
    */ 
   @Override
-  public String 	
+  public String         
   getColumnName
   (
-   int col
+    int col
   ) 
   {
     switch(col) {
     case 0:
-      return "Group Name"; 
+      return "Control Name"; 
 
     default:
-      return pSelectionKeys.get(col-1);
+      return "Criteria " + (col - 1);
     }
   }
-
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
-  /*----------------------------------------------------------------------------------------*/
-
+  
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
    */ 
   @Override
-  public boolean 	
+  public boolean        
   isCellEditable
   (
-   int row, 
-   int col
+    int row, 
+    int col
   ) 
   {
-    switch(col) {
-    case 0:
-      return false;
-      
-    default:  
-      return pPrivilegeDetails.isQueueAdmin(); 
-    }
+    return false;
   }
-
+  
   /**
    * Returns the value for the cell at columnIndex and rowIndex.
    */ 
-  public Object 	
+  public Object         
   getValueAt
   (
-   int row, 
-   int col
+    int row, 
+    int col
   )
   {
-    SelectionGroup group = pSelectionGroups.get(pRowToIndex[row]);
+    DispatchControl control = pDispatchControls.get(pRowToIndex[row]);
     switch(col) {
     case 0:
-      return group.getName();
+      return control.getName();
       
     default:
       {
-	String kname = pSelectionKeys.get(col-1);
-	if(kname != null) 
-	  return group.getBias(kname);
+        return control.getCriteria().toArray(new DispatchCriteria[0])[col-1];
       }
-    }
-
-    return null;
-  }
-
-  /**
-   * Sets the value in the cell at columnIndex and rowIndex to aValue.
-   */ 
-  @Override
-  public void 
-  setValueAt
-  (
-   Object value, 
-   int row, 
-   int col
-  ) 
-  {
-    int vrow = pRowToIndex[row];
-    boolean edited = setValueAtHelper(value, vrow, col);
-    
-    if(pPrivilegeDetails.isQueueAdmin()) {
-      int[] selected = pTable.getSelectedRows(); 
-      int wk;
-      for(wk=0; wk<selected.length; wk++) {
-	int srow = pRowToIndex[selected[wk]];
-	if(srow != vrow)
-          if (setValueAtHelper(value, srow, col))
-            edited = true;
-
-      }
-    }
-      
-    if(edited) {
-      fireTableDataChanged();
-      pParent.doEdited();
     }
   }
 
-  public boolean 
-  setValueAtHelper
-  (
-   Object value, 
-   int srow, 
-   int col
-  ) 
-  {
-    SelectionGroup group = pSelectionGroups.get(srow);
-
-    switch(col) {
-    case 0:
-      return false;
-
-    default:
-      {
-	String kname = pSelectionKeys.get(col-1);
-	if(kname != null) {
-	  Integer bias = (Integer) value;
-	  if(bias == null) 
-	    group.removeBias(kname);
-	  else 
-	    group.addBias(kname, bias);
-	  
-	  pEditedIndices.add(srow);
-	  return true;
-	}
-      }
-    }
-
-    return false;
-  }
-
-
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 3123897997012488041L;
+  private static final long serialVersionUID = 207829936796595423L;
 
-
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -528,52 +486,37 @@ class SelectionGroupsTableModel
   /**
    * The parent dialog.
    */ 
-  private JManageSelectionKeysDialog pParent;
+  private JManageDispatchControlsDialog pParent;
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * The details of the administrative privileges granted to the current user. 
    */ 
-  private PrivilegeDetails  pPrivilegeDetails; 
-
-  /**
-   * The underlying set of selection groups.
-   */ 
-  private ArrayList<SelectionGroup> pSelectionGroups;
-
-  /**
-   * The names of the valid selection keys.
-   */ 
-  private ArrayList<String>  pSelectionKeys; 
+  private PrivilegeDetails  pPrivilegeDetails;
   
   /**
-   * The descriptions of the valid selection keys.
+   * The underlying set of dispatch controls.
    */ 
-  private ArrayList<String>  pSelectionDescriptions; 
+  private ArrayList<DispatchControl> pDispatchControls;
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The indices of groups which have had their selection biases edited.
+   * The indices of groups which have had their criteria edited.
    */ 
   private TreeSet<Integer>  pEditedIndices; 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The shared renderer for all selection bias cells.
-   */ 
-  private TableCellRenderer  pSelectionBiasRenderer;
+   * Renderer for the different criteria.
+   */
+  private JSimpleTableCellRenderer pCriteriaRenderer;
   
-  /**
-   * The shared renderer for all selection bias cells.
-   */ 
-  private TableCellEditor  pSelectionBiasEditor;
-
-
   /** 
-   * The cell render for selection group names.
+   * The cell render for dispatch control names.
    */ 
   private TableCellRenderer  pNameRenderer; 
+
 }

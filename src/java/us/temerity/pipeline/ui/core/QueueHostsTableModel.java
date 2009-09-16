@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.25 2009/08/19 23:42:47 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.26 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
 import java.util.*;
+
 import javax.swing.JLabel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -19,6 +20,25 @@ import javax.swing.table.TableCellRenderer;
 /**
  * A {@link SortableTableModel SortableTableModel} which contains a set of 
  * {@link QueueHostInfo QueueHostInfo} instances.
+ * 
+ * <ol start=0>
+ * <li> Hostname
+ * <li> Status
+ * <li> OS
+ * <li> System Load
+ * <li> Free Memory'''
+ * <li> Free Disk Space
+ * <li> Jobs
+ * <li> Slots
+ * <li> Order
+ * <li> Reservation
+ * <li> User Balance Group
+ * <li> Favor Method
+ * <li> Selection Group
+ * <li> Dispatch Control
+ * <li> Queue Schedules
+ * <li> Hardware Group
+ * </ol>
  */ 
 public
 class QueueHostsTableModel
@@ -34,8 +54,8 @@ class QueueHostsTableModel
   public 
   QueueHostsTableModel
   (
-   JQueueJobServersPanel parent, 
-   TreeSet<String> localHostnames
+    JQueueJobServersPanel parent, 
+    TreeSet<String> localHostnames
   ) 
   {
     super();
@@ -58,139 +78,43 @@ class QueueHostsTableModel
       pSelectionGroups    = new TreeSet<String>();
       pSelectionSchedules = new TreeSet<String>();
       pHardwareGroups     = new TreeSet<String>();
+      pDispatchControls   = new TreeSet<String>();
+      pUserBalanceGroups  = new TreeSet<String>();
       
-      pEditedStatusIndices   = new TreeSet<Integer>();
-      pEditedReserveIndices  = new TreeSet<Integer>();
-      pEditedOrderIndices    = new TreeSet<Integer>();
-      pEditedSlotsIndices    = new TreeSet<Integer>();
-      pEditedGroupIndices    = new TreeSet<Integer>();  
-      pEditedScheduleIndices = new TreeSet<Integer>();  
-      pEditedHardwareIndices = new TreeSet<Integer>();
+      pEditedStatusIndices      = new TreeSet<Integer>();
+      pEditedReserveIndices     = new TreeSet<Integer>();
+      pEditedOrderIndices       = new TreeSet<Integer>();
+      pEditedSlotsIndices       = new TreeSet<Integer>();
+      pEditedGroupIndices       = new TreeSet<Integer>();  
+      pEditedScheduleIndices    = new TreeSet<Integer>();  
+      pEditedHardwareIndices    = new TreeSet<Integer>();
+      pEditedDispatchIndices    = new TreeSet<Integer>();
+      pEditedFavorGroupIndices  = new TreeSet<Integer>();
+      pEditedUserBalanceIndices = new TreeSet<Integer>();
 
       pLocalHostnames = localHostnames;
     }
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 13;
+      pNumColumns = TableDefs.values().length;
+      pColumnClasses = new Class[pNumColumns];
+      pColumnNames = new String[pNumColumns];
+      pColumnColorPrefix = new String[pNumColumns];
+      pColumnDescriptions = new String[pNumColumns];
+      pColumnWidthRanges = new Vector3i[pNumColumns];
+      pRenderers = new TableCellRenderer[pNumColumns];
+      pEditors = new TableCellEditor[pNumColumns];
 
-      {
-	Class classes[] = { 
-	  String.class, String.class, String.class, 
-	  ResourceSampleCache.class, ResourceSampleCache.class, ResourceSampleCache.class,
-	  ResourceSampleCache.class, Integer.class,
-	  String.class, Integer.class, String.class, String.class, String.class
-	}; 
-	pColumnClasses = classes;
-      }
-
-      {
-	String names[] = {
-	  "Hostname", "Status", "OS", 
-	  "System Load", "Free Memory", "Free Disk Space", 
-	  "Jobs", "Slots", 
-	  "Reservation", "Order", "Selection", "Schedule", "Hardware"
-	};
-	pColumnNames = names;
-      }
-
-      {
-	String colors[] = {
-	  "", "", "", 
-	  "Blue", "Blue", "Blue", 
-	  "Green", "Green", 
-	  "Purple", "Purple", "Purple", "Purple", "Purple"
-	};
-	pColumnColorPrefix = colors; 
-      }
-      
-      {
-	String desc[] = {
-          "The fully resolved host name.", 
-	  "The current status of the job server.", 
-	  "The operating system type of the job server.", 
-	  "The system load of the server.", 
-	  "The amount of unused system memory (in GB).", 
-	  "The amount of available temporary disk space (in GB).", 
-	  "The number of job running on the server.", 
-	  "The maximum number of simultaneous jobs allowed to on the server.",
-	  "The name of the user holding the server reservation.", 
-	  "The order in which jobs are dispatched to the servers.", 
-	  "The name of the selection group.", 
-	  "The name of the selection schedule.",
-	  "The name of the hardware group."
-	};
-	pColumnDescriptions = desc;
-      }
-
-      {
-        Vector3i ranges[] = {
-          new Vector3i(120, 200, Integer.MAX_VALUE), 
-          new Vector3i(120),
-          new Vector3i(90),
-          new Vector3i(135),
-          new Vector3i(135),
-          new Vector3i(135),
-          new Vector3i(135),
-          new Vector3i(70),
-          new Vector3i(120, 120, Integer.MAX_VALUE), 
-          new Vector3i(90),
-          new Vector3i(120, 120, Integer.MAX_VALUE), 
-          new Vector3i(120, 120, Integer.MAX_VALUE), 
-          new Vector3i(120, 120, Integer.MAX_VALUE)
-        };
-        pColumnWidthRanges = ranges;
-      }
-
-      {
-	TableCellRenderer renderers[] = {
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JQHostStatusTableCellRenderer(this), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JResourceSamplesTableCellRenderer
-	        (this, JResourceSamplesTableCellRenderer.SampleType.Load), 
-	  new JResourceSamplesTableCellRenderer
-                (this, JResourceSamplesTableCellRenderer.SampleType.Memory), 
-	  new JResourceSamplesTableCellRenderer
-                (this, JResourceSamplesTableCellRenderer.SampleType.Disk), 
-	  new JResourceSamplesTableCellRenderer
-                (this, JResourceSamplesTableCellRenderer.SampleType.Jobs), 
-	  new JQHostSlotsTableCellRenderer(this), 
-	  new JQHostReservationTableCellRenderer(this), 
-	  new JQHostOrderTableCellRenderer(this), 
-	  new JQHostSGroupTableCellRenderer(this), 
-	  new JQHostSSchedTableCellRenderer(this),
-	  new JQHostHGroupTableCellRenderer(this),
-	};
-
-	pRenderers = renderers;
-      }
-
-      {
-	JStatusTableCellEditor status = 
-	  new JStatusTableCellEditor(this, 120);
-
-	JIntegerTableCellEditor slots = 
-	  new JIntegerTableCellEditor(70, JLabel.CENTER);
-	slots.setName("GreenEditableTextField");
-
-	JIntegerTableCellEditor order = 
-	  new JIntegerTableCellEditor(90, JLabel.CENTER);
-	order.setName("PurpleEditableTextField");
-
-	TableCellEditor editors[] = {
-          null, 
-	  status, 
-	  null,
-	  null, 
-	  null, 
-	  null, 
-	  null, 
-	  slots, 
-	  null, 
-	  order
-	};
-	pEditors = editors;
+      for (TableDefs def : TableDefs.values()) {
+        int ord = def.ordinal();
+        pColumnClasses[ord] = def.getColumnClass();
+        pColumnNames[ord] = def.getColumnName();
+        pColumnColorPrefix[ord] = def.getColumnColorPrefix();
+        pColumnDescriptions[ord] = def.getColumnDescription();
+        pColumnWidthRanges[ord] = def.getColumnWidthRange();
+        pRenderers[ord] = def.getRenderer(this);
+        pEditors[ord] = def.getEditor(this);
       }
     }
   }
@@ -208,13 +132,13 @@ class QueueHostsTableModel
   public String
   getCurrentScheduleName
   (
-   int row  
+    int row  
   )
   {
     QueueHostInfo qinfo = getHostInfo(row);
     String toReturn = qinfo.getSelectionSchedule();
     if (pEditedScheduleIndices.contains(row)) {
-      toReturn = (String) getValueAt(row, 10);
+      toReturn = (String) getValueAt(row, TableDefs.SCHEDULE.ordinal());
     }
     return toReturn;
   }
@@ -247,11 +171,23 @@ class QueueHostsTableModel
    * @param workUsers
    *   The names of the work group members.
    * 
-   * @param groups
+   * @param selectionGroups
    *   The valid selection group names. 
    * 
-   * @param schedules
-   *   The valid selection schedule names. 
+   * @param selectionSchedules
+   *   The valid selection schedule names.
+   *   
+   * @param names
+   *   The short names of all the hosts
+   *   
+   * @param hardwareGroups
+   *   The valid hardware group names.
+   *   
+   * @param dispatchControls
+   *   The valid dispatch control names.
+   *   
+   * @param userBalanceGroups
+   *   The valid user balance group names.
    * 
    * @param privileges
    *   The details of the administrative privileges granted to the current user. 
@@ -259,15 +195,17 @@ class QueueHostsTableModel
   public void
   setQueueHosts
   (
-   TreeMap<String,String> names, 
-   TreeMap<String,QueueHostInfo> hosts, 
-   TreeMap<String,ResourceSampleCache> samples, 
-   Set<String> workGroups, 
-   Set<String> workUsers,
-   TreeSet<String> selectionGroups, 
-   TreeSet<String> selectionSchedules, 
-   TreeSet<String> hardwareGroups,
-   PrivilegeDetails privileges
+    TreeMap<String,String> names, 
+    TreeMap<String,QueueHostInfo> hosts, 
+    TreeMap<String,ResourceSampleCache> samples, 
+    Set<String> workGroups, 
+    Set<String> workUsers,
+    TreeSet<String> selectionGroups, 
+    TreeSet<String> selectionSchedules, 
+    TreeSet<String> hardwareGroups,
+    TreeSet<String> dispatchControls,
+    TreeSet<String> userBalanceGroups,
+    PrivilegeDetails privileges
   ) 
   {
     pQueueHostnames.clear(); 
@@ -326,6 +264,14 @@ class QueueHostsTableModel
     pSelectionSchedules.clear();
     if(selectionSchedules != null) 
       pSelectionSchedules.addAll(selectionSchedules);
+    
+    pDispatchControls.clear();
+    if (dispatchControls != null)
+      pDispatchControls.addAll(dispatchControls);
+    
+    pUserBalanceGroups.clear();
+    if (userBalanceGroups != null)
+      pUserBalanceGroups.addAll(userBalanceGroups);
 
     pPrivilegeDetails = privileges; 
     
@@ -336,6 +282,9 @@ class QueueHostsTableModel
     pEditedGroupIndices.clear();
     pEditedHardwareIndices.clear();
     pEditedScheduleIndices.clear();
+    pEditedDispatchIndices.clear();
+    pEditedFavorGroupIndices.clear();
+    pEditedUserBalanceIndices.clear();
 
     sort(); 
   }
@@ -349,7 +298,7 @@ class QueueHostsTableModel
   public boolean 
   isHostPending
   (
-   int row
+    int row
   ) 
   { 
     int srow = pRowToIndex[row];
@@ -367,7 +316,7 @@ class QueueHostsTableModel
   public boolean 
   isHostStatusPending
   (
-   int row
+    int row
   ) 
   { 
     int srow = pRowToIndex[row];
@@ -378,7 +327,6 @@ class QueueHostsTableModel
 
     return (pQueueHostStatusChanges.get(srow) != null);
   }
-
   
   /*----------------------------------------------------------------------------------------*/
   
@@ -388,7 +336,7 @@ class QueueHostsTableModel
   public String
   getHostname
   (
-   int row
+    int row
   ) 
   { 
     QueueHostInfo host = pQueueHosts.get(pRowToIndex[row]);
@@ -444,8 +392,6 @@ class QueueHostsTableModel
     return pLocalHostnames.contains(hostName);
   }
   
- 
- 
  /*----------------------------------------------------------------------------------------*/
  
   /**
@@ -497,15 +443,36 @@ class QueueHostsTableModel
 	  schedule = host.getSelectionSchedule(); 
 	  scheduleModified = true;
 	}
+	
+	String dispatch = null;
+	boolean dispatchModified = false;
+	if (pEditedDispatchIndices.contains(idx)) {
+	  dispatch = host.getDispatchControl();
+	  dispatchModified = true;
+	}
+	
+	String userBalance = null;
+	boolean userBalanceModified = false;
+	if (pEditedUserBalanceIndices.contains(idx)) {
+	  userBalance = host.getUserBalanceGroup();
+	  userBalanceModified = true;
+	}
+	
+	JobGroupFavorMethod favorMethod = null;
+	if (pEditedFavorGroupIndices.contains(idx)) {
+	  favorMethod = host.getFavorMethod();
+	}
 
 	if((change != null) || reservationModified || 
 	   (order != null) || (slots != null) ||
-	   groupModified || scheduleModified || hardwareModified) {
+	   groupModified || scheduleModified || hardwareModified ||
+	   dispatchModified || userBalanceModified || favorMethod != null) {
 
 	  QueueHostMod qmod = 
 	    new QueueHostMod(change, reservation, reservationModified, order, slots, 
 			     group, groupModified, schedule, scheduleModified,
-			     hardware, hardwareModified);
+			     hardware, hardwareModified, dispatch, dispatchModified,
+			     userBalance, userBalanceModified, favorMethod);
 
 	  table.put(host.getName(), qmod);	
 	}
@@ -553,6 +520,7 @@ class QueueHostsTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
+  @Override
   public void 
   sort()
   {
@@ -561,12 +529,13 @@ class QueueHostsTableModel
     for(idx=0; idx<pNumRows; idx++) {
       QueueHostInfo host = pQueueHosts.get(idx); 
       Comparable value = null;
-      switch(pSortColumn) {
-      case 0:
+      TableDefs swtch = TableDefs.values()[pSortColumn];
+      switch(swtch) {
+      case HOSTNAME:
         value = pQueueHostnames.get(idx);
         break;
 
-      case 1:
+      case STATUS:
 	{
 	  QueueHostStatusChange change = pQueueHostStatusChanges.get(idx);
 	  if(change != null) 
@@ -576,62 +545,74 @@ class QueueHostsTableModel
 	}
 	break;
 
-      case 2:
+      case OS:
         value = host.getOsType();
 	break;
 
-      case 3:
-      case 4:
-      case 5:
-      case 6:
+      case LOAD:
+      case MEMORY:
+      case DISK:
+      case JOBS:
 	{
 	  ResourceSample sample = host.getLatestSample();
 	  if(sample != null) {
-	    switch(pSortColumn) {
-	    case 3:
+	    switch(swtch) {
+	    case LOAD:
 	      value = new Float(sample.getLoad());
 	      break;
 
-	    case 4:
+	    case MEMORY:
 	      value = new Long(sample.getMemory());
 	      break;
 
-	    case 5:
+	    case DISK:
 	      value = new Long(sample.getDisk());
 	      break;
 	      
-	    case 6:
+	    case JOBS:
 	      value = new Integer(sample.getNumJobs());
 	    }
 	  }
 	}
 	break;
 
-      case 7:
+      case SLOTS:
 	value = new Integer(host.getJobSlots());
 	break;
 	
-      case 8:
+      case RESERVATION:
 	value = host.getReservation();
 	if((value != null) && pWorkGroups.contains(value)) 
 	  value = ("[" + value + "]");
 	break;
 	
-      case 9:
+      case ORDER:
 	value = new Integer(host.getOrder());
 	break;
 
-      case 10:
+      case SELECTION: 
 	value = host.getSelectionGroup();
 	break;
 	
-      case 11:
+      case DISPATCH:
+        value = host.getDispatchControl();
+        break;
+	
+      case SCHEDULE:
 	value = host.getSelectionSchedule();
 	break;
 	
-      case 12:
+      case HARDWARE:
 	value = host.getHardwareGroup();
 	break;
+	
+      case FAVORMETHOD:
+        value = host.getFavorMethod();
+        break;
+        
+      case USERBALANCE:
+        value = host.getUserBalanceGroup();
+        break;
 
       default:
 	assert(true) : ("Invalid column index (" + pSortColumn + ")!");
@@ -661,14 +642,16 @@ class QueueHostsTableModel
   /**
    * Get the editor for the given column. 
    */ 
+  @Override
   public TableCellEditor
   getEditor
   (
-   int col   
+    int col   
   )
   {
-    switch(col) {
-    case 8: /* Reservation */
+    TableDefs swtch = TableDefs.values()[col];
+    switch(swtch) {
+    case RESERVATION:
       {
 	ArrayList<String> choices = new ArrayList<String>();
 	choices.add("-");
@@ -682,7 +665,7 @@ class QueueHostsTableModel
 	return editor;
       }
 
-    case 10: /* Selection Group */
+    case SELECTION:
       {
 	ArrayList<String> choices = new ArrayList<String>();
 	choices.add("-");
@@ -693,8 +676,20 @@ class QueueHostsTableModel
 
 	return editor;
       }
+      
+    case DISPATCH:
+      {
+        ArrayList<String> choices = new ArrayList<String>();
+        choices.add("-");
+        choices.addAll(pDispatchControls);
+  
+        JCollectionTableCellEditor editor = new JCollectionTableCellEditor(choices, 120);
+        editor.setSynthPrefix("Purple");
+  
+        return editor;
+      }
 
-    case 11: /* Schedule */
+    case SCHEDULE:
       {
 	ArrayList<String> choices = new ArrayList<String>();
 	choices.add("-");
@@ -706,7 +701,7 @@ class QueueHostsTableModel
 	return editor;
       }
       
-    case 12: /* Hardware Group */ 
+    case HARDWARE: 
       {
 	ArrayList<String> choices = new ArrayList<String>();
 	choices.add("-");
@@ -717,7 +712,32 @@ class QueueHostsTableModel
 
 	return editor;
       }
+      
+    case FAVORMETHOD:
+      {
+        ArrayList<String> choices = new ArrayList<String>();
+        choices.add(JobGroupFavorMethod.None.toTitle());
+        choices.add(JobGroupFavorMethod.MostEngaged.toTitle());
+        choices.add(JobGroupFavorMethod.MostPending.toTitle());
+        
+        JCollectionTableCellEditor editor = new JCollectionTableCellEditor(choices, 120);
+        editor.setSynthPrefix("Purple");
 
+        return editor;
+      }
+      
+    case USERBALANCE:
+      {
+        ArrayList<String> choices = new ArrayList<String>();
+        choices.add("-");
+        choices.addAll(pUserBalanceGroups);
+  
+        JCollectionTableCellEditor editor = new JCollectionTableCellEditor(choices, 120);
+        editor.setSynthPrefix("Purple");
+  
+        return editor;
+      }
+      
     default:
       return pEditors[col];
     }
@@ -732,38 +752,54 @@ class QueueHostsTableModel
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
    */ 
+  @Override
   public boolean 	
   isCellEditable
   (
-   int row, 
-   int col
+    int row, 
+    int col
   ) 
   {
     QueueHostInfo host = pQueueHosts.get(pRowToIndex[row]);
+    if (host == null)
+      return false;
     boolean editable = isHostEditable(host.getName());
-      
-    switch(col) {
-    case 7: /* Slots */
-      return (editable && 
-	      ((host != null) && (host.getSlotsState() != EditableState.Automatic)));
-
-    case 9: /* Order */
-      return (editable && 
-	      ((host != null) && (host.getOrderState() != EditableState.Automatic)));
     
-    case 1:  /* Status */
-    case 11: /* Schedule */
-    case 12: /* Hardware Group */ 
+    TableDefs swtch = TableDefs.values()[col];
+    switch(swtch) {
+    case SLOTS:
+      return (editable && 
+	      (host.getSlotsState() != EditableState.Automatic));
+
+    case ORDER:
+      return (editable && 
+	      (host.getOrderState() != EditableState.Automatic));
+    
+    case STATUS:
+    case SCHEDULE:
+    case HARDWARE: 
       return editable;
     
-    case 8:  /* Reservation */
+    case RESERVATION:
       return (editable && 
-	      ((host != null) && (host.getReservationState() != EditableState.Automatic)));
+	      (host.getReservationState() != EditableState.Automatic));
       
-    case 10: /* Selection Group */
+    case SELECTION:
       return (editable && 
-	      ((host != null) && (host.getGroupState() != EditableState.Automatic)));
-
+	      (host.getGroupState() != EditableState.Automatic));
+      
+    case DISPATCH:
+      return (editable && 
+             (host.getDispatchState() != EditableState.Automatic));
+  
+    case FAVORMETHOD:
+      return (editable && 
+             (host.getFavorState() != EditableState.Automatic));
+      
+    case USERBALANCE:
+      return (editable && 
+             (host.getUserBalanceState() != EditableState.Automatic));
+      
     default:
       return false;
     }
@@ -775,17 +811,19 @@ class QueueHostsTableModel
   public Object 	
   getValueAt
   (
-   int row, 
-   int col
+    int row, 
+    int col
   )
   {
     int srow = pRowToIndex[row];
     QueueHostInfo host = pQueueHosts.get(srow);
-    switch(col) {
-    case 0:
+    
+    TableDefs swtch = TableDefs.values()[col];
+    switch(swtch) {
+    case HOSTNAME:
       return pQueueHostnames.get(srow);
 
-    case 1:
+    case STATUS:
       {
 	QueueHostStatusChange change = pQueueHostStatusChanges.get(srow);
 	if(change != null) 
@@ -794,19 +832,19 @@ class QueueHostsTableModel
 	  return host.getStatus().toString();
       }
 
-    case 2:
+    case OS:
       return host.getOsType();
 
-    case 3:
-    case 4:
-    case 5:
-    case 6:
+    case LOAD:
+    case MEMORY:
+    case DISK:
+    case JOBS:
       return pSamples.get(host.getName());
       
-    case 7:
+    case SLOTS:
       return host.getJobSlots();
 
-    case 8:
+    case RESERVATION:
       {
 	String res = host.getReservation();
 	if(res == null) 
@@ -816,10 +854,10 @@ class QueueHostsTableModel
 	return res;
       }
 
-    case 9:
+    case ORDER:
       return host.getOrder();
 
-    case 10:
+    case SELECTION:
       {
 	String group = host.getSelectionGroup();
 	if(group == null) 
@@ -827,7 +865,7 @@ class QueueHostsTableModel
 	return group;
       }
 
-    case 11:
+    case SCHEDULE:
       {
 	String sched = host.getSelectionSchedule();
 	if(sched == null) 
@@ -835,13 +873,32 @@ class QueueHostsTableModel
 	return sched;
       }
 
-    case 12:
+    case HARDWARE:
       {
 	String group = host.getHardwareGroup();
 	if(group == null) 
 	  group = "-";
 	return group;
       }
+      
+    case DISPATCH:
+      {
+        String control = host.getDispatchControl();
+        if (control == null)
+          control = "-";
+        return control;
+      }
+      
+    case USERBALANCE:
+      {
+        String group = host.getUserBalanceGroup();
+        if(group == null) 
+          group = "-";
+        return group;
+      }
+      
+    case FAVORMETHOD:
+      return host.getFavorMethod().toTitle();
 
     default:
       assert(true) : ("Invalid column index (" + col + ")!");
@@ -852,12 +909,13 @@ class QueueHostsTableModel
   /**
    * Sets the value in the cell at columnIndex and rowIndex to aValue.
    */ 
+  @Override
   public void 
   setValueAt
   (
-   Object value, 
-   int row, 
-   int col
+    Object value, 
+    int row, 
+    int col
   ) 
   {
     int vrow = pRowToIndex[row];
@@ -882,9 +940,9 @@ class QueueHostsTableModel
   public boolean 
   setValueAtHelper
   (
-   Object value, 
-   int srow, 
-   int col
+    Object value, 
+    int srow, 
+    int col
   ) 
   {
     QueueHostInfo host = pQueueHosts.get(srow);
@@ -892,23 +950,33 @@ class QueueHostsTableModel
     UserPrefs prefs = UserPrefs.getInstance();
     String hostname = prefs.getShowFullHostnames() ? host.getName() : host.getShortName(); 
 
-    switch(col) {
-    case 1:
+    TableDefs swtch = TableDefs.values()[col];
+    switch(swtch) {
+    case STATUS:
       return setStatus(host, srow, hostname, value, null, false);
 
-    case 7:
+    case SLOTS:
       return setSlots(host, srow, hostname, (Integer) value, null, false);
       
-    case 8:
+    case RESERVATION:
       return setReservation(host, srow, hostname, (String) value, null, false);
 
-    case 9:
+    case ORDER:
       return setOrder(host, srow, hostname, (Integer) value, null, false);
 
-    case 10:
-      return setGroup(host, srow, hostname, (String) value, null, false);
+    case SELECTION:
+      return setSelectionGroup(host, srow, hostname, (String) value, null, false);
 
-    case 11:
+    case DISPATCH:
+      return setDispatchControl(host, srow, hostname, (String) value, null, false);
+      
+    case USERBALANCE:
+      return setUserBalanceGroup(host, srow, hostname, (String) value , null, false);
+      
+    case FAVORMETHOD:
+      return setFavorMethod(host, srow, hostname, (String) value , null, false);
+    
+    case SCHEDULE:
       {
 	String sname = (String) value;
 	if(sname.equals("-")) 
@@ -923,7 +991,7 @@ class QueueHostsTableModel
 	  if(matrix != null) {
 	    Set<String> schedules = matrix.getScheduleNames();
 	    if(schedules.contains(sname)) {
-	      setGroup(host, srow, hostname, matrix.getScheduledGroup(sname), 
+	      setSelectionGroup(host, srow, hostname, matrix.getScheduledGroup(sname), 
 		matrix.getScheduledGroupState(sname), true);
 	      setSlots(host, srow, hostname, matrix.getScheduledSlots(sname), 
 		matrix.getScheduledSlotsState(sname), true);
@@ -949,7 +1017,7 @@ class QueueHostsTableModel
 	return true; 
       }
     
-    case 12:
+    case HARDWARE:
       return setHardwareGroup(host, srow, hostname, (String) value);
       
     default:
@@ -968,20 +1036,21 @@ class QueueHostsTableModel
     host.setStatusState(EditableState.Manual);
     host.setSlotsState(EditableState.Manual);
     host.setReservationState(EditableState.Manual);
+    host.setDispatchState(EditableState.Manual);
   }
   
   /**
    * Helper method to set the group of the current host.
    */
   private boolean
-  setGroup
+  setSelectionGroup
   (
-   QueueHostInfo host,
-   int srow,
-   String hostname,
-   String group,
-   EditableState state,
-   boolean sched
+    QueueHostInfo host,
+    int srow,
+    String hostname,
+    String group,
+    EditableState state,
+    boolean sched
   )
   {
     if((sched && ((state == null) || (state == EditableState.Automatic))) || !sched) {
@@ -998,16 +1067,77 @@ class QueueHostsTableModel
     return true; 
   }
   
+  
+  /**
+   * Helper method to set the uesr balance group of the current host.
+   */
+  private boolean
+  setUserBalanceGroup
+  (
+    QueueHostInfo host,
+    int srow,
+    String hostname,
+    String group,
+    EditableState state,
+    boolean sched
+  )
+  {
+    if((sched && ((state == null) || (state == EditableState.Automatic))) || !sched) {
+      if(group.equals("-")) 
+        group = null;
+      host.setUserBalanceGroup(group);
+      pEditedUserBalanceIndices.add(srow);
+      pParent.unsavedChange("User Balance Group: " + hostname);
+    }
+
+    if(state != null)
+      host.setUserBalanceState(state);
+
+    return true; 
+  }
+  
+  /**
+   * Helper method to set the uesr balance group of the current host.
+   */
+  private boolean
+  setFavorMethod
+  (
+    QueueHostInfo host,
+    int srow,
+    String hostname,
+    String method,
+    EditableState state,
+    boolean sched
+  )
+  {
+    if((sched && ((state == null) || (state == EditableState.Automatic))) || !sched) {
+      int i = 0;
+      for (String title : JobGroupFavorMethod.titles()) {
+        if (title.equals(method))
+          break;
+        i++;
+      }
+      host.setFavorMethod(JobGroupFavorMethod.values()[i]);
+      pEditedFavorGroupIndices.add(srow);
+      pParent.unsavedChange("Favor Method: " + hostname);
+    }
+
+    if(state != null)
+      host.setFavorState(state);
+
+    return true; 
+  }
+  
   /**
    * Helper method to set the hardware group of the current host.
    */
   private boolean
   setHardwareGroup
   (
-   QueueHostInfo host,
-   int srow,
-   String hostname,
-   String group
+    QueueHostInfo host,
+    int srow,
+    String hostname,
+    String group
   )
   {
     if(group.equals("-")) 
@@ -1020,17 +1150,45 @@ class QueueHostsTableModel
   }
   
   /**
+   * Helper method to set the dispatch control of the current host.
+   */
+  private boolean
+  setDispatchControl
+  (
+    QueueHostInfo host,
+    int srow,
+    String hostname,
+    String control,
+    EditableState state,
+    boolean sched
+  )
+  {
+    if((sched && ((state == null) || (state == EditableState.Automatic))) || !sched) {
+      if(control.equals("-")) 
+        control = null;
+      host.setDispatchControl(control);
+      pEditedDispatchIndices.add(srow);
+      pParent.unsavedChange("Dispatch Control: " + hostname);
+    }
+
+    if(state != null)
+      host.setDispatchState(state);
+
+    return true; 
+  }
+  
+  /**
    * Helper method to set the order of the current host.
    */
   private boolean
   setOrder
   (
-   QueueHostInfo host,
-   int srow,
-   String hostname,
-   Integer order,
-   EditableState state,
-   boolean sched
+    QueueHostInfo host,
+    int srow,
+    String hostname,
+    Integer order,
+    EditableState state,
+    boolean sched
   )
   {
     if((sched && ((state == null) || (state == EditableState.Automatic))) || !sched) {
@@ -1081,12 +1239,12 @@ class QueueHostsTableModel
   private boolean
   setStatus
   (
-   QueueHostInfo host,
-   int srow,
-   String hostname,
-   Object value,
-   EditableState state,
-   boolean sched
+    QueueHostInfo host,
+    int srow,
+    String hostname,
+    Object value,
+    EditableState state,
+    boolean sched
   )
   {
     boolean toReturn = false;
@@ -1112,12 +1270,12 @@ class QueueHostsTableModel
   private boolean
   setReservation
   (
-   QueueHostInfo host,
-   int srow,
-   String hostname,
-   String res,
-   EditableState state,
-   boolean sched
+    QueueHostInfo host,
+    int srow,
+    String hostname,
+    String res,
+    EditableState state,
+    boolean sched
   )
   {
     if(res != null) {
@@ -1139,6 +1297,257 @@ class QueueHostsTableModel
     return true;
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   D E F I N I T I O N S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  private
+  enum TableDefs
+  {
+    HOSTNAME,
+    STATUS,
+    OS,
+    LOAD,
+    MEMORY,
+    DISK,
+    JOBS,
+    SLOTS,
+    ORDER,
+    RESERVATION,
+    USERBALANCE,
+    FAVORMETHOD,
+    SELECTION,
+    DISPATCH,
+    SCHEDULE,
+    HARDWARE;
+    
+    @SuppressWarnings("unchecked")
+    public Class
+    getColumnClass()
+    {
+      switch (this) {
+      case HOSTNAME:
+      case STATUS:
+      case OS:
+      case SELECTION:
+      case DISPATCH:
+      case USERBALANCE:
+      case SCHEDULE:
+      case RESERVATION:
+      case HARDWARE:
+      case FAVORMETHOD:
+        return String.class;
+      case LOAD:
+      case MEMORY:
+      case DISK:
+      case JOBS:
+        return ResourceSampleCache.class;
+      case SLOTS:
+      case ORDER:
+        return Integer.class;
+      default:
+        throw new IllegalStateException("Invalid enum!");
+      }
+    }
+    
+    public String
+    getColumnName()
+    {
+      switch(this) {
+      case HOSTNAME:
+        return "Hostname";
+      case STATUS:
+        return "Status";
+      case OS:
+        return "OS";
+      case LOAD:
+        return "System Load";
+      case MEMORY:
+        return "Free Memory";
+      case DISK:
+        return "Free Disk Space";
+      case JOBS:
+        return "Jobs";
+      case SLOTS:
+        return "Slots";
+      case RESERVATION:
+        return "Reservation";
+      case ORDER:
+        return "Order";
+      case SELECTION:
+        return "Selection";
+      case DISPATCH:
+        return "Dispatch";
+      case SCHEDULE:
+        return "Schedule";
+      case HARDWARE:
+        return "Hardware";
+      case FAVORMETHOD:
+        return "FavorMethod";
+      case USERBALANCE:
+        return "UserBalance";
+      default:
+        throw new IllegalStateException("Invalid enum!");
+      }
+    }
+    
+    public String
+    getColumnColorPrefix()
+    {
+      switch(this) {
+      case HOSTNAME:
+      case STATUS:
+      case OS:
+        return "";
+      case LOAD:
+      case MEMORY:
+      case DISK:
+        return "Blue";
+      case JOBS:
+      case SLOTS:
+        return "Green";
+      default:
+        return "Purple";
+      }
+    }
+    
+    public String
+    getColumnDescription()
+    {
+      switch(this) {
+      case HOSTNAME:
+        return "The fully resolved host name.";
+      case STATUS:
+        return "The current status of the job server.";
+      case OS:
+        return "The operating system type of the job server.";
+      case LOAD:
+        return "The system load of the server.";
+      case MEMORY:
+        return "The amount of unused system memory (in GB).";
+      case DISK:
+        return "The amount of available temporary disk space (in GB).";
+      case JOBS:
+        return "The number of job running on the server.";
+      case SLOTS:
+        return "The maximum number of simultaneous jobs allowed to on the server.";
+      case RESERVATION:
+        return "The name of the user or group holding the server reservation.";
+      case ORDER:
+        return "The order in which servers are considered for job dispatch.";
+      case SELECTION:
+        return "The name of the selection group.";
+      case DISPATCH:
+        return "The name of the dispatch control.";
+      case SCHEDULE:
+        return "The name of the queue schedule.";
+      case HARDWARE:
+        return "The name of the hardware group.";
+      case FAVORMETHOD:
+        return "The job group favor method.";
+      case USERBALANCE:
+        return "The name of the user balance group.";
+      default:
+        throw new IllegalStateException("Invalid enum!");
+      }
+    }
+    
+    public Vector3i
+    getColumnWidthRange()
+    {
+      switch(this) {
+      case HOSTNAME:
+        return new Vector3i(120, 200, Integer.MAX_VALUE);
+      case STATUS:
+        return new Vector3i(120);
+      case OS:
+      case ORDER:
+        return new Vector3i(90);
+      case LOAD:
+      case MEMORY:
+      case DISK:
+      case JOBS:
+        return new Vector3i(135);
+      case SLOTS:
+        return new Vector3i(70);
+      default:
+        return new Vector3i(120, 120, Integer.MAX_VALUE);
+      }
+    }
+    
+    public TableCellRenderer
+    getRenderer
+    (
+      QueueHostsTableModel model  
+    )
+    {
+      switch (this) {
+      case HOSTNAME:
+      case OS:
+        return new JSimpleTableCellRenderer(JLabel.CENTER);
+      case STATUS:
+        return new JQHostStatusTableCellRenderer(model);
+      case LOAD:
+        return new JResourceSamplesTableCellRenderer
+          (model, JResourceSamplesTableCellRenderer.SampleType.Load);
+      case MEMORY:
+        return new JResourceSamplesTableCellRenderer
+          (model, JResourceSamplesTableCellRenderer.SampleType.Memory);
+      case DISK:
+        return new JResourceSamplesTableCellRenderer
+          (model, JResourceSamplesTableCellRenderer.SampleType.Disk);
+      case JOBS:
+        return new JResourceSamplesTableCellRenderer
+          (model, JResourceSamplesTableCellRenderer.SampleType.Jobs); 
+      case SLOTS:
+        return new JQHostSlotsTableCellRenderer(model);
+      case RESERVATION:
+        return new JQHostReservationTableCellRenderer(model);
+      case ORDER:
+        return new JQHostOrderTableCellRenderer(model);
+      case SELECTION:
+        return new JQHostSGroupTableCellRenderer(model);
+      case DISPATCH:
+        return new JQHostDispatchTableCellRenderer(model);
+      case SCHEDULE:
+        return new JQHostSSchedTableCellRenderer(model);
+      case HARDWARE:
+        return new JQHostHGroupTableCellRenderer(model);
+      case FAVORMETHOD:
+        return new JQHostFavorTableCellRenderer(model);
+      case USERBALANCE:
+        return new JQHostUserTableCellRenderer(model);
+      default:
+        throw new IllegalStateException("Invalid enum!");
+      }
+    }
+    
+    public TableCellEditor
+    getEditor
+    (
+      QueueHostsTableModel model  
+    )
+    {
+      switch(this) {
+      case STATUS:
+       return new JStatusTableCellEditor(model, 120);
+      case SLOTS:
+        JIntegerTableCellEditor slots = 
+          new JIntegerTableCellEditor(70, JLabel.CENTER);
+        slots.setName("GreenEditableTextField");
+        return slots;
+      case ORDER:
+        JIntegerTableCellEditor order = 
+          new JIntegerTableCellEditor(90, JLabel.CENTER);
+        order.setName("PurpleEditableTextField");
+        return order;
+      default:
+        return null;
+      }
+    }
+  }
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -1167,7 +1576,6 @@ class QueueHostsTableModel
    * The parent panel.
    */ 
   private JQueueJobServersPanel pParent;
-  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1196,7 +1604,6 @@ class QueueHostsTableModel
    * The cached resource samples for each host.
    */ 
   private TreeMap<String,ResourceSampleCache> pSamples;
-  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1224,7 +1631,16 @@ class QueueHostsTableModel
    * The valid selection schedule names. 
    */ 
   private TreeSet<String>  pSelectionSchedules; 
-
+  
+  /**
+   * The valid dispatch control names.
+   */
+  private TreeSet<String> pDispatchControls;
+  
+  /**
+   * The valid user balance group names.
+   */
+ private TreeSet<String> pUserBalanceGroups;
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1263,6 +1679,20 @@ class QueueHostsTableModel
    */ 
   private TreeSet<Integer>  pEditedHardwareIndices; 
 
+  /**
+   * The indices of hosts which have had their dispatch control edited.
+   */ 
+  private TreeSet<Integer>  pEditedDispatchIndices;
+  
+  /**
+   * The indices of hosts which have had their user balance group edited.
+   */ 
+  private TreeSet<Integer>  pEditedUserBalanceIndices;
+  
+  /**
+   * The indices of hosts which have had their favor group edited.
+   */ 
+  private TreeSet<Integer>  pEditedFavorGroupIndices;
 
   /*----------------------------------------------------------------------------------------*/
 

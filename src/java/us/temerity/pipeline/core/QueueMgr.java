@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.122 2009/08/28 02:10:46 jim Exp $
+// $Id: QueueMgr.java,v 1.123 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -114,6 +114,13 @@ class QueueMgr
       pDispSelectionKeyNames = new TreeSet<String>(); 
       pDispSelectionGroups   = new TreeMap<String,SelectionGroup>();
       pSelectionProfiles     = new TreeMap<Flags,SelectionProfile>();
+      
+      pDispatchControls      = new TreeMap<String, DispatchControl>();
+      pDispatchChanged       = new AtomicBoolean(true);
+      pDispDispatchControls  = new TreeMap<String, JobRankSorter>();
+      
+      pUserBalanceGroups      = new TreeMap<String, UserBalanceGroup>();
+      pUserBalanceChanged     = new AtomicBoolean(true);
 
       pQueueExtensions = new TreeMap<String,QueueExtensionConfig>();
 
@@ -320,6 +327,10 @@ class QueueMgr
     readSelectionKeys();
     readSelectionGroups();
     readSelectionSchedules();
+    
+    readUserBalanceGroups();
+    
+    readDispatchControls();
 
     timer.suspend();
     LogMgr.getInstance().log
@@ -359,6 +370,7 @@ class QueueMgr
   {
     /* read the existing queue jobs files (in oldest to newest order) */ 
     TreeMap<Long,String> running = new TreeMap<Long,String>();
+    boolean missingGroup = false;
     {
       TaskTimer timer = new TaskTimer();
       LogMgr.getInstance().log
@@ -375,6 +387,8 @@ class QueueMgr
 	    Long jobID = new Long(files[wk].getName());
 	    QueueJob job = readJob(jobID);
 	    QueueJobInfo info = readJobInfo(jobID);
+	    if (job.getJobGroupID() == -1)
+	      missingGroup = true;
 
 	    /* initialize the table of working area files to the jobs which create them */ 
 	    {
@@ -471,6 +485,33 @@ class QueueMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();    
+    }
+    
+    /* fix the job group id in all the jobs that are missing the id */
+    if (missingGroup) {
+      TaskTimer timer = new TaskTimer();
+      LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Updating the JobGroupIDs in Jobs...");
+      LogMgr.getInstance().flush();
+      
+      for (Entry<Long, QueueJobGroup> entry: pJobGroups.entrySet()) {
+        Long id = entry.getKey();
+        for (Long jobID : entry.getValue().getJobIDs()) {
+          QueueJob job = pJobs.get(jobID);
+          if (job.getJobGroupID() == -1) {
+            job.setJobGroupID(id);
+            deleteJobFile(jobID);
+            writeJob(job);
+          }
+        }
+      }
+      
+      timer.suspend();
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Info,
+         "  Updated in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
 
@@ -979,7 +1020,7 @@ class QueueMgr
             names.add(name);
       }
       
-      return new QueueGetKeyNamesRsp(timer, names);
+      return new QueueGetNamesRsp(timer, names, "LicenseKey");
     }
   }
 
@@ -1228,7 +1269,7 @@ class QueueMgr
             names.add(name);
       }
       
-      return new QueueGetKeyNamesRsp(timer, names);
+      return new QueueGetNamesRsp(timer, names, "SelectionKey");
     }
   }
 
@@ -1402,7 +1443,7 @@ class QueueMgr
       timer.resume();
 
       TreeSet<String> names = new TreeSet<String>(pSelectionGroups.keySet());
-      return new QueueGetSelectionGroupNamesRsp(timer, names);
+      return new QueueGetNamesRsp(timer, names, "SelectionGroup");
     }
   }
   
@@ -1437,7 +1478,7 @@ class QueueMgr
   public Object
   addSelectionGroup
   (
-   QueueAddSelectionGroupReq req
+    QueueAddByNameReq req
   ) 
   {
     String name = req.getName();
@@ -1486,7 +1527,7 @@ class QueueMgr
   public Object
   removeSelectionGroups
   (
-   QueueRemoveSelectionGroupsReq req
+    QueueRemoveByNameReq req
   ) 
   {
     TreeSet<String> names = req.getNames();
@@ -1621,7 +1662,7 @@ class QueueMgr
       timer.resume();
 
       TreeSet<String> names = new TreeSet<String>(pSelectionSchedules.keySet());
-      return new QueueGetSelectionScheduleNamesRsp(timer, names);
+      return new QueueGetNamesRsp(timer, names, "SelectionSchedule");
     }
   }
   
@@ -1656,7 +1697,7 @@ class QueueMgr
   public Object
   addSelectionSchedule
   (
-   QueueAddSelectionScheduleReq req
+    QueueAddByNameReq req
   ) 
   {
     String name = req.getName();
@@ -1698,7 +1739,7 @@ class QueueMgr
   public Object
   removeSelectionSchedules
   (
-   QueueRemoveSelectionSchedulesReq req
+    QueueRemoveByNameReq req
   ) 
   {
     TreeSet<String> names = req.getNames();
@@ -1825,7 +1866,7 @@ class QueueMgr
             names.add(name);
       }
       
-      return new QueueGetKeyNamesRsp(timer, names);
+      return new QueueGetNamesRsp(timer, names, "HardwareKey");
     }
   }
 
@@ -1998,7 +2039,7 @@ class QueueMgr
       timer.resume();
 
       TreeSet<String> names = new TreeSet<String>(pHardwareGroups.keySet());
-      return new QueueGetHardwareGroupNamesRsp(timer, names);
+      return new QueueGetNamesRsp(timer, names, "HardwareGroup");
     }
   }
   
@@ -2033,7 +2074,7 @@ class QueueMgr
   public Object
   addHardwareGroup
   (
-   QueueAddHardwareGroupReq req
+    QueueAddByNameReq req
   ) 
   {
     String name = req.getName();
@@ -2077,7 +2118,7 @@ class QueueMgr
   public Object
   removeHardwareGroups
   (
-   QueueRemoveHardwareGroupsReq req
+    QueueRemoveByNameReq req
   ) 
   {
     TreeSet<String> names = req.getNames();
@@ -2182,8 +2223,389 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }    
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing dispatch controls. 
+   * 
+   * @return
+   *   <CODE>QueueGetNamesRsp</CODE> if successful.
+   */ 
+  public Object
+  getDispatchControlNames() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pDispatchControls) {
+      timer.resume();
+
+      TreeSet<String> names = new TreeSet<String>(pDispatchControls.keySet());
+      return new QueueGetNamesRsp(timer, names, "DispatchControl");
+    }
+  }
+  
+  /**
+   * Get the current criteria lists for all existing dispatch controls. 
+   * 
+   * @return
+   *   <CODE>QueueGetDispatchControlsRsp</CODE> if successful.
+   */ 
+  public Object
+  getDispatchControls() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pDispatchControls) {
+      timer.resume();
+      
+      return new QueueGetDispatchControlsRsp(timer, pDispatchControls);
+    }
+  }
+  
+  /**
+   * Add a new dispatch control. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the control.
+   */ 
+  public Object
+  addDispatchControl
+  (
+    QueueAddByNameReq req
+  ) 
+  {
+    String name = req.getName();
+    TaskTimer timer = new TaskTimer("QueueMgr.addDispatchControl(): " + name);
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may add dispatch controls!"); 
+
+      synchronized(pDispatchControls) {
+        timer.resume();
+        
+        if(pDispatchControls.containsKey(name)) 
+          throw new PipelineException
+            ("A dispatch control named (" + name + ") already exists!");
+
+        pDispatchChanged.set(true);
+        pDispatchControls.put(name, new DispatchControl(name));
+
+        writeDispatchControls();
+
+        return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }    
+  }
+
+  /**
+   * Remove the given existing dispatch controls. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the dispatch controls.
+   */ 
+  public Object
+  removeDispatchControls
+  (
+    QueueRemoveByNameReq req
+  ) 
+  {
+    TreeSet<String> names = req.getNames();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.removeDispatchControls():");
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may remove dispatch controls!"); 
+
+      synchronized(pHosts) {
+        synchronized(pDispatchControls) {
+          timer.resume();
+          
+          pDispatchChanged.set(true);
+          
+          {
+            for(String name : names)
+              pDispatchControls.remove(name);
+            
+            writeDispatchControls();
+          }
+          
+          {
+            boolean modified = false;
+            for(QueueHost host : pHosts.values()) {
+              String gname = host.getDispatchControl();
+              if((gname != null) && names.contains(gname)) {
+                host.setDispatchControl(null);
+                modified = true;
+              }
+            }
+            
+            if(modified) 
+              writeHosts();
+          }
+        }
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }    
+  }
+
+  /**
+   * Change the criteria list for the given dispatch control. <P> 
+   * 
+   * For an detailed explanation of how dispatch controls are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the dispatch controls.
+   */ 
+  public Object
+  editDispatchControls
+  (
+    QueueEditDispatchControlsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.editDispatchControls()");
+
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may edit Dispatch Controls!");
+
+      synchronized(pDispatchControls) {
+        timer.resume();
+
+        pDispatchChanged.set(true);
+
+        for(DispatchControl control : req.getDispatchControls()) {
+
+          /* update the control*/ 
+          pDispatchControls.put(control.getName(), control);
+        }
+
+        writeDispatchControls();
+      }
+    
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }    
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing user balance groups. 
+   * 
+   * @return
+   *   <CODE>QueueGetNamesRsp</CODE> if successful.
+   */ 
+  public Object
+  getUserBalanceGroupNames() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pUserBalanceGroups) {
+      timer.resume();
+
+      TreeSet<String> names = new TreeSet<String>(pUserBalanceGroups.keySet());
+      return new QueueGetNamesRsp(timer, names, "UserBalanceGroup");
+    }
+  }
+  
+  /**
+   * Get the current user weightings for all existing user balance groups. 
+   * 
+   * @return
+   *   <CODE>QueueGetUserBalanceGroupsRsp</CODE> if successful.
+   */ 
+  public Object
+  getUserBalanceGroups() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pUserBalanceGroups) {
+      timer.resume();
+      
+      return new QueueGetUserBalanceGroupsRsp(timer, pUserBalanceGroups);
+    }
+  }
+  
+  /**
+   * Add a new user balance group. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the group.
+   */ 
+  public Object
+  addUserBalanceGroup
+  (
+    QueueAddByNameReq req
+  ) 
+  {
+    String name = req.getName();
+    TaskTimer timer = new TaskTimer("QueueMgr.addUserBalanceGroup(): " + name);
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may add user balance groups!"); 
+
+      synchronized(pUserBalanceGroups) {
+        timer.resume();
+        
+        if(pUserBalanceGroups.containsKey(name)) 
+          throw new PipelineException
+            ("A user balance group named (" + name + ") already exists!");
+
+        pUserBalanceChanged.set(true);
+        pUserBalanceGroups.put(name, new UserBalanceGroup(name));
+
+        writeUserBalanceGroups();
+        
+        return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }    
+  }
+
+  /**
+   * Remove the given existing user balance groups. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the user balance group.
+   */ 
+  public Object
+  removeUserBalanceGroups
+  (
+    QueueRemoveByNameReq req
+  ) 
+  {
+    TreeSet<String> names = req.getNames();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.removeUserBalanceGroups():");
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may remove user balance groups!"); 
+
+      synchronized(pHosts) {
+        synchronized(pUserBalanceGroups) {
+          timer.resume();
+          
+          pUserBalanceChanged.set(true);
+          
+          {
+            for(String name : names)
+              pUserBalanceGroups.remove(name);
+            
+            writeUserBalanceGroups();
+          }
+          
+          {
+            boolean modified = false;
+            for(QueueHost host : pHosts.values()) {
+              String gname = host.getUserBalanceGroup();
+              if((gname != null) && names.contains(gname)) {
+                host.setUserBalanceGroup(gname);
+                modified = true;
+              }
+            }
+            
+            if(modified) 
+              writeHosts();
+          }
+        }
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }    
+  }
+
+  /**
+   * Change the user weightings for the given user balance groups. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the user balance groups.
+   */ 
+  public Object
+  editUserBalanceGroups
+  (
+    QueueEditUserBalanceGroupsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.editUserBalanceGroups()");
+
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may edit User Balance Groups!");
+
+      synchronized(pUserBalanceGroups) {
+        timer.resume();
+
+        pUserBalanceChanged.set(true);
+
+        for(UserBalanceGroup group: req.getUserBalanceGroups()) {
+          /* update the group*/ 
+          pUserBalanceGroups.put(group.getName(), group);
+        }
+
+        writeUserBalanceGroups();
+      }
+    
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }    
+  }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S E R V E R   E X T E N S I O N S                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -2741,10 +3163,10 @@ class QueueMgr
   public Object
   addHost
   (
-   QueueAddHostReq req
+    QueueAddByNameReq req
   ) 
   {
-    String hname = req.getHostname();
+    String hname = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addHost(): " + hname);
 
     AddHostExtFactory factory = new AddHostExtFactory(hname); 
@@ -2808,7 +3230,7 @@ class QueueMgr
   public Object
   removeHosts
   (
-   QueueRemoveHostsReq req
+    QueueRemoveByNameReq req
   ) 
   {
     TaskTimer timer = new TaskTimer("QueueMgr.removeHosts():");
@@ -2821,7 +3243,7 @@ class QueueMgr
 	timer.aquire();
 	synchronized(pHosts) {
 	  timer.resume();
-	  for(String hname : req.getHostnames()) {
+	  for(String hname : req.getNames()) {
 	    if(pHosts.containsKey(hname)) 
 	      hostnames.add(hname);
 	  }
@@ -3082,12 +3504,24 @@ class QueueMgr
 	    if(qmod.isSelectionScheduleModified()) 
 	      qinfo.setSelectionSchedule(qmod.getSelectionSchedule());
 	    
+	    if(qmod.isFavorMethodModified())
+	      qinfo.setFavorMethod(qmod.getFavorMethod());
+	    
+	    if(qmod.isDispatchControlModified())
+	      qinfo.setDispatchControl(qmod.getDispatchControl());
+	    
+	    if(qmod.isUserBalanceGroupModified())
+	      qinfo.setUserBalanceGroup(qmod.getUserBalanceGroup());
+	    
 	    if (qinfo.getSelectionSchedule() != null) {
 	      qinfo.setGroupState(qmod.getGroupState());
 	      qinfo.setOrderState(qmod.getOrderState());
 	      qinfo.setSlotsState(qmod.getSlotsState());
 	      qinfo.setStatusState(qmod.getStatusState());
 	      qinfo.setReservationState(qmod.getReservationState());
+	      qinfo.setFavorState(qmod.getFavorState());
+	      qinfo.setUserBalanceState(qmod.getUserBalanceState());
+	      qinfo.setDispatchState(qinfo.getDispatchState());
 	    }
 	    else {
 	      qinfo.setGroupState(EditableState.Manual);
@@ -3095,6 +3529,9 @@ class QueueMgr
 	      qinfo.setSlotsState(EditableState.Manual);
 	      qinfo.setStatusState(EditableState.Manual);
 	      qinfo.setReservationState(EditableState.Manual);
+	      qinfo.setFavorState(EditableState.Manual);
+	      qinfo.setUserBalanceState(EditableState.Manual);
+	      qinfo.setDispatchState(EditableState.Manual);
 	    }
 	  }
 	}
@@ -3108,7 +3545,7 @@ class QueueMgr
   private void 
   applyHostEdits  
   (
-   TaskTimer timer
+    TaskTimer timer
   ) 
     throws PipelineException
   {
@@ -3258,7 +3695,41 @@ class QueueMgr
 	          diskModified = true;
 	        }
 	      }
-	    }	      
+	    }
+	    
+	    /* dispatch controls */ 
+            if(qmod.isDispatchControlModified()) {
+              tm.aquire();
+              synchronized(pDispatchControls) {
+                tm.resume();
+
+                String name = qmod.getDispatchControl(); 
+                if((name == null) || pDispatchControls.containsKey(name)) {
+                  host.setDispatchControl(name);
+                  if(modifiedHosts != null) 
+                    modifiedHosts.add(hname);
+                  diskModified = true;
+                }
+              }
+            }
+            
+            /* user balance groups */ 
+            if(qmod.isUserBalanceGroupModified()) {
+              String name = qmod.getUserBalanceGroup(); 
+              host.setUserBalanceGroup(name);
+              if(modifiedHosts != null) 
+                modifiedHosts.add(hname);
+              diskModified = true;
+            }
+            
+            /* favor method */ 
+            if(qmod.isFavorMethodModified()) {
+              JobGroupFavorMethod method = qmod.getFavorMethod(); 
+              host.setFavorMethod(method);
+              if(modifiedHosts != null) 
+                modifiedHosts.add(hname);
+              diskModified = true;
+            }
 
 	    /* selection schedules */ 
 	    if(qmod.isSelectionScheduleModified()) {
@@ -3283,6 +3754,7 @@ class QueueMgr
 	      host.setReservationState(qmod.getReservationState());
 	      host.setSlotsState(qmod.getSlotsState());
 	      host.setStatusState(qmod.getStatusState());
+	      host.setDispatchState(qmod.getDispatchControlState());
 	    }
 	  }
 	}
@@ -5840,7 +6312,7 @@ class QueueMgr
     /* apply the pending changes to the job requirements for jobs */
     dspChangeJobReqs(timer, changedIDs); 
 
-    /* he names of the toolsets used by jobs which are ready to run */ 
+    /* the names of the toolsets used by jobs which are ready to run */ 
     TreeSet<String> readyToolsets = new TreeSet<String>();
 
     /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
@@ -6373,7 +6845,10 @@ class QueueMgr
     timer.suspend();
     TaskTimer dtm = new TaskTimer("Dispatcher [Dispatch Total]");
       
-    /* if there are changes to the seletion/hardware keys, we need to make new profiles */
+    
+    dsptUpdateDispatchCriteria(dtm);
+    
+    /* if there are changes to the selection/hardware keys, we need to make new profiles */
     boolean reprofileAllJobs = dsptValidateProfiles(dtm);
 
     /* create any selection, hardware or job profiles needed before ranking jobs */ 
@@ -6431,12 +6906,20 @@ class QueueMgr
         
         /* dispatch one slot per-host each dispatcher cycle, if available... */ 
         if(slots > 0) {
-
+          
           /* fill the pJobRanks array with entries for all jobs which qualify */
-          int jobCnt = dsptQualifyJobs(stm, host); 
+          int jobCnt = dsptQualifyJobs(stm, host);
+          
+          /* Figure out the dispatch control to be used for the job. */
+          String dcName = host.getDispatchControl();
+          JobRankSorter control = null;
+          if (dcName != null) 
+            pDispDispatchControls.get(dcName);
+          if (control == null)
+            control = sDefaultDispatchControl;
 
           /* rank the jobs by sorting the portion of the rank array just populated */ 
-          dsptRankJobs(stm, hostname, jobCnt); 
+          dsptRankJobs(stm, hostname, jobCnt, control); 
           
           /* attempt to dispatch a job to the slot:
              in order of selection score, favor pending/engaged, job priority and age */ 
@@ -6462,9 +6945,40 @@ class QueueMgr
        "Processed (" + readyCnt + ") jobs while dispatching (" + slotCnt + ") slots in " +
        "(" + dtm.getTotalDuration() + ") msec.");
   }
+  
+  /**
+   * Determine is there are changes to dispatch criteria and recache them if there have been
+   * changes.
+   * <p>
+   * This should only be called from the dspDispatchTotal() method!
+   * 
+   * @param dtm
+   *   The core dispatcher timer.
+   */
+  private void
+  dsptUpdateDispatchCriteria
+  (
+    TaskTimer dtm  
+  )
+  {
+    if (pDispatchChanged.get()) {
+      pDispDispatchControls.clear();
+      dtm.aquire();
+      synchronized(pDispatchControls) {
+        dtm.resume();
+        for (Entry<String, DispatchControl> entry : pDispatchControls.entrySet()) {
+          pDispDispatchControls.put(entry.getKey(), new JobRankSorter(entry.getValue())); 
+        }
+        pDispatchChanged.set(false);
+      }
+      LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+       "Re-cached all Dispatch Criteria.");
+    }
+  }
 
   /**
-   * Determine if there are changes to the seletion/hardware keys which will require 
+   * Determine if there are changes to the selection/hardware keys which will require 
    * new profiles.<P> 
    * 
    * This should only be called from the dspDispatchTotal() method!
@@ -6826,14 +7340,11 @@ class QueueMgr
     /* the number of jobs that qualify */ 
     int jobCnt = 0; 
 
-    /* cache of favor method per selection group */ 
-    TreeMap<String,JobGroupFavorMethod> favors = new TreeMap<String,JobGroupFavorMethod>();
-    tm.aquire();
-    synchronized(pSelectionGroups) {
-      tm.resume();
-      for(String gname : pSelectionGroups.keySet()) 
-        favors.put(gname, pSelectionGroups.get(gname).getFavorMethod());
-    }
+    /* get the favor method for the host */ 
+    JobGroupFavorMethod favorMethod = host.getFavorMethod();
+    
+    /* a cache of the percent pending/engaged per job-group*/
+    TreeMap<Long, Double> percentCache = new TreeMap<Long, Double>();
 
     /* cache latest resource samples */ 
     ResourceSample sample = host.getLatestSample();
@@ -6880,22 +7391,25 @@ class QueueMgr
                     /* compute the percentage of jobs within the job group
                        which are engaged/pending according to the policy of 
                        the slots selection group (if any) */ 
-                    double percent = 0.0;
-                    {
-                      String gname = host.getSelectionGroup();
-                      if(gname != null) {
-                        JobGroupFavorMethod favor = favors.get(gname); 
-                        if(favor != null) {
-                          switch(favor) {
-                          case MostEngaged:
-                            percent = pJobCounters.percentEngaged(tm, jobID);
-                            break;
-                            
-                          case MostPending:
-                            percent = pJobCounters.percentPending(tm, jobID);
-                          }
-                        }
+                    Double percent = 0.0;
+                    long jobGroupID = profile.getJobGroupID();
+                    
+                    switch(favorMethod) {
+                    case MostEngaged:
+                      percent = percentCache.get(jobGroupID);
+                      if (percent == null) {
+                        percent = pJobCounters.percentEngaged(tm, jobID);
+                        percentCache.put(jobGroupID, percent);
                       }
+                      break;
+
+                    case MostPending:
+                      percent = percentCache.get(jobGroupID);
+                      if (percent == null) {
+                        percent = pJobCounters.percentPending(tm, jobID);
+                        percentCache.put(jobGroupID, percent);
+                      }
+                      break;
                     }
                     
                     /* create a new rank entry for the job */ 
@@ -6978,20 +7492,24 @@ class QueueMgr
    * 
    * @param jobCnt
    *   The number of jobs which qualify for the slot.
+   *   
+   * @param dispControl
+   *   The Dispatch Control which will be used to order the jobs.
    */ 
   private void 
   dsptRankJobs
   (
-   TaskTimer stm, 
-   String hostname, 
-   int jobCnt
+    TaskTimer stm, 
+    String hostname, 
+    int jobCnt,
+    JobRankSorter dispControl
   ) 
   {
     stm.suspend();
     TaskTimer tm = new TaskTimer
       ("Dispatcher [Rank Jobs - " + hostname + "]");
     
-    Arrays.sort(pJobRanks, 0, jobCnt);
+    Arrays.sort(pJobRanks, 0, jobCnt, dispControl);
 
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
@@ -8405,7 +8923,155 @@ class QueueMgr
     }
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Write the dispatch control to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the selection groups file.
+   */ 
+  private void 
+  writeDispatchControls() 
+    throws PipelineException
+  {
+    synchronized(pDispatchControls) {
+      File file = new File(pQueueDir, "queue/etc/dispatch-controls");
+      if(file.exists()) {
+        if(!file.delete())
+          throw new PipelineException
+            ("Unable to remove the old dispatch control file (" + file + ")!");
+      }
+      
+      if(!pDispatchControls.isEmpty()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+           "Writing Dispatch Controls.");
 
+        try {
+          ArrayList<DispatchControl> groups = 
+            new ArrayList<DispatchControl>(pDispatchControls.values());
+          GlueEncoderImpl.encodeFile("DispatchControls", groups, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+      }
+    }
+  }
+  
+  /**
+   * Read the dispatch controls from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the dispatch controls file.
+   */ 
+  private void 
+  readDispatchControls() 
+    throws PipelineException
+  {
+    synchronized(pDispatchControls) {
+      pDispatchChanged.set(true);
+      pDispatchControls.clear();
+
+      File file = new File(pQueueDir, "queue/etc/dispatch-controls");
+      if(file.isFile()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+           "Reading Dispatch Controls.");
+
+        ArrayList<DispatchControl> controls = null;
+        try {
+          controls = 
+            (ArrayList<DispatchControl>) GlueDecoderImpl.decodeFile("DispatchControls", file);
+        }       
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+
+        if(controls == null) 
+          throw new IllegalStateException("The dispatch controls cannot be (null)!");
+
+        for(DispatchControl control : controls) 
+          pDispatchControls.put(control.getName(), control);
+      }
+    }
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Write the user balance groups to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the selection groups file.
+   */ 
+  private void 
+  writeUserBalanceGroups() 
+    throws PipelineException
+  {
+    synchronized(pUserBalanceGroups) {
+      File file = new File(pQueueDir, "queue/etc/user-balance-groups");
+      if(file.exists()) {
+        if(!file.delete())
+          throw new PipelineException
+            ("Unable to remove the old user balance group file (" + file + ")!");
+      }
+      
+      if(!pUserBalanceGroups.isEmpty()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+           "Writing User Balance Groups.");
+
+        try {
+          ArrayList<UserBalanceGroup> groups = 
+            new ArrayList<UserBalanceGroup>(pUserBalanceGroups.values());
+          GlueEncoderImpl.encodeFile("UserBalanceGroups", groups, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+      }
+    }
+  }
+  
+  /**
+   * Read the user balance groups from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the user balance groups file.
+   */ 
+  private void 
+  readUserBalanceGroups() 
+    throws PipelineException
+  {
+    synchronized(pUserBalanceGroups) {
+      pUserBalanceGroups.clear();
+      pUserBalanceChanged.set(true);
+
+      File file = new File(pQueueDir, "queue/etc/user-balance-groups");
+      if(file.isFile()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+           "Reading User Balance Groups.");
+
+        ArrayList<UserBalanceGroup> groups = null;
+        try {
+          groups = 
+            (ArrayList<UserBalanceGroup>) GlueDecoderImpl.decodeFile("UserBalanceGroups", file);
+        }       
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+
+        if(groups == null) 
+          throw new IllegalStateException("The user balance groups cannot be (null)!");
+
+        for(UserBalanceGroup group : groups) 
+          pUserBalanceGroups.put(group.getName(), group);
+      }
+    }
+  }
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -10383,6 +11049,12 @@ class QueueMgr
    */ 
   private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
 
+  /**
+   * The dispatch control that will be used when a machine does not specify one.
+   */
+  private static JobRankSorter sDefaultDispatchControl = 
+    new JobRankSorter(new DispatchControl("Built-In"));
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -10514,6 +11186,43 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,SelectionSchedule>  pSelectionSchedules; 
+  
+  /**
+   * Whether there have been any changes to dispatch controls since the last time
+   * controls were cached. 
+   */ 
+  private AtomicBoolean pDispatchChanged; 
+  
+  /**
+   * The cached table of dispatch controls indexed by control name.
+   * 
+   * Access to this table should be protected by a synchronized block.
+   */
+  private TreeMap<String, DispatchControl> pDispatchControls;
+  
+  /**
+   * A deep copy of pDispatchControl used without locking by the dispatcher.  The copy is
+   * updated at the beginning of the dispatcher cycle if pDispatchChanged is (true). 
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   * 
+   * The actual values of this structure are JobRankSorters, which are what are actually used
+   * in the dispatcher and are created from the Dispatch Cotnrols. 
+   */ 
+  private TreeMap<String, JobRankSorter>  pDispDispatchControls; 
+  
+  /**
+   * The cached table of user balance groups indexed by control name.
+   * 
+   * Access to this table should be protected by a synchronized block.
+   */
+  private TreeMap<String, UserBalanceGroup> pUserBalanceGroups;
+  
+  /**
+   * Whether there have been any changes to user balance groups since the last time
+   * controls were cached. 
+   */ 
+  private AtomicBoolean pUserBalanceChanged; 
 
   /**
    * Whether there have been any changes to selection keys or groups since the last time
@@ -10536,7 +11245,7 @@ class QueueMgr
    * 
    * No locking is required, since this field is only accessed by the Dispatcher thread.
    */ 
-  private TreeMap<String,SelectionGroup>  pDispSelectionGroups; 
+  private TreeMap<String,SelectionGroup>  pDispSelectionGroups;
 
   /**
    * Whether each of the unique combinations of selection keys required by jobs are 
@@ -10621,7 +11330,7 @@ class QueueMgr
    * An reusable array containing the sorted (according to Order) QueueHost entries from 
    * the pHosts table.
    * 
-   * The host entries are updated at each cylce of the dispatcher and resorted.  If the 
+   * The host entries are updated at each cycle of the dispatcher and resorted.  If the 
    * number of hosts is larger than the current size of the array, it resized automatically.
    * 
    * No locking is required, since this field is only accessed by the Dispatcher thread.

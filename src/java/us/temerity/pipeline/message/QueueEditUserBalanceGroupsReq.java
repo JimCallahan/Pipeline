@@ -1,22 +1,20 @@
-// $Id: QueueAddSelectionScheduleReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueEditUserBalanceGroupsReq.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
-
-import java.io.*;
 import java.util.*;
 
+import us.temerity.pipeline.*;
+
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   A D D   S E L E C T I O N   S C H E D U L E   R E Q                        */
+/*   Q U E U E   E D I T   U S E R   B A L A N C E   G R O U P S   R E Q                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to add a new selection schedule. <P> 
+ * A request to change the user weightings for the given user balance groups. <P> 
  */
 public 
-class QueueAddSelectionScheduleReq
+class QueueEditUserBalanceGroupsReq
   extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
@@ -26,21 +24,21 @@ class QueueAddSelectionScheduleReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param hostname
-   *   The name of the new selection schedule. 
+   * @param groups
+   *   The dispatch controls to modify.
    */
   public
-  QueueAddSelectionScheduleReq
+  QueueEditUserBalanceGroupsReq
   (
-   String name
+    Collection<UserBalanceGroup> groups
   )
   { 
     super();
 
-    if(name == null) 
+    if(groups == null) 
       throw new IllegalArgumentException
-	("The selection schedule name cannot be (null)!");
-    pName = name;
+	("The user balance groups cannot be (null)!");
+    pGroups = groups;
   }
 
 
@@ -50,12 +48,12 @@ class QueueAddSelectionScheduleReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the name of the new selection schedule. 
+   * Get the user balance groups to modify.
    */
-  public String
-  getName() 
+  public Collection<UserBalanceGroup> 
+  getUserBalanceGroups()
   {
-    return pName; 
+    return pGroups; 
   }
 
   
@@ -64,7 +62,7 @@ class QueueAddSelectionScheduleReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 1294893428823168479L;
+  private static final long serialVersionUID = -4039362720793831537L;
 
   
 
@@ -73,9 +71,7 @@ class QueueAddSelectionScheduleReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the new selection schedule. 
+   * The user balance groups to modify.
    */ 
-  private String  pName; 
-
+  private Collection<UserBalanceGroup> pGroups ; 
 }
-  
