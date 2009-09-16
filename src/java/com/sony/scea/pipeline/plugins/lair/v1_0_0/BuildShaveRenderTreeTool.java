@@ -150,7 +150,7 @@ public class BuildShaveRenderTreeTool extends BaseTool
   {
     File f = new File(name);
     FileSeq animSeq = new FileSeq(f.getName(), extention);
-    NodeMod animNode = new NodeMod(name, animSeq, null, toolset, editor);
+    NodeMod animNode = new NodeMod(name, animSeq, null, false, toolset, editor);
     client.register(pUser, pView, animNode);
     return animNode;
   }
@@ -163,7 +163,7 @@ public class BuildShaveRenderTreeTool extends BaseTool
     FilePattern pat = new FilePattern(p.getName(), pad, extention);
     FrameRange range = new FrameRange(startF, endf, byF);
     FileSeq animSeq = new FileSeq(pat, range);
-    NodeMod animNode = new NodeMod(name, animSeq, null, toolset, editor);
+    NodeMod animNode = new NodeMod(name, animSeq, null, false, toolset, editor);
     mclient.register(pUser, pView, animNode);
     return animNode;
   }//end registerSequenc
