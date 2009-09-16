@@ -1,4 +1,4 @@
-// $Id: FakeHostsGenerator.java,v 1.1 2009/05/12 06:01:03 jim Exp $
+// $Id: FakeHostsGenerator.java,v 1.2 2009/09/16 23:36:41 jesse Exp $
 
 import java.io.*; 
 import java.util.*; 
@@ -50,11 +50,14 @@ class FakeHostsGenerator
           new QueueHostInfo("fake" + fmt.format(ck), 
                             QueueHostStatus.Shutdown, 
                             null, 0, numSlots, null, null, null, null, null, null, 
-                            "Unix", null, null, 
+                            null, "Unix", null, null, null, JobGroupFavorMethod.None,
                             EditableState.Manual, 
                             EditableState.Manual, 
                             EditableState.Manual, 
                             EditableState.Manual, 
+                            EditableState.Manual,
+                            EditableState.Manual,
+                            EditableState.Manual,
                             EditableState.Manual); 
         hosts.put(info.getName(), info); 
       }

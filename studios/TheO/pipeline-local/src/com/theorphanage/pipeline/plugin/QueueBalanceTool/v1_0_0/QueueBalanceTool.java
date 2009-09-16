@@ -1,4 +1,4 @@
-// $Id: QueueBalanceTool.java,v 1.1 2008/07/04 15:27:56 jesse Exp $
+// $Id: QueueBalanceTool.java,v 1.2 2009/09/16 23:36:41 jesse Exp $
 
 package com.theorphanage.pipeline.plugin.QueueBalanceTool.v1_0_0;
 
@@ -499,7 +499,7 @@ class QueueBalanceTool
            if (oldGroup == null || !oldGroup.equals(group) ) {
              QueueHostMod mod = 
                new QueueHostMod(null, null, false, null, null, group, true, 
-                                null, false, null, false);
+                                null, false, null, false, null, false, null, false, null);
              hostMods.put(host, mod);
            }
           }
