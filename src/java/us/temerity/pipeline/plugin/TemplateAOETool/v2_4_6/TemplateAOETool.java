@@ -1,4 +1,4 @@
-// $Id: TemplateAOETool.java,v 1.1 2009/05/07 22:12:46 jesse Exp $
+// $Id: TemplateAOETool.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateAOETool.v2_4_6;
 
@@ -36,8 +36,6 @@ class TemplateAOETool
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
   
   

@@ -1,12 +1,8 @@
-// $Id: ExtractNodeAnnotation.java,v 1.1 2009/03/25 22:02:24 jim Exp $
+// $Id: ExtractNodeAnnotation.java,v 1.2 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.ExtractNodeAnnotation.v2_4_5;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.plugin.*;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   E X T R A C T   N O D E   A N N O T A T I O N                                          */
@@ -32,8 +28,6 @@ class ExtractNodeAnnotation
           "An annotation which indicated the after check-in each version of this node " + 
           "should be extraced into a JAR archive suitable for insertion into the node " +
           "database at a remote site.");
- 
-    underDevelopment();
   }
 
   

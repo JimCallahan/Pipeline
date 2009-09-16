@@ -1,4 +1,4 @@
-// $Id: NukeSourceSyncTool.java,v 1.5 2009/09/01 22:47:31 jim Exp $
+// $Id: NukeSourceSyncTool.java,v 1.6 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.NukeSourceSyncTool.v2_3_4;
 
@@ -35,8 +35,6 @@ class NukeSourceSyncTool
     super("NukeSourceSync", new VersionID("2.3.4"), "Temerity",
 	  "Synchronizes the source sequences referenced Nuke comp with Pipeline.");
 
-    underDevelopment();
-    
     pPhase = 1; 
 
     pImageFormats = new ArrayList<String>(); 

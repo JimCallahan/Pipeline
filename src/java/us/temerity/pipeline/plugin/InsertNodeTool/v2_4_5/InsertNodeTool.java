@@ -1,18 +1,14 @@
-// $Id: InsertNodeTool.java,v 1.1 2009/03/25 22:02:24 jim Exp $
+// $Id: InsertNodeTool.java,v 1.2 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.InsertNodeTool.v2_4_5;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 
 import javax.swing.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.VersionID.Level;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -37,8 +33,6 @@ class InsertNodeTool
     super("InsertNode", new VersionID("2.4.5"), "Temerity",
           "Inserts the node version contained in a JAR archive previously created by " + 
           "extract site version operation.");
-    
-    underDevelopment();
     
     addPhase(new PhaseOne());
     addPhase(new PhaseTwo());

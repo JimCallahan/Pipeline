@@ -1,4 +1,4 @@
-// $Id: TemplateIgnoreProductAnnotation.java,v 1.1 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateIgnoreProductAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateIgnoreProductAnnotation.v2_4_3;
 
@@ -45,8 +45,6 @@ class TemplateIgnoreProductAnnotation
     }
 
     addContext(AnnotationContext.PerVersion);
-    
-    underDevelopment();
   }
 
   

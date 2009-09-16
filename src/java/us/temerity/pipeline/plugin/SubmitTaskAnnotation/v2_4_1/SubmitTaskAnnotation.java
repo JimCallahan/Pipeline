@@ -1,4 +1,4 @@
-// $Id: SubmitTaskAnnotation.java,v 1.5 2008/05/20 22:44:23 jesse Exp $
+// $Id: SubmitTaskAnnotation.java,v 1.6 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.SubmitTaskAnnotation.v2_4_1;
 
@@ -153,8 +153,6 @@ class SubmitTaskAnnotation
 
       setLayout(layout);
     }
-
-    underDevelopment();
   }
 
   

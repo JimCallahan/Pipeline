@@ -1,4 +1,4 @@
-// $Id: TemplateCheckpointAnnotation.java,v 1.1 2009/05/11 23:27:07 jesse Exp $
+// $Id: TemplateCheckpointAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateCheckpointAnnotation.v2_4_6;
 
@@ -35,8 +35,6 @@ class TemplateCheckpointAnnotation
     
     addContext(AnnotationContext.PerVersion);
     removeContext(AnnotationContext.PerNode);
-    
-    underDevelopment();
   }
   
   private static final long serialVersionUID = -5068050741566100342L;

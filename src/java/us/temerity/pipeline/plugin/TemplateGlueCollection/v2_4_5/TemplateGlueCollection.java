@@ -1,4 +1,4 @@
-// $Id: TemplateGlueCollection.java,v 1.2 2009/01/20 03:02:09 jesse Exp $
+// $Id: TemplateGlueCollection.java,v 1.3 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueCollection.v2_4_5;
 
@@ -35,8 +35,6 @@ class TemplateGlueCollection
     LayoutGroup layout = new LayoutGroup(true);
     layout.addEntry("TemplateGlueBuilder");
     setLayout(layout);
-    
-    underDevelopment();
   }
 
   

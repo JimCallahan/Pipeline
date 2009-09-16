@@ -1,4 +1,4 @@
-// $Id: MultipleRenameTool.java,v 1.3 2008/11/03 23:47:37 jesse Exp $
+// $Id: MultipleRenameTool.java,v 1.4 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.MultipleRenameTool.v2_4_3;
 
@@ -36,8 +36,6 @@ class MultipleRenameTool
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
   
   /*----------------------------------------------------------------------------------------*/

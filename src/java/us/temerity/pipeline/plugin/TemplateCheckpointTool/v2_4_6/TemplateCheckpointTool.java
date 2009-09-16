@@ -1,4 +1,4 @@
-// $Id: TemplateCheckpointTool.java,v 1.1 2009/05/11 23:27:07 jesse Exp $
+// $Id: TemplateCheckpointTool.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateCheckpointTool.v2_4_6;
 
@@ -28,8 +28,6 @@ class TemplateCheckpointTool
 
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
   
   

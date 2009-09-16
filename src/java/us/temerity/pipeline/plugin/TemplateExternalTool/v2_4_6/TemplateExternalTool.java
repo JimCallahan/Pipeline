@@ -1,4 +1,4 @@
-// $Id: TemplateExternalTool.java,v 1.1 2009/06/11 05:14:06 jesse Exp $
+// $Id: TemplateExternalTool.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateExternalTool.v2_4_6;
 
@@ -33,8 +33,6 @@ class TemplateExternalTool
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
   
   

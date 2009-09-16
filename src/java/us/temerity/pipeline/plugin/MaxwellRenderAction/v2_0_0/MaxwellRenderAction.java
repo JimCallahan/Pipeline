@@ -1,12 +1,11 @@
-// $Id: MaxwellRenderAction.java,v 1.1 2007/06/17 15:34:43 jim Exp $
+// $Id: MaxwellRenderAction.java,v 1.2 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.MaxwellRenderAction.v2_0_0;
 
-import us.temerity.pipeline.*; 
-
-import java.lang.*;
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A X W E L L   R E N D E R   A C T I O N                                                    */
@@ -340,8 +339,6 @@ class MaxwellRenderAction
 
       setSingleLayout(layout);
     }
-
-    underDevelopment();
   }
 
   

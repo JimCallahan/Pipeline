@@ -1,4 +1,4 @@
-// $Id: ReleaseTaskTool.java,v 1.3 2008/09/29 19:02:18 jim Exp $
+// $Id: ReleaseTaskTool.java,v 1.4 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.ReleaseTaskTool.v2_4_1;
 
@@ -36,8 +36,6 @@ class ReleaseTaskTool
     
     addPhase(new FirstPhase());
     addPhase(new SecondPhase());
-
-    underDevelopment();
   }
   
   

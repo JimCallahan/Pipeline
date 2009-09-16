@@ -59,10 +59,8 @@ public class ShaveApplyCacheAction
   
   public ShaveApplyCacheAction()
   {
-    super("ShaveApplyCache", new VersionID("2.0.9"), 
-      "Temerity", "Applys linked Shave and a Haircut caches to a maya scene.");
-    
-    underDevelopment();
+    super("ShaveApplyCache", new VersionID("2.0.9"), "Temerity", 
+          "Applies linked Shave and a Haircut caches to a maya scene.");
     
     {
       ActionParam param = 
@@ -137,6 +135,7 @@ public class ShaveApplyCacheAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
+  @Override
   public SubProcessHeavy
   prep
   (
@@ -144,7 +143,7 @@ public class ShaveApplyCacheAction
     File outFile, 
     File errFile 
   )
-  throws PipelineException
+    throws PipelineException
   {
     Path sourceNodePath = null;
     NodeID nodeID = agenda.getNodeID();

@@ -1,4 +1,4 @@
-// $Id: TemplateAOEAnnotation.java,v 1.1 2009/05/07 22:12:46 jesse Exp $
+// $Id: TemplateAOEAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateAOEAnnotation.v2_4_6;
 
@@ -49,8 +49,6 @@ class TemplateAOEAnnotation
     
     addContext(AnnotationContext.PerVersion);
     removeContext(AnnotationContext.PerNode);
-
-    underDevelopment();
   }
 
   

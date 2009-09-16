@@ -62,8 +62,6 @@ class ProductNodeAnnotation
 	 null); 
       addParam(param);
     }
-
-    underDevelopment();
   }
   
   

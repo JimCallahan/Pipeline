@@ -1,4 +1,4 @@
-// $Id: TemplateConditionalBuildTool.java,v 1.2 2009/05/07 03:12:50 jesse Exp $
+// $Id: TemplateConditionalBuildTool.java,v 1.3 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateConditionalBuildTool.v2_4_3;
 
@@ -37,8 +37,6 @@ class TemplateConditionalBuildTool
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
   
   

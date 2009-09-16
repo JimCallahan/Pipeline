@@ -34,8 +34,6 @@ class NukeAddSourceTool
     super("NukeAddSource", new VersionID("2.3.4"), "Temerity",
           "Adds source sequences to a Nuke script and makes the correct links in Pipeline.");
 
-    underDevelopment();
-
     pSourceSeqs = new MappedLinkedList<String, FileSeq>();
 
     pNodeNameFields = new TreeMap<String, JTextField>();

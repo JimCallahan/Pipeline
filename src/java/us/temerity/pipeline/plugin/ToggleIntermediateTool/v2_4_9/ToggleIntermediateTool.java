@@ -1,4 +1,4 @@
-// $Id: ToggleIntermediateTool.java,v 1.1 2009/09/03 03:10:43 jesse Exp $
+// $Id: ToggleIntermediateTool.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.ToggleIntermediateTool.v2_4_9;
 
@@ -23,8 +23,6 @@ ToggleIntermediateTool
     
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-    
-    underDevelopment();
   }
 
 

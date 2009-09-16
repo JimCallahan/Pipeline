@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.5 2009/04/06 00:53:11 jesse Exp $
+// $Id: ApproveTaskTool.java,v 1.6 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskTool.v2_4_1;
 
@@ -39,9 +39,7 @@ class ApproveTaskTool
     addPhase(new FirstPhase());
     addPhase(new SecondPhase());
 
-    underDevelopment();
   }
-
   
 
   /*----------------------------------------------------------------------------------------*/

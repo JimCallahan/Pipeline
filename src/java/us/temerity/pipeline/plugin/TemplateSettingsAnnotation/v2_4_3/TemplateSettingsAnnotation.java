@@ -1,4 +1,4 @@
-// $Id: TemplateSettingsAnnotation.java,v 1.3 2009/03/31 01:44:47 jesse Exp $
+// $Id: TemplateSettingsAnnotation.java,v 1.4 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateSettingsAnnotation.v2_4_3;
 
@@ -162,8 +162,6 @@ class TemplateSettingsAnnotation
     }
 
     addContext(AnnotationContext.PerVersion);
-    
-    underDevelopment();
   }
 
   

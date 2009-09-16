@@ -1,18 +1,17 @@
-// $Id: ResourceTestTool.java,v 1.1 2009/04/16 16:14:12 jlee Exp $
+// $Id: ResourceTestTool.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.ResourceTestTool.v2_4_5;
+
+import java.awt.image.*;
+import java.io.*;
+import java.net.*;
+
+import javax.imageio.*;
+import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.plugin.*;
 import us.temerity.pipeline.ui.*;
-
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import javax.imageio.*;
-import javax.swing.*;
 
 /**
  *
@@ -34,8 +33,6 @@ ResourceTestTool
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
   /*----------------------------------------------------------------------------------------*/

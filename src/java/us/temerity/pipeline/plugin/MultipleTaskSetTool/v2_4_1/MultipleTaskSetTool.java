@@ -1,4 +1,4 @@
-// $Id: MultipleTaskSetTool.java,v 1.3 2008/11/06 21:10:09 jesse Exp $
+// $Id: MultipleTaskSetTool.java,v 1.4 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.MultipleTaskSetTool.v2_4_1;
 
@@ -40,8 +40,6 @@ class MultipleTaskSetTool
     
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
   
   

@@ -1,4 +1,4 @@
-// $Id: Maya2MRCollection.java,v 1.6 2008/04/21 23:15:44 jesse Exp $
+// $Id: Maya2MRCollection.java,v 1.7 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -57,7 +57,6 @@ class Maya2MRCollection
     }
     
     setLayout(group);
-    underDevelopment();
   }
   
   

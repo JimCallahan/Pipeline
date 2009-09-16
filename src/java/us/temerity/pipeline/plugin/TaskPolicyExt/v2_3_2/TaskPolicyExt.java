@@ -77,8 +77,6 @@ class TaskPolicyExt
       
       setLayout(layout);  
     }
-
-    underDevelopment(); 
   }
   
 

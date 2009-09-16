@@ -33,8 +33,6 @@ class MultipleRenumberTool
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 

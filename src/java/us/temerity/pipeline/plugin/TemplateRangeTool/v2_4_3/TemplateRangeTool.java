@@ -1,4 +1,4 @@
-// $Id: TemplateRangeTool.java,v 1.3 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateRangeTool.java,v 1.4 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateRangeTool.v2_4_3;
 
@@ -33,8 +33,6 @@ class TemplateRangeTool
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
 
   

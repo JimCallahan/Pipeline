@@ -1,11 +1,10 @@
-// $Id: TaskAnnotation.java,v 1.5 2008/02/07 13:17:59 jesse Exp $
+// $Id: TaskAnnotation.java,v 1.6 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_3_2;
 
-import us.temerity.pipeline.*; 
-
 import java.util.*;
-import java.io.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T A S K   A N N O T A T I O N                                                          */
@@ -149,8 +148,6 @@ class TaskAnnotation
 
       setLayout(layout);      
     }
-
-    underDevelopment(); 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: TemplateBuilderTool.java,v 1.1 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateBuilderTool.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateBuilderTool.v2_4_3;
 
@@ -27,8 +27,6 @@ class TemplateBuilderTool
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
 
   @Override

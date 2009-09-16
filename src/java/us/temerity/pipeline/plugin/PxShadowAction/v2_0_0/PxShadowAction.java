@@ -1,12 +1,11 @@
-// $Id: PxShadowAction.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: PxShadowAction.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.PxShadowAction.v2_0_0;
 
-import us.temerity.pipeline.*; 
-
-import java.lang.*;
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P X   S H A D O W   A C T I O N                                                        */
@@ -52,8 +51,6 @@ class PxShadowAction
 	 null);
       addSingleParam(param);
     }
-
-    underDevelopment();
   }
 
 

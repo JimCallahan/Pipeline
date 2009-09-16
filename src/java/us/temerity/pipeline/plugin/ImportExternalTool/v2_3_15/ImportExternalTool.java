@@ -1,4 +1,4 @@
-// $Id: ImportExternalTool.java,v 1.3 2009/09/01 22:47:31 jim Exp $
+// $Id: ImportExternalTool.java,v 1.4 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.ImportExternalTool.v2_3_15;
 
@@ -53,8 +53,6 @@ class ImportExternalTool
   {
     super("ImportExternal", new VersionID("2.3.15"), "Temerity",
           "Tool for quickly adding a file outside of the working area into Pipeline.");
-    
-    underDevelopment();
     
     addPhase(new PhaseOne());
     addPhase(new PhaseTwo());

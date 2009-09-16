@@ -1,4 +1,4 @@
-// $Id: TemplateConditionalBuildAnnotation.java,v 1.1 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateConditionalBuildAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateConditionalBuildAnnotation.v2_4_3;
 
@@ -53,8 +53,6 @@ class TemplateConditionalBuildAnnotation
     }
     
     addContext(AnnotationContext.PerVersion);
-    
-    underDevelopment();
   }
   
 

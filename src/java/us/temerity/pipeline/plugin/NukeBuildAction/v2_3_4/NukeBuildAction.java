@@ -1,4 +1,4 @@
-// $Id: NukeBuildAction.java,v 1.4 2008/07/21 17:31:10 jim Exp $
+// $Id: NukeBuildAction.java,v 1.5 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.NukeBuildAction.v2_3_4;
 
@@ -73,8 +73,6 @@ class NukeBuildAction
   
     //addSupport(OsType.MacOS);
     //addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 

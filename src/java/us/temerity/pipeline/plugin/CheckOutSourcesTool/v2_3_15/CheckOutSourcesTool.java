@@ -1,4 +1,4 @@
-// $Id: CheckOutSourcesTool.java,v 1.5 2008/07/21 23:28:13 jim Exp $
+// $Id: CheckOutSourcesTool.java,v 1.6 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.CheckOutSourcesTool.v2_3_15;
 
@@ -30,8 +30,6 @@ class CheckOutSourcesTool
     super("CheckOutSources", new VersionID("2.3.15"), "Temerity",
           "Checks-out the latest version of the selected node, as well as" +
           "the latest version of all its children nodes.");
-    
-    underDevelopment();
     
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);

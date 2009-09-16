@@ -1,4 +1,4 @@
-// $Id: TemplateContextLinkAnnotation.java,v 1.2 2009/03/20 03:10:39 jim Exp $
+// $Id: TemplateContextLinkAnnotation.java,v 1.3 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextLinkAnnotation.v2_4_3;
 
@@ -51,8 +51,6 @@ class TemplateContextLinkAnnotation
     }
 
     addContext(AnnotationContext.PerVersion);
-    
-    underDevelopment();
   }
 
   

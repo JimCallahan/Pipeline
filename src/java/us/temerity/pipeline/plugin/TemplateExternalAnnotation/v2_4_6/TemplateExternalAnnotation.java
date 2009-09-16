@@ -1,4 +1,4 @@
-// $Id: TemplateExternalAnnotation.java,v 1.1 2009/06/11 05:14:06 jesse Exp $
+// $Id: TemplateExternalAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateExternalAnnotation.v2_4_6;
 
@@ -37,8 +37,6 @@ class TemplateExternalAnnotation
     
     addContext(AnnotationContext.PerVersion);
     removeContext(AnnotationContext.PerNode);
-
-    underDevelopment();
   }
   
   

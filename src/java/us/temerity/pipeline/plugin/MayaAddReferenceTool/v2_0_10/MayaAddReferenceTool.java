@@ -28,7 +28,8 @@ class MayaAddReferenceTool
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  public MayaAddReferenceTool() 
+  public 
+  MayaAddReferenceTool() 
   {
     super("MayaAddReference", new VersionID("2.0.10"), "Temerity",
       "Adds references to a Maya scene and makes the correct links in pipeline");
@@ -38,8 +39,6 @@ class MayaAddReferenceTool
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 
@@ -58,6 +57,7 @@ class MayaAddReferenceTool
    * @throws PipelineException 
    *   If unable to validate the given user input.
    */  
+  @Override
   public String 
   collectPhaseInput() 
     throws PipelineException
@@ -162,11 +162,12 @@ class MayaAddReferenceTool
    * @throws PipelineException 
    *   If unable to sucessfully execute this phase of the tool.
    */ 
+  @Override
   public boolean 
   executePhase
   (
-   MasterMgrClient mclient, 
-   QueueMgrClient qclient
+    MasterMgrClient mclient, 
+    QueueMgrClient qclient
   )
     throws PipelineException
   {

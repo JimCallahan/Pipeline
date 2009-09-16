@@ -1,4 +1,4 @@
-// $Id: TemplateIgnoreProductTool.java,v 1.2 2009/05/07 03:12:50 jesse Exp $
+// $Id: TemplateIgnoreProductTool.java,v 1.3 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateIgnoreProductTool.v2_4_3;
 
@@ -33,8 +33,6 @@ class TemplateIgnoreProductTool
 
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
 
   

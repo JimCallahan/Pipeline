@@ -1,4 +1,4 @@
-// $Id: TemplateOptionalBranchTool.java,v 1.1 2009/08/12 20:33:05 jesse Exp $
+// $Id: TemplateOptionalBranchTool.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateOptionalBranchTool.v2_4_9;
 
@@ -36,8 +36,6 @@ class TemplateOptionalBranchTool
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
   
   

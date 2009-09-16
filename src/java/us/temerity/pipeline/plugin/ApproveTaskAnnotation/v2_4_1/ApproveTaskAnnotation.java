@@ -1,4 +1,4 @@
-// $Id: ApproveTaskAnnotation.java,v 1.5 2009/05/13 19:01:58 jesse Exp $
+// $Id: ApproveTaskAnnotation.java,v 1.6 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskAnnotation.v2_4_1;
 
@@ -181,8 +181,6 @@ class ApproveTaskAnnotation
 
       setLayout(layout);
     }
-
-    underDevelopment();
   }
 
   

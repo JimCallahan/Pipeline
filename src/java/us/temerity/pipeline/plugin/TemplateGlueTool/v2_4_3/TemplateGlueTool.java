@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.8 2009/06/11 05:14:06 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.9 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_3;
 
@@ -41,8 +41,6 @@ class TemplateGlueTool
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
   
 

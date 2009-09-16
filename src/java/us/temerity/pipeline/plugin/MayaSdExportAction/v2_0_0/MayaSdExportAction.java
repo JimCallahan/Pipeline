@@ -1,12 +1,11 @@
-// $Id: MayaSdExportAction.java,v 1.1 2007/06/17 15:34:44 jim Exp $
+// $Id: MayaSdExportAction.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaSdExportAction.v2_0_0;
 
-import us.temerity.pipeline.*; 
-
-import java.lang.*;
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   S D   A C T I O N                                                          */
@@ -124,8 +123,6 @@ class MayaSdExportAction
 
       setSingleLayout(layout);
     }
-
-    underDevelopment();
   }
 
   

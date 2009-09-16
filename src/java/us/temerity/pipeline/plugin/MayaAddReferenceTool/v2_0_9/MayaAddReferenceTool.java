@@ -12,11 +12,14 @@ import javax.swing.*;
 /**
  * Adds selected source models to the target scene as references in both Pipline and Maya
  */
-public class MayaAddReferenceTool
+public 
+class MayaAddReferenceTool
   extends BaseTool
 {
 
-  public MayaAddReferenceTool() {
+  public 
+  MayaAddReferenceTool() 
+  {
     super("MayaAddReference", new VersionID("2.0.9"), "Temerity",
       "Adds references to a Maya scene and makes the correct links in pipeline");
 
@@ -25,8 +28,6 @@ public class MayaAddReferenceTool
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
   /** 
@@ -39,7 +40,10 @@ public class MayaAddReferenceTool
    * @throws PipelineException 
    *   If unable to validate the given user input.
    */  
-  public String collectPhaseInput() throws PipelineException
+  @Override
+  public String 
+  collectPhaseInput() 
+    throws PipelineException
   {
     { // error checking
       int size = pSelected.keySet().size();
@@ -141,7 +145,13 @@ public class MayaAddReferenceTool
    * @throws PipelineException 
    *   If unable to sucessfully execute this phase of the tool.
    */ 
-  public boolean executePhase(MasterMgrClient mclient, QueueMgrClient qclient)
+  @Override
+  public boolean 
+  executePhase
+  (
+    MasterMgrClient mclient, 
+    QueueMgrClient qclient
+  )
     throws PipelineException
   {
     NodeID targetID = new NodeID(user, view, pPrimary);

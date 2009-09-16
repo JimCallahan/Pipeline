@@ -1,4 +1,4 @@
-// $Id: ExtractNodeExt.java,v 1.1 2009/03/25 22:02:24 jim Exp $
+// $Id: ExtractNodeExt.java,v 1.2 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.ExtractNodeExt.v2_4_5;
 
@@ -47,8 +47,6 @@ class ExtractNodeExt
          new Path("/usr/tmp"));
       addParam(param);
     }
-
-    underDevelopment(); 
   }
   
 

@@ -1,12 +1,11 @@
-// $Id: MayaDLShaderExportAction.java,v 1.1 2007/06/17 15:34:43 jim Exp $
+// $Id: MayaDLShaderExportAction.java,v 1.2 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaDLShaderExportAction.v2_2_1;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.plugin.*; 
-
 import java.io.*;
-import java.util.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   D L   S H A D E R   E X P O R T   A C T I O N                                */
@@ -91,8 +90,6 @@ class MayaDLShaderExportAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);  
-
-    underDevelopment(); 
   }
 
 

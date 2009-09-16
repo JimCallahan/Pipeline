@@ -1,9 +1,6 @@
-// $Id: TaskPolicyExt.java,v 1.4 2007/07/08 01:18:17 jim Exp $
+// $Id: TaskPolicyExt.java,v 1.5 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_2_1;
-
-import java.io.*;
-import java.util.*;
 
 import us.temerity.pipeline.*;
 
@@ -79,8 +76,6 @@ TaskPolicyExt
 
       setLayout(layout);  
     }
-
-    underDevelopment(); 
   }
 
 

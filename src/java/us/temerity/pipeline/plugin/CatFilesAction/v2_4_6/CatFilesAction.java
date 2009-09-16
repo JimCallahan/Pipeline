@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.1 2009/05/23 05:52:29 jesse Exp $
+// $Id: CatFilesAction.java,v 1.2 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.CatFilesAction.v2_4_6;
 
@@ -68,8 +68,6 @@ class CatFilesAction
       addSingleParam(param);
     }
     
-    underDevelopment();
-
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
   }

@@ -1,4 +1,4 @@
-// $Id: SubmitNodeAnnotation.java,v 1.7 2008/02/07 13:17:59 jesse Exp $
+// $Id: SubmitNodeAnnotation.java,v 1.8 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.SubmitNodeAnnotation.v2_3_2;
 
@@ -126,8 +126,6 @@ class SubmitNodeAnnotation
 
       setLayout(layout);
     }
-
-    underDevelopment();
   }
 
   

@@ -1,12 +1,11 @@
-// $Id: PxRenderAction.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: PxRenderAction.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.PxRenderAction.v2_0_0;
 
-import us.temerity.pipeline.*; 
-
-import java.lang.*;
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P X   R E N D E R   A C T I O N                                                        */
@@ -51,8 +50,6 @@ class PxRenderAction
   {
     super("PxRender", new VersionID("2.0.0"), "Temerity",
 	  "The Pixie RenderMan compliant renderer.");
-
-    underDevelopment();
   }
 
   

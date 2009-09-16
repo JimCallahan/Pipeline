@@ -1,4 +1,4 @@
-// $Id: TemplateVouchableAnnotation.java,v 1.1 2009/05/22 18:35:34 jesse Exp $
+// $Id: TemplateVouchableAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateVouchableAnnotation.v2_4_6;
 
@@ -31,8 +31,6 @@ class TemplateVouchableAnnotation
     
     addContext(AnnotationContext.PerVersion);
     removeContext(AnnotationContext.PerNode);
-    
-    underDevelopment();
   }
 
   private static final long serialVersionUID = 237237833135476071L;

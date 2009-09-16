@@ -1,12 +1,10 @@
-// $Id: RemoteVersionAnnotation.java,v 1.1 2009/03/25 22:02:24 jim Exp $
+// $Id: RemoteVersionAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.RemoteVersionAnnotation.v2_4_5;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.plugin.*;
-
 import java.util.*;
-import java.io.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R E M O T E   V E R S I O N   A N N O T A T I O N                                      */
@@ -101,8 +99,6 @@ class RemoteVersionAnnotation
  
     addContext(AnnotationContext.PerVersion);
     removeContext(AnnotationContext.PerNode);
-
-    underDevelopment();
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: SynchTaskAnnotation.java,v 1.2 2009/05/13 19:01:58 jesse Exp $
+// $Id: SynchTaskAnnotation.java,v 1.3 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.SynchTaskAnnotation.v2_4_1;
 
@@ -180,8 +180,6 @@ class SynchTaskAnnotation
 
       setLayout(layout);
     }
-
-    underDevelopment();
   }
 
   

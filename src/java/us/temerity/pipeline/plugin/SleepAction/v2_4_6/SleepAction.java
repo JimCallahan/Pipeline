@@ -1,4 +1,4 @@
-// $Id: SleepAction.java,v 1.2 2009/07/01 16:43:14 jim Exp $
+// $Id: SleepAction.java,v 1.3 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.SleepAction.v2_4_6;
 
@@ -41,8 +41,6 @@ class SleepAction
         new EnumActionParam("ActionType", "useless param", "Batch", values);
       addSingleParam(param);
     }
-    
-    underDevelopment();
   }
 
 

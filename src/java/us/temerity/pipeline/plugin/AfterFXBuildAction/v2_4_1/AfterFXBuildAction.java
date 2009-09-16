@@ -1,4 +1,4 @@
-// $Id: AfterFXBuildAction.java,v 1.1 2008/01/23 16:25:58 jim Exp $
+// $Id: AfterFXBuildAction.java,v 1.2 2009/09/16 15:56:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.AfterFXBuildAction.v2_4_1;
 
@@ -79,8 +79,6 @@ class AfterFXBuildAction
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
     removeSupport(OsType.Unix);
-    
-    underDevelopment(); 
   }
   
   

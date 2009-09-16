@@ -1,12 +1,10 @@
-// $Id: TestAnnotation.java,v 1.1 2009/03/20 03:10:39 jim Exp $
+// $Id: TestAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TestAnnotation.v2_4_5;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.plugin.*;
-
 import java.util.*;
-import java.io.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   A N N O T A T I O N                                                          */
@@ -129,8 +127,6 @@ class TestAnnotation
     }
     
     addContext(AnnotationContext.PerVersion);
-
-    underDevelopment();
   }
 
   

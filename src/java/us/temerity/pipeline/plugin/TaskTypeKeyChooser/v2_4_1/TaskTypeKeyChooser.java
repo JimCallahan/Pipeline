@@ -1,4 +1,4 @@
-// $Id: TaskTypeKeyChooser.java,v 1.1 2008/09/19 03:32:02 jesse Exp $
+// $Id: TaskTypeKeyChooser.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskTypeKeyChooser.v2_4_1;
 
@@ -65,8 +65,6 @@ class TaskTypeKeyChooser
     group.addEntry(aTaskType);
     group.addEntry(aCustomTaskType);
     setLayout(group);
-    
-    underDevelopment();
   }
   
   

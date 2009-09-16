@@ -1,12 +1,11 @@
-// $Id: PxEnvMapAction.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: PxEnvMapAction.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.PxEnvMapAction.v2_0_0;
 
-import us.temerity.pipeline.*; 
-
-import java.lang.*;
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P X   E N V   M A P   A C T I O N                                                      */
@@ -242,8 +241,6 @@ class PxEnvMapAction
 
       setSingleLayout(layout);   
     }
-
-    underDevelopment();
   }
 
 
@@ -271,6 +268,7 @@ class PxEnvMapAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
+  @Override
   public SubProcessHeavy
   prep
   (

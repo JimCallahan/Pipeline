@@ -1,4 +1,4 @@
-// $Id: NodeNameKeyChooser.java,v 1.1 2009/05/25 00:22:15 jesse Exp $
+// $Id: NodeNameKeyChooser.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.NodeNameKeyChooser.v2_4_6;
 
@@ -55,8 +55,6 @@ class NodeNameKeyChooser
          false); 
       addParam(param);
     }
-    
-    underDevelopment();
   }
 
   

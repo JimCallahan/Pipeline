@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.5 2009/09/01 22:47:31 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.6 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaTextureSyncTool.v2_0_11;
 
@@ -36,8 +36,6 @@ class MayaTextureSyncTool
     super("MayaTextureSync", new VersionID("2.0.11"), "Temerity",
 	  "Synchronizes the texture files referenced by a Maya scene with Pipeline.");
 
-    underDevelopment();
-    
     pPhase = 1; 
 
     pTextureFormats = new ArrayList<String>(); 

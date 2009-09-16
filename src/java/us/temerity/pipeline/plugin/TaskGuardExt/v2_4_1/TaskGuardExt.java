@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.4 2008/09/19 03:34:54 jesse Exp $
+// $Id: TaskGuardExt.java,v 1.5 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskGuardExt.v2_4_1;
 
@@ -28,8 +28,6 @@ class TaskGuardExt
     super("TaskGuard", new VersionID("2.4.1"), "Temerity",
           "Restricts access to node operations based on the SubmitTask, ApproveTask, " +
           "Synchtask, and CommonTask annotations."); 
-    
-    underDevelopment(); 
   }
   
 

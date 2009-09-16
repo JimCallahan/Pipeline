@@ -1,4 +1,4 @@
-// $Id: TemplateContextLinkTool.java,v 1.6 2009/05/07 03:12:50 jesse Exp $
+// $Id: TemplateContextLinkTool.java,v 1.7 2009/09/16 15:56:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextLinkTool.v2_4_3;
 
@@ -38,8 +38,6 @@ class TemplateContextLinkTool
 
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-    
-    underDevelopment();
   }
   
 
