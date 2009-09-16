@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.123 2009/09/16 03:54:40 jesse Exp $
+// $Id: QueueMgr.java,v 1.124 2009/09/16 23:35:42 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3000,7 +3000,7 @@ class QueueMgr
       if(specs != null) {
 	updateHistogramSpecs(timer, specs); 
 
-	active = new HistogramSpec[12];
+	active = new HistogramSpec[15];
 	active[0]  = specs.getStatusSpec(); 
 	active[1]  = specs.getOsTypeSpec(); 
 	active[2]  = specs.getLoadSpec(); 
@@ -3012,7 +3012,10 @@ class QueueMgr
 	active[8]  = specs.getOrderSpec(); 
 	active[9]  = specs.getSelectionGroupsSpec(); 
 	active[10] = specs.getSelectionSchedulesSpec(); 
-	active[11] = specs.getHardwareGroupsSpec(); 
+	active[11] = specs.getHardwareGroupsSpec();
+	active[12] = specs.getDispatchControlsSpec();
+	active[13] = specs.getFavorMethodsSpec();
+	active[14] = specs.getUserBalanceGroupsSpec();
 
 	boolean anyIncluded = false;
 	int wk;
@@ -3130,8 +3133,38 @@ class QueueMgr
 		  if(!active[wk].isIncludedItem(group))
 		    included = false;
 		}
-	      }
-	    }
+		break;
+		
+	      case 12:
+                {
+                  String control = qinfo.getDispatchControl();
+                  if(control == null) 
+                    control = "-";
+                  if(!active[wk].isIncludedItem(control))
+                    included = false;
+                }
+                break;
+
+	      case 13:
+                {
+                  JobGroupFavorMethod favor = qinfo.getFavorMethod();
+                  if(!active[wk].isIncludedItem(favor))
+                    included = false;
+                }
+                break;
+	      
+	      case 14:
+                {
+                  String group = qinfo.getUserBalanceGroup();
+                  if(group == null) 
+                    group = "-";
+                  if(!active[wk].isIncludedItem(group))
+                    included = false;
+                }
+                break;
+	      } //switch(wk) 
+
+	    } //if(active[wk] != null)
 
 	    if(!included) 
 	      break;
@@ -4117,7 +4150,7 @@ class QueueMgr
   }
   
   /**
-   * Update the catagories for the dynamically determined histograms.
+   * Update the categories for the dynamically determined histograms.
    */ 
   private void
   updateHistogramSpecs
@@ -4222,6 +4255,38 @@ class QueueMgr
 	newSpec.setIncluded(range, true);
       
       specs.setHardwareGroupsSpec(newSpec); 
+    }
+    
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange("-"));
+      synchronized(pUserBalanceGroups) {
+        for(String sname : pUserBalanceGroups.keySet())
+          ranges.add(new HistogramRange(sname));
+      }
+      
+      HistogramSpec oldSpec = specs.getUserBalanceGroupsSpec();
+      HistogramSpec newSpec = new HistogramSpec("UserBalance", ranges);
+      for(HistogramRange range : oldSpec.getIncluded())
+        newSpec.setIncluded(range, true);
+      
+      specs.setUserBalanceGroupsSpec(newSpec); 
+    }
+    
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange("-"));
+      synchronized(pDispatchControls) {
+        for(String sname : pDispatchControls.keySet())
+          ranges.add(new HistogramRange(sname));
+      }
+      
+      HistogramSpec oldSpec = specs.getDispatchControlsSpec();
+      HistogramSpec newSpec = new HistogramSpec("DispatchControls", ranges);
+      for(HistogramRange range : oldSpec.getIncluded())
+        newSpec.setIncluded(range, true);
+      
+      specs.setDispatchControlsSpec(newSpec); 
     }
     
   }

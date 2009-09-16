@@ -1,4 +1,4 @@
-// $Id: QueueHostHistograms.java,v 1.2 2009/06/04 09:17:34 jim Exp $
+// $Id: QueueHostHistograms.java,v 1.3 2009/09/16 23:35:42 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -50,9 +50,12 @@ class QueueHostHistograms
     pSlots   = new Histogram(specs.getSlotsSpec()); 
     pReserve = new Histogram(specs.getReservationSpec()); 
     pOrder   = new Histogram(specs.getOrderSpec()); 
-    pSelectionGroups = new Histogram(specs.getSelectionGroupsSpec()); 
-    pSelectionScheds = new Histogram(specs.getSelectionSchedulesSpec()); 
-    pHardwareGroups  = new Histogram(specs.getHardwareGroupsSpec()); 
+    pSelectionGroups   = new Histogram(specs.getSelectionGroupsSpec()); 
+    pSelectionScheds   = new Histogram(specs.getSelectionSchedulesSpec()); 
+    pHardwareGroups    = new Histogram(specs.getHardwareGroupsSpec()); 
+    pUserBalanceGroups = new Histogram(specs.getUserBalanceGroupsSpec());
+    pFavorMethods      = new Histogram(specs.getFavorMethodsSpec());
+    pDispatchControls  = new Histogram(specs.getDispatchControlsSpec());
   }
 
 
@@ -170,9 +173,34 @@ class QueueHostHistograms
     return pHardwareGroups;
   }
   
+  /**
+   * Get the histogram of user balance groups. 
+   */ 
+  public Histogram
+  getUserBalanceGroupsHist() 
+  {
+    return pUserBalanceGroups;
+  }
   
+  /**
+   * Get the histogram of job group favor methods. 
+   */ 
+  public Histogram
+  getFavorMethodsHist() 
+  {
+    return pFavorMethods;
+  }
 
+  /**
+   * Get the histogram of dispatch controls. 
+   */ 
+  public Histogram
+  getDispatchControlsHist() 
+  {
+    return pDispatchControls;
+  }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
@@ -196,6 +224,9 @@ class QueueHostHistograms
     pSelectionGroups.clearCounts();
     pSelectionScheds.clearCounts();
     pHardwareGroups.clearCounts();
+    pDispatchControls.clearCounts();
+    pFavorMethods.clearCounts();
+    pUserBalanceGroups.clearCounts();
   }
 
   /**
@@ -252,6 +283,25 @@ class QueueHostHistograms
 	group = "-";
       pHardwareGroups.catagorize(group); 
     }
+    
+    {
+      String group = qinfo.getUserBalanceGroup();
+      if(group == null) 
+        group = "-";
+      pUserBalanceGroups.catagorize(group); 
+    }
+    
+    {
+      String control = qinfo.getDispatchControl();
+      if(control == null) 
+        control = "-";
+      pDispatchControls.catagorize(control); 
+    }
+    
+    {
+      JobGroupFavorMethod method = qinfo.getFavorMethod();
+      pFavorMethods.catagorize(method); 
+    }
   }
 
 
@@ -279,6 +329,9 @@ class QueueHostHistograms
     encoder.encode("SelectionGroups", pSelectionGroups);
     encoder.encode("SelectionScheds", pSelectionScheds);
     encoder.encode("HardwareGroups", pHardwareGroups);
+    encoder.encode("DispatchControls", pDispatchControls);
+    encoder.encode("FavorMethods", pFavorMethods);
+    encoder.encode("UserBalanceGroups", pUserBalanceGroups);
   }
 
   public void 
@@ -299,7 +352,10 @@ class QueueHostHistograms
     pOrder   = (Histogram) decoder.decode("Order");   
     pSelectionGroups = (Histogram) decoder.decode("SelectionGroups");   
     pSelectionScheds = (Histogram) decoder.decode("SelectionScheds");   
-    pHardwareGroups  = (Histogram) decoder.decode("HardwareGroups");   
+    pHardwareGroups  = (Histogram) decoder.decode("HardwareGroups");
+    pDispatchControls = (Histogram) decoder.decode("DispatchControls");
+    pFavorMethods = (Histogram) decoder.decode("FavorMethods");
+    pUserBalanceGroups = (Histogram) decoder.decode("UserBalanceGroups");
   }
 
 
@@ -331,6 +387,9 @@ class QueueHostHistograms
   private Histogram  pSelectionGroups;
   private Histogram  pSelectionScheds;
   private Histogram  pHardwareGroups;
+  private Histogram  pDispatchControls;
+  private Histogram  pFavorMethods;
+  private Histogram  pUserBalanceGroups;
 
 }
 

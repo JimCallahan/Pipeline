@@ -1,22 +1,18 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.10 2009/06/04 09:17:34 jim Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.11 2009/09/16 23:35:42 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.math.*;
-import us.temerity.pipeline.ui.UIFactory;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
-import java.io.*;
 import java.util.*;
 
+import javax.media.opengl.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.tree.*;
-import javax.media.opengl.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   S E R V E R   S T A T S   P A N E L                                */
@@ -127,6 +123,7 @@ class JQueueJobServerStatsPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -144,6 +141,7 @@ class JQueueJobServerStatsPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -169,6 +167,7 @@ class JQueueJobServerStatsPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -186,6 +185,7 @@ class JQueueJobServerStatsPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -195,6 +195,7 @@ class JQueueJobServerStatsPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -318,6 +319,7 @@ class JQueueJobServerStatsPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -344,7 +346,7 @@ class JQueueJobServerStatsPanel
     /* chart menu */ 
     updateMenuToolTip
       (pEditChartItem, prefs.getJobServerStatsEditChart(), 
-       "Edit the chart catagory ranges.");
+       "Edit the chart category ranges.");
   }
 
 
@@ -359,7 +361,6 @@ class JQueueJobServerStatsPanel
     /* remove all previous pie charts */ 
     pViewerPies.clear();
 
-    UserPrefs prefs = UserPrefs.getInstance();
     if(pHistograms != null) {
       {
 	ViewerPie pie = new ViewerPie(pHistograms.getStatusHist(), false);
@@ -468,10 +469,34 @@ class JQueueJobServerStatsPanel
 	  
 	  pie.setColors(dark, light); 
 	}
+	
+	{
+          ViewerPie pie = new ViewerPie(pHistograms.getUserBalanceGroupsHist(), false);
+          pViewerPies.put(pie.getName(), pie);
+          
+          pie.setColors(dark, light); 
+        }
+	
+	{
+          ViewerPie pie = new ViewerPie(pHistograms.getDispatchControlsHist(), false);
+          pViewerPies.put(pie.getName(), pie);
+          
+          pie.setColors(dark, light); 
+        }
+	
+	{
+          ViewerPie pie = new ViewerPie(pHistograms.getFavorMethodsHist(), false);
+          pViewerPies.put(pie.getName(), pie);
+          
+          pie.setColors(dark, light); 
+        }
       }
 
 
-      /* 6x2 layout */ 
+      /* 
+       * 7x1 layout
+       * 8x1 layout 
+       */ 
       {
 	Point2d pos = new Point2d();
 	double dx = 7.25; 
@@ -479,7 +504,8 @@ class JQueueJobServerStatsPanel
 
 	{
 	  String titles[] = {
-	    "ServerStatus", 
+	    "ServerStatus",
+	    "ServerOS",
 	    "SystemLoad", 
 	    "FreeMemory", 
 	    "FreeDisk", 
@@ -495,14 +521,16 @@ class JQueueJobServerStatsPanel
 	  }
 	}
 
-	pos = new Point2d(dx*0.5, -dy); 
+	pos = new Point2d(-dx*.5, -dy); 
 	
 	{
 	  String titles[] = {
-	    "ServerOS", 
-	    "Reserved", 
-	    "Order", 
-	    "SelectionGroups", 
+	    "Order",
+	    "Reserved",
+	    "UserBalance",
+	    "FavorMethods",
+	    "SelectionGroups",
+	    "DispatchControls",
 	    "SelectionSchedules",
             "HardwareGroups"
 	  };
@@ -602,6 +630,7 @@ class JQueueJobServerStatsPanel
    * Called by the drawable immediately after the OpenGL context is initialized for the 
    * first time.
    */ 
+  @Override
   public void 
   init
   (
@@ -621,6 +650,7 @@ class JQueueJobServerStatsPanel
   /**
    * Called by the drawable to initiate OpenGL rendering by the client.
    */ 
+  @Override
   public void 
   display
   (
@@ -685,6 +715,7 @@ class JQueueJobServerStatsPanel
   /**
    * Invoked when a mouse button has been pressed on a component. 
    */
+  @Override
   public void 
   mousePressed
   (
@@ -778,6 +809,7 @@ class JQueueJobServerStatsPanel
     }
   }
 
+  @Override
   public void
   mouseReleased
   (

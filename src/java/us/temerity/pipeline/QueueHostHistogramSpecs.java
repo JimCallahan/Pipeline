@@ -1,4 +1,4 @@
-// $Id: QueueHostHistogramSpecs.java,v 1.3 2009/06/04 09:17:34 jim Exp $
+// $Id: QueueHostHistogramSpecs.java,v 1.4 2009/09/16 23:35:42 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -62,13 +62,22 @@ class QueueHostHistogramSpecs
    *   The histogram specification for server dispatch order. 
    * 
    * @param selectionGroupsSpec
-   *   The histogram specification for selection selectionGroups. 
+   *   The histogram specification for selection groups. 
    * 
    * @param selectionSchedsSpec
    *   The histogram specification for selection schedules. 
    * 
    * @param hardwareGroupsSpec
-   *   The histogram specification for hardware hardwareGroups. 
+   *   The histogram specification for hardware groups.
+   *   
+   * @param dispatchControlsSpec
+   *   The histogram specification for dispatch controls.
+   *   
+   * @param favorMethodsSpec
+   *   The histogram specification for job group favor methods.
+   *   
+   * @param userBalanceGroups
+   *   The histogram specification for user balance groups.
    */
   public 
   QueueHostHistogramSpecs
@@ -84,7 +93,10 @@ class QueueHostHistogramSpecs
    HistogramSpec orderSpec, 
    HistogramSpec selectionGroupsSpec, 
    HistogramSpec selectionSchedsSpec,
-   HistogramSpec hardwareGroupsSpec 
+   HistogramSpec hardwareGroupsSpec,
+   HistogramSpec dispatchControlsSpec,
+   HistogramSpec favorMethodsSpec,
+   HistogramSpec userBalanceGroups
   ) 
   {
     pStatus  = statusSpec; 
@@ -96,9 +108,12 @@ class QueueHostHistogramSpecs
     pSlots   = slotsSpec; 
     pOrder   = orderSpec; 
     pReserve = reserveSpec; 
-    pSelectionGroups = selectionGroupsSpec; 
-    pSelectionScheds = selectionSchedsSpec; 
-    pHardwareGroups  = hardwareGroupsSpec; 
+    pSelectionGroups   = selectionGroupsSpec; 
+    pSelectionScheds   = selectionSchedsSpec; 
+    pHardwareGroups    = hardwareGroupsSpec;
+    pDispatchControls  = dispatchControlsSpec;
+    pFavorMethods      = favorMethodsSpec;
+    pUserBalanceGroups = userBalanceGroups;
   }
 
   /**
@@ -119,9 +134,12 @@ class QueueHostHistogramSpecs
     pSlots   = new HistogramSpec(hist.getSlotsHist()); 
     pReserve = new HistogramSpec(hist.getReservationsHist()); 
     pOrder   = new HistogramSpec(hist.getOrderHist()); 
-    pSelectionGroups = new HistogramSpec(hist.getSelectionGroupsHist()); 
-    pSelectionScheds = new HistogramSpec(hist.getSelectionSchedulesHist());
-    pHardwareGroups  = new HistogramSpec(hist.getHardwareGroupsHist());  
+    pSelectionGroups   = new HistogramSpec(hist.getSelectionGroupsHist()); 
+    pSelectionScheds   = new HistogramSpec(hist.getSelectionSchedulesHist());
+    pHardwareGroups    = new HistogramSpec(hist.getHardwareGroupsHist());
+    pDispatchControls  = new HistogramSpec(hist.getDispatchControlsHist());
+    pFavorMethods      = new HistogramSpec(hist.getFavorMethodsHist());
+    pUserBalanceGroups = new HistogramSpec(hist.getUserBalanceGroupsHist());
   }
 
 
@@ -263,10 +281,36 @@ class QueueHostHistogramSpecs
       hardwareGroupsSpec = new HistogramSpec("HardwareGroups", ranges);
     }
     
+    HistogramSpec dispatchControlsSpec = null;
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange(null, null));
+
+      dispatchControlsSpec = new HistogramSpec("DispatchControls", ranges);
+    }
+    
+    HistogramSpec favorMethodsSpec = null;
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      for(JobGroupFavorMethod favor : JobGroupFavorMethod.values())
+        ranges.add(new HistogramRange(favor));
+
+      favorMethodsSpec = new HistogramSpec("FavorMethods", ranges);
+    }
+    
+    HistogramSpec userBalanceGroupsSpec = null;
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange(null, null));
+
+      userBalanceGroupsSpec = new HistogramSpec("UserBalance", ranges);
+    }
+    
     return new QueueHostHistogramSpecs
       (statusSpec, osSpec, 
        loadSpec, memorySpec, diskSpec, numJobsSpec, slotsSpec, 
-       reserveSpec, orderSpec, selectionGroupsSpec, selectionSchedsSpec, hardwareGroupsSpec);
+       reserveSpec, orderSpec, selectionGroupsSpec, selectionSchedsSpec, hardwareGroupsSpec,
+       dispatchControlsSpec, favorMethodsSpec, userBalanceGroupsSpec);
   }
 
 
@@ -276,7 +320,7 @@ class QueueHostHistogramSpecs
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether all or none of the catagories from all histograms are included in the 
+   * Whether all or none of the categories from all histograms are included in the 
    * matching set. 
    */ 
   public boolean 
@@ -293,7 +337,10 @@ class QueueHostHistogramSpecs
             pReserve.allIncluded() && 
             pSelectionGroups.allIncluded() && 
             pSelectionScheds.allIncluded() &&
-            pHardwareGroups.allIncluded()); 
+            pHardwareGroups.allIncluded() &&
+            pDispatchControls.allIncluded() &&
+            pFavorMethods.allIncluded() &&
+            pUserBalanceGroups.allIncluded()); 
   }
 
 
@@ -587,6 +634,74 @@ class QueueHostHistogramSpecs
     pHardwareGroups = spec;
   }
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the histogram specification for dispatch controls. 
+   */ 
+  public HistogramSpec
+  getDispatchControlsSpec() 
+  {
+    return pDispatchControls; 
+  }
+
+  /**
+   * Set the histogram specification for dispatch controls. 
+   */ 
+  public void 
+  setDispatchControlsSpec
+  (
+   HistogramSpec spec
+  ) 
+  {
+    pDispatchControls = spec;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the histogram specification for job group favor methods. 
+   */ 
+  public HistogramSpec
+  getFavorMethodsSpec() 
+  {
+    return pFavorMethods; 
+  }
+
+  /**
+   * Set the histogram specification for job group favor methods. 
+   */ 
+  public void 
+  setFavorMethodsSpec
+  (
+   HistogramSpec spec
+  ) 
+  {
+    pFavorMethods = spec;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the histogram specification for user balance groups. 
+   */ 
+  public HistogramSpec
+  getUserBalanceGroupsSpec() 
+  {
+    return pUserBalanceGroups; 
+  }
+
+  /**
+   * Set the histogram specification for user balance groups. 
+   */ 
+  public void 
+  setUserBalanceGroupsSpec
+  (
+   HistogramSpec spec
+  ) 
+  {
+    pUserBalanceGroups = spec;
+  }
 
   
 
@@ -601,6 +716,7 @@ class QueueHostHistogramSpecs
   ) 
     throws GlueException
   {
+    //FIXME glue
     encoder.encode("Status", pStatus);
     encoder.encode("OsType", pOsType);
     encoder.encode("Load", pLoad);
@@ -665,6 +781,9 @@ class QueueHostHistogramSpecs
   private HistogramSpec  pSelectionGroups;
   private HistogramSpec  pSelectionScheds;  
   private HistogramSpec  pHardwareGroups;
+  private HistogramSpec  pDispatchControls;
+  private HistogramSpec  pFavorMethods;
+  private HistogramSpec  pUserBalanceGroups;
 
 }
 
