@@ -1,4 +1,4 @@
-// $Id: NukeActionUtils.java,v 1.5 2008/03/17 22:57:30 jim Exp $
+// $Id: NukeActionUtils.java,v 1.6 2009/09/17 01:27:01 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -214,15 +214,21 @@ class NukeActionUtils
     String nuke = getNukeProgram(env);
     if(nuke != null) {
       try {
-        if(PackageInfo.sOsType == OsType.Windows) {
-          Matcher m = sWindowsNukeBinary.matcher(nuke); 
-          if(m.matches()) 
-            nukeVersion = new Double(m.group(1));
-        }
-        else {
-          Matcher m = sNukeBinary.matcher(nuke); 
-          if(m.matches()) 
-            nukeVersion = new Double(m.group(1));
+        switch(PackageInfo.sOsType) {
+        case Windows:
+          {
+            Matcher m = sWindowsNukeBinary.matcher(nuke); 
+            if(m.matches()) 
+              nukeVersion = new Double(m.group(1));
+          }
+          break;
+
+        default:
+          {
+            Matcher m = sNukeBinary.matcher(nuke); 
+            if(m.matches()) 
+              nukeVersion = new Double(m.group(1));
+          }
         }
       }
       catch(NumberFormatException ex) {
@@ -247,7 +253,7 @@ class NukeActionUtils
     Pattern.compile("nuke([0-9]+[.][0-9]+).exe"); 
 
   private static Pattern sNukeBinary = 
-    Pattern.compile("Nuke([0-9]+[.][0-9]+)"); 
+    Pattern.compile("Nuke([0-9]+[.][0-9]+)(v[0-9]+)?"); 
 
 }
 
