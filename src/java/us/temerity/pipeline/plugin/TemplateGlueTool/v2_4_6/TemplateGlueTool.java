@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.3 2009/09/16 15:56:46 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.4 2009/09/18 20:53:06 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -28,7 +28,7 @@ class TemplateGlueTool
   TemplateGlueTool()
   {
     super("TemplateGlue", new VersionID("2.4.6"), "Temerity", 
-    "Tool for creating and editing a template glue node.");
+          "Tool for creating and editing a template glue node.");
 
     addPhase(new ValidInputPass());
     
@@ -65,7 +65,6 @@ class TemplateGlueTool
     )
       throws PipelineException
     {
-      
       NodeMod templateMod = mclient.getWorkingVersion(pAuthor, pView, pPrimary);
       FileSeq pSeq = templateMod.getPrimarySequence();
       if (!pSeq.isSingle())

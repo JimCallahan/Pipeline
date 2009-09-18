@@ -1,4 +1,4 @@
-// $Id: TemplateNetworkScan.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: TemplateNetworkScan.java,v 1.2 2009/09/18 20:53:06 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -236,6 +236,11 @@ class TemplateNetworkScan
           String context = (String) annot.getParamValue(aContextName);
           productContext.put(src, context);
           pProductContexts.put(context, src);
+        }
+        else if (aname.startsWith("TemplateContextLink")) {
+          String context = (String) annot.getParamValue(aContextName);
+          String link = (String) annot.getParamValue(aLinkName);
+          pContexts.put(context, link);
         }
         else if (aname.startsWith("TemplateContext")) {
           String context = (String) annot.getParamValue(aContextName);
