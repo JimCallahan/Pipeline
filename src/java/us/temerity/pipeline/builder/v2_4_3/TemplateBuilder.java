@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.26 2009/09/18 19:15:19 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.27 2009/09/18 21:01:17 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -567,7 +567,7 @@ class TemplateBuilder
         pLog.log(Kind.Ops, Level.Finest, 
           "The generated product contexts is:\n" + pProductContexts);
         
-      } //if (pGenerateDependSets) {
+      } //if (pGenerateDependSets) 
       
       boolean cleared = false;
       boolean asProduct = false;
@@ -575,21 +575,23 @@ class TemplateBuilder
         if (!entry.getValue()) {
           TreeMap<String, OptionalBranchType> taggedNodes = 
             pOptionalBranchValues.get(entry.getKey());
-          for (Entry<String, OptionalBranchType> entry2: taggedNodes.entrySet()) {
-            String node = entry2.getKey();
-            OptionalBranchType type = entry2.getValue();
-            TreeSet<String> downstreamNodes = clearNode(node, node, type);
-            cleared = true;
-            if (type == OptionalBranchType.AsProduct) {
-              pProductNodes.put(node, true);
-              pSkippedNodes.remove(node);
-              for (String target : downstreamNodes) {
-                TreeSet<String> contexts = getContextLinks(target, node);
-                if (!contexts.isEmpty())
-                  pProductContexts.put(node, target, contexts);
+          if (taggedNodes != null) {
+            for (Entry<String, OptionalBranchType> entry2: taggedNodes.entrySet()) { 
+              String node = entry2.getKey();
+              OptionalBranchType type = entry2.getValue();
+              TreeSet<String> downstreamNodes = clearNode(node, node, type);
+              cleared = true;
+              if (type == OptionalBranchType.AsProduct) {
+                pProductNodes.put(node, true);
+                pSkippedNodes.remove(node);
+                for (String target : downstreamNodes) {
+                  TreeSet<String> contexts = getContextLinks(target, node);
+                  if (!contexts.isEmpty())
+                    pProductContexts.put(node, target, contexts);
+                }
+                asProduct = true;
               }
-              asProduct = true;
-            }
+            } //for (Entry<String, OptionalBranchType> entry2: taggedNodes.entrySet())
           }
         }
       }
