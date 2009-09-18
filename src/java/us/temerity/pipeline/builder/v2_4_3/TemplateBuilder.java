@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.25 2009/08/12 20:33:05 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.26 2009/09/18 19:15:19 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -520,6 +520,12 @@ class TemplateBuilder
           NodeStatus stat = pClient.status(new NodeID(getAuthor(), getView(), node), true, 
             DownstreamMode.WorkingOnly);
           NodeMod mod = stat.getLightDetails().getWorkingVersion();
+          
+          if (mod == null)
+            throw new PipelineException
+              ("There is no working version of the node (" + node  + ") that is " +
+               "part of the template.");
+          
           BaseAnnotation annot = mod.getAnnotation("TemplateOptionalBranch");
           if (annot != null) {
             String optionName = (String) annot.getParamValue(aOptionName); 
