@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.49 2009/09/01 10:59:39 jim Exp $
+// $Id: FileMgrClient.java,v 1.50 2009/09/21 23:21:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -218,6 +218,10 @@ interface FileMgrClient
    * @param workingCheckSums
    *   Current cache of checksums for files associated with the working version.
    * 
+   * @param movedStamps
+   *   A table into which the timestamps are recorded for files before being moved into the
+   *   repository and the symlink created after the move.
+   * 
    * @return
    *   The updated cache of checksums for files associated with the working version.
    * 
@@ -232,7 +236,8 @@ interface FileMgrClient
    VersionID vid,
    VersionID latest, 
    TreeMap<FileSeq,boolean[]> isNovel,
-   CheckSumCache workingCheckSums
+   CheckSumCache workingCheckSums, 
+   TreeMap<String,Long[]> movedStamps
   ) 
     throws PipelineException;
 

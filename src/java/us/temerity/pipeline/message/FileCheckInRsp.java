@@ -1,4 +1,4 @@
-// $Id: FileCheckInRsp.java,v 1.1 2009/08/28 02:10:47 jim Exp $
+// $Id: FileCheckInRsp.java,v 1.2 2009/09/21 23:21:45 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -28,12 +28,17 @@ class FileCheckInRsp
    * 
    * @param updatedCheckSums
    *   The updated cache of checksums for files associated with the working version.
+   * 
+   * @param movedStamps
+   *   The timestamps recorded for files before being moved into the repository and the 
+   *   symlink created after the move.
    */
   public
   FileCheckInRsp
   (
    TaskTimer timer, 
-   CheckSumCache updatedCheckSums
+   CheckSumCache updatedCheckSums, 
+   TreeMap<String,Long[]> movedStamps
   )
   { 
     super(timer);
@@ -41,6 +46,10 @@ class FileCheckInRsp
     if(updatedCheckSums == null) 
       throw new IllegalArgumentException("The updated checksums cannot (null)!");
     pUpdatedCheckSums = updatedCheckSums; 
+
+    if(movedStamps == null) 
+      throw new IllegalArgumentException("The moved timestamps cannot (null)!");
+    pMovedStamps = movedStamps; 
 
     LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
@@ -61,6 +70,16 @@ class FileCheckInRsp
     return pUpdatedCheckSums; 
   }
   
+  /**
+   * The timestamps recorded for files before being moved into the repository and the 
+   * symlink created after the move.
+   */ 
+  public TreeMap<String,Long[]>
+  getMovedStamps()
+  {
+    return pMovedStamps; 
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -78,7 +97,13 @@ class FileCheckInRsp
   /**
    * The updated cache of checksums for files associated with the working version.
    */ 
-  public CheckSumCache  pUpdatedCheckSums; 
-  
+  private CheckSumCache  pUpdatedCheckSums; 
+
+  /**
+   * The timestamps recorded for files before being moved into the repository and the 
+   * symlink created after the move.
+   */ 
+  private TreeMap<String,Long[]>  pMovedStamps; 
+
 }
   

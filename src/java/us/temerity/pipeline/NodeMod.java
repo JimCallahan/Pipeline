@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.66 2009/09/01 10:59:39 jim Exp $
+// $Id: NodeMod.java,v 1.67 2009/09/21 23:21:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,7 +31,9 @@ class NodeMod
   NodeMod()
   {
     pSources = new TreeMap<String,LinkMod>();
+
     initTimeStamps(); 
+    pCorrectedStamps = new TreeMap<String,Long[]>();
   }
 
   /**
@@ -112,7 +114,9 @@ class NodeMod
 	  toolset, editor, action, isActionEnabled, jobReqs, overflow, execution, batchSize);
     
     pSources = new TreeMap<String,LinkMod>();
+
     initTimeStamps(); 
+    pCorrectedStamps = new TreeMap<String,Long[]>();
   }
 
   /**
@@ -157,7 +161,9 @@ class NodeMod
     super(name, primary, secondary, isIntermediate, toolset, editor);
     
     pSources = new TreeMap<String,LinkMod>();
+
     initTimeStamps();
+    pCorrectedStamps = new TreeMap<String,Long[]>();
   }
 
   /** 
@@ -175,6 +181,10 @@ class NodeMod
    * 
    * @param isLocked
    *   Whether the working version is locked.
+   * 
+   * @param correctedStamps
+   *   For working files which have been moved into the repository and replaced with 
+   *   symlinks, records the timestamp both before the move and after the link.
    */ 
   public 
   NodeMod
@@ -182,7 +192,8 @@ class NodeMod
    NodeVersion vsn, 
    long timestamp, 
    boolean isFrozen, 
-   boolean isLocked
+   boolean isLocked, 
+   TreeMap<String,Long[]> correctedStamps
   ) 
   {
     super(vsn);
@@ -213,6 +224,15 @@ class NodeMod
     pLastMod               = timestamp;
     pLastCriticalMod       = timestamp;
     pLastCriticalSourceMod = timestamp;
+
+    pCorrectedStamps = new TreeMap<String,Long[]>();
+    if(correctedStamps != null) {
+      for(Map.Entry<String,Long[]> entry : correctedStamps.entrySet()) {
+        String fname  = entry.getKey();
+        Long[] stamps = entry.getValue();
+        pCorrectedStamps.put(fname, Arrays.copyOf(stamps, 2));
+      }
+    }
   }
 
 
@@ -243,7 +263,10 @@ class NodeMod
     pLastCriticalMod       = mod.getLastCriticalModification();
     pLastCriticalSourceMod = mod.getLastCriticalSourceModification();
     pLastCTimeUpdate       = mod.getLastCTimeUpdate(); 
+    
+    pCorrectedStamps = mod.getCorrectedStamps(); 
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -384,6 +407,63 @@ class NodeMod
     pLastCTimeUpdate = TimeStamps.now();
   }
   
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the proper timestamp for working files which have been moved into the 
+   * repository and replaced with symlinks.<P> 
+   * 
+   * @param fname
+   *   The short name of the primary/secodary file.
+   * 
+   * @param stamp
+   *   The last critical change timestamp of the file/link according to the filesystem.
+   * 
+   * @return
+   *   The corrected last critical change timestamp.
+   */ 
+  public long
+  correctStamp
+  (
+   String fname, 
+   long stamp
+  ) 
+  {
+    long corrected = stamp;
+    Long[] moved = pCorrectedStamps.get(fname);
+    if((moved != null) && (stamp <= moved[1])) 
+      corrected = moved[0];
+    
+    return corrected;
+  }
+
+  /**
+   * For working files which have been moved into the repository and replaced with 
+   * symlinks, records the timestamp both before the move and after the link.<P> 
+   * 
+   * When per-file status is computed, this before stamp will be used for any working
+   * file which is not newer than the after stamp.  In other words, the original pre-move
+   * file timestamp is used instead of the post-move link's timestamp unless the link
+   * has been modified or replaced after the check-in.<P> 
+   * 
+   * Note that this is sparse table and missing entries for a particular file simply 
+   * indicate that the file's actual timestamps can be used as-is.
+   */ 
+  public TreeMap<String,Long[]> 
+  getCorrectedStamps() 
+  {
+    TreeMap<String,Long[]> table = new TreeMap<String,Long[]>();
+    for(Map.Entry<String,Long[]> entry : pCorrectedStamps.entrySet()) {
+      String fname  = entry.getKey();
+      Long[] stamps = entry.getValue();
+      table.put(fname, Arrays.copyOf(stamps, 2));
+    }
+
+    return table;
+  }
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -1655,7 +1735,10 @@ class NodeMod
 
     if(pLastCTimeUpdate != null) 
       encoder.encode("LastCTimeUpdate", pLastCTimeUpdate);
-    
+
+    if(!pCorrectedStamps.isEmpty()) 
+      encoder.encode("CorrectedStamps", pCorrectedStamps);
+
     if(!pSources.isEmpty())
       encoder.encode("Sources", pSources);
   }
@@ -1719,6 +1802,13 @@ class NodeMod
 	pLastCTimeUpdate = stamp;
     }
     
+    {
+      TreeMap<String,Long[]> corrected = 
+        (TreeMap<String,Long[]>) decoder.decode("CorrectedStamps");
+      if(corrected != null) 
+        pCorrectedStamps = corrected; 
+    }
+
     {
       TreeMap<String,LinkMod> sources = (TreeMap<String,LinkMod>) decoder.decode("Sources"); 
       if(sources != null) 
@@ -1793,6 +1883,20 @@ class NodeMod
    * of the change time (ctime) for any file associated with the node.
    */
   private Long  pLastCTimeUpdate; 
+
+  /**
+   * For working files which have been moved into the repository and replaced with 
+   * symlinks, records the timestamp both before the move and after the link.<P> 
+   * 
+   * When per-file status is computed, this before stamp will be used for any working
+   * file which is not newer than the after stamp.  In other words, the original pre-move
+   * file timestamp is used instead of the post-move link's timestamp unless the link
+   * has been modified or replaced after the check-in.<P> 
+   * 
+   * Note that this is sparse table and missing entries for a particular file simply 
+   * indicate that the file's actual timestamps can be used as-is.
+   */ 
+  private TreeMap<String,Long[]>  pCorrectedStamps;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.94 2009/09/01 10:59:39 jim Exp $
+// $Id: FileMgr.java,v 1.95 2009/09/21 23:21:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -879,7 +879,9 @@ class FileMgr
         
         CheckSumCache wcheck = req.getWorkingCheckSums();
         wcheck.resetModified(); 
-        
+
+        TreeMap<String,Long[]> movedStamps = new TreeMap<String,Long[]>();
+
         Path statPath = new Path(pFileStatPath.get());
 
 	/* create the repository file directory as well any missing subdirectories */ 
@@ -1130,6 +1132,26 @@ class FileMgr
           if(!filesToMove.isEmpty()) {
             boolean moveSuccess = false; 
             try {
+              /* record the pre-move timestamps */ 
+              {
+                Path swpath = new Path(statPath, nodeID.getWorkingParent());
+                for(File file : filesToMove) {
+                  String fname = file.getPath();
+                  Path bpath = new Path(swpath, fname);  
+                  try {      
+                    NativeFileStat before = new NativeFileStat(bpath);
+                    Long[] both = new Long[2];
+                    both[0] = before.lastCriticalChange(ctime); 
+                    movedStamps.put(fname, both);
+                  }
+                  catch(IOException ex2) {
+                    throw new PipelineException
+                      ("Unable to determine the pre-move timestamp for file " + 
+                       "(" + bpath + ") just prior to being moved/link by check-in!");
+                  }
+                }
+              }
+
               /* rename the working files into repository ones, 
                  the underlying "mv" falls back to copying if the working and repository
                  directories are not on same filesystem */ 
@@ -1273,6 +1295,25 @@ class FileMgr
                    "working version (" + nodeID + ")!");
               }
             }
+
+            /* record the post-move timestamps */ 
+            {
+              Path swpath = new Path(statPath, nodeID.getWorkingParent());
+              for(File file : filesToMove) {
+                String fname = file.getPath();
+                Path apath = new Path(swpath, fname);
+                try {      
+                  NativeFileStat after = new NativeFileStat(apath);
+                  Long[] both = movedStamps.get(fname); 
+                  both[1] = after.lastCriticalChange(ctime); 
+                }
+                catch(IOException ex2) {
+                  throw new PipelineException
+                    ("Unable to determine the post-move timestamp for symlink " + 
+                     "(" + apath + ") just after to being moved/linked by check-in!");
+                }
+              }
+            }
           }
         } // if(!req.isIntermediate())
 
@@ -1291,7 +1332,7 @@ class FileMgr
          * recommended, but since the cache can be large and this is one of the more time 
          * critical methods in Pipeine, I'm intentionally breaking the rules here.
          */
-	return new FileCheckInRsp(timer, wcheck); 
+	return new FileCheckInRsp(timer, wcheck, movedStamps); 
       }
     }
     catch(PipelineException ex) {

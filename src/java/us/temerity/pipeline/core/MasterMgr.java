@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.292 2009/09/16 03:48:17 jesse Exp $
+// $Id: MasterMgr.java,v 1.293 2009/09/21 23:21:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11374,7 +11374,7 @@ class MasterMgr
 
       /* create a new working version and write it to disk */ 
       NodeMod nwork = 
-        new NodeMod(vsn, timestamp, isFrozen && !vsn.isIntermediate(), isLocked);
+        new NodeMod(vsn, timestamp, isFrozen && !vsn.isIntermediate(), isLocked, null);
       writeWorkingVersion(nodeID, nwork);
 
       /* initialize new working version */ 
@@ -11694,7 +11694,7 @@ class MasterMgr
 	  }
 
 	  /* create a new working version and write it to disk */ 
-	  NodeMod nwork = new NodeMod(vsn, timestamp, true, true);
+	  NodeMod nwork = new NodeMod(vsn, timestamp, true, true, null);
 	  writeWorkingVersion(nodeID, nwork);
 	
 	  /* initialize new working version */ 
@@ -18635,22 +18635,37 @@ class MasterMgr
                 finally {
                   clock.writeLock().unlock();
                 }  
-
-                /* if frozen, all the files are just links so use the working time stamp */ 
-                if(workIsFrozen) {
-                  for(FileSeq fseq : work.getSequences()) {
-                    Long ts[] = new Long[fseq.numFrames()];
-
-                    int wk;
-                    for(wk=0; wk<ts.length; wk++) 
-                      ts[wk] = work.getTimeStamp();
-
-                    stamps.put(fseq, ts);
-                  }
-                }
               }
               finally {
                 releaseFileMgrClient(fclient);
+              }
+              
+              /* if frozen, all the files are just links so use the working time stamp */ 
+              if(workIsFrozen) {
+                for(FileSeq fseq : work.getSequences()) {
+                  Long ts[] = new Long[fseq.numFrames()];
+                  
+                  int wk;
+                  for(wk=0; wk<ts.length; wk++) 
+                    ts[wk] = work.getTimeStamp();
+                  
+                  stamps.put(fseq, ts);
+                }
+              }
+              /* otherwise, correct the timestamps for any symlinks we've made 
+                 during a previous check-in */ 
+              else {
+                for(FileSeq fseq : work.getSequences()) {
+                  Long ts[] = stamps.get(fseq); 
+                  if(ts != null) {
+                    int wk=0;
+                    for(Path path : fseq.getPaths()) {
+                      if(ts[wk] != null) 
+                        ts[wk] = work.correctStamp(path.toString(), ts[wk]);
+                      wk++;
+                    }
+                  }
+                }
               }
             }
 
@@ -23640,6 +23655,7 @@ class MasterMgr
 
 	  /* check-in the files */ 
           TreeMap<String,CheckSum> checksums = null;
+          TreeMap<String,Long[]> correctedStamps = work.getCorrectedStamps();
 	  {
 	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
@@ -23653,7 +23669,8 @@ class MasterMgr
                 CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
 
                 CheckSumCache updatedCheckSums = 
-                  fclient.checkIn(nodeID, work, vid, latestID, isNovel, cbundle.getCache()); 
+                  fclient.checkIn(nodeID, work, vid, latestID, isNovel, 
+                                  cbundle.getCache(), correctedStamps); 
 
                 if(updatedCheckSums.wasModified()) {
                   try {
@@ -23731,7 +23748,8 @@ class MasterMgr
 	  }
 
 	  /* create a new working version and write it to disk */ 
-	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification(), false, false);
+	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification(), false, false, 
+                                      correctedStamps);
 	  writeWorkingVersion(nodeID, nwork);
 
 	  /* update the working bundle */ 
