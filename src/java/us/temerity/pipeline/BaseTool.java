@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.19 2008/10/10 12:33:09 jim Exp $
+// $Id: BaseTool.java,v 1.20 2009/09/21 22:30:14 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -130,6 +130,10 @@ class BaseTool
    *
    * @param primary 
    *   The name of the primary selected node or <CODE>null</CODE>.
+   *
+   * @param prefix
+   *   The name of the parent directory of the primary selected node or a branch 
+   *   selected in the Node Browser or <CODE>null</CODE>.
    * 
    * @param selected
    *   The last known status of the selected nodes indexed by fully resolved node name.
@@ -143,6 +147,7 @@ class BaseTool
    String author, 
    String view, 
    String primary, 
+   String prefix, 
    TreeMap<String,NodeStatus> selected, 
    TreeSet<String> roots
   )
@@ -150,6 +155,7 @@ class BaseTool
     pAuthor   = author; 
     pView     = view; 
     pPrimary  = primary;
+    pPrefix   = prefix;
     pSelected = selected;    
     pRoots    = roots;
     pPhaseIdx = 0;
@@ -515,6 +521,13 @@ class BaseTool
    * node selection.
    */ 
   protected String  pPrimary; 
+
+  /**
+   * The name of the parent directory of the primary selected node or the branch selected 
+   * in the node browser.  This can be <CODE>null</CODE> if there is no primary node 
+   * selection or no branch selected in the Node Browser.
+   */
+  protected String  pPrefix;
 
   /**
    * The last known status of the selected nodes indexed by fully resolved node name.

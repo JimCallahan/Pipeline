@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.26 2009/09/14 03:48:43 jlee Exp $
+// $Id: JNodeBrowserPanel.java,v 1.27 2009/09/21 22:30:14 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -64,6 +64,8 @@ class JNodeBrowserPanel
   {
     /* initialize fields */ 
     {
+      pToolsetCache = new TreeMap<String,String>();
+
       pSelected = new TreeSet<String>();
 
       pFilter = new TreeMap<NodeTreeComp.State,Boolean>();
@@ -92,13 +94,32 @@ class JNodeBrowserPanel
       pRegisterItem = item;
       item.setActionCommand("register");
       item.addActionListener(this);
-      pPanelPopup.add(item);  
+      pPanelPopup.add(item);
 
       item = new JMenuItem("Clone...");
       pCloneItem = item;
       item.setActionCommand("clone");
       item.addActionListener(this);
-      pPanelPopup.add(item);  
+      pPanelPopup.add(item);
+
+      {
+	JMenu sub;
+
+	sub = new JMenu("Tools");
+	pToolMenu = sub;
+	pPanelPopup.add(sub);
+	sub.setEnabled(false);
+	sub.setVisible(false);
+
+	//sub = new JMenu("Tools (Default)");
+	sub = new JMenu("Tools");
+	pDefaultToolMenu = sub;
+	pPanelPopup.add(sub);
+	sub.setEnabled(false);
+	sub.setVisible(false);
+
+	pRefreshDefaultToolMenu = true;
+      }
 
       pPanelPopup.addSeparator();
 
@@ -298,7 +319,9 @@ class JNodeBrowserPanel
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);  
+      super.setAuthorView(author, view);
+
+    pToolsetCache.clear();
 
     updateSelection(selected);
   }
@@ -389,7 +412,7 @@ class JNodeBrowserPanel
 
     updateNodeTree(getExpandedPaths(), null);
   }
-  
+
   /**
    * Update the node filter.
    * 
@@ -408,6 +431,50 @@ class JNodeBrowserPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Replace the current tree node selection with the given set of nodes. <P> 
+   *
+   * Does not cause a multi-panel update and does not make a call to updateNodeTree.
+   *
+   * @param names
+   *   The fully resolved names of the nodes to select.
+   */
+  private void
+  setSelected
+  (
+   TreeSet<String> names
+  )
+  {
+    pSelected.clear();
+    pSelected.addAll(names);
+  }
+
+  /**
+   * Replace the current tree node selection with the given set of nodes. <P> 
+   *
+   * Does not cause a multi-panel update and does not make a call to updateNodeTree.
+   *
+   * @param author
+   *
+   * @param view
+   *
+   * @param names
+   *   The fully resolved names of the nodes to select.
+   */
+  private void
+  setSelected
+  (
+   String author, 
+   String view, 
+   TreeSet<String> names
+  )
+  {
+    super.setAuthorView(author, view);
+
+    pSelected.clear();
+    pSelected.addAll(names);
+  }
 
   /**
    * Update the node tree componenents based on the currently expanded paths.
@@ -709,7 +776,98 @@ class JNodeBrowserPanel
   }
 
 
-  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Reset the caches of toolset plugins and plugin menu layouts.
+   */ 
+  @Override
+  public void 
+  clearPluginCache()
+  {
+    pToolMenuToolset = null;
+    pRefreshDefaultToolMenu = true;
+  }
+
+  /**
+   * Update the tool plugin menus (over a node).
+   */ 
+  private synchronized void 
+  updateToolMenu()
+  {
+    if(pPrimaryNodeComp == null)
+      return;
+    else {
+      switch(pPrimaryNodeComp.getState()) {
+	case Branch:
+	case WorkingOtherCheckedInNone:
+	  return;
+      }
+    }
+
+    String toolset = pToolsetCache.get(pPrimaryNodePath);
+
+    if(toolset == null) {
+      NodeCommon node = null;
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+	try {
+	  node = client.getWorkingVersion(pAuthor, pView, pPrimaryNodePath);
+	}
+	catch(PipelineException ex2) {
+	}
+
+	if(node == null) {
+	  try {
+	    node = client.getCheckedInVersion(pPrimaryNodePath, null);
+	  }
+	  catch(PipelineException ex2) {
+	  }
+	}
+
+	if(node == null)
+	  throw new PipelineException
+	    ("Unable to obtain a NodeCommon for (" + node.getName() + ")!");
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+	return;
+      }
+      finally {
+	master.releaseMasterMgrClient(client);
+      }
+
+      if(node != null) {
+	toolset = node.getToolset();
+	pToolsetCache.put(pPrimaryNodePath, toolset);
+      }
+    }
+
+    if((toolset != null) && !toolset.equals(pToolMenuToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      master.rebuildToolMenu(pPanelPopup, pGroupID, toolset, pToolMenu, this);
+
+      pToolMenuToolset = toolset;
+    }
+  }
+
+  /**
+   * Update the default tool plugin menus (nothing under the mouse).
+   */ 
+  private synchronized void 
+  updateDefaultToolMenu()
+  {
+    if(pRefreshDefaultToolMenu) {
+      UIMaster master = UIMaster.getInstance();
+      master.rebuildDefaultToolMenu(pPanelPopup, pGroupID, pDefaultToolMenu, this);
+      
+      pRefreshDefaultToolMenu = false; 
+    }    
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -930,6 +1088,17 @@ class JNodeBrowserPanel
 
 	pPrimaryNodeComp = null;
 	pPrimaryNodePath = null;
+
+	{
+	  pCloneItem.setEnabled(false);
+	  pCloneItem.setVisible(false);
+
+	  pToolMenu.setEnabled(false);
+	  pToolMenu.setVisible(false);
+
+	  pDefaultToolMenu.setEnabled(false);
+	  pDefaultToolMenu.setVisible(false);
+	}
 	
 	/* BUTTON3: panel popup menu */ 
 	if((mods & (on1 | off1)) == on1) {
@@ -977,7 +1146,32 @@ class JNodeBrowserPanel
 	  else
 	    pRegisterItem.setText("Register...");
 
-	  pCloneItem.setEnabled(isOverNode);
+	  boolean isDefaultToolMenu = true;
+	  if(isOverNode) {
+	    pCloneItem.setEnabled(true);
+	    pCloneItem.setVisible(true);
+
+	    switch(pPrimaryNodeComp.getState()) {
+	    case WorkingCurrentCheckedInSome:
+	    case WorkingOtherCheckedInSome:
+	    case WorkingNoneCheckedInSome:
+	    case WorkingCurrentCheckedInNone:
+	      isDefaultToolMenu = false;
+	      break;
+	    }
+	  }
+
+	  if(isDefaultToolMenu) {
+	    updateDefaultToolMenu();
+	    pDefaultToolMenu.setEnabled(true);
+	    pDefaultToolMenu.setVisible(true);
+	  }
+	  else {
+	    updateToolMenu();
+	    pToolMenu.setEnabled(true);
+	    pToolMenu.setVisible(true);
+	  }
+
 	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
 	else {
@@ -1092,6 +1286,10 @@ class JNodeBrowserPanel
       doRegister();
     else if(cmd.startsWith("clone"))
       doClone();
+
+    /* tool menu events */ 
+    else if(cmd.startsWith("run-tool:")) 
+      doRunTool(cmd.substring(9));
   }
 
 
@@ -1159,14 +1357,10 @@ class JNodeBrowserPanel
     if(pPrimaryNodeComp != null) {
       switch(pPrimaryNodeComp.getState()) {
       case Branch:
-	{
-	  prefix = pPrimaryNodePath + "/";
-	}
+	prefix = pPrimaryNodePath + "/";
 	break;
       default:
-	{
-	  prefix = pPrimaryNodePath.substring(0, pPrimaryNodePath.lastIndexOf('/') + 1);
-	}
+	prefix = pPrimaryNodePath.substring(0, pPrimaryNodePath.lastIndexOf('/') + 1);
       }
     }
 
@@ -1197,49 +1391,65 @@ class JNodeBrowserPanel
 	return;
       }
 
+      ClonePrepTask task = new ClonePrepTask();
+      task.start();
+    }
+  }
+
+  /**
+   * Obtain a NodeTreeComp for the sources of the primary selected node prior
+   * to displaying the Clone dialog.
+   */
+  private
+  class ClonePrepTask
+    extends Thread
+  {
+    public
+    ClonePrepTask()
+    {
+      super("JNodeViewerPanel:ClonePrepTask");
+    }
+
+    @Override
+    public void
+    run()
+    {
+      NodeCommon node = null;
+      NodeTreeComp workingSources = null;
+      boolean hasWorkingVersion = false;
+
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
       try {
-	NodeStatus status = client.status
-	  (new NodeID(pAuthor, pView, pPrimaryNodePath), true, DownstreamMode.All);
+	try {
+	  node = client.getWorkingVersion(pAuthor, pView, pPrimaryNodePath);
+	}
+	catch(PipelineException ex2) {
+	}
 
-	NodeDetailsLight details = status.getLightDetails();
-	if(details != null) {
-	  NodeCommon node = details.getWorkingVersion();
-	  boolean hasWorkingVersion = false;
-
-	  if(node == null)
-	    node = details.getLatestVersion();
-	  else
-	    hasWorkingVersion = true;
-
-	  if(node == null)
-	    return;
-
-	  NodeTreeComp workingSources = null;
-	  TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
-	    for(String sname : node.getSourceNames())
-	      paths.put(sname, false);
-	      
-	  workingSources = client.updatePaths(pAuthor, pView, paths);
-
-	  if(workingSources == null)
-	    throw new PipelineException
-	      ("Unable to obtain a NodeTreeComp for the sources of " + 
-	       "(" + node.getName() + ")!");
-
-	  if(pCloneDialog == null) 
-	    pCloneDialog = new JCloneDialog(pGroupID, getTopFrame());
-
-	  pCloneDialog.updateNode(pAuthor, pView, node, workingSources, hasWorkingVersion);
-	  pCloneDialog.setVisible(true);
-
-	  TreeSet<String> names = pCloneDialog.getRegistered();
-	  if(!names.isEmpty()) {
-	    pSelected.addAll(names);
-	    selectionModified = true;
+	if(node == null) {
+	  try {
+	    node = client.getCheckedInVersion(pPrimaryNodePath, null);
+	  }
+	  catch(PipelineException ex2) {
 	  }
 	}
+	else
+	  hasWorkingVersion = true;
+
+	if(node == null)
+	  throw new PipelineException
+	    ("Unable to obtain a NodeCommon for (" + node.getName() + ")!");
+
+	TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+	  for(String sname : node.getSourceNames())
+	    paths.put(sname, false);
+	      
+	workingSources = client.updatePaths(pAuthor, pView, paths);
+	if(workingSources == null)
+	  throw new PipelineException
+	    ("Unable to obtain a NodeTreeComp for the sources of " + 
+	     "(" + node.getName() + ")!");
       }
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);
@@ -1248,10 +1458,395 @@ class JNodeBrowserPanel
       finally {
 	master.releaseMasterMgrClient(client);
       }
+
+      CloneTask task = new CloneTask(node, workingSources, hasWorkingVersion);
+      SwingUtilities.invokeLater(task);
+    }
+  }
+
+  /**
+   * Display the Clone dialog and update the Node Viewer after the dialog
+   * is dismissed.
+   */
+  private
+  class CloneTask
+    extends Thread
+  {
+    public
+    CloneTask
+    (
+     NodeCommon node, 
+     NodeTreeComp workingSources, 
+     boolean hasWorkingVersion
+    )
+    {
+      pNode = node;
+      pWorkingSources = workingSources;
+      pHasWorkingVersion = hasWorkingVersion;
     }
 
-    if(selectionModified)
-      updatePanels();
+    @Override
+    public void
+    run()
+    {
+      if(pCloneDialog == null) 
+	pCloneDialog = new JCloneDialog(pGroupID, getTopFrame());
+
+      pCloneDialog.updateNode(pAuthor, pView, pNode, pWorkingSources, pHasWorkingVersion);
+      pCloneDialog.setVisible(true);
+
+      TreeSet<String> names = pCloneDialog.getRegistered();
+      if(!names.isEmpty()) {
+	pSelected.addAll(names);
+	updateNodeTree(getExpandedPaths(), null);
+	updatePanels();
+      }
+    }
+
+    private NodeCommon  pNode;
+    private NodeTreeComp  pWorkingSources;
+    private boolean  pHasWorkingVersion;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Run the given tool plugin.
+   */ 
+  private synchronized void 
+  doRunTool
+  (
+   String name 
+  ) 
+  {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Run Tool")) 
+      return;
+
+    String parts[] = name.split(":");
+    assert(parts.length == 3);
+    
+    String tname   = parts[0];
+    VersionID tvid = new VersionID(parts[1]);
+    String tvendor = parts[2];
+    
+    String primary = null;
+    String prefix = null;
+    if(pPrimaryNodeComp != null) {
+      switch(pPrimaryNodeComp.getState()) {
+      case Branch:
+	prefix = pPrimaryNodePath + "/";
+	break;
+      default:
+	primary = pPrimaryNodePath;
+	prefix  = pPrimaryNodePath.substring(0, pPrimaryNodePath.lastIndexOf('/') + 1);
+      }
+    }
+
+    ToolPrepTask task = new ToolPrepTask(tname, tvid, tvendor, primary, prefix);
+    task.start();
+  }
+
+  /**
+   * Retrieve the NodeStatus for the node under the mouse position in another 
+   * thread to avoid jamming up the Swing Event Dispatch Thread.
+   */
+  private
+  class ToolPrepTask
+    extends Thread
+  {
+    public
+    ToolPrepTask
+    (
+     String name, 
+     VersionID vid, 
+     String vendor, 
+     String primary, 
+     String prefix
+    )
+    {
+      super("JNodeBrowserPanel:ToolPrepTask");
+
+      pName = name;
+      pVid = vid;
+      pVendor = vendor;
+      pPrimary = primary;
+      pPrefix = prefix;
+    }
+
+    @Override
+    public
+    void run()
+    {
+      UIMaster master = UIMaster.getInstance();
+      try {
+	TreeMap<String,NodeStatus> selected = new TreeMap<String,NodeStatus>();
+	NodeStatus status = null;
+	if(pPrimary != null) {
+	  MasterMgrClient client = master.acquireMasterMgrClient();
+	  try {
+	    status = client.status(pAuthor, pView, pPrimary, true, DownstreamMode.All);
+	  }
+	  finally {
+	    master.releaseMasterMgrClient(client);
+	  }
+
+	  if(status == null)
+	    throw new PipelineException
+	      ("Unable to obtain status for (" + pPrimary + ")!");
+
+	  selected.put(pPrimary, status);
+	}
+
+	TreeSet<String> roots = new TreeSet<String>(pSelected);
+	BaseTool tool = PluginMgrClient.getInstance().newTool(pName, pVid, pVendor);
+
+	tool.initExecution(pAuthor, pView, pPrimary, pPrefix, selected, roots);
+
+	ToolOpTask task = new ToolOpTask(tool, pGroupID);
+	task.start();
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+	return;
+      }
+    }
+
+    private String  pName;
+    private VersionID  pVid;
+    private String  pVendor;
+    private String  pPrimary;
+    private String  pPrefix;
+  }
+
+  /** 
+   * Acquire the channel operation lock and release it when the tool is done.
+   */ 
+  private
+  class ToolOpTask
+    extends Thread
+  {
+    public 
+    ToolOpTask
+    (
+     BaseTool tool, 
+     int groupID
+    ) 
+    {
+      super("JNodeBrowserPanel:ToolOpTask");
+
+      pTool = tool;
+      pGID  = groupID;
+      pLock = new Object(); 
+    }
+
+    public synchronized void 
+    endTool
+    (
+     boolean success
+    ) 
+    {
+      synchronized(pLock) {
+	pSuccess = success;
+	pMessage = pTool.getName() + (pSuccess ? " Done." : " Aborted.");
+	pLock.notify();
+      }
+    }
+
+    public void 
+    updateTool
+    (
+     String msg
+    ) 
+    {
+      synchronized(pLock) {
+	pMessage = msg;
+	pLock.notify();
+      }
+    }
+
+    @Override
+    public void 
+    run() 
+    {	
+      UIMaster master = UIMaster.getInstance();
+      if(!master.beginPanelOp(pGID, "Running " + pTool.getName() + pMessage))
+	return;
+
+      try {
+	SwingUtilities.invokeLater(new ToolInputTask(pTool, pGID, this));
+
+        if(pTool.showLogHistory()) 
+          SwingUtilities.invokeLater(new ToolShowLogsTask());
+
+	synchronized(pLock) {
+	  while(pSuccess == null) {
+	    pLock.wait();
+	    
+	    if(pMessage != null) 
+	      master.updatePanelOp(pGID, pMessage);
+	  }
+
+          master.endPanelOp(pGID, pMessage);
+	}
+
+        if((pSuccess) && pTool.updateOnExit()) {
+          String author = pTool.authorOnExit();
+          String view = pTool.viewOnExit();
+	  TreeSet<String> roots = pTool.rootsOnExit();
+          if(!pAuthor.equals(author) || !pView.equals(view))
+	    setSelected(author, view, roots);
+          else
+	    setSelected(roots);
+
+	  updatePanels();
+        }
+      }
+      catch(Exception ex) {
+	pMessage = "Unexpected Failure!";
+	master.showErrorDialog(ex);
+	master.endPanelOp(pGID, pMessage);
+      }
+    }
+
+    private BaseTool  pTool;
+    private int       pGID; 
+    private Object    pLock; 
+    private Boolean   pSuccess;
+    private String    pMessage; 
+  }
+
+  /** 
+   * Show the Log History dialog with tool output enabled.
+   */ 
+  private
+  class ToolShowLogsTask
+    extends Thread
+  {
+    public 
+    ToolShowLogsTask() 
+    {
+      super("JNodeBrowserPanel:ToolShowLogsTask");
+    }
+
+    
+    @Override
+    public void 
+    run() 
+    {	
+      UIMaster master = UIMaster.getInstance();
+      master.showLogsDialog(true);
+    }
+  }
+
+  /** 
+   * Collect user input for the next tool phase.
+   */ 
+  private
+  class ToolInputTask
+    extends Thread
+  {
+    public 
+    ToolInputTask
+    (
+     BaseTool tool, 
+     int groupID,
+     ToolOpTask task
+    ) 
+    {
+      super("JNodeBrowserPanel:ToolInputTask");
+
+      pTool   = tool;
+      pGID    = groupID;
+      pOpTask = task;
+    }
+
+    @Override
+    public void 
+    run() 
+    {	
+      UIMaster master = UIMaster.getInstance();
+      try {
+	String msg = pTool.collectPhaseInput();
+	if(msg != null) {
+	  RunToolTask task = new RunToolTask(pTool, pGID, pOpTask, msg);
+	  task.start();	
+	}
+	else {
+	  pOpTask.endTool(true); 
+	}
+      }
+      catch(Exception ex) {
+	pOpTask.endTool(false); 
+	master.showErrorDialog(ex);
+      }
+      catch(LinkageError er) {
+        pOpTask.endTool(false); 
+        master.showErrorDialog(er);
+      }
+    }
+
+    private BaseTool    pTool;
+    private int         pGID; 
+    private ToolOpTask  pOpTask; 
+  }
+
+  /** 
+   * Run the next tool phase. 
+   */ 
+  private
+  class RunToolTask
+    extends Thread
+  {
+    public 
+    RunToolTask
+    (
+     BaseTool tool, 
+     int groupID,
+     ToolOpTask task, 
+     String msg
+    ) 
+    {
+      super("JNodeBrowserPanel:RunToolTask");
+
+      pTool    = tool;
+      pGID     = groupID;
+      pOpTask  = task;
+      pMessage = msg; 
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      pOpTask.updateTool("Running " + pTool.getName() + pMessage); 
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient mclient = master.acquireMasterMgrClient(); 
+      QueueMgrClient  qclient = master.acquireQueueMgrClient(); 
+      try {
+	if(pTool.executePhase(mclient, qclient)) {
+	  pOpTask.updateTool("Completed " + pTool.getName() + " Phase.");
+	  SwingUtilities.invokeLater(new ToolInputTask(pTool, pGID, pOpTask));
+	}
+	else {
+	  pOpTask.endTool(true);
+	}
+      }
+      catch(Exception ex) {
+	pOpTask.endTool(false); 
+	master.showErrorDialog(ex);
+      }
+      finally {
+        master.releaseMasterMgrClient(mclient);
+        master.releaseQueueMgrClient(qclient);
+      }
+    }
+
+    private BaseTool    pTool;
+    private int         pGID; 
+    private ToolOpTask  pOpTask; 
+    private String      pMessage; 
   }
 
 
@@ -1312,17 +1907,17 @@ class JNodeBrowserPanel
   /**
    * The node tree component.
    */ 
-  private JTree pTree;
+  private JTree  pTree;
 
   /**
    * The fully resolved names of the selected nodes.
    */ 
-  private TreeSet<String> pSelected;
+  private TreeSet<String>  pSelected;
 
   /**
    * Whether to show node components with the given states.
    */ 
-  private TreeMap<NodeTreeComp.State, Boolean>  pFilter;
+  private TreeMap<NodeTreeComp.State,Boolean>  pFilter;
 
   /**
    * Whether the selection was modified since the first SHIFT or CTRL key down event.
@@ -1353,6 +1948,12 @@ class JNodeBrowserPanel
   private JMenuItem  pCloneItem;
 
   /**
+   * The tool plugin menu.
+   */
+  private JMenu  pToolMenu;
+  private JMenu  pDefaultToolMenu;
+
+  /**
    * The editor dialog for node filters.
    */ 
   private JNodeBrowserFilterDialog  pFilterDialog; 
@@ -1376,5 +1977,20 @@ class JNodeBrowserPanel
    * The node path of the tree element right clicked over.
    */
   private String  pPrimaryNodePath;
+
+  /**
+   * The toolset used to build the tool menu.
+   */ 
+  private String  pToolMenuToolset;
+
+  /**
+   * Whether the default toolset menu needs to be rebuilt.
+   */ 
+  private boolean  pRefreshDefaultToolMenu;
+
+  /**
+   * Table of toolsets indexed by node name.  Cleared during updates.
+   */
+  private TreeMap<String,String>  pToolsetCache;
 
 }

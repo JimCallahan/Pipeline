@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.145 2009/09/14 03:48:43 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.146 2009/09/21 22:30:14 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4372,7 +4372,6 @@ class JNodeViewerPanel
 
     if(pPrimary != null) {
       NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
-
       if(details != null) {
 	NodeCommon node = details.getWorkingVersion();
 	boolean hasWorkingVersion = false;
@@ -4385,49 +4384,10 @@ class JNodeViewerPanel
 	if(node == null)
 	  return;
 
-	NodeTreeComp workingSources = null;
-	{
-	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.acquireMasterMgrClient();
-
-	  try {
-	    TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
-	    for(String sname : node.getSourceNames())
-	      paths.put(sname, false);
-
-	    workingSources = client.updatePaths(pAuthor, pView, paths);
-
-	    if(workingSources == null) {
-	      throw new PipelineException
-		("Unable to obtain a NodeTreeComp for the sources of " + 
-		 "(" + node.getName() + ")!");
-	    }
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	    return;
-	  }
-	  finally {
-	    master.releaseMasterMgrClient(client);
-	  }
-	}
-
-	if(pCloneDialog == null) 
-	  pCloneDialog = new JCloneDialog(pGroupID, getTopFrame());
-
-	pCloneDialog.updateNode(pAuthor, pView, node, workingSources, hasWorkingVersion);
-	pCloneDialog.setVisible(true);
-
-	TreeSet<String> names = pCloneDialog.getRegistered();
-	if(!names.isEmpty()) {
-	  addRoots(names);
-          pNewRootNodeNames.addAll(names);   
-        }
+	ClonePrepTask task = new ClonePrepTask(node, hasWorkingVersion);
+	task.start();
       }
     }
-
-    clearSelection();
-    refresh(); 
   }
 
   /**
@@ -5646,8 +5606,11 @@ class JNodeViewerPanel
       BaseTool tool = PluginMgrClient.getInstance().newTool(tname, tvid, tvendor);
 
       String primary = null;
-      if(pPrimary != null) 
+      String prefix = null;
+      if(pPrimary != null) {
 	primary = pPrimary.getName();
+	prefix  = primary.substring(0, primary.lastIndexOf('/') + 1);
+      }
       
       TreeMap<String,NodeStatus> selected = new TreeMap<String,NodeStatus>();
       for(ViewerNode vnode : pSelected.values()) {
@@ -5660,7 +5623,7 @@ class JNodeViewerPanel
       }
 
       TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-      tool.initExecution(pAuthor, pView, primary, selected, roots);
+      tool.initExecution(pAuthor, pView, primary, prefix, selected, roots);
 
       ToolOpTask task = new ToolOpTask(tool, pGroupID);
       task.start();
@@ -6083,6 +6046,112 @@ class JNodeViewerPanel
     
     private String   pTarget;
     private FileSeq  pFileSeq; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Obtain a NodeTreeComp for the sources of the primary selected node prior
+   * to displaying the Clone dialog.
+   */
+  private
+  class ClonePrepTask
+    extends Thread
+  {
+    public
+    ClonePrepTask
+    (
+     NodeCommon node, 
+     boolean hasWorkingVersion
+    )
+    {
+      super("JNodeViewerPanel:ClonePrepTask");
+
+      pNode = node;
+      pHasWorkingVersion = hasWorkingVersion;
+    }
+
+    @Override
+    public void
+    run()
+    {
+      NodeTreeComp workingSources = null;
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+	TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+	for(String sname : pNode.getSourceNames())
+	  paths.put(sname, false);
+
+	workingSources = client.updatePaths(pAuthor, pView, paths);
+
+	if(workingSources == null) {
+	  throw new PipelineException
+	    ("Unable to obtain a NodeTreeComp for the sources of " + 
+	     "(" + pNode.getName() + ")!");
+	}
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+	return;
+      }
+      finally {
+	master.releaseMasterMgrClient(client);
+      }
+
+      CloneTask task = new CloneTask(pNode, workingSources, pHasWorkingVersion);
+      SwingUtilities.invokeLater(task);
+    }
+
+    private NodeCommon  pNode;
+    private boolean  pHasWorkingVersion;
+  }
+
+  /**
+   * Display the Clone dialog and update the Node Viewer after the dialog
+   * is dismissed.
+   */
+  private
+  class CloneTask
+    extends Thread
+  {
+    public
+    CloneTask
+    (
+     NodeCommon node, 
+     NodeTreeComp workingSources, 
+     boolean hasWorkingVersion
+    )
+    {
+      pNode = node;
+      pWorkingSources = workingSources;
+      pHasWorkingVersion = hasWorkingVersion;
+    }
+
+    @Override
+    public void
+    run()
+    {
+      if(pCloneDialog == null) 
+	pCloneDialog = new JCloneDialog(pGroupID, getTopFrame());
+
+      pCloneDialog.updateNode(pAuthor, pView, pNode, pWorkingSources, pHasWorkingVersion);
+      pCloneDialog.setVisible(true);
+
+      TreeSet<String> names = pCloneDialog.getRegistered();
+      if(!names.isEmpty()) {
+	addRoots(names);
+        pNewRootNodeNames.addAll(names);   
+      }
+
+      clearSelection();
+      refresh();
+    }
+
+    private NodeCommon  pNode;
+    private NodeTreeComp  pWorkingSources;
+    private boolean  pHasWorkingVersion;
   }
 
 

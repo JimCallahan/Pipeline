@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.112 2009/09/16 03:54:40 jesse Exp $
+// $Id: UIMaster.java,v 1.113 2009/09/21 22:30:14 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1626,7 +1626,7 @@ class UIMaster
   }
 
   /**
-   * Rebuild the contents of an tool plugin menu for the given toolset.
+   * Rebuild the contents of an tool plugin menu for the default toolset.
    * 
    * @param channel
    *   The index of the update channel.
@@ -1649,7 +1649,7 @@ class UIMaster
   }
 
   /**
-   * Rebuild the contents of an tool plugin menu for the given toolset.
+   * Rebuild the contents of an tool plugin menu for the default toolset.
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
@@ -1668,8 +1668,111 @@ class UIMaster
   (
    JPopupMenu topmenu,
    int channel, 
-    JPopupMenu menu, 
-    ActionListener listener
+   JPopupMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = acquireMasterMgrClient();
+    try {
+      UICache cache = getUICache(channel);
+      String tname = cache.getCachedDefaultToolsetName();
+
+      synchronized(pToolPlugins) {
+	plugins = pToolPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    client.getToolsetToolPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getTools();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.get(vendor).keySet()) {
+	      for(VersionID vid : index.get(vendor).get(name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+	  
+	  pToolPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pToolLayouts) {
+	layout = pToolLayouts.get(tname);
+	if(layout == null) {
+	  layout = client.getToolMenuLayout(tname);
+	  pToolLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+    }
+    finally {
+      releaseMasterMgrClient(client);
+    }
+
+    menu.removeAll();
+    if((layout != null) && !layout.isEmpty()) {
+      for(PluginMenuLayout pml : layout) 
+	menu.add(rebuildPluginMenuHelper(topmenu, pml, "run-tool", plugins, listener));
+    }
+    else {
+      JPopupMenuItem item = new JPopupMenuItem(topmenu, "(None Specified)");
+      item.setEnabled(false);
+      menu.add(item);
+    }
+  }
+
+  /**
+   * Rebuild the contents of an tool plugin menu for the default toolset.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */
+  public void
+  rebuildDefaultToolMenu
+  (
+   int channel, 
+   JMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    rebuildDefaultToolMenu(null, channel, menu, listener);
+  }
+
+  /**
+   * Rebuild the contents of an tool plugin menu for the default toolset.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */
+  public void
+  rebuildDefaultToolMenu
+  (
+   JPopupMenu topmenu,
+   int channel, 
+   JMenu menu, 
+   ActionListener listener
   ) 
   {
     PluginMenuLayout layout = null;
