@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.27 2009/09/21 22:30:14 jlee Exp $
+// $Id: JNodeBrowserPanel.java,v 1.28 2009/09/22 04:12:19 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1439,7 +1439,7 @@ class JNodeBrowserPanel
 
 	if(node == null)
 	  throw new PipelineException
-	    ("Unable to obtain a NodeCommon for (" + node.getName() + ")!");
+	    ("Unable to obtain a NodeCommon for (" + pPrimaryNodePath + ")!");
 
 	TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
 	  for(String sname : node.getSourceNames())
