@@ -5,12 +5,12 @@
 # processname: pljobmgr
 
 PLJOBMGR_BIN=@ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/pljobmgr
-test -x $PLJOBMGR_BIN || { echo "$PLJOBMGR_BIN not installed"; 
+test -f $PLJOBMGR_BIN || { echo "$PLJOBMGR_BIN not installed"; 
 	if [ "$1" = "stop" ]; then exit 0;
 	else exit 5; fi; }
 
 JPS_BIN=@UNIX_JAVA_HOME@/../bin/jps
-test -x $JPS_BIN || { echo "$JPS_BIN not installed"; 
+test -f $JPS_BIN || { echo "$JPS_BIN not installed"; 
 	if [ "$1" = "stop" ]; then exit 0;
 	else exit 5; fi; }
 
