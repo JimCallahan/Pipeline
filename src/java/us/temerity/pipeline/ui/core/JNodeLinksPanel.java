@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.37 2009/08/19 23:37:19 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.38 2009/09/24 20:57:33 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1067,9 +1067,9 @@ class JNodeLinksPanel
     {
       pIsSelected = tf;
       if(pIsSelected) 
-	setIcon(pIsExtended ? sFileBarExtendIconSelected : sFileBarIconSelected);
+	setIcon(pIsExtended ? sFileBarExtBothIconSelected : sFileBarExtRightIconSelected);
       else
-	setIcon(pIsExtended ? sFileBarExtendIcon : sFileBarIcon);
+	setIcon(pIsExtended ? sFileBarExtBothIcon : sFileBarExtRightIcon);
     }
 
     private static final long serialVersionUID = -8182004303495407765L;
@@ -1663,17 +1663,17 @@ class JNodeLinksPanel
     new ImageIcon(LookAndFeelLoader.class.getResource("LinkBarExtendIconSelected.png"));
 
 
-  private static final Icon sFileBarIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("FileBarIcon.png"));
+  private static final Icon sFileBarExtRightIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtRightIcon.png"));
 
-  private static final Icon sFileBarExtendIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtendIcon.png"));
+  private static final Icon sFileBarExtBothIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtBothIcon.png"));
 
-  private static final Icon sFileBarIconSelected = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("FileBarIconSelected.png"));
+  private static final Icon sFileBarExtRightIconSelected = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtRightIconSelected.png"));
 
-  private static final Icon sFileBarExtendIconSelected = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtendIconSelected.png"));
+  private static final Icon sFileBarExtBothIconSelected = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtBothIconSelected.png"));
 
 
   private static final Icon sFileArrowIcon = 
