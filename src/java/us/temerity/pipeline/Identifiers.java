@@ -1,4 +1,4 @@
-// $Id: Identifiers.java,v 1.1 2009/06/04 09:43:38 jim Exp $
+// $Id: Identifiers.java,v 1.2 2009/09/25 22:36:14 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -444,6 +444,46 @@ class Identifiers
     return false;
   }
 
+  /**
+   * Whether the given string starts with a letter ("a"-"z", "A"-"Z", "0"-"9") 
+   * followed by zero or more of the following characters: 
+   * "a"-"z", "A"-"Z", "0"-"9", "_", "-", "~", "."<P> 
+   * 
+   * An empty string will cause this predicate to return <CODE>false</CODE>.
+   */ 
+  public static boolean
+  isExtendedNumerIdent
+  (
+   String str
+  ) 
+  {
+    if(isExtendedNumerIdentStrict(str)) 
+      return true; 
+
+    if(sIsStrict) 
+      return false;
+    if(str.length() > 0) {  
+      char cs[] = str.toCharArray();
+      if(!Character.isLetterOrDigit(cs[0]))
+        return false;
+      
+      int wk;
+      for(wk=1; wk<cs.length; wk++) {
+        if(!(Character.isLetterOrDigit(cs[wk]) || isSeparator(cs[wk])  || (cs[wk] == '.')))
+          return false;
+      }
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         Exceptions.getFullMessage
+         ("Deprecated characters detected in the identifier (" + str + ")!", true)); 
+
+      return true;
+    }
+
+    return false;
+  }
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -806,6 +846,35 @@ class Identifiers
 
     char cs[] = str.toCharArray();
     if(!isAlphaStrict(cs[0]))
+      return false;
+
+    int wk;
+    for(wk=1; wk<cs.length; wk++) {
+      if(!isExtendedIdentStrict(cs[wk])) 
+        return false;
+    }
+
+    return true; 
+  }
+
+  /**
+   * Whether the given string starts with a letter ("a"-"z", "A"-"Z", "0"-"9") 
+   * followed by zero or more of the following characters: 
+   * "a"-"z", "A"-"Z", "0"-"9", "_", "-", "~", "."<P> 
+   * 
+   * An empty string will cause this predicate to return <CODE>false</CODE>.
+   */ 
+  private static boolean
+  isExtendedNumerIdentStrict
+  (
+   String str
+  ) 
+  {
+    if(str.length() == 0) 
+      return false;
+
+    char cs[] = str.toCharArray();
+    if(!isAlphaNumericStrict(cs[0]))
       return false;
 
     int wk;

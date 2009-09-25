@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.141 2009/09/01 10:59:39 jim Exp $
+// $Id: MasterMgrClient.java,v 1.142 2009/09/25 22:36:14 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -3704,6 +3704,13 @@ class MasterMgrClient
     verifyConnection();
 
     NodeCreateWorkingAreaReq req = new NodeCreateWorkingAreaReq(author, view);
+
+    if(!Identifiers.isExtendedNumerIdent(view))
+      throw new PipelineException
+	("The view (" + view + ") is invalid! " + 
+	 "Valid view names start with (\"a\"-\"z\", \"A\"-\"Z\", \"0\"-\"9\")" + 
+	 " followed by zero or more of the following characters: " + 
+	 "\"a\"-\"z\", \"A\"-\"Z\", \"0\"-\"9\", \"_\", \"-\", \"~\", \".\"");
 
     Object obj = performTransaction(MasterRequest.CreateWorkingArea, req);
     handleSimpleResponse(obj);

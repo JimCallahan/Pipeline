@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.293 2009/09/21 23:21:45 jim Exp $
+// $Id: MasterMgr.java,v 1.294 2009/09/25 22:36:14 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6654,6 +6654,24 @@ class MasterMgr
     String view   = req.getView();
 
     TaskTimer timer = new TaskTimer("MasterMgr.createWorkingArea(): " + author + "|" + view);
+
+    try {
+      if(author == null)
+	throw new PipelineException("The author cannot be (null)!");
+
+      if(view == null)
+	throw new PipelineException("The view cannot be (null)!");
+
+      if(!Identifiers.isExtendedNumerIdent(view))
+	throw new PipelineException
+	  ("The view (" + view + ") is invalid! " + 
+	   "Valid view names start with (\"a\"-\"z\", \"A\"-\"Z\", \"0\"-\"9\")" + 
+	   " followed by zero or more of the following characters: " + 
+	   "\"a\"-\"z\", \"A\"-\"Z\", \"0\"-\"9\", \"_\", \"-\", \"~\", \".\"");
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
     
     /* pre-op tests */
     CreateWorkingAreaExtFactory factory = new CreateWorkingAreaExtFactory(author, view); 
