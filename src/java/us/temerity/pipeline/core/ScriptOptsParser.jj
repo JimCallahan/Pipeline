@@ -1141,8 +1141,8 @@ TOKEN :
 <VIEW_NAME_STATE> 
 TOKEN :
 {
-  <VIEW_NAME:      (["a"-"z","A"-"Z"]) 
-	             (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+  <VIEW_NAME:      (["a"-"z","A"-"Z","0"-"9"]) 
+	             (["a"-"z","A"-"Z","0"-"9","_","-","~","."])+>   
 | <AE14:           ["\0"]>                                  : OPTIONS
 | <ILLEGAL_VIEW:   (~["\0"])+>                              : IGNORE_STATE
 }
