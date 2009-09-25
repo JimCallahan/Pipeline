@@ -1037,6 +1037,28 @@
   <bind style="DisableLabel" type="name" key="DisableLabel"/>
 
 
+  <!--  L I N K   C H E C K  -->
+
+  <style id="LinkCheck">
+    <state>
+      <imageIcon id="LinkUncheckedIcon" path="LinkCheckIcon.png"/>
+      <property key="CheckBox.icon" value="LinkUncheckedIcon"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="LinkCheckedIcon" path="LinkCheckIconSelected.png"/>
+      <property key="CheckBox.icon" value="LinkCheckedIcon"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="LinkCheckedIconDisabled" path="LinkCheckIconDisabled.png"/>
+      <property key="CheckBox.icon" value="LinkCheckedIconDisabled"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="LinkCheck" type="name" key="LinkCheck"/>
+
 
   <!--  F I L E   C H E C K  -->
 
