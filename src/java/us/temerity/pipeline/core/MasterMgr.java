@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.294 2009/09/25 22:36:14 jlee Exp $
+// $Id: MasterMgr.java,v 1.295 2009/09/26 00:23:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -23207,14 +23207,20 @@ class MasterMgr
       (LogMgr.Kind.Glu, LogMgr.Level.Finer,
        "Removing Checksum Cache for Working Version: " + nodeID);
 
-    Path ipath = new Path(nodeID.getName());
+    Path npath = new Path(nodeID.getName());
     File dir   = new File(pNodeDir, "checksum" + nodeID.getWorkingParent());
-    File file  = new File(dir, ipath.getName()); 
+    File file  = new File(dir, npath.getName()); 
+    File root  = new File(pNodeDir, "checksum/working/" + 
+                          nodeID.getAuthor() + "/" + nodeID.getView());
 
+    /* remove the checksum file */ 
     if(file.exists()) 
       if(!file.delete()) 
         throw new PipelineException
           ("Unable to remove the existing checksum cache file (" + file + ")!");
+
+    /* clean up any now empty directories */ 
+    deleteEmptyParentDirs(root, dir); 
   }
 
 
