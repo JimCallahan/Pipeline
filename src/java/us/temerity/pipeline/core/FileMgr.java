@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.96 2009/09/26 04:41:27 jim Exp $
+// $Id: FileMgr.java,v 1.97 2009/09/26 04:44:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1003,7 +1003,13 @@ class FileMgr
                     throw new IllegalStateException(); 
                   File latest = new File(ldir, file.getPath());
                   try {
-                    // CAN WE DO THIS WITHOUT REALPATH?
+                    // WE DO THIS WITHOUT REALPATH!
+                    //
+                    // Check if "latest" is a file or a link.  If a file, its the target
+                    // of the symlink.  If its a link, then use whatever it points at as the
+                    // target of the new symlink we are going to create.  No file system 
+                    // walking or problems with symlink in the production directory path.
+                    //
                     String source = NativeFileSys.realpath(latest).getPath();
                     if(!source.startsWith(rbase))
                       throw new IllegalStateException(); 
