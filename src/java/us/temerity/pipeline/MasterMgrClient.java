@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.143 2009/09/26 02:39:05 jlee Exp $
+// $Id: MasterMgrClient.java,v 1.144 2009/09/26 03:16:48 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -3688,7 +3688,9 @@ class MasterMgrClient
    *   The name of the user which owns the working area.
    * 
    * @param view 
-   *   The name of the user's working area view. 
+   *   The name of the user's working area view.  A valid view name start with 
+   *   ("a"-"z", "A"-"Z", "0"-"9") followed by zero or more of the following characters: 
+   *   ("a"-"z", "A"-"Z", "0"-"9", "_", "-", "~", ".").
    *
    * @throws PipelineException
    *   If unable to create the working area.
