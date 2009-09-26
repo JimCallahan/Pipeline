@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.295 2009/09/26 00:23:49 jim Exp $
+// $Id: MasterMgr.java,v 1.296 2009/09/26 04:41:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -23600,7 +23600,8 @@ class MasterMgr
 	  /* lookup bundles and determine the new revision number */ 
 	  VersionID vid = null;
 	  VersionID latestID = null;
-	  TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+	  TreeMap<VersionID,CheckedInBundle> checkedIn = null;  
+          NodeVersion latest = null;
 	  if(details.getOverallNodeState() == OverallNodeState.Pending) {
 	    checkedIn = new TreeMap<VersionID,CheckedInBundle>();
 	    vid = new VersionID();
@@ -23608,6 +23609,7 @@ class MasterMgr
 	  else {
 	    checkedIn = getCheckedInBundles(name);
 	    latestID = checkedIn.lastKey();
+            latest = checkedIn.get(latestID).getVersion();
 
 	    VersionID.Level level = pRequest.getLevel();
 	    if(level == null) 
@@ -23650,32 +23652,43 @@ class MasterMgr
 	  
 	  /* build the file novelty table */ 
 	  TreeMap<FileSeq,boolean[]> isNovel = new TreeMap<FileSeq,boolean[]>();
- 	  for(FileSeq fseq : details.getFileStateSequences()) {
- 	    FileState[] states = details.getFileState(fseq);
-	    boolean flags[] = new boolean[states.length];
+          {
+            boolean allNovel = (!work.isIntermediate() && 
+                                (latest != null) && latest.isIntermediate());
+            
+            for(FileSeq fseq : details.getFileStateSequences()) {
+              FileState[] states = details.getFileState(fseq);
+              boolean flags[] = new boolean[states.length];
 
-	    int wk;
-	    for(wk=0; wk<states.length; wk++) {
-	      switch(states[wk]) {
-	      case Pending:
-	      case Modified:
-	      case Added:
-		flags[wk] = true;
-		break;
+              int wk;
+              for(wk=0; wk<states.length; wk++) {
+                if(allNovel) {
+                  flags[wk] = true;
+                }
+                else {
+                  switch(states[wk]) {
+                  case Pending:
+                  case Modified:
+                  case Added:
+                    flags[wk] = true;
+                    break;
+                    
+                  case Identical:
+                    flags[wk] = false;
+                    break;
+                    
+                  default:
+                    throw new PipelineException
+                      ("Somehow the working file (" + fseq.getFile(wk) + ") with a file " + 
+                       "state of (" + states[wk].name() + ") was erroneously submitted for " + 
+                       "check-in!");
+                  }
+                }
+              }
 
-	      case Identical:
-		flags[wk] = false;
-		break;
-
-	      default:
-		throw new PipelineException
-		  ("Somehow the working file (" + fseq.getFile(wk) + ") with a file state " + 
-		   "of (" + states[wk].name() + ") was erroneously submitted for check-in!");
-	      }
-	    }
-
-	    isNovel.put(fseq, flags);
-	  }
+              isNovel.put(fseq, flags);
+            }
+          }
 
 	  /* check-in the files */ 
           TreeMap<String,CheckSum> checksums = null;
