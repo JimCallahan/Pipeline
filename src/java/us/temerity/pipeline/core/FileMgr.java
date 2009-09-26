@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.95 2009/09/21 23:21:45 jim Exp $
+// $Id: FileMgr.java,v 1.96 2009/09/26 04:41:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1003,6 +1003,7 @@ class FileMgr
                     throw new IllegalStateException(); 
                   File latest = new File(ldir, file.getPath());
                   try {
+                    // CAN WE DO THIS WITHOUT REALPATH?
                     String source = NativeFileSys.realpath(latest).getPath();
                     if(!source.startsWith(rbase))
                       throw new IllegalStateException(); 
@@ -1091,7 +1092,7 @@ class FileMgr
             }
 
             /* all we need to do for files that are the same as another repository version
-               is to just creat a symlink between the new and existing repository files */ 
+               is to just create a symlink between the new and existing repository files */ 
             if(!filesToLink.isEmpty()) {
               for(File source : filesToLink) {
                 try {
