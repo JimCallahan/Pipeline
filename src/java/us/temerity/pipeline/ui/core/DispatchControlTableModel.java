@@ -1,4 +1,4 @@
-// $Id: DispatchControlTableModel.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
+// $Id: DispatchControlTableModel.java,v 1.2 2009/09/29 20:44:41 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -10,7 +10,6 @@ import javax.swing.table.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.ui.AbstractSortableTableModel.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   D I S P A T C H   C O N T R O L   T A B L E   M O D E L                                */
@@ -52,6 +51,8 @@ class DispatchControlTableModel
     /* all columns are dynamic, just initialize the shared renderers/editors */ 
     pCriteriaRenderer = new JSimpleTableCellRenderer("Green", JLabel.CENTER);
     pNameRenderer     = new JSimpleTableCellRenderer(JLabel.CENTER);
+    
+    pNumColumns = DispatchCriteria.values().length + 1;
   }
   
   
@@ -143,6 +144,7 @@ class DispatchControlTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
+  @SuppressWarnings("unchecked")
   @Override
   public void 
   sort()
@@ -201,8 +203,7 @@ class DispatchControlTableModel
   )
   {
     DispatchControl control = getControl(row);
-    DispatchCriteria crit = control.getCriteria(col - 1);
-    control.moveUp(crit);
+    control.moveUp(col - 1);
     
     pEditedIndices.add(row);
     pParent.doEdited();
@@ -227,8 +228,7 @@ class DispatchControlTableModel
   )
   {
     DispatchControl control = getControl(row);
-    DispatchCriteria crit = control.getCriteria(col - 1);
-    control.moveDown(crit);
+    control.moveDown(col - 1);
     
     pEditedIndices.add(row);
     pParent.doEdited();
@@ -253,8 +253,7 @@ class DispatchControlTableModel
   )
   {
     DispatchControl control = getControl(row);
-    DispatchCriteria crit = control.getCriteria(col - 1);
-    control.makeTop(crit);
+    control.makeTop(col - 1);
     
     pEditedIndices.add(row);
     pParent.doEdited();
@@ -279,8 +278,7 @@ class DispatchControlTableModel
   )
   {
     DispatchControl control = getControl(row);
-    DispatchCriteria crit = control.getCriteria(col - 1);
-    control.makeBottom(crit);
+    control.makeBottom(col - 1);
     
     pEditedIndices.add(row);
     pParent.doEdited();
@@ -348,7 +346,8 @@ class DispatchControlTableModel
       return "The name of the dispatch criteria."; 
       
     default:
-      return "Right-click to move criteria up or down in this control.";
+      return "Place the criteria in the order in which they'll be evaluated by the " +
+      	     "dispatcher.";
     }
   }
   
@@ -424,12 +423,18 @@ class DispatchControlTableModel
     int col
   ) 
   {
+    if (col == (pNumColumns - 1))
+      return "Last";
+    
     switch(col) {
     case 0:
-      return "Control Name"; 
-
+      return "Control Name";
+      
+    case 1:
+      return "First";
+      
     default:
-      return "Criteria " + (col - 1);
+      return " . . . ";
     }
   }
   

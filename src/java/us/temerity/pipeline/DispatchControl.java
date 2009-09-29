@@ -1,4 +1,4 @@
-// $Id: DispatchControl.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
+// $Id: DispatchControl.java,v 1.2 2009/09/29 20:44:41 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -93,7 +93,7 @@ class DispatchControl
     super(control.pName);
     init();
     
-    setCriteria(control.pCriteria);
+    setCriteria(new LinkedHashSet<DispatchCriteria>(control.pCriteria));
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ class DispatchControl
   private void 
   init() 
   {
-    pCriteria = new LinkedHashSet<DispatchCriteria>();
+    pCriteria = new LinkedList<DispatchCriteria>();
   }
 
   
@@ -137,7 +137,7 @@ class DispatchControl
     if (criteria.contains(null))
       throw new IllegalArgumentException("(criteria) cannot contain any (null) values.");
     
-    pCriteria = new LinkedHashSet<DispatchCriteria>(criteria);
+    pCriteria = new LinkedList<DispatchCriteria>(criteria);
     
     for (DispatchCriteria crit : DispatchCriteria.values()) {
       if (!pCriteria.contains(crit))
@@ -148,10 +148,10 @@ class DispatchControl
   /**
    * Get the criteria.
    */
-  public Set<DispatchCriteria>
+  public List<DispatchCriteria>
   getCriteria()
   {
-    return Collections.unmodifiableSet(pCriteria);
+    return Collections.unmodifiableList(pCriteria);
   }
   
   
@@ -177,90 +177,84 @@ class DispatchControl
   
   /**
    * Move the criteria up one slot in the control
+   * 
+   * @param position
+   *   The position in the list of criteria to find the criteria to move.
    */
   public void
   moveUp
   (
-    DispatchCriteria crit  
+    int position  
   )
   {
-    TreeMap<Double, DispatchCriteria> rank = new TreeMap<Double, DispatchCriteria>();
-    double i = 1d;
-    for (DispatchCriteria c : pCriteria) {
-      if (c == crit)
-        rank.put(i - 1.5, c);
-      else
-        rank.put(i, c);
-      i++;
-    }
-    pCriteria.clear();
-    pCriteria.addAll(rank.values());
+    if (position < 0 || position >= pCriteria.size())
+      throw new IllegalArgumentException
+        ("The position (" + position +") is not a valid position in a dispatch control");
+    if (position == 0)
+      return;
+    DispatchCriteria crit = pCriteria.remove(position);
+    pCriteria.add(position-1, crit);
   }
   
   /**
    * Move the criteria down one slot in the control
+   * 
+   * @param position
+   *   The position in the list of criteria to find the criteria to move.
    */
   public void
   moveDown
   (
-    DispatchCriteria crit  
+    int position
   )
   {
-    TreeMap<Double, DispatchCriteria> rank = new TreeMap<Double, DispatchCriteria>();
-    double i = 1d;
-    for (DispatchCriteria c : pCriteria) {
-      if (c == crit)
-        rank.put(i + 1.5, c);
-      else
-        rank.put(i, c);
-      i++;
-    }
-    pCriteria.clear();
-    pCriteria.addAll(rank.values());
+    if (position < 0 || position >= pCriteria.size())
+      throw new IllegalArgumentException
+        ("The position (" + position +") is not a valid position in a dispatch control");
+    if (position == (pCriteria.size() - 1))
+      return;
+    DispatchCriteria crit = pCriteria.remove(position);
+    pCriteria.add(position+1, crit);
   }
   
   /**
    * Move the criteria to the top of the control
+   * 
+   * @param position
+   *   The position in the list of criteria to find the criteria to move.
    */
   public void
   makeTop
   (
-    DispatchCriteria crit  
+    int position
   )
   {
-    TreeMap<Double, DispatchCriteria> rank = new TreeMap<Double, DispatchCriteria>();
-    double i = 1d;
-    for (DispatchCriteria c : pCriteria) {
-      if (c == crit)
-        rank.put(0d, c);
-      else
-        rank.put(i, c);
-      i++;
-    }
-    pCriteria.clear();
-    pCriteria.addAll(rank.values());
+    if (position < 0 || position >= pCriteria.size())
+      throw new IllegalArgumentException
+        ("The position (" + position +") is not a valid position in a dispatch control");
+
+    DispatchCriteria crit = pCriteria.remove(position);
+    pCriteria.addFirst(crit);
   }
   
   /**
-   * Move the criteria to the bottome of the control
+   * Move the criteria to the bottom of the control
+   * 
+   * @param position
+   *   The position in the list of criteria to find the criteria to move.
    */
   public void
   makeBottom
   (
-    DispatchCriteria crit  
+    int position 
   )
   {
-    TreeMap<Double, DispatchCriteria> rank = new TreeMap<Double, DispatchCriteria>();
-    double i = 1d;
-    for (DispatchCriteria c : pCriteria) {
-      if (c == crit)
-        rank.put(Double.MAX_VALUE, c);
-      else
-        rank.put(i, c);
-      i++;
-    }
-    pCriteria.clear();
-    pCriteria.addAll(rank.values());
+    if (position < 0 || position >= pCriteria.size())
+      throw new IllegalArgumentException
+        ("The position (" + position +") is not a valid position in a dispatch control");
+
+    DispatchCriteria crit = pCriteria.remove(position);
+    pCriteria.addLast(crit);
   }
   
   
@@ -294,10 +288,17 @@ class DispatchControl
   {
     super.fromGlue(decoder);
 
-    LinkedHashSet<DispatchCriteria> crits = 
-      (LinkedHashSet<DispatchCriteria>) decoder.decode("Criteria"); 
-    if(crits != null) 
-      pCriteria = crits;
+    Object o = decoder.decode("Criteria");
+    
+    if (o != null) {
+      if (o instanceof LinkedHashSet) {
+        LinkedHashSet<DispatchCriteria> crits = 
+          (LinkedHashSet<DispatchCriteria>) o;
+        pCriteria.addAll(crits);
+      }
+      else
+        pCriteria = (LinkedList<DispatchCriteria>) o;
+    }
   }
   
   
@@ -313,9 +314,9 @@ class DispatchControl
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * The list of criteria that is used to determine how jobs are dispatched
    */ 
-  private LinkedHashSet<DispatchCriteria>  pCriteria; 
+  private LinkedList<DispatchCriteria>  pCriteria; 
 }

@@ -1,4 +1,4 @@
-// $Id: JManageDispatchControlsDialog.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
+// $Id: JManageDispatchControlsDialog.java,v 1.2 2009/09/29 20:44:41 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -72,13 +72,13 @@ class JManageDispatchControlsDialog
       {
         pCriteriaPopup = new JPopupMenu();
         
-        item = new JMenuItem("To Top");
+        item = new JMenuItem("Move First");
         item.setActionCommand("to-top");
         item.addActionListener(this);
         pCriteriaTopItem = item;
         pCriteriaPopup.add(item);
         
-        item = new JMenuItem("Move Up");
+        item = new JMenuItem("Move Sooner");
         item.setActionCommand("move-up");
         item.addActionListener(this);
         pCriteriaUpItem = item;
@@ -86,13 +86,13 @@ class JManageDispatchControlsDialog
         
         pCriteriaPopup.addSeparator();
         
-        item = new JMenuItem("Move Down");
+        item = new JMenuItem("Move Later");
         item.setActionCommand("move-down");
         item.addActionListener(this);
         pCriteriaDownItem = item;
         pCriteriaPopup.add(item);
         
-        item = new JMenuItem("To Bottom");
+        item = new JMenuItem("Move Last");
         item.setActionCommand("to-bottom");
         item.addActionListener(this);
         pCriteriaBottomItem = item;
@@ -542,7 +542,8 @@ class JManageDispatchControlsDialog
           QueueMgrClient client = master.acquireQueueMgrClient();
           try {
             client.addDispatchControl(cname);
-            client.editDispatchControl(new DispatchControl(cname, control.getCriteria()));
+            client.editDispatchControl(new DispatchControl
+              (cname, new LinkedHashSet<DispatchCriteria>(control.getCriteria())));
             modified = true;
           }
           catch(PipelineException ex) {

@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.124 2009/09/16 23:35:42 jesse Exp $
+// $Id: QueueMgr.java,v 1.125 2009/09/29 20:44:41 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6979,7 +6979,7 @@ class QueueMgr
           String dcName = host.getDispatchControl();
           JobRankSorter control = null;
           if (dcName != null) 
-            pDispDispatchControls.get(dcName);
+            control = pDispDispatchControls.get(dcName);
           if (control == null)
             control = sDefaultDispatchControl;
 
@@ -7558,8 +7558,8 @@ class QueueMgr
    * @param jobCnt
    *   The number of jobs which qualify for the slot.
    *   
-   * @param dispControl
-   *   The Dispatch Control which will be used to order the jobs.
+   * @param jobRankSorter
+   *   The job rank sorter which will be used to order the jobs.
    */ 
   private void 
   dsptRankJobs
@@ -7567,14 +7567,14 @@ class QueueMgr
     TaskTimer stm, 
     String hostname, 
     int jobCnt,
-    JobRankSorter dispControl
+    JobRankSorter jobRankSorter
   ) 
   {
     stm.suspend();
     TaskTimer tm = new TaskTimer
       ("Dispatcher [Rank Jobs - " + hostname + "]");
     
-    Arrays.sort(pJobRanks, 0, jobCnt, dispControl);
+    Arrays.sort(pJobRanks, 0, jobCnt, jobRankSorter);
 
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
