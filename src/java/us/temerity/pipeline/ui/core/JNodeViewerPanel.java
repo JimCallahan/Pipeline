@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.147 2009/09/30 01:23:01 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.148 2009/09/30 21:44:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -102,6 +102,8 @@ class JNodeViewerPanel
 
       pRefreshDefaultToolMenu = true; 
       pRefreshDefaultBuilderMenu = true;
+
+      pNodeSpaceX = prefs.getNodeSpaceX();
     }
     
     /* tool popup menu */ 
@@ -1120,6 +1122,8 @@ class JNodeViewerPanel
 
     pShowDetailHints = prefs.getShowDetailHints();
     pDownstreamMode = DownstreamMode.fromTitle(prefs.getDownstreamMode()); 
+    
+    pNodeSpaceX = prefs.getNodeSpaceX();
 
     TextureMgr.getInstance().rebuildIcons();
 
@@ -1909,7 +1913,7 @@ class JNodeViewerPanel
           /* shift the upstream and downstream nodes to their final position */ 
           if(pHorizontalOrientation) {
             double span = 0.0;
-            double treeSpace = prefs.getNodeTreeSpace()*prefs.getNodeSpaceX(); 
+            double treeSpace = prefs.getNodeTreeSpace()*pNodeSpaceX; 
             if(showDownstream && status.hasTargets()) {
               Point2d dleft = new Point2d(dbox.getMin().x(), dpos.y());
               Vector2d delta = new Vector2d(dleft, origin);
@@ -2237,7 +2241,7 @@ class JNodeViewerPanel
     /* handle placing and packing the branch */ 
     else {
       /* shift in X-position for children */ 
-      double deltaX  = (upstream ? 1.0 : -1.0) * prefs.getNodeSpaceX(); 
+      double deltaX  = (upstream ? 1.0 : -1.0) * pNodeSpaceX; 
       double currentY = anchor.y();
       Double minY = null;
       Double maxY = null;
@@ -2522,7 +2526,7 @@ class JNodeViewerPanel
 
     if(bbox != null) {
       UserPrefs prefs = UserPrefs.getInstance();
-      Vector2d margin = new Vector2d(prefs.getNodeSpaceX(), prefs.getNodeSpaceY());
+      Vector2d margin = new Vector2d(pNodeSpaceX, prefs.getNodeSpaceY());
       margin.mult(0.5);
       bbox.bloat(margin);
     }    
@@ -5405,25 +5409,11 @@ class JNodeViewerPanel
   {
     UserPrefs prefs = UserPrefs.getInstance();
 
-    /* The bounds for the horizontal spacing is from the preference for 
-         NodeSpaceX and the 0.05 delta value was arbitrarily defined to be 
-	 a value that felt OK in plui.  Right now the bounds data was copied 
-	 from the preference code, there should be a common place for the data. */
+    double horizontalSpaceDelta = prefs.getHorizontalSpaceDelta();
 
-    /* Should the horizontal spacing delta be a preference? */
-    /* Should the preferences be saved after every update of the horizontal spacing? */
-
-    double spaceX = prefs.getNodeSpaceX();
-    prefs.setNodeSpaceX(Math.max(2.5, spaceX - 0.05));
-
-    try {
-      UserPrefs.save();
-      updateUniverse();
-    }
-    catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
-      return;
-    }
+    pNodeSpaceX = Math.max(2.5, pNodeSpaceX - horizontalSpaceDelta);
+    
+    updateUniverse();
   }
 
   /**
@@ -5434,17 +5424,11 @@ class JNodeViewerPanel
   {
     UserPrefs prefs = UserPrefs.getInstance();
 
-    double spaceX = prefs.getNodeSpaceX();
-    prefs.setNodeSpaceX(Math.min(12.0, spaceX + 0.05));
+    double horizontalSpaceDelta = prefs.getHorizontalSpaceDelta();
 
-    try {
-      UserPrefs.save();
-      updateUniverse();
-    }
-    catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
-      return;
-    }
+    pNodeSpaceX = pNodeSpaceX + horizontalSpaceDelta;
+    
+    updateUniverse();
   }
 
 
@@ -8094,6 +8078,12 @@ class JNodeViewerPanel
    * pPinnedPos.
    */ 
   private NodePath  pPinnedPath; 
+
+
+  /**
+   * The local node horizontal spacing.
+   */
+  private double  pNodeSpaceX;
 
 
   /*----------------------------------------------------------------------------------------*/

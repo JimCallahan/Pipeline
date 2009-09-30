@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.80 2009/09/30 01:23:01 jlee Exp $
+// $Id: GenUserPrefsApp.java,v 1.81 2009/09/30 21:44:37 jlee Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1027,6 +1027,10 @@ class GenUserPrefsApp
 	new BoundedDoublePref
 	("The distance between node trees.", 
 	 "NodeTreeSpace", "Node Tree Space:", 1.0, 3.0, 1.0),
+
+	new BoundedDoublePref
+	("The delta used for decrease/increase horizontal space hot keys.", 
+	 "HorizontalSpaceDelta", "Horizontal Space Delta:", 0.025, 0.25, 0.05),
 
 	new BasePref(),
 
@@ -2827,7 +2831,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.80 2009/09/30 01:23:01 jlee Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.81 2009/09/30 21:44:37 jlee Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3082,7 +3086,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.80 2009/09/30 01:23:01 jlee Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.81 2009/09/30 21:44:37 jlee Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4450,7 +4454,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.80 2009/09/30 01:23:01 jlee Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.81 2009/09/30 21:44:37 jlee Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
