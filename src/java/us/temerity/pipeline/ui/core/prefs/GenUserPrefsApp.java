@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.79 2009/09/16 03:54:40 jesse Exp $
+// $Id: GenUserPrefsApp.java,v 1.80 2009/09/30 01:23:01 jlee Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1128,9 +1128,21 @@ class GenUserPrefsApp
         ("Unpack the contents of a node bundle (JAR archive) into the current working area.",
          "NodeViewerUnpackBundle", "Unpack Bundle:"),
          
-         new HotKeyPref
-         ("Launches a builder that defaults to the current working area.",
-          "NodeViewerLaunchBuilder", "Launch Builder:"), 
+        new HotKeyPref
+        ("Launches a builder that defaults to the current working area.",
+         "NodeViewerLaunchBuilder", "Launch Builder:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Decreases the horizontal distance between nodes.", 
+	 "DecreaseHorizontalSpace", "Decrease Horizontal Space:", 
+	 false, false, false, 45),  /* Minus */
+
+	new HotKeyPref
+	("Increases the horizontal distance between nodes.", 
+	 "IncreaseHorizontalSpace", "Increase Horizontal Space:", 
+	 true, false, false, 61),  /* Plus */
 
 	new BasePref(),
 
@@ -2815,7 +2827,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.79 2009/09/16 03:54:40 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.80 2009/09/30 01:23:01 jlee Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3070,7 +3082,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.79 2009/09/16 03:54:40 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.80 2009/09/30 01:23:01 jlee Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4438,7 +4450,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.79 2009/09/16 03:54:40 jesse Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.80 2009/09/30 01:23:01 jlee Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

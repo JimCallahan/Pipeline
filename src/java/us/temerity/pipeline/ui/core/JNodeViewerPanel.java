@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.146 2009/09/21 22:30:14 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.147 2009/09/30 01:23:01 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3551,6 +3551,16 @@ class JNodeViewerPanel
 	      prefs.getNodeViewerShowHideEditingHint().wasPressed(e))
 	doShowHideEditingHint();
 
+      /* decrease/increase horizontal spacing between nodes */
+      else if((prefs.getDecreaseHorizontalSpace() != null) && 
+              prefs.getDecreaseHorizontalSpace().wasPressed(e)) {
+	doDecreaseHorizontalSpace();
+      }
+      else if((prefs.getIncreaseHorizontalSpace() != null) && 
+              prefs.getIncreaseHorizontalSpace().wasPressed(e)) {
+	doIncreaseHorizontalSpace();
+      }
+
       else
 	undefined = true;
     } 
@@ -5383,6 +5393,59 @@ class JNodeViewerPanel
   {
     doFrameBounds(getNodeBounds(vnodes));
   }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Decrease the horizontal spacing between nodes.
+   */
+  private synchronized void
+  doDecreaseHorizontalSpace()
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    /* The bounds for the horizontal spacing is from the preference for 
+         NodeSpaceX and the 0.05 delta value was arbitrarily defined to be 
+	 a value that felt OK in plui.  Right now the bounds data was copied 
+	 from the preference code, there should be a common place for the data. */
+
+    /* Should the horizontal spacing delta be a preference? */
+    /* Should the preferences be saved after every update of the horizontal spacing? */
+
+    double spaceX = prefs.getNodeSpaceX();
+    prefs.setNodeSpaceX(Math.max(2.5, spaceX - 0.05));
+
+    try {
+      UserPrefs.save();
+      updateUniverse();
+    }
+    catch(Exception ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+      return;
+    }
+  }
+
+  /**
+   * Increase the horizontal spacing between nodes.
+   */
+  private synchronized void
+  doIncreaseHorizontalSpace()
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    double spaceX = prefs.getNodeSpaceX();
+    prefs.setNodeSpaceX(Math.min(12.0, spaceX + 0.05));
+
+    try {
+      UserPrefs.save();
+      updateUniverse();
+    }
+    catch(Exception ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+      return;
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
