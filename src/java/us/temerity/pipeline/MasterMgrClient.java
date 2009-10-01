@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.144 2009/09/26 03:16:48 jlee Exp $
+// $Id: MasterMgrClient.java,v 1.145 2009/10/01 18:21:28 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -6321,13 +6321,14 @@ class MasterMgrClient
       new NodeMod(newName, newSeq, oldMod.getSecondarySequences(), oldMod.isIntermediate(), 
                   oldMod.getToolset(), oldMod.getEditor());
 
-    register(author, view, newMod);
+    newMod = register(author, view, newMod);
 
     if(cloneLinks) {
       for(LinkMod link : oldMod.getSources()) {
 	link(author, view, newName, 
-	     link.getName(), link.getPolicy(), link.getRelationship(), link.getFrameOffset());
+	   link.getName(), link.getPolicy(), link.getRelationship(), link.getFrameOffset());
       }
+      newMod = getWorkingVersion(author, view, newName);
     }
 
     if(cloneAction) {
@@ -6345,12 +6346,14 @@ class MasterMgrClient
     }
     
     if(cloneAnnotations) {
+      
       TreeMap<String, BaseAnnotation> annots = getAnnotations(oldName);
       for (Entry<String, BaseAnnotation> entry  : annots.entrySet())
         addAnnotation(newName, entry.getKey(), entry.getValue());
+      
       TreeMap<String, BaseAnnotation> perVer = oldMod.getAnnotations();
       for (Entry<String, BaseAnnotation> entry : perVer.entrySet()) 
-        addAnnotation(newName, entry.getKey(), entry.getValue());
+        newMod.addAnnotation(entry.getKey(), entry.getValue());
       modifyProperties(author, view, newMod);
     }
     
