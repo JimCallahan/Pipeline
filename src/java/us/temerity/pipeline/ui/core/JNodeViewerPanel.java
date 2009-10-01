@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.148 2009/09/30 21:44:37 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.149 2009/10/01 05:31:41 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5411,9 +5411,12 @@ class JNodeViewerPanel
 
     double horizontalSpaceDelta = prefs.getHorizontalSpaceDelta();
 
-    pNodeSpaceX = Math.max(2.5, pNodeSpaceX - horizontalSpaceDelta);
-    
-    updateUniverse();
+    if(pNodeSpaceX != sMinNodeSpaceX) {
+      pNodeSpaceX = Math.max(sMinNodeSpaceX, pNodeSpaceX - horizontalSpaceDelta);
+      updateUniverse();
+    }
+    else if(UIFactory.getBeepPreference())
+      Toolkit.getDefaultToolkit().beep();
   }
 
   /**
@@ -7923,6 +7926,11 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = 6047073003000120503L;
+
+  /**
+   * The minimum horizontal space.
+   */
+  private static final double  sMinNodeSpaceX = 2.5;
 
 
 
