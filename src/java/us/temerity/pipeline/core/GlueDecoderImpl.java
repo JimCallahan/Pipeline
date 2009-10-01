@@ -1,4 +1,4 @@
-// $Id: GlueDecoderImpl.java,v 1.8 2009/10/01 03:30:54 jlee Exp $
+// $Id: GlueDecoderImpl.java,v 1.9 2009/10/01 03:39:16 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -264,16 +264,16 @@ class GlueDecoderImpl
   }
 
   /** 
-   * Check whether a decoded <CODE>Object</CODE> with the given title from the current 
-   * Glue scope exists. <P>
+   * Check whether a decoded Object with the given title exists in the current 
+   * Glue scope. <P>
    * 
    * This method is used by objects implementing the {@link Glueable Glueable} interface 
    * to initialize their fields from within 
    * {@link Glueable#fromGlue(GlueDecoder) Glueable.fromGlue}.
    * 
    * @return
-   *   <CODE>True</CODE> if an <CODE>Object</CODE> is available or 
-   *   <CODE>false</CODE> if no object with the given title exists at the current Glue scope.
+   *   True  if an Object is available or 
+   *   false if no object with the given title exists at the current Glue scope.
    */
   public boolean
   exists
