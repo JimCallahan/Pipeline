@@ -1,4 +1,4 @@
-// $Id: GlueParserState.java,v 1.10 2009/07/06 10:25:26 jim Exp $
+// $Id: GlueParserState.java,v 1.11 2009/10/01 03:30:54 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,7 +35,7 @@ class GlueParserState
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Lookup an decoded <CODE>Object</CODE> with the given title from the current object table.
+   * Lookup a decoded <CODE>Object</CODE> with the given title from the current object table.
    *
    * @param title  
    *   The name of the object to lookup.
@@ -51,6 +51,25 @@ class GlueParserState
   ) 
   {
     return pCurTable.get(title);
+  }
+
+  /**
+   * Check that a decoded <CODE>Object</CODE> with the given title exists in the current object table.
+   *
+   * @param title  
+   *   The name of the object to lookup.
+   * 
+   * @return 
+   *   <CODE>True</CODE> if the decoded <CODE>Object</CODE> exists or 
+   *   <CODE>false</CODE> if no object with the given title can be found.
+   */
+  public boolean
+  checkCurrent
+  (
+   String title
+  )
+  {
+    return pCurTable.containsKey(title);
   }
  
   /**
