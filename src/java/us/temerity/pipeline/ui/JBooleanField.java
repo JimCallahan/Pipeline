@@ -1,4 +1,4 @@
-// $Id: JBooleanField.java,v 1.8 2005/06/14 13:38:33 jim Exp $
+// $Id: JBooleanField.java,v 1.9 2009/10/01 03:39:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,6 +36,7 @@ class JBooleanField
     {
       setName("BooleanField");
       setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+      setAlignmentY(0.5f);
       addMouseListener(this);
 
       {
