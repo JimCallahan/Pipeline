@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.81 2009/09/30 21:44:37 jlee Exp $
+// $Id: GenUserPrefsApp.java,v 1.82 2009/10/01 03:47:43 jlee Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1146,7 +1146,7 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Increases the horizontal distance between nodes.", 
 	 "IncreaseHorizontalSpace", "Increase Horizontal Space:", 
-	 true, false, false, 61),  /* Plus */
+	 false, false, false, 61),  /* Equals */
 
 	new BasePref(),
 
@@ -2831,7 +2831,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.81 2009/09/30 21:44:37 jlee Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.82 2009/10/01 03:47:43 jlee Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3086,7 +3086,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.81 2009/09/30 21:44:37 jlee Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.82 2009/10/01 03:47:43 jlee Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4383,8 +4383,18 @@ class GenUserPrefsApp
      int level
     ) 
     {
-      buf.append
-        (indent(level) + "p" + pTitle + " = (" + pGlueType + ") decoder.decode(\"" + pTitle + "\");\n");
+      if(pShiftDown != null) {
+	buf.append
+	  (indent(level)   + "{\n" + 
+	   indent(level+1) + "if(decoder.exists(\"" + pTitle + "\"))\n" + 
+	   indent(level+2) + "p" + pTitle + " = (" + pGlueType + ") " + 
+	                     "decoder.decode(\"" + pTitle + "\");\n" + 
+	   indent(level) + "}\n");
+      }
+      else
+	buf.append
+	  (indent(level) + "p" + pTitle + 
+	   " = (" + pGlueType + ") decoder.decode(\"" + pTitle + "\");\n");
     }
 
     public void 
@@ -4454,7 +4464,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.81 2009/09/30 21:44:37 jlee Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.82 2009/10/01 03:47:43 jlee Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
