@@ -1,4 +1,4 @@
-// $Id: BaseBuilderExecution.java,v 1.9 2009/06/12 03:22:07 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.10 2009/10/02 04:52:15 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -67,6 +67,26 @@ class BaseBuilderExecution
     Throwable ex
   )
     throws PipelineException;
+  
+  /**
+   * Disconnect 
+   */
+  protected void
+  cleanupConnections()
+  {
+    {
+      MasterMgrClient client = pBuilder.getMasterMgrClient();
+      if (client != null)
+        client.disconnect();
+    }
+    {
+      QueueMgrClient client = pBuilder.getQueueMgrClient();
+      if (client != null)
+        client.disconnect();
+    }
+    PluginMgrClient.getInstance().disconnect();
+    LogMgr.getInstance().cleanup();
+  }
   
   
   /**

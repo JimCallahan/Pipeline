@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.9 2009/05/23 04:00:11 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.10 2009/10/02 04:52:15 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -97,8 +97,10 @@ class CommandLineExecution
       releaseView(true);
       if (!getBuilder().useBuilderLogging())
         throw new PipelineException(message);
-      if (getBuilder().terminateAppOnQuit()) 
+      if (getBuilder().terminateAppOnQuit()) {
+        cleanupConnections();
         System.exit(1);
+      }
     }
     else if (phase == ExecutionPhase.Release) {
       String header = 

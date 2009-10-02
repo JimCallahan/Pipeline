@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.12 2009/06/11 05:14:06 jesse Exp $
+// $Id: GUIExecution.java,v 1.13 2009/10/02 04:52:15 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -397,8 +397,10 @@ class GUIExecution
       int exitCode  
     )
     {
-      if (getBuilder().terminateAppOnQuit()) 
+      if (getBuilder().terminateAppOnQuit()) {
+        cleanupConnections();
         System.exit(exitCode);
+      }
       else 
         this.setVisible(false);
     }
