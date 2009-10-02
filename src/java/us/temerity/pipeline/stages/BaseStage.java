@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.39 2009/09/02 19:23:18 jesse Exp $
+// $Id: BaseStage.java,v 1.40 2009/10/02 19:41:52 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1388,24 +1388,39 @@ class BaseStage
     LogMgr pLog = LogMgr.getInstance();
     if (nodeName == null)
       return false;
-    pLog.log(Kind.Ops, Level.Finest, "Checking for existance of the node (" + nodeName + ")");
-    boolean exists = nodeExists(nodeName);
-    if (!exists) 
-      return false;
-    pLog.log(Kind.Ops, Level.Finest, "The node exists.");
-    if (actionOnExistence == ActionOnExistence.Abort)
-      throw new PipelineException
-        ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
-         "the setting of the ActionOnExistence parameter in the builder.");
+    pLog.log(Kind.Ops, Level.Finest, "Checking for existence of the node (" + nodeName + ")");
+  
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(nodeName, false);
     NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     State state = treeComps.getState(nodeName);
-    switch(state) {
-    case WorkingOtherCheckedInNone:
+    
+    if ( state == null || state.equals(State.Branch) )
+      return false;
+    pLog.log(Kind.Ops, Level.Finest, "The node exists.");
+   
+    if (actionOnExistence == ActionOnExistence.Abort) {
+      String moreMessage = "";
+      if (state == State.WorkingOtherCheckedInNone) {
+        TreeMap<String, TreeSet<String>> views = pClient.getWorkingAreasContaining(nodeName);
+        moreMessage = 
+          "The node has never been checked in and only exists in the " + views + 
+          " working area.";
+      }
       throw new PipelineException
-        ("The node (" + nodeName + ") exists, but in a different working area and was " +
-         "never checked in.  The Builder is aborting due to this problem.");
+        ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
+         "the setting of the ActionOnExistence parameter in the builder.\n" + moreMessage );
+    }
+    
+    
+    switch(state) {
+    case WorkingOtherCheckedInNone: 
+      {
+        TreeMap<String, TreeSet<String>> views = pClient.getWorkingAreasContaining(nodeName);
+        throw new PipelineException
+          ("The node (" + nodeName + ") exists, but only in the working area " + views + 
+           " and was never checked in.  The Builder is aborting due to this problem.");
+      }
     case WorkingCurrentCheckedInNone:
       switch (actionOnExistence) {
       case Lock:
