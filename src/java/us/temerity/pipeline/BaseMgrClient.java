@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.34 2009/08/19 22:49:59 jim Exp $
+// $Id: BaseMgrClient.java,v 1.35 2009/10/02 04:35:23 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -119,11 +119,11 @@ class BaseMgrClient
           ("You may not use Pipeline server client class instances from plugins " +
            "derived from BaseAction, BaseMasterExt or BaseQueueExt.  Use of clients " + 
            "in this way would invalidate the reproducibility of the file associated " + 
-           "with actions and make the Pipeline servers vunerable to infinite loops and " + 
+           "with actions and make the Pipeline servers vulnerable to infinite loops and " + 
            "other undesirable side effects from server extensions.");
     }
 
-    /* (re)estblish the connection */ 
+    /* (re-)establish the connection */ 
     if((pSocket != null) && pSocket.isConnected())
       return;
 
