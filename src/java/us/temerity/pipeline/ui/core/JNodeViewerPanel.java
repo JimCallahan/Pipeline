@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.149 2009/10/01 05:31:41 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.150 2009/10/03 01:32:26 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -103,7 +103,8 @@ class JNodeViewerPanel
       pRefreshDefaultToolMenu = true; 
       pRefreshDefaultBuilderMenu = true;
 
-      pNodeSpaceX = prefs.getNodeSpaceX();
+      pCachedNodeSpaceX = prefs.getNodeSpaceX();
+      pLocalNodeSpaceX  = pCachedNodeSpaceX;
     }
     
     /* tool popup menu */ 
@@ -1122,8 +1123,17 @@ class JNodeViewerPanel
 
     pShowDetailHints = prefs.getShowDetailHints();
     pDownstreamMode = DownstreamMode.fromTitle(prefs.getDownstreamMode()); 
-    
-    pNodeSpaceX = prefs.getNodeSpaceX();
+  
+    // reset the local horizontal node spacing only if the user has changed the 
+    // "Horizontal Space" preference in Node/Appearance.
+    {
+      double currentNodeSpaceX = prefs.getNodeSpaceX();
+
+      if(pCachedNodeSpaceX != currentNodeSpaceX) {
+	pCachedNodeSpaceX = currentNodeSpaceX;
+	pLocalNodeSpaceX  = currentNodeSpaceX;
+      }
+    }
 
     TextureMgr.getInstance().rebuildIcons();
 
@@ -1913,7 +1923,7 @@ class JNodeViewerPanel
           /* shift the upstream and downstream nodes to their final position */ 
           if(pHorizontalOrientation) {
             double span = 0.0;
-            double treeSpace = prefs.getNodeTreeSpace()*pNodeSpaceX; 
+            double treeSpace = prefs.getNodeTreeSpace()*pLocalNodeSpaceX; 
             if(showDownstream && status.hasTargets()) {
               Point2d dleft = new Point2d(dbox.getMin().x(), dpos.y());
               Vector2d delta = new Vector2d(dleft, origin);
@@ -2241,7 +2251,7 @@ class JNodeViewerPanel
     /* handle placing and packing the branch */ 
     else {
       /* shift in X-position for children */ 
-      double deltaX  = (upstream ? 1.0 : -1.0) * pNodeSpaceX; 
+      double deltaX  = (upstream ? 1.0 : -1.0) * pLocalNodeSpaceX; 
       double currentY = anchor.y();
       Double minY = null;
       Double maxY = null;
@@ -2526,7 +2536,7 @@ class JNodeViewerPanel
 
     if(bbox != null) {
       UserPrefs prefs = UserPrefs.getInstance();
-      Vector2d margin = new Vector2d(pNodeSpaceX, prefs.getNodeSpaceY());
+      Vector2d margin = new Vector2d(pLocalNodeSpaceX, prefs.getNodeSpaceY());
       margin.mult(0.5);
       bbox.bloat(margin);
     }    
@@ -5407,12 +5417,12 @@ class JNodeViewerPanel
   private synchronized void
   doDecreaseHorizontalSpace()
   {
-    UserPrefs prefs = UserPrefs.getInstance();
+    if(pLocalNodeSpaceX != sMinNodeSpaceX) {
+      UserPrefs prefs = UserPrefs.getInstance();
 
-    double horizontalSpaceDelta = prefs.getHorizontalSpaceDelta();
+      double horizontalSpaceDelta = prefs.getHorizontalSpaceDelta();
 
-    if(pNodeSpaceX != sMinNodeSpaceX) {
-      pNodeSpaceX = Math.max(sMinNodeSpaceX, pNodeSpaceX - horizontalSpaceDelta);
+      pLocalNodeSpaceX = Math.max(sMinNodeSpaceX, pLocalNodeSpaceX - horizontalSpaceDelta);
       updateUniverse();
     }
     else if(UIFactory.getBeepPreference())
@@ -5429,7 +5439,7 @@ class JNodeViewerPanel
 
     double horizontalSpaceDelta = prefs.getHorizontalSpaceDelta();
 
-    pNodeSpaceX = pNodeSpaceX + horizontalSpaceDelta;
+    pLocalNodeSpaceX += horizontalSpaceDelta;
     
     updateUniverse();
   }
@@ -8089,9 +8099,14 @@ class JNodeViewerPanel
 
 
   /**
+   * The cached node horizontal spacing.
+   */
+  private double  pCachedNodeSpaceX;
+
+  /**
    * The local node horizontal spacing.
    */
-  private double  pNodeSpaceX;
+  private double  pLocalNodeSpaceX;
 
 
   /*----------------------------------------------------------------------------------------*/
