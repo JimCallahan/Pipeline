@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.11 2009/09/28 09:33:46 jim Exp $
+// $Id: NativeFileSys.cc,v 1.12 2009/10/06 05:06:34 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -343,9 +343,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_md5sumNative
     return NULL;
   }
   
-  /* validate the file and get the optimal read cache block size */ 
-#ifdef OS_IS_UNIX
-  blksize_t blksize = 0; 
+  /* validate the file */ 
   {
     struct stat buf;
     if(stat(path, &buf) != 0) {
@@ -361,12 +359,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_md5sumNative
       env->ThrowNew(IOException, msg);  
       return NULL;      
     }
-
-    blksize = buf.st_blksize;
   }
-#else 
-  blksize_t blksize = 4096; 
-#endif
   
   /* generate the checksum */ 
   unsigned char sum[16];
@@ -385,7 +378,8 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_md5sumNative
       env->ThrowNew(IOException, msg);  
       return NULL;      
     }
-
+    
+    int blksize = 4096; 
     char buf[blksize];
     ssize_t len = 0;
     while(1) {
