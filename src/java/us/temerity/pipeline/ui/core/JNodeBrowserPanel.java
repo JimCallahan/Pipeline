@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.28 2009/09/22 04:12:19 jlee Exp $
+// $Id: JNodeBrowserPanel.java,v 1.29 2009/10/06 17:45:54 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -74,6 +74,8 @@ class JNodeBrowserPanel
       pFilter.put(NodeTreeComp.State.WorkingNoneCheckedInSome,    true);
       pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, true);
       pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInNone,   true);
+
+      pDisplayPrimarySuffix = UserPrefs.getInstance().getDisplayPrimarySuffix();
     }
 
     /* panel popup menu */ 
@@ -676,8 +678,18 @@ class JNodeBrowserPanel
 	  }
 	}
 	break;
+      }
+    }
 
-      default:
+    for(NodeTreeComp comp : cnode.values()) {
+      String cpath = (path + "/" + comp);
+      
+      switch(comp.getState()) {
+      case WorkingCurrentCheckedInSome:
+      case WorkingOtherCheckedInSome:
+      case WorkingNoneCheckedInSome:
+      case WorkingCurrentCheckedInNone:
+      case WorkingOtherCheckedInNone:
 	{
 	  Boolean show = pFilter.get(comp.getState());
 	  if(show) {
@@ -751,6 +763,15 @@ class JNodeBrowserPanel
     TextureMgr.getInstance().rebuildIcons();
 
     updateMenuToolTips();
+
+    {
+      UserPrefs prefs = UserPrefs.getInstance();
+
+      if(pDisplayPrimarySuffix != prefs.getDisplayPrimarySuffix()) {
+        pDisplayPrimarySuffix = prefs.getDisplayPrimarySuffix();
+        updateNodeTree();
+      }
+    }
   }
 
 
@@ -1992,5 +2013,10 @@ class JNodeBrowserPanel
    * Table of toolsets indexed by node name.  Cleared during updates.
    */
   private TreeMap<String,String>  pToolsetCache;
+
+  /**
+   * Whether to display the primary sequence suffix.
+   */
+  private boolean  pDisplayPrimarySuffix;
 
 }

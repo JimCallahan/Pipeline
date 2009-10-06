@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.11 2008/10/19 17:06:29 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.12 2009/10/06 17:45:54 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -95,6 +95,44 @@ class NodeTreeEntry
   getName() 
   {
     return pName;
+  }
+
+  /**
+   * Gets the suffix of the primary file sequence.
+   *
+   * @return
+   *   The primary suffix or <CODE>null</CODE> if there is no suffix associated 
+   *   with the primary file sequence.
+   */
+  public String
+  getPrimarySuffix()
+  {
+    return pPrimarySuffix;
+  }
+
+  /**
+   * Set the suffix from the primary file sequence.
+   */
+  public void
+  setPrimarySuffix
+  (
+   FileSeq primary
+  )
+  {
+    FilePattern fpat = primary.getFilePattern();
+    String suffix = fpat.getSuffix();
+
+    if(suffix != null)
+      pPrimarySuffix = suffix;
+  }
+
+  /**
+   * Remove the primary file sequence suffix.
+   */
+  public void
+  removePrimarySuffix()
+  {
+    pPrimarySuffix = null;
   }
 
 
@@ -412,6 +450,9 @@ class NodeTreeEntry
 
     if(!isEmpty()) 
       encoder.encode("Children", new LinkedList<NodeTreeEntry>(values()));
+
+    if(pPrimarySuffix != null)
+      encoder.encode("PrimarySuffix", pPrimarySuffix);
   }
   
   public void 
@@ -450,6 +491,10 @@ class NodeTreeEntry
       for(NodeTreeEntry entry : children)
 	put(entry.getName(), entry);
     }
+
+    String primarySuffix = (String) decoder.decode("PrimarySuffix");
+    if(primarySuffix != null)
+      pPrimarySuffix = primarySuffix;
   }
 
 
@@ -470,6 +515,11 @@ class NodeTreeEntry
    * The name of the node path component or "root" if this is the root component. <P> 
    */
   private String  pName;
+
+  /**
+   * The suffix of the primary file sequence.
+   */
+  private String  pPrimarySuffix;
 
   /**
    * Is this component the last component of a node path?

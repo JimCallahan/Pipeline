@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.82 2009/10/01 03:47:43 jlee Exp $
+// $Id: GenUserPrefsApp.java,v 1.83 2009/10/06 17:45:54 jlee Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -660,7 +660,12 @@ class GenUserPrefsApp
 	new BooleanPref
 	("Whether to expand the node browser tree to display all selected nodes.", 
 	 "ExpandSelected", 
-	 "Expand Selected:", true)
+	 "Expand Selected:", true), 
+
+	new BooleanPref
+	("Whether to display the suffix of the node's primary sequence.", 
+	 "DisplayPrimarySuffix", 
+	 "Display Primary Suffix:", true)
       };
 
       pPrefs.put("Panels|Node Browser|Appearance", prefs);
@@ -2831,7 +2836,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.82 2009/10/01 03:47:43 jlee Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.83 2009/10/06 17:45:54 jlee Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3086,7 +3091,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.82 2009/10/01 03:47:43 jlee Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.83 2009/10/06 17:45:54 jlee Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4464,7 +4469,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.82 2009/10/01 03:47:43 jlee Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.83 2009/10/06 17:45:54 jlee Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

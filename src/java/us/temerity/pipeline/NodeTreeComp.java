@@ -1,4 +1,4 @@
-// $Id: NodeTreeComp.java,v 1.7 2007/10/30 20:40:55 jesse Exp $
+// $Id: NodeTreeComp.java,v 1.8 2009/10/06 17:45:54 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -73,6 +73,8 @@ class NodeTreeComp
 	  throw new IllegalArgumentException
 	    ("No working or checked-in versions exist for node component (" + pName + ")!");
       }
+
+      pPrimarySuffix = entry.getPrimarySuffix();
     }
     else {
       pState = State.Branch;
@@ -95,6 +97,15 @@ class NodeTreeComp
   getName() 
   {
     return pName;
+  }
+
+  /**
+   * Gets the suffix of the primary sequence.
+   */
+  public String
+  getPrimarySuffix()
+  {
+    return pPrimarySuffix;
   }
 
   /**
@@ -223,6 +234,11 @@ class NodeTreeComp
    * The name of the node path component or "root" if this is the root component.
    */
   private String  pName;
+
+  /**
+   * The suffix of the primary file sequence.
+   */
+  private String  pPrimarySuffix;
 
   /**
    * The node path component state.

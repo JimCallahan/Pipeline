@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserTreeCellRenderer.java,v 1.3 2009/08/19 23:52:04 jim Exp $
+// $Id: JNodeBrowserTreeCellRenderer.java,v 1.4 2009/10/06 17:45:54 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -68,8 +68,17 @@ class JNodeBrowserTreeCellRenderer
     if(comp != null) {
       boolean selected = pBrowser.isSelected(tpath);
       int idx = comp.getState().ordinal();
+
+      String suffix = "";
+      {
+        UserPrefs prefs = UserPrefs.getInstance();
+
+        if(prefs.getDisplayPrimarySuffix() && 
+           comp.getPrimarySuffix() != null)
+          suffix = "." + comp.getPrimarySuffix();
+      }
       
-      setText(comp.getName());
+      setText(comp.getName() + suffix);
       setIcon(selected ? sSelectedIcons[idx] : sIcons[idx]);
       
       switch(comp.getState()) {

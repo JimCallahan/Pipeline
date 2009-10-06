@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.15 2009/02/25 18:50:36 jim Exp $
+// $Id: NodeTree.java,v 1.16 2009/10/06 17:45:54 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -409,6 +409,9 @@ class NodeTree
    * 
    * @param nodeID
    *   The unique working version identifier.
+   *
+   * @param primary
+   *   The primary file sequence.
    * 
    * @param fseqs
    *   The file sequences associated with the working version.
@@ -417,6 +420,7 @@ class NodeTree
   addWorkingNodeTreePath
   (
    NodeID nodeID, 
+   FileSeq primary, 
    SortedSet<FileSeq> fseqs
   )
   {
@@ -443,6 +447,28 @@ class NodeTree
     
     for(FileSeq fseq : fseqs)
       entry.addSequence(fseq);
+
+    if(primary != null)
+      entry.setPrimarySuffix(primary);
+  }
+
+  /**
+   * Add the secondary sequence to the given working version. <P> 
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   *
+   * @param secondary
+   *   The secondary sequence associated with the working version.
+   */
+  public synchronized void
+  addSecondaryWorkingNodeTreePath
+  (
+   NodeID nodeID, 
+   SortedSet<FileSeq> secondary
+  )
+  {
+    addWorkingNodeTreePath(nodeID, null, secondary);
   }
 
 
@@ -468,7 +494,7 @@ class NodeTree
   reserveNewName
   (
    NodeID nodeID, 
-   FileSeq primary,  
+   FileSeq primary, 
    TreeSet<FileSeq> newSeqs
   ) 
     throws PipelineException
@@ -482,7 +508,7 @@ class NodeTree
          "existing node or components of the common node path:\n\n" + 
          "  " + reserving + sWindowsMessage + "\n");
 	
-    addWorkingNodeTreePath(nodeID, newSeqs);     
+    addWorkingNodeTreePath(nodeID, primary, newSeqs);     
   }
 
   /**
@@ -513,8 +539,9 @@ class NodeTree
   public synchronized void 
   reserveRename
   (
-   NodeID oldID,
-   TreeSet<FileSeq> oldSeqs,
+   NodeID oldID, 
+   FileSeq oldPrimary, 
+   TreeSet<FileSeq> oldSeqs, 
    NodeID newID, 
    FileSeq primary,  
    SortedSet<FileSeq> secondary, 
@@ -577,13 +604,13 @@ class NodeTree
     }
     catch(PipelineException ex) {
       /* restore the old working node entry, primary and secondary sequences */ 
-      addWorkingNodeTreePath(oldID, oldSeqs);
+      addWorkingNodeTreePath(oldID, oldPrimary, oldSeqs);
       
       throw ex; 
     }
     
     /* add the new working node entry, primary and secondary sequences */ 
-    addWorkingNodeTreePath(newID, newSeqs);
+    addWorkingNodeTreePath(newID, primary, newSeqs);
   }
 
   /**
@@ -650,7 +677,7 @@ class NodeTree
     TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
     secondary.add(fseq);
     
-    addWorkingNodeTreePath(nodeID, secondary);
+    addSecondaryWorkingNodeTreePath(nodeID, secondary);
   }
 
 
@@ -696,6 +723,8 @@ class NodeTree
     entry.removeWorking(nodeID.getAuthor(), nodeID.getView());
     for(FileSeq fseq : fseqs)
       entry.removeSequence(fseq);
+
+    entry.removePrimarySuffix();
     
     if(!entry.hasWorking() && !entry.isCheckedIn()) {
       while(!stack.isEmpty()) {
@@ -807,11 +836,12 @@ class NodeTree
   (
    NodeID nodeID,
    TreeSet<FileSeq> oldSeqs, 
+   FileSeq newPrimary, 
    TreeSet<FileSeq> newSeqs
   )
   {
     removeWorkingNodeTreePath(nodeID, oldSeqs);
-    addWorkingNodeTreePath(nodeID, newSeqs); 
+    addWorkingNodeTreePath(nodeID, newPrimary, newSeqs); 
   }
   
 
