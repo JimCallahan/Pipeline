@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.150 2009/10/03 01:32:26 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.151 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4623,7 +4623,7 @@ class JNodeViewerPanel
     if(warnUnsavedDetailPanelChangesBeforeOp("Queue Jobs")) 
       return; 
 
-    TreeSet<String> roots = new TreeSet<String>();
+    MappedSet<String,Integer> indices = new MappedSet<String,Integer>(); 
     for(String name : getMostDownstreamOfSelectedNames()) {
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
@@ -4632,15 +4632,15 @@ class JNodeViewerPanel
 	  if(details != null) {
 	    NodeMod mod = details.getWorkingVersion();
 	    if((mod != null) && !mod.isFrozen()) 
-	      roots.add(name);
+	      indices.put(name, (TreeSet<Integer>) null);
 	  }
 	  break;
 	}
       }
     }
     
-    if(!roots.isEmpty()) {
-      QueueJobsTask task = new QueueJobsTask(roots);
+    if(!indices.isEmpty()) {
+      QueueJobsTask task = new QueueJobsTask(indices);
       task.start();
     }
 
@@ -4658,7 +4658,7 @@ class JNodeViewerPanel
     if(warnUnsavedDetailPanelChangesBeforeOp("Queue Jobs Special")) 
       return; 
 
-    TreeSet<String> roots = new TreeSet<String>();
+    TreeMap<String,FrameRange> wholeRanges = new TreeMap<String,FrameRange>();
     for(String name : getMostDownstreamOfSelectedNames()) {
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
@@ -4667,16 +4667,26 @@ class JNodeViewerPanel
 	  if(details != null) {
 	    NodeMod mod = details.getWorkingVersion();
 	    if((mod != null) && !mod.isFrozen()) 
-	      roots.add(name);
+              wholeRanges.put(name, mod.getPrimarySequence().getFrameRange()); 
 	  }
 	  break;
 	}
       }
     }
     
-    if(!roots.isEmpty()) {
-      JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
+    if(!wholeRanges.isEmpty()) {
+      MappedSet<String,Integer> targetIndices = new MappedSet<String,Integer>();
+      for(String name : wholeRanges.keySet()) 
+        targetIndices.put(name, (TreeSet<Integer>) null); 
+
+      JQueueJobsDialog diag = 
+        UIMaster.getInstance().showQueueJobsDialog(wholeRanges, targetIndices);
+
       if(diag.wasConfirmed()) {
+        MappedSet<String,Integer> indices = targetIndices;
+        if(diag.overrideTargetIndices()) 
+          indices = diag.getTargetIndices();
+
 	Integer batchSize = null;
 	if(diag.overrideBatchSize()) 
 	  batchSize = diag.getBatchSize();
@@ -4714,7 +4724,7 @@ class JNodeViewerPanel
 	    hardwareKeys = diag.getHardwareKeys();
 
 	QueueJobsTask task = 
-	  new QueueJobsTask(roots, batchSize, priority, interval, 
+	  new QueueJobsTask(indices, batchSize, priority, interval, 
 	    		    maxLoad, minMemory, minDisk,
 			    selectionKeys, licenseKeys, hardwareKeys);
 	task.start();
@@ -6913,16 +6923,16 @@ class JNodeViewerPanel
     public 
     QueueJobsTask
     (
-     TreeSet<String> names
+     MappedSet<String,Integer> indices
     ) 
     {
-      this(names, null, null, null, null, null, null, null, null, null);
+      this(indices, null, null, null, null, null, null, null, null, null); 
     }
 
     public 
     QueueJobsTask
     (
-     TreeSet<String> names, 
+     MappedSet<String,Integer> indices, 
      Integer batchSize, 
      Integer priority, 
      Integer rampUp,
@@ -6934,8 +6944,8 @@ class JNodeViewerPanel
      TreeSet<String> hardwareKeys
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, names, pAuthor, pView, 
-				   batchSize, priority, rampUp, 
+      UIMaster.getInstance().super(pGroupID, indices, pAuthor, pView, 
+                                   batchSize, priority, rampUp, 
 				   maxLoad, minMemory, minDisk,
 				   selectionKeys, licenseKeys, hardwareKeys);
       setName("JNodeViewerPanel:QueueJobsTask");

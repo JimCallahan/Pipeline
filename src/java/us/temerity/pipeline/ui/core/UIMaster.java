@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.113 2009/09/21 22:30:14 jlee Exp $
+// $Id: UIMaster.java,v 1.114 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3887,8 +3887,30 @@ class UIMaster
    * Show the job submission dialog.
    */ 
   public JQueueJobsDialog
-  showQueueJobsDialog()
+  showQueueJobsDialog() 
   {
+    return showQueueJobsDialog(null, null); 
+  }
+  
+  /**
+   * Show the job submission dialog.
+   * 
+   * @param wholeRange
+   *   The entire target frame range indexed by fully resolved node name.  Value can be
+   *   <CODE>null</CODE> for single frame nodes.
+   * 
+   * @param targetIndices
+   *   The indices into the target frame range of files to regenerate for each node.   
+   *   Value can be <CODE>null</CODE> for all frames. 
+   */ 
+  public JQueueJobsDialog
+  showQueueJobsDialog
+  (
+   TreeMap<String,FrameRange> wholeRanges, 
+   MappedSet<String,Integer> targetIndices
+  ) 
+  {
+    pQueueJobsDialog.updateFrameRanges(wholeRanges, targetIndices); 
     pQueueJobsDialog.updateKeys();
     pQueueJobsDialog.setVisible(true);
     return pQueueJobsDialog;
@@ -6377,6 +6399,7 @@ class UIMaster
      String name,
      String author, 
      String view, 
+     TreeSet<Integer> indices, 
      Integer batchSize, 
      Integer priority, 
      Integer interval,
@@ -6390,8 +6413,8 @@ class UIMaster
     {
       super("UIMaster:QueueJobsTask", channel, author, view);
 
-      pNames = new TreeSet<String>();
-      pNames.add(name);
+      pIndices = new MappedSet<String,Integer>(); 
+      pIndices.put(name, indices); 
 
       pBatchSize     = batchSize;
       pPriority      = priority; 
@@ -6408,7 +6431,7 @@ class UIMaster
     QueueJobsTask
     (
      int channel, 
-     TreeSet<String> names,
+     MappedSet<String,Integer> indices,
      String author, 
      String view, 
      Integer batchSize, 
@@ -6424,8 +6447,7 @@ class UIMaster
     {
       super("UIMaster:QueueJobsTask", channel, author, view);
 
-      pNames = names;
-
+      pIndices       = indices;
       pBatchSize     = batchSize;
       pPriority      = priority; 
       pRampUp        = interval;
@@ -6444,10 +6466,10 @@ class UIMaster
       MasterMgrClient client = acquireMasterMgrClient();
       if(beginPanelOp(pChannel)) {
 	try {
-	  for(String name : pNames) {
+	  for(String name : pIndices.keySet()) {
 	    updatePanelOp(pChannel, "Submitting Jobs to the Queue: " + name);
-	    client.submitJobs(pAuthorName, pViewName, name, null, 
-			      pBatchSize, pPriority, pRampUp,
+	    client.submitJobs(pAuthorName, pViewName, name, 
+                              pIndices.get(name), pBatchSize, pPriority, pRampUp,
 			      pMaxLoad, pMinMemory, pMinDisk,
 			      pSelectionKeys, pLicenseKeys, pHardwareKeys);
 	  }
@@ -6465,7 +6487,8 @@ class UIMaster
       }
     }
 
-    private TreeSet<String>  pNames;  
+    private MappedSet<String,Integer>  pIndices; 
+
     private Integer          pBatchSize;
     private Integer          pPriority;
     private Integer          pRampUp; 

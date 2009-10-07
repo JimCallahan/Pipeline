@@ -1,4 +1,4 @@
-// $Id: JChangeJobReqsDialog.java,v 1.3 2007/10/15 20:53:59 jesse Exp $
+// $Id: JChangeJobReqsDialog.java,v 1.4 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -14,12 +14,18 @@ import javax.swing.JFrame;
  */
 public 
 class JChangeJobReqsDialog
-  extends JQueueJobsDialog
+  extends JBaseJobReqsDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
+   */ 
   public
   JChangeJobReqsDialog
   (
@@ -32,37 +38,8 @@ class JChangeJobReqsDialog
   
   
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
+  /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * @throws IllegalStateException when an attempt is made to access this field.
-   */
-  @Override
-  public void doBatchSizeChanged()
-  {
-    throw new IllegalStateException("Batch size is not a valid field for changing Job Requirements.");
-  }
-  
-  /**
-   * @throws IllegalStateException when an attempt is made to access this field.
-   */
-  @Override
-  public Integer 
-  getBatchSize()
-  {
-    throw new IllegalStateException("Batch size is not a valid field for changing Job Requirements.");
-  }
-  
-  /**
-   * @throws IllegalStateException when an attempt is made to access this field.
-   */
-  @Override
-  public boolean 
-  overrideBatchSize()
-  {
-    throw new IllegalStateException("Batch size is not a valid field for changing Job Requirements.");
-  }
   
   private static final long serialVersionUID = 8768242796930167950L;
 }

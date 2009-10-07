@@ -1,4 +1,4 @@
-// $Id: JFileSeqPanel.java,v 1.1 2009/08/19 23:39:32 jim Exp $
+// $Id: JFileSeqPanel.java,v 1.2 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -790,8 +790,23 @@ class JFileSeqPanel
     if(pIsFrozen) 
       return; 
 
-    JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
+    FileSeq fseq = pParent.getPrimarySequence(); 
+    if(fseq == null) 
+      return;
+
+    TreeMap<String,FrameRange> wholeRanges = new TreeMap<String,FrameRange>();
+    wholeRanges.put(pStatus.getName(), fseq.getFrameRange());
+
+    MappedSet<String,Integer> targetIndices = new MappedSet<String,Integer>();
+    targetIndices.put(pStatus.getName(), lookupTargetIndices());
+
+    JQueueJobsDialog diag = 
+      UIMaster.getInstance().showQueueJobsDialog(wholeRanges, targetIndices);
     if(diag.wasConfirmed()) {
+      MappedSet<String,Integer> indices = targetIndices;
+      if(diag.overrideTargetIndices()) 
+        indices = diag.getTargetIndices();
+
       Integer batchSize = null;
       if(diag.overrideBatchSize()) 
         batchSize = diag.getBatchSize();
@@ -829,7 +844,7 @@ class JFileSeqPanel
         hardwareKeys = diag.getHardwareKeys();
       
       QueueJobsTask task = 
-        new QueueJobsTask(lookupTargetIndices(), 
+        new QueueJobsTask(indices.get(pStatus.getName()), 
                           batchSize, priority, interval, maxLoad, minMemory, minDisk,
                           selectionKeys, licenseKeys, hardwareKeys);
       task.start();

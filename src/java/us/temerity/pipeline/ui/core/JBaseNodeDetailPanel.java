@@ -1,4 +1,4 @@
-// $Id: JBaseNodeDetailPanel.java,v 1.3 2009/08/19 23:37:19 jim Exp $
+// $Id: JBaseNodeDetailPanel.java,v 1.4 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1109,51 +1109,69 @@ class JBaseNodeDetailPanel
     if(pIsFrozen) 
       return;
 
-    if((pStatus != null) && pStatus.hasLightDetails()) {
-      JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
-      if(diag.wasConfirmed()) {
-        Integer batchSize = null;
-        if(diag.overrideBatchSize()) 
-          batchSize = diag.getBatchSize();
-	  
-        Integer priority = null;
-        if(diag.overridePriority()) 
-          priority = diag.getPriority();
-	  
-        Integer interval = null;
-        if(diag.overrideRampUp()) 
-          interval = diag.getRampUp();
+    if(pStatus != null) {
+      NodeDetailsLight details = pStatus.getLightDetails();
+      if(details != null) {
+        NodeMod mod = details.getWorkingVersion();
+        if(mod != null) {
+          TreeMap<String,FrameRange> wholeRanges = new TreeMap<String,FrameRange>();
+          wholeRanges.put(mod.getName(), mod.getPrimarySequence().getFrameRange()); 
 
-        Float maxLoad = null;
-        if(diag.overrideMaxLoad())
-          maxLoad = diag.getMaxLoad();
+          MappedSet<String,Integer> targetIndices = new MappedSet<String,Integer>();
+          targetIndices.put(mod.getName(), (TreeSet<Integer>) null); 
 
-        Long minMemory = null;
-        if(diag.overrideMinMemory())
-          minMemory = diag.getMinMemory();
+          JQueueJobsDialog diag = 
+            UIMaster.getInstance().showQueueJobsDialog(wholeRanges, targetIndices);
+          if(diag.wasConfirmed()) {
+            MappedSet<String,Integer> indices = null;
+            if(diag.overrideTargetIndices()) 
+              indices = diag.getTargetIndices();
 
-        Long minDisk= null;
-        if(diag.overrideMinDisk())
-          minDisk = diag.getMinDisk();
+            Integer batchSize = null;
+            if(diag.overrideBatchSize()) 
+              batchSize = diag.getBatchSize();
+            
+            Integer priority = null;
+            if(diag.overridePriority()) 
+              priority = diag.getPriority();
+            
+            Integer interval = null;
+            if(diag.overrideRampUp()) 
+              interval = diag.getRampUp();
+            
+            Float maxLoad = null;
+            if(diag.overrideMaxLoad())
+              maxLoad = diag.getMaxLoad();
+            
+            Long minMemory = null;
+            if(diag.overrideMinMemory())
+              minMemory = diag.getMinMemory();
+            
+            Long minDisk= null;
+            if(diag.overrideMinDisk())
+              minDisk = diag.getMinDisk();
 	  
-        TreeSet<String> selectionKeys = null;
-        if(diag.overrideSelectionKeys()) 
-          selectionKeys = diag.getSelectionKeys();
+            TreeSet<String> selectionKeys = null;
+            if(diag.overrideSelectionKeys()) 
+              selectionKeys = diag.getSelectionKeys();
 	  
-        TreeSet<String> licenseKeys = null;
-        if(diag.overrideLicenseKeys()) 
-          licenseKeys = diag.getLicenseKeys();
-	  
-        TreeSet<String> hardwareKeys = null;
-
-        if(diag.overrideHardwareKeys()) 
-          hardwareKeys = diag.getHardwareKeys();
-	  
-        QueueJobsTask task = 
-          new QueueJobsTask(pStatus.getName(), batchSize, priority, interval,
-                            maxLoad, minMemory, minDisk,
-                            selectionKeys, licenseKeys, hardwareKeys);
-        task.start();
+            TreeSet<String> licenseKeys = null;
+            if(diag.overrideLicenseKeys()) 
+              licenseKeys = diag.getLicenseKeys();
+            
+            TreeSet<String> hardwareKeys = null;
+            
+            if(diag.overrideHardwareKeys()) 
+              hardwareKeys = diag.getHardwareKeys();
+            
+            QueueJobsTask task = 
+              new QueueJobsTask(pStatus.getName(), indices.get(pStatus.getName()), 
+                                batchSize, priority, interval,
+                                maxLoad, minMemory, minDisk,
+                                selectionKeys, licenseKeys, hardwareKeys);
+            task.start();
+          }
+        }
       }
     }
   }
@@ -1402,13 +1420,14 @@ class JBaseNodeDetailPanel
      String name
     ) 
     {
-      this(name, null, null, null, null, null, null, null, null, null);
+      this(name, null, null, null, null, null, null, null, null, null, null);
     }
 
     public 
     QueueJobsTask
     (
      String name, 
+     TreeSet<Integer> indices, 
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
@@ -1421,7 +1440,7 @@ class JBaseNodeDetailPanel
     ) 
     {
       UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
-				   batchSize, priority, rampUp, 
+				   indices, batchSize, priority, rampUp, 
 				   maxLoad, minMemory, minDisk,
 				   selectionKeys, licenseKeys, hardwareKeys);
       setName("JBaseNodeDetailPanel:QueueJobsTask");

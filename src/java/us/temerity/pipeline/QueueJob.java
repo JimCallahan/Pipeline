@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.16 2009/09/16 03:48:17 jesse Exp $
+// $Id: QueueJob.java,v 1.17 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -174,13 +174,13 @@ class QueueJob
    * <p>
    * This method will be removed from the API at some point in the future.  
    */
-  @Deprecated
   public void
   setJobGroupID
   (
     long id  
   )
   {
+    // REMOVE THIS METHOD ONCE EVERY STUDIO HAS REBUILT THEIR JOBS
     pJobGroupID = id;
   }
   

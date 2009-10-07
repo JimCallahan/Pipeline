@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.298 2009/10/07 05:05:35 jim Exp $
+// $Id: MasterMgr.java,v 1.299 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8520,7 +8520,7 @@ class MasterMgr
 	  timer.resume();
 
 	  WorkingBundle bundle = getWorkingBundle(id);
-	  oldMod = bundle.getVersion();
+	  oldMod = new NodeMod(bundle.getVersion()); 
 
 	  /* make sure its not frozen */ 
 	  if(oldMod.isFrozen()) 

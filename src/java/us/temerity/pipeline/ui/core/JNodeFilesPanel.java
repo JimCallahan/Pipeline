@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.58 2009/08/19 23:39:32 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.59 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -215,6 +215,28 @@ class JNodeFilesPanel
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the primary file sequence of the working version of the node being viewed
+   * <CODE>null</CODE> if no working version is being viewed.
+   */ 
+  public FileSeq
+  getPrimarySequence() 
+  {
+    if(pStatus != null) {
+      NodeDetailsLight details = pStatus.getLightDetails();
+      if(details != null) {
+        NodeMod mod = details.getWorkingVersion();
+        if(mod != null) 
+          return mod.getPrimarySequence();
+      }
+    }
+    
+    return null;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */

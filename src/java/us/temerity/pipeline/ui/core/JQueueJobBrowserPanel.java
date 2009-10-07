@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.42 2009/06/02 20:08:37 jlee Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.43 2009/10/07 08:09:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1071,53 +1071,53 @@ class JQueueJobBrowserPanel
           groups.put(groupID, group); 
       }
     }
-
+    
     if(!groups.isEmpty()) {
       JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
       if(diag.wasConfirmed()) {
-	Integer batchSize = null;
-	if(diag.overrideBatchSize()) 
-	  batchSize = diag.getBatchSize();
-	
-	Integer priority = null;
-	if(diag.overridePriority()) 
-	  priority = diag.getPriority();
-	
-	Integer interval = null;
-	if(diag.overrideRampUp()) 
-	  interval = diag.getRampUp();
-	
-	Float maxLoad = null;
-	if(diag.overrideMaxLoad())
-	  maxLoad = diag.getMaxLoad();
-	
-	Long minMemory = null;
-	if(diag.overrideMinMemory())
-	  minMemory = diag.getMinMemory();
-	
-	Long minDisk= null;
-	if(diag.overrideMinDisk())
-	  minDisk = diag.getMinDisk();
-	  
-	TreeSet<String> selectionKeys = null;
-	if(diag.overrideSelectionKeys()) 
-	  selectionKeys = diag.getSelectionKeys();
+ 	Integer batchSize = null;
+ 	if(diag.overrideBatchSize()) 
+ 	  batchSize = diag.getBatchSize();
+        
+ 	Integer priority = null;
+ 	if(diag.overridePriority()) 
+ 	  priority = diag.getPriority();
+        
+ 	Integer interval = null;
+ 	if(diag.overrideRampUp()) 
+ 	  interval = diag.getRampUp();
+      
+ 	Float maxLoad = null;
+ 	if(diag.overrideMaxLoad())
+ 	  maxLoad = diag.getMaxLoad();
+      
+ 	Long minMemory = null;
+ 	if(diag.overrideMinMemory())
+ 	  minMemory = diag.getMinMemory();
+      
+ 	Long minDisk= null;
+ 	if(diag.overrideMinDisk())
+ 	  minDisk = diag.getMinDisk();
+        
+ 	TreeSet<String> selectionKeys = null;
+ 	if(diag.overrideSelectionKeys()) 
+ 	  selectionKeys = diag.getSelectionKeys();
 
-	TreeSet<String> licenseKeys = null;
-	if(diag.overrideLicenseKeys()) 
-	  licenseKeys = diag.getLicenseKeys();
-	
-	TreeSet<String> hardwareKeys = null;
-	if(diag.overrideHardwareKeys()) 
-	  hardwareKeys = diag.getHardwareKeys();
-	
-	QueueJobsTask task = 
-	  new QueueJobsTask(groups, batchSize, priority, interval,
-	                    maxLoad, minMemory, minDisk,
-			    selectionKeys, licenseKeys, hardwareKeys);
-	task.start();
-      }
-    }
+ 	TreeSet<String> licenseKeys = null;
+ 	if(diag.overrideLicenseKeys()) 
+ 	  licenseKeys = diag.getLicenseKeys();
+      
+ 	TreeSet<String> hardwareKeys = null;
+ 	if(diag.overrideHardwareKeys()) 
+ 	  hardwareKeys = diag.getHardwareKeys();
+      
+ 	QueueJobsTask task = 
+ 	  new QueueJobsTask(groups, batchSize, priority, interval,
+ 	                    maxLoad, minMemory, minDisk,
+ 			    selectionKeys, licenseKeys, hardwareKeys);
+ 	task.start();
+       }
+     }
   }
 
   /**
