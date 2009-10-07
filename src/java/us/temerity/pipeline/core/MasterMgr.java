@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.297 2009/10/06 17:45:54 jlee Exp $
+// $Id: MasterMgr.java,v 1.298 2009/10/07 05:05:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13240,6 +13240,13 @@ class MasterMgr
         finally {
           releaseFileMgrClient(fclient);
         }
+
+        if(vsn.getCheckSums().isEmpty()) 
+          throw new PipelineException 
+            ("Unable to insert version (" + vid + ") of node (" + name + ") because " + 
+             "it does not contain per-file checksum information.  CheckSums stored in " + 
+             "the Node Version where introduced in Pipeline-2.4.9, so its likely that " +
+             "you are attempting to insert a node from a pre-2.4.9 version of Pipeline!");
       }
 
       /* make sure the named toolset exits */ 
@@ -23432,6 +23439,7 @@ class MasterMgr
            "--- Offlined Task (Finished) ---\n" + 
            "  Offlined Cache Rebuild Aborted.\n" + 
            "    Time Spent " + TimeStamps.formatInterval(timer.getTotalDuration()) + "\n" +
+           Exceptions.getFullMessage("Reason for Abort:", ex) + "\n" +
            "--------------------------------"); 
         LogMgr.getInstance().flush();
       }
