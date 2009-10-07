@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.17 2009/10/07 02:45:50 jlee Exp $
+// $Id: NodeTree.java,v 1.18 2009/10/07 20:34:54 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -413,7 +413,7 @@ class NodeTree
    *   The unique working version identifier.
    *
    * @param primary
-   *   The primary file sequence.
+   *   The primary file sequence associated with the working version.
    * 
    * @param fseqs
    *   The file sequences associated with the working version.
@@ -450,8 +450,7 @@ class NodeTree
     for(FileSeq fseq : fseqs)
       entry.addSequence(fseq);
 
-    if(primary != null)
-      entry.setPrimarySuffix(primary);
+    entry.setPrimarySuffix(primary);
   }
 
   /**
@@ -461,16 +460,34 @@ class NodeTree
    *   The unique working version identifier.
    *
    * @param secondary
-   *   The secondary sequence associated with the working version.
+   *   The secondary sequence to add to the working version.
    */
   public synchronized void
   addSecondaryWorkingNodeTreePath
   (
    NodeID nodeID, 
-   SortedSet<FileSeq> secondary
+   FileSeq fseq
   )
   {
-    addWorkingNodeTreePath(nodeID, null, secondary);
+    String comps[] = nodeID.getName().split("/"); 
+    NodeTreeEntry parent = pNodeTreeRoot;
+    int wk;
+    for(wk=1; wk<(comps.length-1); wk++) {
+      NodeTreeEntry entry = parent.get(comps[wk]);
+      if(entry == null) {
+	entry = new NodeTreeEntry(comps[wk]);
+	parent.put(entry.getName(), entry);
+      }
+      parent = entry;
+    }
+    
+    String name = comps[comps.length-1];
+    NodeTreeEntry entry = parent.get(name);
+    if(entry == null)
+      throw new IllegalStateException();
+    
+    entry.addWorking(nodeID.getAuthor(), nodeID.getView());
+    entry.addSequence(fseq);
   }
 
 
@@ -518,10 +535,16 @@ class NodeTree
    * that the new name doesn't conflict with other existing nodes.
    * 
    * @param oldID
-   *   The unique working version identifier of the original node.
+   *   The unique working version identifier of the original node, 
+   *     used to restore the old working node entry if the rename fails.
+   *
+   * @param oldPrimary
+   *   The primary file sequence associated with the original node, 
+   *     used to restore the old working node entry if the rename fails.
    * 
    * @param oldSeqs
-   *   All file sequences associated with the original node.
+   *   All file sequences associated with the original node, 
+   *     used to restore the old working node entry if the rename fails.
    * 
    * @param newID
    *   The unique working version identifier for the renamed node. 
@@ -676,10 +699,7 @@ class NodeTree
          "node path:\n\n" +
          "  " + reserving + sWindowsMessage + "\n");
     
-    TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
-    secondary.add(fseq);
-    
-    addSecondaryWorkingNodeTreePath(nodeID, secondary);
+    addSecondaryWorkingNodeTreePath(nodeID, fseq);
   }
 
 
@@ -830,6 +850,9 @@ class NodeTree
    * @param oldSeqs
    *   The file sequences associated with the exising working version.
    *
+   * @param newPrimary
+   *   The primary file sequence associated with the new working version.
+   *
    * @param newSeqs
    *   The file sequences associated with the new working version.
    */ 
@@ -930,7 +953,7 @@ class NodeTree
 	if(entry == null) {
 	  parentEntry = null;
 	  break;
-	    }
+	}
 	
 	NodeTreeComp comp = parentComp.get(comps[wk]);
 	if(comp == null)

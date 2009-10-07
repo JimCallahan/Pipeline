@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.299 2009/10/07 08:09:50 jim Exp $
+// $Id: MasterMgr.java,v 1.300 2009/10/07 20:34:54 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1295,7 +1295,7 @@ class MasterMgr
 	    dsl.addWorking(author, view, name); 
 	  }  
 
-	  addWorkingNodeTreePath(nodeID, mod);
+	  addWorkingNodeTreePath(nodeID, mod.getPrimarySequence(), mod.getSequences());
 	}
       }
     }
@@ -6951,6 +6951,9 @@ class MasterMgr
    * 
    * @param nodeID
    *   The unique working version identifier.
+   *
+   * @param primary
+   *   The primary file sequence associated with the working version.
    * 
    * @param fseqs
    *   The file sequences associated with the working version.
@@ -6959,11 +6962,12 @@ class MasterMgr
   addWorkingNodeTreePath
   (
    NodeID nodeID, 
-   NodeMod mod
+   FileSeq primary, 
+   SortedSet<FileSeq> fseqs
   )
   {
     addWorkingAreaForNode(nodeID);    
-    pNodeTree.addWorkingNodeTreePath(nodeID, mod.getPrimarySequence(), mod.getSequences());
+    pNodeTree.addWorkingNodeTreePath(nodeID, primary, fseqs);
   }
 
 
@@ -8463,7 +8467,8 @@ class MasterMgr
     String nname     = npat.getPrefix();
     NodeID nid       = new NodeID(id, nname);
 
-    NodeMod oldMod = null;
+    FileSeq oldPrimary = null;
+    TreeSet<FileSeq> oldSeqs = null;
     TreeSet<FileSeq> newSeqs = null;
 
     TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + npat);
@@ -8520,27 +8525,29 @@ class MasterMgr
 	  timer.resume();
 
 	  WorkingBundle bundle = getWorkingBundle(id);
-	  oldMod = new NodeMod(bundle.getVersion()); 
+	  NodeMod mod = bundle.getVersion();
+	  oldPrimary = mod.getPrimarySequence();
+	  oldSeqs = mod.getSequences();
 
 	  /* make sure its not frozen */ 
-	  if(oldMod.isFrozen()) 
+	  if(mod.isFrozen()) 
 	    throw new PipelineException
 	      ("The frozen node (" + id + ") cannot be renamed!");
 
 	  /* make sure its an initial version */ 
-	  if(oldMod.getWorkingID() != null) 
+	  if(mod.getWorkingID() != null) 
 	    throw new PipelineException
 	      ("Cannot rename node (" + name + ") because it is not an initial " + 
 	       "working version!");
 
 	  /* make sure there are no active jobs */ 
-	  if(hasActiveJobs(id, oldMod.getTimeStamp(), oldMod.getPrimarySequence()))
+	  if(hasActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence()))
 	    throw new PipelineException
 	      ("Unable to rename the node (" + id + ") while there are active " + 
 	       "jobs associated with the node!");
 
 	  {
-	    FileSeq fseq = oldMod.getPrimarySequence();
+	    FileSeq fseq = mod.getPrimarySequence();
 	    FilePattern opat = fseq.getFilePattern();
 	    if(opat.hasFrameNumbers() != npat.hasFrameNumbers()) 
 	      throw new PipelineException
@@ -8556,7 +8563,7 @@ class MasterMgr
 	      new FilePattern(path.getName(), npat.getPadding(), npat.getSuffix());
 
 	    primary   = new FileSeq(pat, range);
-	    secondary = oldMod.getSecondarySequences();
+	    secondary = mod.getSecondarySequences();
 
 	    newSeqs = new TreeSet<FileSeq>(); 
 	    newSeqs.add(primary);
@@ -8575,8 +8582,7 @@ class MasterMgr
       /* verifying that the new node name doesn't conflict with existing node and
          reserve the new name */ 
       try {
-	pNodeTree.reserveRename(id, oldMod.getPrimarySequence(), oldMod.getSequences(), 
-                                nid, primary, secondary, newSeqs);
+	pNodeTree.reserveRename(id, oldPrimary, oldSeqs, nid, primary, secondary, newSeqs);
 	addWorkingAreaForNode(nid);
       }
       catch(PipelineException ex) {
@@ -8999,7 +9005,7 @@ class MasterMgr
       pNodeTree.removeWorkingNodeTreePath(nid, newSeqs); 
       
       /* restore the old working node entry, primary and secondary sequences */ 
-      addWorkingNodeTreePath(id, oldMod);
+      addWorkingNodeTreePath(id, oldPrimary, oldSeqs);
 
       /* abort */ 
       return new FailureRsp(timer, ex.getMessage());
@@ -11398,7 +11404,7 @@ class MasterMgr
       /* initialize new working version */ 
       if(working == null) {
 	/* register the node name and sequences */ 
-	addWorkingNodeTreePath(nodeID, nwork);
+	addWorkingNodeTreePath(nodeID, nwork.getPrimarySequence(), nwork.getSequences());
 
 	/* create a new working bundle */ 
         timer.aquire();
@@ -11718,7 +11724,7 @@ class MasterMgr
 	  /* initialize new working version */ 
 	  if(working == null) {
 	    /* register the node name */ 
-	    addWorkingNodeTreePath(nodeID, nwork);
+	    addWorkingNodeTreePath(nodeID, nwork.getPrimarySequence(), nwork.getSequences());
 	  
 	    /* create a new working bundle */ 
             timer.aquire();
