@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.16 2009/10/06 17:45:54 jlee Exp $
+// $Id: NodeTree.java,v 1.17 2009/10/07 02:45:50 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -400,6 +400,8 @@ class NodeTree
     
     for(FileSeq fseq : vsn.getSequences())
       entry.addSequence(fseq);
+
+    entry.setPrimarySuffix(vsn.getPrimarySequence());
   }
 
   /**
