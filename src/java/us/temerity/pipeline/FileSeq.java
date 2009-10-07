@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.26 2009/08/19 23:02:38 jim Exp $
+// $Id: FileSeq.java,v 1.27 2009/10/07 08:09:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -531,7 +531,7 @@ class FileSeq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Constructs the minium set of file sequences which include all of the files associated
+   * Constructs the minimum set of file sequences which include all of the files associated
    * with the given set of file sequences.<P> 
    * 
    * @param fseqs
@@ -770,9 +770,9 @@ class FileSeq
       String suffix = null;
       return new FileSeq(buffer[0], suffix);
     }
-    // This is either prefix.suffix or prefix.frameRange
+    /* this is either prefix.suffix or prefix.frameRange */ 
     else if (buffer.length == 2) {
-      // This has a frame range.
+      /* this has a frame range */ 
       if (stringRep.contains(",")) {
         String buffer2[] = buffer[1].split(",");
         if (buffer2.length != 2)
@@ -783,7 +783,7 @@ class FileSeq
         FilePattern fPat = new FilePattern(buffer[0], padding, null);
         return new FileSeq(fPat, range);
       }
-      // This is a suffix
+      /* this is a suffix */ 
       else {
         return new FileSeq(buffer[0], buffer[1]);
       }
@@ -829,46 +829,14 @@ class FileSeq
     String range  
   )
   {
-    IllegalArgumentException toThrow = new IllegalArgumentException
-      ("The string (" + range + ") from the sequence (" + sequence + ") is not a " +
-       "valid frame range value");
-    
-    String buffer[] = range.split("x");
-    
-    int by = 1;
-    if (buffer.length == 2) {
-      try {
-        by = Integer.valueOf(buffer[1]);
-      }
-      catch (NumberFormatException ex) {
-        throw toThrow;
-      }
+    try {
+      return FrameRange.fromString(range); 
     }
-    else if (buffer.length != 1)
-      throw toThrow;
-    
-    String buffer2[] = buffer[0].split("-");
-    if (buffer2.length == 2) {
-      try {
-       int start = Integer.valueOf(buffer2[0]);
-       int end = Integer.valueOf(buffer2[1]);
-       return new FrameRange(start, end, by);
-      }
-      catch (NumberFormatException ex ) {
-        throw toThrow;
-      }
+    catch(IllegalArgumentException ex) {
+      throw new IllegalArgumentException
+        ("The string (" + range + ") from the sequence (" + sequence + ") is not a " +
+         "valid frame range value");
     }
-    else if (buffer2.length == 1) {
-      try {
-        int start = Integer.valueOf(buffer2[0]);
-        return new FrameRange(start);
-       }
-       catch (NumberFormatException ex ) {
-         throw toThrow;
-       }
-    }
-    else
-      throw toThrow;
   }
   
   

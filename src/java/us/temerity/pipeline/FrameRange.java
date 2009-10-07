@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.13 2007/07/12 10:23:25 jim Exp $
+// $Id: FrameRange.java,v 1.14 2009/10/07 08:09:37 jim Exp $
 
 package us.temerity.pipeline;
  
@@ -414,7 +414,7 @@ class FrameRange
     else
       return (pStart + "-" + pEnd + "x" + pBy);
   }
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -496,6 +496,71 @@ class FrameRange
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct a {@link FrameRange} from a string representation.
+   * 
+   * @param stringRep
+   *   The string representation of the {@link FrameRange}.
+   * 
+   * @throws IllegalArgumentException
+   *   If the string passed in does not represent a valid {@link FileSeq}
+   * 
+   * @return 
+   *   The file sequence represented by the string.
+   */
+  public static FrameRange
+  fromString
+  (
+   String stringRep  
+  )
+  {
+    IllegalArgumentException toThrow = 
+      new IllegalArgumentException
+        ("The string (" + stringRep + ") is not a valid frame range value!");
+    
+    String parts[] = stringRep.split("x");
+    
+    int by = 1;
+    if(parts.length == 2) {
+      try {
+        by = Integer.valueOf(parts[1]);
+      }
+      catch (NumberFormatException ex) {
+        throw toThrow;
+      }
+    }
+    else if (parts.length != 1)
+      throw toThrow;
+    
+    String parts2[] = parts[0].split("-");
+    if(parts2.length == 2) {
+      try {
+        int start = Integer.valueOf(parts2[0]);
+        int end = Integer.valueOf(parts2[1]);
+        return new FrameRange(start, end, by);
+      }
+      catch (NumberFormatException ex ) {
+        throw toThrow;
+      }
+    }
+    else if(parts2.length == 1) {
+      try {
+        int start = Integer.valueOf(parts2[0]);
+        return new FrameRange(start);
+      }
+      catch (NumberFormatException ex ) {
+        throw toThrow;
+      }
+    }
+    else
+      throw toThrow;
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
