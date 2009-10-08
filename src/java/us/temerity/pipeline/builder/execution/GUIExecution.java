@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.13 2009/10/02 04:52:15 jesse Exp $
+// $Id: GUIExecution.java,v 1.14 2009/10/08 22:49:41 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -717,8 +717,6 @@ class GUIExecution
     private JButton pNextActionButton;
     private JButton pRunAllButton;
 
-    private boolean pAbort;
-
     private JBuilderTopPanel pTopPanel;
   }
 
@@ -816,6 +814,8 @@ class GUIExecution
         if (error)
           break;
         try {
+          if (pAbort)
+            throw new PipelineException("Execution halted by user");
           pRunning = true;
           executeNextConstructPass();
           pRunning = false;
@@ -976,4 +976,5 @@ class GUIExecution
 
  private JBuilderDialog pDialog;
  private boolean pRunning;
+ private boolean pAbort;
 }
