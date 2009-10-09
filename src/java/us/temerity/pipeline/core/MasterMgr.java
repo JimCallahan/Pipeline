@@ -1,10 +1,11 @@
-// $Id: MasterMgr.java,v 1.300 2009/10/07 20:34:54 jlee Exp $
+// $Id: MasterMgr.java,v 1.301 2009/10/09 04:16:25 jesse Exp $
 
 package us.temerity.pipeline.core;
 
 import java.io.*;
 import java.text.*;
 import java.util.*;
+import java.util.Map.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
@@ -12044,11 +12045,20 @@ class MasterMgr
   {
     NodeID sourceID = req.getSourceID();
     NodeID targetID = req.getTargetID();
-    TreeMap<FileSeq, FileSeq> secondaries = req.getSecondarySequences();
+    MappedSet<FileSeq, FileSeq> secondaries = req.getSecondarySequences();
 
     TaskTimer timer = 
       new TaskTimer("MasterMgr.cloneFiles(): " + sourceID + " to " + targetID);
 
+    TreeSet<FileSeq> bad = new TreeSet<FileSeq>();
+    for (Entry<FileSeq, TreeSet<FileSeq>> entry : secondaries.entrySet() ) {
+      if (entry.getValue() == null)
+        bad.add(entry.getKey());
+    }
+
+    for (FileSeq each : bad)
+      secondaries.remove(each);
+    
     /* pre-op tests */
     CloneFilesExtFactory factory = new CloneFilesExtFactory(sourceID, targetID);
     try {
@@ -12136,11 +12146,13 @@ class MasterMgr
 	  targetSeq = mod.getPrimarySequence();
 	  if (secondaries != null) {
 	    SortedSet<FileSeq> existingSec = mod.getSecondarySequences();
-	    for (FileSeq secSeq : secondaries.values()) {
-	      if (!existingSec.contains(secSeq))
-	        throw new PipelineException
-  	          ("The secondary sequence (" + secSeq + ") does not appear to be a valid " +
-	           "secondary sequence on the target node (" + targetSeq + ")!");
+	    for (TreeSet<FileSeq> secSeqs : secondaries.values()) {
+	      for (FileSeq secSeq : secSeqs) {
+	        if (!existingSec.contains(secSeq))
+	          throw new PipelineException
+  	            ("The secondary sequence (" + secSeq + ") does not appear to be a " +
+  	             "valid secondary sequence on the target node (" + targetSeq + ")!");
+	      }
 	    }
 	  }
 
@@ -12185,8 +12197,8 @@ class MasterMgr
         files.put(sourceSeq.getFile(i), targetSeq.getFile(i));
         if (secondaries != null) {
           for (FileSeq sourceSec : secondaries.keySet()) {
-            FileSeq targetSec = secondaries.get(sourceSec);
-            files.put(sourceSec.getFile(i), targetSec.getFile(i));
+            for (FileSeq targetSec : secondaries.get(sourceSec))
+              files.put(sourceSec.getFile(i), targetSec.getFile(i));
           }
         }
       }

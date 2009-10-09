@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.145 2009/10/01 18:21:28 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.146 2009/10/09 04:16:25 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -6408,7 +6408,7 @@ class MasterMgrClient
    *
    * @param secondarySequences
    *   A map of the secondary file sequences to be copied.  The keys are the secondary
-   *   sequences of the source node and the values are the corresponding sequences in 
+   *   sequences of the source node and the values are the set of corresponding sequences in 
    *   the target node.
    * 
    * @throws PipelineException
@@ -6420,7 +6420,7 @@ class MasterMgrClient
   ( 
     NodeID sourceID, 
     NodeID targetID,
-    TreeMap<FileSeq, FileSeq> secondarySequences
+    MappedSet<FileSeq, FileSeq> secondarySequences
   )
     throws PipelineException
   {
@@ -6450,8 +6450,8 @@ class MasterMgrClient
    *
    * @param secondarySequences
    *   A map of the secondary file sequences to be copied.  The keys are the secondary
-   *   sequences of the source node and the values are the corresponding sequences in 
-   *   the target node.
+   *   sequences of the source node and the values are a set of the corresponding sequences 
+   *   in the target node.
    *   
    * @param sourceRange
    *   The frame range in the source node that will be copied.  If this is <code>null</code>
@@ -6474,7 +6474,7 @@ class MasterMgrClient
   ( 
     NodeID sourceID, 
     NodeID targetID,
-    TreeMap<FileSeq, FileSeq> secondarySequences,
+    MappedSet<FileSeq, FileSeq> secondarySequences,
     FrameRange sourceRange,
     FrameRange targetRange
   )

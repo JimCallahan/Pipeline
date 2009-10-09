@@ -1,8 +1,6 @@
-// $Id: NodeCloneFilesReq.java,v 1.4 2009/06/13 22:59:29 jesse Exp $
+// $Id: NodeCloneFilesReq.java,v 1.5 2009/10/09 04:16:25 jesse Exp $
 
 package us.temerity.pipeline.message;
-
-import java.util.*;
 
 import us.temerity.pipeline.*;
 
@@ -50,8 +48,8 @@ class NodeCloneFilesReq
    *   The unique working version identifier of the node owning the files being replaced.
    *   
    * @param secondarySequences
-   *   A map whose keys are the secondary sequences whose files will be copied, with the 
-   *   corresponding file sequence in the target node as the value.  This can be set to
+   *   A map whose keys are the secondary sequences whose files will be copied, with the set
+   *   of corresponding file sequence in the target node as the value.  This can be set to
    *   <code>null</code> if there are no secondary sequences whose files should be copied.
    */
   public
@@ -59,7 +57,7 @@ class NodeCloneFilesReq
   (
    NodeID sourceID, 
    NodeID targetID,
-   TreeMap<FileSeq, FileSeq> secondarySequences
+   MappedSet<FileSeq, FileSeq> secondarySequences
   )
   {
     this(sourceID, targetID, secondarySequences, null, null);
@@ -76,8 +74,8 @@ class NodeCloneFilesReq
    *   The unique working version identifier of the node owning the files being replaced.
    *   
    * @param secondarySequences
-   *   A map whose keys are the secondary sequences whose files will be copied, with the 
-   *   corresponding file sequence in the target node as the value.  This can be set to
+   *   A map whose keys are the secondary sequences whose files will be copied, with the set
+   *   of corresponding file sequence in the target node as the value.  This can be set to
    *   <code>null</code> if there are no secondary sequences whose files should be copied.
    *   
    * @param sourceRange
@@ -96,7 +94,7 @@ class NodeCloneFilesReq
   (
    NodeID sourceID, 
    NodeID targetID,
-   TreeMap<FileSeq, FileSeq> secondarySequences,
+   MappedSet<FileSeq, FileSeq> secondarySequences,
    FrameRange sourceRange,
    FrameRange targetRange
   )
@@ -114,6 +112,8 @@ class NodeCloneFilesReq
     pTargetID = targetID;
     
     pSecondarySequences = secondarySequences;
+    if (pSecondarySequences == null)
+      pSecondarySequences = new MappedSet<FileSeq, FileSeq>();
     
     pSourceRange = sourceRange;
     pTargetRange = targetRange;
@@ -147,7 +147,7 @@ class NodeCloneFilesReq
    * Get the map whose keys are the secondary sequences whose files will be copied, with the 
    * corresponding file sequence in the target node as the value.
    */
-  public TreeMap<FileSeq, FileSeq>
+  public MappedSet<FileSeq, FileSeq>
   getSecondarySequences()
   {
     return pSecondarySequences;
@@ -200,10 +200,10 @@ class NodeCloneFilesReq
   private NodeID  pTargetID;
 
   /**
-   * A map whose keys are the secondary sequences whose files will be copied, with the 
+   * A map whose keys are the secondary sequences whose files will be copied, with a set of
    * corresponding file sequence in the target node as the value.
    */
-  private TreeMap<FileSeq, FileSeq> pSecondarySequences;
+  private MappedSet<FileSeq, FileSeq> pSecondarySequences;
   
   /**
    * The frame range in the source that will be copied.
