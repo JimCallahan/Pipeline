@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.302 2009/10/09 15:58:40 jim Exp $
+// $Id: MasterMgr.java,v 1.303 2009/10/09 16:55:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6170,52 +6170,6 @@ class MasterMgr
     }
   }  
 
-  /**
-   * Get new instances of all enabled master extension plugins indexed by 
-   * extension configuration name. <P> 
-   * 
-   * This method also will pre-cook the toolset environments for all plugins which will be
-   * spawning subprocesses.
-   * 
-   * @param timer
-   *   The task timer.
-   */ 
-  private TreeMap<String,BaseMasterExt> 
-  getMasterExts
-  (
-   TaskTimer timer
-  ) 
-    throws PipelineException
-  {
-    TreeMap<String,BaseMasterExt> table = new TreeMap<String,BaseMasterExt>();
-    TreeMap<String,String> toolsetNames = new TreeMap<String,String>();
-
-    /* instantiate the plugins */ 
-    timer.aquire();
-    synchronized(pMasterExtensions) {
-      timer.resume();
-	
-      for(String cname : pMasterExtensions.keySet()) {
-	MasterExtensionConfig config = pMasterExtensions.get(cname);
-	if(config.isEnabled()) {
-	  table.put(cname, config.getMasterExt());
-	  toolsetNames.put(cname, config.getToolset());
-	}
-      }
-    }
-
-    /* cook the toolset environments (if needed by plugins) */ 
-    for(String cname : table.keySet()) {
-      BaseMasterExt ext = table.get(cname); 
-      if(ext.needsEnvironment()) {
-	String tname = toolsetNames.get(cname);
-	ext.setEnvironment(getToolsetEnvironment(null, null, tname, OsType.Unix, timer));
-      }
-    }
-
-    return table;
-  }
-  
 
   /*----------------------------------------------------------------------------------------*/
 
