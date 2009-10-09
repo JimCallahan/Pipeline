@@ -1,4 +1,4 @@
-// $Id: BaseWorkingNodeEvent.java,v 1.2 2007/03/28 19:56:42 jim Exp $
+// $Id: BaseWorkingNodeEvent.java,v 1.3 2009/10/09 15:58:40 jim Exp $
 
 package us.temerity.pipeline.event;
 
@@ -43,6 +43,40 @@ class BaseWorkingNodeEvent
    * @param nodeOp
    *   The type of node operation recorded by the event. 
    * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param author 
+   *   The name of the user which generated the event.
+   *
+   * @param view 
+   *   The name of the user's working area view associated with the event. 
+   */
+  protected
+  BaseWorkingNodeEvent
+  ( 
+   long stamp, 
+   NodeEventOp nodeOp, 
+   String name, 
+   String author, 
+   String view
+  ) 
+  {
+    super(stamp, nodeOp, name, author); 
+
+    pView = view;
+  }
+
+  /** 
+   * Internal constructor used to create new events. 
+   * 
+   * @param stamp
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the event 
+   *   occurred. 
+   * 
+   * @param nodeOp
+   *   The type of node operation recorded by the event. 
+   * 
    * @param nodeID 
    *   The unique working version identifier. 
    */
@@ -54,9 +88,7 @@ class BaseWorkingNodeEvent
    NodeID nodeID 
   ) 
   {
-    super(stamp, nodeOp, nodeID.getName(), nodeID.getAuthor());
-
-    pView = nodeID.getView();
+    this(stamp, nodeOp, nodeID.getName(), nodeID.getAuthor(), nodeID.getView()); 
   }
 
   /** 

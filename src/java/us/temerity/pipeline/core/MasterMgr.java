@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.301 2009/10/09 04:16:25 jesse Exp $
+// $Id: MasterMgr.java,v 1.302 2009/10/09 15:58:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1587,23 +1587,45 @@ class MasterMgr
       synchronized(pOfflinedLock) {
         timer.resume();
 
-        TreeSet<VersionID> offlined = pOfflined.get(name);
-        if(offlined != null) 
-          return new TreeSet<VersionID>(offlined);
+        TreeSet<VersionID> offline = pOfflined.get(name);
+        if(offline != null) 
+          return new TreeSet<VersionID>(offline);
         else 
           return null;
       }
     }
     else {
       TreeSet<VersionID> offline = null;
+      {
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          offline = fclient.getOfflinedNodeVersions(name);
+        }
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+      }
 
-      FileMgrClient fclient = acquireFileMgrClient();
+      timer.aquire();
+      ReentrantReadWriteLock lock = getCheckedInLock(name);
+      lock.readLock().lock();
       try {
-        return fclient.getOfflinedNodeVersions(name);
+        timer.resume();	
+        
+        TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+        for(Map.Entry<VersionID,CheckedInBundle> entry : checkedIn.entrySet()) {
+          if(entry.getValue().getVersion().isIntermediate()) 
+            offline.remove(entry.getKey());
+        }
       }
       finally {
-        releaseFileMgrClient(fclient);
-      }
+        lock.readLock().unlock();
+      }  
+
+      if(!offline.isEmpty()) 
+        return offline;
+      else 
+        return null;
     }
   }
 
@@ -9229,7 +9251,7 @@ class MasterMgr
   }  
     
   /** 
-   * Get the revision numbers of all checked-in versions of a node do not save 
+   * Get the revision numbers of all checked-in versions of a node which do not save 
    * intermediate (temporary) version of files in the repository. <P>
    * 
    * @param req 
@@ -13488,6 +13510,9 @@ class MasterMgr
       pRunningEditors.put(editID, event);
       pNextEditorID++;
 
+      /* post-op tasks */ 
+      startExtensionTasks(timer, new EditingStartedExtFactory(editID, event)); 
+
       return editID;
     }
   }
@@ -13517,6 +13542,9 @@ class MasterMgr
       if(event != null) {
 	event.setFinishedStamp(System.currentTimeMillis()); 
 	pPendingEvents.add(event);
+      
+        /* post-op tasks */ 
+        startExtensionTasks(timer, new EditingFinishedExtFactory(editID, event)); 
       }
     }
   }

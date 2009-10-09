@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.7 2009/02/05 05:18:42 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.8 2009/10/09 15:58:40 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -8,6 +8,7 @@ import java.util.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.toolset.*;
+import us.temerity.pipeline.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L O G   M A S T E R   A C T I V I T Y   E X T                                          */
@@ -332,6 +333,24 @@ LogMasterActivityExt
 	  (aLogRenumber, 
 	   "Enable logging of renumbering the frame ranges of the file sequences " + 
 	   "associated with a node.", 
+	   true);
+	addParam(param);
+      }
+
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogEditingStarted, 
+	   "Enable logging of when Editor plugins are started.", 
+	   true);
+	addParam(param);
+      }
+
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogEditingFinished, 
+	   "Enable logging of when Editor plugins finish.", 
 	   true);
 	addParam(param);
       }
@@ -774,6 +793,9 @@ LogMasterActivityExt
 	sub.addSeparator();
 	sub.addEntry(aAllowRenumber);
 	sub.addEntry(aLogRenumber);
+	sub.addSeparator();
+	sub.addEntry(aLogEditingStarted);
+	sub.addEntry(aLogEditingFinished);
 
 	layout.addSubGroup(sub);
       }
@@ -2132,6 +2154,103 @@ LogMasterActivityExt
        "        New Frame Range : " + range + "\n" + 
        "  Remove Obsolete Files : " + removeFiles); 
 
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       msg);
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to run a task after an Editor plugin has been started for a working version 
+   * of a node. <P>
+   */  
+  public boolean
+  hasPostEditingStartedTask() 
+  {
+    return isParamTrue(aLogEditingStarted);
+  }
+  
+  /**
+   * The task to perform after an Editor plugin has been started for a working version 
+   * of a node. <P>
+   * 
+   * @param editID
+   *   The unique ID for the editing session.
+   * 
+   * @param event
+   *   The information known about the editing session.
+   */  
+  public void
+  postEditingStartedTask
+  (
+   long editID, 
+   EditedNodeEvent event
+  ) 
+  {
+    String msg = 
+      ("EDITING STARTED\n" +
+       "     Edited Node : " + event.getNodeName() + "\n" +
+       "    Working Area : " + event.getAuthor() + "|" + event.getView() + "\n" + 
+       "      Session ID : " + editID + "\n" +
+       "         Started : " + TimeStamps.format(event.getTimeStamp()) + "\n" + 
+       "     Editor Name : " + event.getEditorName() + "\n" + 
+       "  Editor Version : " + event.getEditorVersionID() + "\n" + 
+       "   Editor Vendor : " + event.getEditorVendor()); 
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       msg);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether to run a task after an Editor plugin has finished for a working version 
+   * of a node. <P>
+   */  
+  public boolean
+  hasPostEditingFinishedTask() 
+  {
+    return isParamTrue(aLogEditingFinished);
+  }
+  
+  /**
+   * The task to perform after an Editor plugin has finished for a working version 
+   * of a node. <P>
+   * 
+   * Note that there can be more than one Editor running for a single working node, so the 
+   * editID should be used to match up start/finish pairs.  Its also possible that a editing
+   * started event might not have a matching finish event because its possible to stop 
+   * whatever program launched the Editor plugin before the underlying external program 
+   * itself exits.
+   * 
+   * @param editID
+   *   The unique ID for the editing session.
+   * 
+   * @param event
+   *   The information known about the editing session.
+   */  
+  public void
+  postEditingFinishedTask
+  (
+   long editID, 
+   EditedNodeEvent event
+  ) 
+  {
+    String msg = 
+      ("EDITING FINISHED\n" +
+       "     Edited Node : " + event.getNodeName() + "\n" +
+       "    Working Area : " + event.getAuthor() + "|" + event.getView() + "\n" + 
+       "      Session ID : " + editID + "\n" + 
+       "         Started : " + TimeStamps.format(event.getTimeStamp()) + "\n" +
+       "        Finished : " + TimeStamps.format(event.getFinishedStamp()) + "\n" + 
+       "     Editor Name : " + event.getEditorName() + "\n" + 
+       "  Editor Version : " + event.getEditorVersionID() + "\n" + 
+       "   Editor Vendor : " + event.getEditorVendor()); 
+       
     LogMgr.getInstance().log
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
@@ -4002,6 +4121,9 @@ LogMasterActivityExt
 
   private static final String  aAllowRenumber 	        = "AllowRenumber";  	   
   private static final String  aLogRenumber 		= "LogRenumber";  		   
+
+  private static final String  aLogEditingStarted       = "LogEditingStarted";  
+  private static final String  aLogEditingFinished      = "LogEditingFinished";  
 
   private static final String  aAllowRegister	        = "AllowRegister";    
   private static final String  aLogRegister             = "LogRegister";               

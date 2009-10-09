@@ -1,10 +1,11 @@
-// $Id: BaseMasterExt.java,v 1.11 2009/02/05 05:18:42 jim Exp $
+// $Id: BaseMasterExt.java,v 1.12 2009/10/09 15:58:40 jim Exp $
 
 package us.temerity.pipeline;
 
 import  us.temerity.pipeline.toolset.*;
 import  us.temerity.pipeline.builder.*;
 import  us.temerity.pipeline.glue.*;
+import  us.temerity.pipeline.event.*;
 
 import java.util.*;
 import java.io.*;
@@ -1125,6 +1126,75 @@ class BaseMasterExt
    NodeID nodeID,
    FrameRange range, 
    boolean removeFiles
+  ) 
+  {}
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to run a task after an Editor plugin has been started for a working version 
+   * of a node. <P>
+   */  
+  public boolean
+  hasPostEditingStartedTask() 
+  {
+    return false;
+  }
+  
+  /**
+   * The task to perform after an Editor plugin has been started for a working version 
+   * of a node. <P>
+   * 
+   * @param editID
+   *   The unique ID for the editing session.
+   * 
+   * @param event
+   *   The information known about the editing session.
+   */  
+  public void
+  postEditingStartedTask
+  (
+   long editID, 
+   EditedNodeEvent event
+  ) 
+  {}
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether to run a task after an Editor plugin has finished for a working version 
+   * of a node. <P>
+   */  
+  public boolean
+  hasPostEditingFinishedTask() 
+  {
+    return false;
+  }
+  
+  /**
+   * The task to perform after an Editor plugin has finished for a working version 
+   * of a node. <P>
+   * 
+   * Note that there can be more than one Editor running for a single working node, so the 
+   * editID should be used to match up start/finish pairs.  Its also possible that a editing
+   * started event might not have a matching finish event because its possible to stop 
+   * whatever program launched the Editor plugin before the underlying external program 
+   * itself exits.
+   * 
+   * @param editID
+   *   The unique ID for the editing session.
+   * 
+   * @param event
+   *   The information known about the editing session.
+   */  
+  public void
+  postEditingFinishedTask
+  (
+   long editID, 
+   EditedNodeEvent event
   ) 
   {}
 

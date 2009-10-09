@@ -1,4 +1,4 @@
-// $Id: EditedNodeEvent.java,v 1.2 2007/03/28 19:56:42 jim Exp $
+// $Id: EditedNodeEvent.java,v 1.3 2009/10/09 15:58:40 jim Exp $
 
 package us.temerity.pipeline.event;
 
@@ -102,7 +102,28 @@ class EditedNodeEvent
     pImposter = imposter;
   }
 
+  /** 
+   * Create a deep copy of the event.
+   */ 
+  public 
+  EditedNodeEvent
+  (
+   EditedNodeEvent e
+  ) 
+  {
+    super(e.getTimeStamp(), NodeEventOp.Edited, e.getNodeName(), e.getAuthor(), e.getView()); 
+    
+    pFinishedStamp = e.getFinishedStamp();
 
+    pEditorName      = e.getEditorName(); 
+    pEditorVersionID = e.getEditorVersionID();
+    pEditorVendor    = e.getEditorVendor();
+
+    pHostname = e.getHostname();
+    pImposter = e.getImposter();
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   P R E D I C A T E S                                                                  */
