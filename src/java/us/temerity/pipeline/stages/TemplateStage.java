@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.19 2009/09/02 19:23:18 jesse Exp $
+// $Id: TemplateStage.java,v 1.20 2009/10/09 04:31:11 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -157,7 +157,7 @@ class TemplateStage
     
     pUnlinkNodes = new MappedSet<String, String>();
     pTemplateNodesToUnlink = new TreeSet<String>();
-    pSecSeqs = new TreeMap<FileSeq, FileSeq>();
+    pSecSeqs = new MappedSet<FileSeq, FileSeq>();
     
     TreeMap<String, BaseAnnotation> annots = getAnnotations(pSourceMod.getName());
     
@@ -623,7 +623,7 @@ class TemplateStage
         }
         catch (PipelineException ex ) {
           String message =
-            "An error occured while attempting to vouch for the node " +
+            "An error occurred while attempting to vouch for the node " +
             "(" + pRegisteredNodeName + ") which was linked to external files.  This is " +
             "most likely caused by the user running the template not having write " +
             "permissions for the external files (which it needs to touch the files).\n" + 
@@ -1065,6 +1065,7 @@ class TemplateStage
   }
   
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -1119,7 +1120,7 @@ class TemplateStage
   
   private FrameRange pTemplateRange;
   
-  private TreeMap<FileSeq, FileSeq> pSecSeqs;
+  private MappedSet<FileSeq, FileSeq> pSecSeqs;
   
   private TreeSet<String> pIgnorableProducts;
   private TreeSet<String> pIgnoredNodes;
