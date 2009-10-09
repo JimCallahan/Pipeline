@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.29 2009/10/06 17:45:54 jlee Exp $
+// $Id: JNodeBrowserPanel.java,v 1.30 2009/10/09 09:30:16 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1715,12 +1715,13 @@ class JNodeBrowserPanel
           String author = pTool.authorOnExit();
           String view = pTool.viewOnExit();
 	  TreeSet<String> roots = pTool.rootsOnExit();
+
           if(!pAuthor.equals(author) || !pView.equals(view))
 	    setSelected(author, view, roots);
           else
 	    setSelected(roots);
 
-	  updatePanels();
+	  updatePanels(true);
         }
       }
       catch(Exception ex) {
