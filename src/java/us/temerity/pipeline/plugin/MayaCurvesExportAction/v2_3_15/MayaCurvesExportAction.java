@@ -230,6 +230,10 @@ class MayaCurvesExportAction
     
     /* the source Maya scene */ 
     Path mayaSourceScene = getMayaSceneSourcePath(aMayaScene, agenda);
+    if (mayaSourceScene == null)
+      throw new PipelineException
+        ("There was no value given for the Maya Scene parameter, which is required " +
+         "for this action.");
     
     /* the mel script path*/
     Path newSceneMEL = getMelScriptSourcePath(aNewSceneMEL, agenda);
