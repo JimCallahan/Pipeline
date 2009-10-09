@@ -1,0 +1,21 @@
+1.  PanelUpdator/NodeBrowser
+2.  KeyChooser refresh (modifies a selection key/or new version of a plugin is installed)
+3.  Add new methods that take Job Group IDs instead of Job IDs for speed purposes.
+
+
+
+line 637 Full Job Update
+
+651 - 679 Update the Job Server Panel
+
+When the dispatcher is changing the jobReq, take the jobID and make concurent fifo thing (like when jobs are submitted) 
+
+Make a new thread (like dispatcher and collector).  Have it rip through the list, process it till it finishes, when it gets to the end, it just sleeps (5).
+
+Get individual job locks.
+
+Add a new type of debugging for it. (req)  Jobio
+
+or iothread  (jio)
+
+If it tries to write the job to disk and fails, throw a warning in the logs.

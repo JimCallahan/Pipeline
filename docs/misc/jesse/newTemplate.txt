@@ -1,0 +1,39 @@
+So how is this all going to work.
+
+What depends on what can be replaced with a recursive data structure.
+
+contain the NodeMod, easily queriable information from the annotations, links to all the upstream and downstream nodes.
+
+
+What validation is needed?
+
+Check that all the contexts exists.
+Check that all externals exists.
+Check that there are no OptionalBranches that have hot nodes underneath them.
+
+OptionalBranch:
+
+boolean isOptional?
+
+If the node has an optional branch:
+  If the optional branch is set to true
+    isOptional = false
+  If the optional branch is set to false
+    isOptional = true
+If the node does not have an optional branch
+  isOptional = false
+
+How do we handle all these optional nodes.
+
+What gets marked as skipped?
+  OptionalBranchType = BuildOnly: makes sense, since the entire node is off limits
+  OptionalBranchType = CheckOut or Product, if a checkout was skipped.  That doesn't really make sense, does it?  Since we don't know which nodes were actually skipped.  But if nothing was checked out, maybe we want to tag it as skipped?  
+
+I think what we actually need to do is a full traversal of these networks and actually tag the nodes that exist and don't exist, but that is kinda hard since the contexts may vary, etc.  But shouldn't be impossible, I guess.  We can eliminate the markAcquired function, traverse the whole network and tag each isOptional node with what nodes actually exist and which ones don't (addAcquired, addSkipped).
+
+We have a list of ignored/skipped nodes which we know we do not need to make links to.
+
+Things added to the ignorable list:
+Products which do not exist, but which are ignorable.
+Nodes which are skipped as part of optional builds.
+Nodes which areOptional and are not in the current working area after all the optional checkouts.
