@@ -1,15 +1,14 @@
-// $Id: BuilderApp.java,v 1.31 2009/07/06 10:25:26 jim Exp $
+// $Id: BuilderApp.java,v 1.32 2009/10/09 04:31:42 jesse Exp $
 
 package us.temerity.pipeline.core;
 
+import java.util.*;
+
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.apps.BaseApp; 
-import us.temerity.pipeline.bootstrap.BootableApp; 
+import us.temerity.pipeline.apps.*;
+import us.temerity.pipeline.bootstrap.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.parser.*;
-
-import java.io.*;
-import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   A P P                                                                  */
@@ -56,7 +55,6 @@ public class BuilderApp
    *   The command-line arguments.
    */ 
   @Override
-  @SuppressWarnings("unchecked")
   public void 
   run
   (
@@ -113,7 +111,7 @@ public class BuilderApp
           if (builder != null)
             builder.run();
           else
-            throw new PipelineException("Unable to instanstiate the builder.");
+            throw new PipelineException("Unable to instantiate the builder.");
         }
         finally {
           if(mclient != null) 
