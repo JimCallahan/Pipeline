@@ -1,4 +1,4 @@
-// $Id: TemplateVouchableAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
+// $Id: TemplateVouchableAnnotation.java,v 1.3 2009/10/09 04:34:29 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateVouchableAnnotation.v2_4_6;
 
@@ -9,8 +9,8 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Designate which may end up in a Dubious state during a template run, with the template
- * builder can Vouch for.
+ * Designate a node which may end up in a Dubious state during a template run, which the 
+ * template builder can Vouch for.
  * <p>
  * This annotation does not have any parameters.
  */
