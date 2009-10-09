@@ -1,4 +1,4 @@
-// $Id: BaseAnnotation.java,v 1.6 2009/03/25 22:02:23 jim Exp $
+// $Id: BaseAnnotation.java,v 1.7 2009/10/09 03:59:13 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -366,6 +366,21 @@ class BaseAnnotation
   hasParams() 
   {
     return (!pParams.isEmpty());
+  }
+  
+  /** 
+   * Whether this annotation has a parameter with the specified name.
+   * 
+   * @param name
+   *   The name of the parameter.
+   */
+  public final boolean
+  hasParam
+  (
+    String name  
+  )
+  {
+    return pParams.containsKey(name);
   }
 
   /** 
