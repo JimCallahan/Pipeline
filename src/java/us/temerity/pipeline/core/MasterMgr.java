@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.303 2009/10/09 16:55:40 jim Exp $
+// $Id: MasterMgr.java,v 1.304 2009/10/09 17:17:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15678,10 +15678,13 @@ class MasterMgr
 	    timer.resume();
 
 	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-            for(Map.Entry<VersionID,CheckedInBundle> entry : checkedIn.entrySet()) {
-              NodeVersion vsn = entry.getValue().getVersion();
-              if(!vsn.isIntermediate()) 
-                vfseqs.put(entry.getKey(), vsn.getSequences());
+            for(VersionID vid : versions.get(name)) {
+              CheckedInBundle bundle = checkedIn.get(vid);
+              if(bundle != null) {
+                NodeVersion vsn = bundle.getVersion();
+                if(!vsn.isIntermediate()) 
+                  vfseqs.put(vid, vsn.getSequences());
+              }
             }
 	  }
 	  finally {
