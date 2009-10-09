@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.40 2009/10/02 19:41:52 jesse Exp $
+// $Id: BaseStage.java,v 1.41 2009/10/09 04:30:28 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1370,6 +1370,55 @@ class BaseStage
     if ( state == null || state.equals(State.Branch) )
       return false;
     return true;
+  }
+  
+  /**
+   * Returns a boolean that indicates if the node is checked out into the current working 
+   * area.
+   * 
+   * @param name
+   *        The name of the node to search for.
+   *        
+   * @return <code>true</code> if the node exists in the current working area. 
+   *         <code>false</code> if the node does not exist or if it is not checked-out.
+   */
+  public boolean 
+  workingVersionExists
+  (
+    String name
+  ) 
+    throws PipelineException
+  {
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(name, false);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
+    State state = treeComps.getState(name);
+    if ( state == State.WorkingCurrentCheckedInNone || 
+         state == State.WorkingCurrentCheckedInSome )
+      return true;
+    return false;
+  }
+  
+  /**
+   * Get the working version of a node in the current working area. 
+   * 
+   * @param nodeName
+   *   The name of the node.
+   *   
+   * @return
+   *   The working version of the node
+   *   
+   * @throws PipelineException
+   *   If there is no working version of the node.
+   */
+  public NodeMod
+  getWorkingVersion
+  (
+    String nodeName  
+  )
+    throws PipelineException
+  {
+    return pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
   }
   
   /**
