@@ -1,24 +1,21 @@
-// $Id: OptionalBranchType.java,v 1.2 2009/10/09 04:40:08 jesse Exp $
+// $Id: OptionalProductType.java,v 1.1 2009/10/09 04:40:08 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   O P T I O N A L   B R A N C H   T Y P E                                                */
+/*   O P T I O N A L   P R O D U C T   T Y P E                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- *  Enum for the Optional Branches in Template Builders.
+ *  Enum for the Product Type on optional branches in Template Builders.
  */
 public 
-enum OptionalBranchType
+enum OptionalProductType
 {
-  BuildOnly, 
-  AsProduct,
-  CheckOut;
-
-  
+  UseProduct,
+  LockCurrent;
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -31,30 +28,30 @@ enum OptionalBranchType
   titles() 
   {
     ArrayList<String> titles = new ArrayList<String>();
-    for(OptionalBranchType method : OptionalBranchType.values()) 
+    for(OptionalProductType method : values()) 
       titles.add(method.toTitle());
     return titles;
   }
   
   /*----------------------------------------------------------------------------------------*/
 
-  public static OptionalBranchType
+  public static OptionalProductType
   valueFromKey
   (
    int key
   )
   {
-    return OptionalBranchType.values()[key];
+    return OptionalProductType.values()[key];
   }
    
-  public static OptionalBranchType
+  public static OptionalProductType
   valueFromString
   (
     String string  
   )
   {
-    OptionalBranchType toReturn = null;
-    for (OptionalBranchType each : OptionalBranchType.values())
+    OptionalProductType toReturn = null;
+    for (OptionalProductType each : values())
       if (each.toString().equals(string))
         toReturn = each;
     return toReturn;

@@ -1,4 +1,4 @@
-// $Id: TemplateOptionalBranchAnnotation.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
+// $Id: TemplateOptionalBranchAnnotation.java,v 1.3 2009/10/09 04:40:08 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateOptionalBranchAnnotation.v2_4_9;
 
@@ -64,6 +64,28 @@ class TemplateOptionalBranchAnnotation
       addParam(param);
     }
     
+    {
+      ArrayList<String> values = new ArrayList<String>(OptionalProductType.titles());
+      
+      AnnotationParam param =
+        new EnumAnnotationParam
+        (aProductType, 
+         "Which sort of operation should be taken with an OptionalBranch set to AsProduct", 
+         OptionalProductType.UseProduct.toTitle(), 
+         values);
+      addParam(param);
+    }
+    
+    underDevelopment();
+    {
+      ArrayList<String> layout = new ArrayList<String>();
+      layout.add(aOptionName);
+      layout.add(aOptionType);
+      layout.add(aProductType);
+      
+      setLayout(layout);
+    }
+    
     addContext(AnnotationContext.PerVersion);
     removeContext(AnnotationContext.PerNode);
   }
@@ -77,6 +99,7 @@ class TemplateOptionalBranchAnnotation
 
   private static final long serialVersionUID = 1871528190506446502L;
   
-  public static final String aOptionName = "OptionName";
-  public static final String aOptionType = "OptionType";
+  public static final String aOptionName  = "OptionName";
+  public static final String aOptionType  = "OptionType";
+  public static final String aProductType = "ProductType";
 }
