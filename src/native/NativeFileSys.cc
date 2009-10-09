@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.12 2009/10/06 05:06:34 jim Exp $
+// $Id: NativeFileSys.cc,v 1.13 2009/10/09 08:38:35 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -180,7 +180,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
 (
  JNIEnv *env, 
  jclass cls, 
- jstring jfile
+ jstring jfile  /* IN: the file system path to test */ 
 )
 {
   /* exception initialization */ 
@@ -206,6 +206,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
 	    file, strerror(errno));
     env->ReleaseStringUTFChars(jfile, file); 
     env->ThrowNew(IOException, msg);  
+    return JNI_FALSE;
   }
   
   env->ReleaseStringUTFChars(jfile, file); 
