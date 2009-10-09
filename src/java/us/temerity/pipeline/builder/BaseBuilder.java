@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.78 2009/08/12 19:36:54 jesse Exp $
+// $Id: BaseBuilder.java,v 1.79 2009/10/09 04:33:21 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -2161,10 +2161,10 @@ class BaseBuilder
   /**
    * Add a node to the Builder's vouchable list.
    * <p>
-   * Nodes in this list can be automatically vouched for 
-   * 
-   * This is a Builder specific list, so adding and removing nodes will not effect
-   * other Builders.<p>
+   * Nodes in this list will be automatically vouched for during queue phases. 
+   * <p>
+   * This is a Builder specific list, so adding and removing nodes will not affect
+   * other Builders.
    * 
    * @param nodeName
    *   The name of the node.
@@ -2419,6 +2419,8 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
+    pLog.log(Kind.Ops, Level.Finer, 
+             "Adding AoE Mode (" + mode + ") with default (" + aoe + ")"); 
     return pBuilderInformation.addAOEMode(mode, aoe);
   }
   
@@ -2456,6 +2458,9 @@ class BaseBuilder
   )
     throws PipelineException
   {
+    pLog.log(Kind.Ops, Level.Finer, 
+      "Adding AoE Mode override (" + mode + ") on node (" + nodeName + ") with value " +
+      "(" + aoe + ")"); 
     return pBuilderInformation.addAOEOverride(mode, nodeName, aoe);
   }
   
