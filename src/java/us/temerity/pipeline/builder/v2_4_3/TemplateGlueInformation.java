@@ -1,4 +1,4 @@
-// $Id: TemplateGlueInformation.java,v 1.8 2009/06/11 05:14:06 jesse Exp $
+// $Id: TemplateGlueInformation.java,v 1.9 2009/10/09 04:35:04 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -208,10 +208,10 @@ class TemplateGlueInformation
   /**
    * Get the default values for the String replacements in the template's contexts.
    */
-  public final TreeMap<String, ArrayList<TreeMap<String, String>>> 
+  public final MappedArrayList<String, TreeMap<String, String>> 
   getContextDefaults()
   {
-    return new TreeMap<String, ArrayList<TreeMap<String,String>>>(pContextDefaults);
+    return new MappedArrayList<String, TreeMap<String, String>>(pContextDefaults);
   }
 
   /**
