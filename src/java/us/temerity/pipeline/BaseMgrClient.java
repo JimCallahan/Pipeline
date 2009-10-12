@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.35 2009/10/02 04:35:23 jesse Exp $
+// $Id: BaseMgrClient.java,v 1.36 2009/10/12 14:26:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -559,12 +559,10 @@ class BaseMgrClient
 	  rsp = objIn.readObject();
 	}
 	catch(SocketTimeoutException ex) {
-          if(timer != null) {
-            LogMgr.getInstance().log
-              (LogMgr.Kind.Net, LogMgr.Level.Finest,
-               "Socket Timeout [" + pSocket.getInetAddress() + "]: " + kind.toString() + "\n" +
-               " " + timer); 
-          }
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Net, LogMgr.Level.Warning,
+             Exceptions.getFullMessage
+             ("Socket Timeout [" + pSocket.getInetAddress() + "]: " + kind.toString(), ex));
 
 	  if(abortOnTimeout() || (ex.bytesTransferred > 0)) 
 	    throw ex;
