@@ -1,6 +1,6 @@
-// $Id: TemplateExternalData.java,v 1.1 2009/10/09 04:40:08 jesse Exp $
+// $Id: TemplateExternalData.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
 
-package us.temerity.pipeline.builder.v2_4_10;
+package us.temerity.pipeline.plugin.TemplateCollection.v2_4_12;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;

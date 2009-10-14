@@ -1,6 +1,6 @@
-// $Id: TemplateInfoBuilder.java,v 1.1 2009/10/09 04:40:08 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
 
-package us.temerity.pipeline.builder.v2_4_10;
+package us.temerity.pipeline.plugin.TemplateCollection.v2_4_12;
 
 import java.io.*;
 import java.util.*;
@@ -10,7 +10,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
-import us.temerity.pipeline.builder.v2_4_10.TemplateGlueInformation;
+import us.temerity.pipeline.builder.v2_4_12.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.glue.io.*;
 
@@ -22,6 +22,48 @@ public
 class TemplateInfoBuilder
   extends TaskBuilder
 {
+  /**
+   * Constructor that exists so the builder can be installed as a plugin.
+   * <p>
+   * Should not be called from user code.
+   */
+  public
+  TemplateInfoBuilder
+  (
+    MasterMgrClient mclient,
+    QueueMgrClient qclient,
+    BuilderInformation builderInformation
+  )
+    throws PipelineException
+  {
+    super("TaskInfoBuilder",
+      "Builder which reads a template information file and then uses that information to" +
+      "run the template and create an instance of it for particular project.",
+      mclient, qclient, builderInformation, EntityType.Ignore);
+    
+    pInvokedCorrectly = false;
+    
+    noDefaultConstructPasses();
+    
+    AdvancedLayoutGroup layout = new AdvancedLayoutGroup
+    ("Information Pass", 
+      "The First pass of the Template Info Builder",
+      "BasicInformation", true);
+    
+    addSetupPass(new InformationPass());
+
+    addCheckinWhenDoneParam();
+    
+    layout.addEntry(1, aUtilContext);
+    layout.addEntry(1, null);
+    layout.addEntry(1, aCheckinWhenDone);
+    layout.addEntry(1, aActionOnExistence);
+    layout.addEntry(1, aReleaseOnError);
+
+    PassLayoutGroup passLayout = new PassLayoutGroup(layout.getName(), layout);
+    setLayout(passLayout);
+  }
+  
   /**
    * Create a new Template Info Builder.
    * 
@@ -62,6 +104,8 @@ class TemplateInfoBuilder
       "Builder which reads a template information file and then uses that information to" +
       "run the template and create an instance of it for particular project.",
       mclient, qclient, builderInformation, EntityType.Ignore);
+    
+    pInvokedCorrectly = true;
     
     noDefaultConstructPasses();
     
@@ -332,6 +376,12 @@ class TemplateInfoBuilder
     validatePhase()
       throws PipelineException
     {
+      if (!pInvokedCorrectly)
+        throw new PipelineException
+          ("The template info builder was not invoked with the correct constructor.  The " +
+           "generic constructor exists only to allow installation as a plugin, but should " +
+           "never be used to run this builder;");
+      
       validateBuiltInParams();
       getStageInformation().setDoAnnotations(true);
       
@@ -866,6 +916,8 @@ class TemplateInfoBuilder
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
 
+  private boolean pInvokedCorrectly;
+  
   private TemplateGlueInformation pTemplateGlueInfo;
   
   private TreeMap<String, String> pReplacements;

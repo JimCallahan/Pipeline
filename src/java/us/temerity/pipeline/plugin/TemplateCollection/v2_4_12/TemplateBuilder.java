@@ -1,6 +1,6 @@
-// $Id: TemplateBuilder.java,v 1.1 2009/10/09 04:40:08 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
 
-package us.temerity.pipeline.builder.v2_4_10;
+package us.temerity.pipeline.plugin.TemplateCollection.v2_4_12;
 
 import java.util.*;
 import java.util.Map.*;
@@ -8,7 +8,6 @@ import java.util.Map.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.v2_4_10.TemplateExternalData;
 import us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3.*;
 import us.temerity.pipeline.stages.*;
 
@@ -23,7 +22,28 @@ class TemplateBuilder
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
+   
+  public
+  TemplateBuilder
+  (
+    MasterMgrClient mclient,
+    QueueMgrClient qclient,
+    BuilderInformation builderInformation
+  )
+    throws PipelineException
+  {
+    super("Template", "Instantiate a node network from an existing network", 
+          mclient, qclient, builderInformation);
     
+    pLog.log(Kind.Ops, Level.Severe, 
+             "This constructor only exists to support installation as a plugin.  It should " +
+             "never be invoked from user code.");
+    
+    pInvokedCorrectly = false;
+    
+    init(null, null, null, null, null, null);
+  }
+  
   /**
    * Constructor for the basic template builder.
    * <p>
@@ -88,6 +108,8 @@ class TemplateBuilder
           mclient, qclient, builderInformation);
     
     pLog.log(Kind.Ops, Level.Info, "Running in TaskSingle mode");
+    
+    pInvokedCorrectly = true;
     
     pStartNode = startNode;
     pTemplateType = TemplateType.TaskSingle;
@@ -158,6 +180,8 @@ class TemplateBuilder
           mclient, qclient, builderInformation);
     
     pLog.log(Kind.Ops, Level.Info, "Running in TaskList mode");
+    
+    pInvokedCorrectly = true;
     
     pRootNodes = rootNodes;
     pTemplateType = TemplateType.TaskList;
@@ -234,6 +258,8 @@ class TemplateBuilder
     
     pLog.log(Kind.Ops, Level.Info, "Running in NonTask mode");
     
+    pInvokedCorrectly = true;
+
     pTemplateType = TemplateType.NonTask;
     pRootNodes = rootNodes;
     pAllNodes = allNodes;
@@ -353,9 +379,11 @@ class TemplateBuilder
     addConstructPass(new FinalizePass());
     addConstructPass(new SecondFinalizePass());
     
-    for (String mode : aoeModes.keySet()) {
-      ActionOnExistence aoe = aoeModes.get(mode);
-      addAOEMode(mode, aoe);
+    if (aoeModes != null) {
+      for (String mode : aoeModes.keySet()) {
+        ActionOnExistence aoe = aoeModes.get(mode);
+        addAOEMode(mode, aoe);
+      }
     }
     
     PassLayoutGroup rootLayout = new PassLayoutGroup("Root", "Root Layout");
@@ -520,6 +548,12 @@ class TemplateBuilder
     validatePhase()
       throws PipelineException
     {
+      if (!pInvokedCorrectly)
+         throw new PipelineException
+           ("The template builder was not invoked with the correct constructor.  The " +
+            "generic constructor exists only to allow installation as a plugin, but should " +
+            "never be used to run this builder;");
+      
       validateBuiltInParams();
       //grr, can't forget this call or stuff don't work.
       getStageInformation().setDoAnnotations(true);
@@ -1376,6 +1410,8 @@ class TemplateBuilder
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
+  
+  private boolean pInvokedCorrectly;
   
   private boolean pAllowZeroContexts;
   

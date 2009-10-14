@@ -1,6 +1,6 @@
-// $Id: TemplateStage.java,v 1.1 2009/10/09 04:40:08 jesse Exp $
+// $Id: TemplateStage.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
 
-package us.temerity.pipeline.builder.v2_4_10;
+package us.temerity.pipeline.plugin.TemplateCollection.v2_4_12;
 
 import java.io.*;
 import java.util.*;
@@ -10,7 +10,6 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.*;
-import us.temerity.pipeline.builder.v2_4_10.TemplateExternalData;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.stages.*;
 
