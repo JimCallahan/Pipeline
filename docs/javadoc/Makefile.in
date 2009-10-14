@@ -375,6 +375,7 @@ PLUGIN_PACKAGES = $(MODERN_PACKAGES) $(BUILD_LEGACY_PLUGINS_FALSE) $(LEGACY_PACK
                   us.temerity.pipeline.glue \
                   us.temerity.pipeline.glue.io \
                   us.temerity.pipeline.math \
+                  us.temerity.pipeline.param.key \
                   us.temerity.pipeline.plugin \
                   us.temerity.pipeline.stages \
                   us.temerity.pipeline.toolset \
