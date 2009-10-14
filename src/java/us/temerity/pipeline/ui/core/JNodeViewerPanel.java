@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.151 2009/10/07 08:09:50 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.152 2009/10/14 02:23:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -89,8 +89,6 @@ class JNodeViewerPanel
 			   prefs.getShowEditorHints(), 
 			   prefs.getShowActionHints(), 
                            prefs.getShowEditingHints());                           
-
-      pNewRootNodeNames = new TreeSet<String>(); 
 
       pViewerNodes = new TreeMap<NodePath,ViewerNode>();
       pViewerLinks = new ViewerLinks();
@@ -1876,7 +1874,7 @@ class JNodeViewerPanel
 
           /* auto-expand newly added root nodes? */
           LayoutPolicy rootPolicy = pLayoutPolicy;
-          if(prefs.getAutoExpandNew() && pNewRootNodeNames.contains(name))
+          if(prefs.getAutoExpandNew() && !UIMaster.getInstance().anyUpstreamCollapsed(name))
             rootPolicy = LayoutPolicy.AutomaticExpand;
 
           /* reset per-root node counters */
@@ -2032,7 +2030,6 @@ class JNodeViewerPanel
       /* preserve the current layout */ 
       pExpandDepth  = null; 
       pLayoutPolicy = LayoutPolicy.Preserve;
-      pNewRootNodeNames.clear();
     }
 
     /* reselect any viewer nodes marked for post-update selection */ 
@@ -2193,29 +2190,29 @@ class JNodeViewerPanel
         else if(pExpandDepth != null) {
           boolean collapsed = (path.getNumNodes() >= pExpandDepth);
           vnode.setCollapsed(collapsed); 
-          master.setNodeCollapsed(path.toString(), collapsed);
+          master.setNodeCollapsed(path, collapsed);
         }
         else {
           switch(rootPolicy) {
           case Preserve:
-            vnode.setCollapsed(master.wasNodeCollapsed(path.toString()));
+            vnode.setCollapsed(master.wasNodeCollapsed(path));
             break;
             
           case AutomaticExpand:
             {
               boolean collapsed = seen.contains(status.getName());
               vnode.setCollapsed(collapsed);
-              master.setNodeCollapsed(path.toString(), collapsed);
+              master.setNodeCollapsed(path, collapsed);
             }
             break;
             
           case CollapseAll:
             vnode.setCollapsed(true);
-            master.setNodeCollapsed(path.toString(), true);
+            master.setNodeCollapsed(path, true);
             break;
             
           case ExpandAll:
-            master.setNodeCollapsed(path.toString(), false);	   
+            master.setNodeCollapsed(path, false);	   
           }
         }
       }
@@ -2988,7 +2985,7 @@ class JNodeViewerPanel
 	    if(vunder.getNodeStatus().hasSources()) {
 	      vunder.toggleCollapsed();
 	      UIMaster master = UIMaster.getInstance();
-	      master.setNodeCollapsed(vunder.getNodePath().toString(), vunder.isCollapsed());
+	      master.setNodeCollapsed(vunder.getNodePath(), vunder.isCollapsed());
 
 	      pPinnedPos  = vunder.getPosition();
 	      pPinnedPath = vunder.getNodePath();
@@ -6210,10 +6207,8 @@ class JNodeViewerPanel
       pCloneDialog.setVisible(true);
 
       TreeSet<String> names = pCloneDialog.getRegistered();
-      if(!names.isEmpty()) {
+      if(!names.isEmpty()) 
 	addRoots(names);
-        pNewRootNodeNames.addAll(names);   
-      }
 
       clearSelection();
       refresh();
@@ -6516,9 +6511,9 @@ class JNodeViewerPanel
 
 	  NodePath npath = new NodePath(comps);
 
-	  boolean wasCollapsed = master.wasNodeCollapsed(pOldPath.toString());
-	  master.setNodeCollapsed(npath.toString(), wasCollapsed); 
-	  master.setNodeCollapsed(pOldPath.toString(), false);
+	  boolean wasCollapsed = master.wasNodeCollapsed(pOldPath);
+	  master.setNodeCollapsed(npath, wasCollapsed); 
+	  master.setNodeCollapsed(pOldPath, false);
 
 	  renameRoot(oname, nname);
 	}
@@ -8027,12 +8022,6 @@ class JNodeViewerPanel
    */ 
   private String  pLastNodeHintName; 
 
-
-  /**
-   * The root node names of the roots newly added during the last update.  Used to determine
-   * what node networks to auto-expand if that preference is active.
-   */ 
-  private TreeSet<String>  pNewRootNodeNames; 
 
   /**
    * The currently displayed nodes indexed by <CODE>NodePath</CODE>.

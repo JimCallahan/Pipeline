@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.114 2009/10/07 08:09:50 jim Exp $
+// $Id: UIMaster.java,v 1.115 2009/10/14 02:23:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -175,7 +175,7 @@ class UIMaster
     pRestoreSelections  = restoreSelections; 
     pIsRestoring        = new AtomicBoolean();
 
-    pCollapsedNodePaths = new TreeSet<String>();
+    pCollapsedNodePaths = new ListPathSet<String>(); 
 
     pDebugGL = debugGL;
     pTraceGL = traceGL; 
@@ -641,15 +641,15 @@ class UIMaster
   public void 
   setNodeCollapsed
   (
-   String path,
+   NodePath path,
    boolean wasCollapsed
   ) 
   {
     synchronized(pCollapsedNodePaths) {
       if(wasCollapsed) 
-	pCollapsedNodePaths.add(path);
+	pCollapsedNodePaths.add(path.getNames());
       else 
-	pCollapsedNodePaths.remove(path);
+	pCollapsedNodePaths.remove(path.getNames());
     }
   }
 
@@ -662,11 +662,28 @@ class UIMaster
   public boolean
   wasNodeCollapsed
   (
-   String path 
+   NodePath path 
   ) 
   {
     synchronized(pCollapsedNodePaths) {
-      return pCollapsedNodePaths.contains(path);
+      return pCollapsedNodePaths.contains(path.getNames()); 
+    }    
+  }
+
+  /**
+   * Whether the given root node has any collapsed upstream nodes.
+   * 
+   * @param name
+   *   The unique name of the root viewer node.
+   */ 
+  public boolean
+  anyUpstreamCollapsed
+  (
+   String name
+  ) 
+  {
+    synchronized(pCollapsedNodePaths) {
+      return pCollapsedNodePaths.containsFirstElement(name); 
     }    
   }
 
@@ -4946,8 +4963,31 @@ class UIMaster
 	  if(file.isFile()) {
 	    try {    
               Object obj = LockedGlueFile.load(file);
-              if(obj != null) 
-                pCollapsedNodePaths.addAll((Set<String>) obj);
+              if(obj != null) {
+                /* current format */ 
+                if(obj instanceof ListPathSet) {
+                  ListPathSet<String> pset = (ListPathSet<String>) obj;
+                  for(java.util.List<String> ls : pset) 
+                    pCollapsedNodePaths.add(ls);
+                }
+                /* convert from old format */ 
+                else if(obj instanceof TreeSet) {
+                  TreeSet<String> oset = (TreeSet<String>) obj;
+                  for(String str : oset) {                    
+                    LinkedList<String> entry = new LinkedList<String>();
+                    String parts[] = str.split(":"); 
+                    for(String p : parts) { 
+                      if(p.length() > 0) 
+                        entry.add(p);
+                    }
+                    
+                    pCollapsedNodePaths.add(entry); 
+                  }
+                }
+                else {
+                  throw new IOException();
+                }
+              }
 	    }
 	    catch(Exception ex) {
 	      LogMgr.getInstance().log
@@ -7466,7 +7506,7 @@ class UIMaster
   /**
    * The unique paths to the previously collapsed viewer nodes.
    */ 
-  private TreeSet<String>  pCollapsedNodePaths;
+  private ListPathSet<String>  pCollapsedNodePaths;
 
 
   /*----------------------------------------------------------------------------------------*/

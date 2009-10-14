@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.5 2008/06/15 01:59:50 jim Exp $
+// $Id: NodePath.java,v 1.6 2009/10/14 02:23:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -147,10 +147,10 @@ class NodePath
   /** 
    * Get the names of the nodes on the path from the root node to the current node.
    */ 
-  public Collection<String>
+  public List<String>
   getNames() 
   {
-    return Collections.unmodifiableCollection(pNames);
+    return Collections.unmodifiableList(pNames);
   }
 
   /** 
