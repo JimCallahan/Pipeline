@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.304 2009/10/09 17:17:56 jim Exp $
+// $Id: MasterMgr.java,v 1.305 2009/10/26 15:08:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -20599,7 +20599,7 @@ class MasterMgr
 	    avgNodeSize = (overhead - oldOverhead) / exceeded;
 	    if(avgNodeSize > 0L) {
 	      long newSize = (long) (pAverageNodeSize.get()*0.85 + avgNodeSize*0.15);
-	      if((newSize > 2048L) && (newSize < 16384L))
+	      if((newSize > 2048L) && (newSize < 65536L))
 		pAverageNodeSize.set(newSize);
 	    }
 

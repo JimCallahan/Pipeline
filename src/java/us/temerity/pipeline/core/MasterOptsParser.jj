@@ -57,7 +57,7 @@ MasterOptsParser
     pMinOverhead = (long) (maxMemory * 0.2);
     pMaxOverhead = (long) (maxMemory * 0.3);
 
-    pAvgNodeSize = 4000L;
+    pAvgNodeSize = 16384L; 
     pRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
 
     pLogBackups = 10;
