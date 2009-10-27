@@ -1,4 +1,4 @@
-// $Id: ExternalBuilder.java,v 1.1 2009/04/16 17:57:25 jesse Exp $
+// $Id: ExternalBuilder.java,v 1.2 2009/10/27 05:30:56 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.ExternalCollection.v1_0_0;
 
@@ -78,7 +78,9 @@ class ExternalBuilder
     validatePhase()
       throws PipelineException
     {
+      UtilContext save = pContext;
       validateBuiltInParams();
+      setContext(save);
       
       pLog.logAndFlush(Kind.Ops, Level.Info, "Hurray here I am in the External Builder");
       pLog.logAndFlush(Kind.Ops, Level.Info, "The project is " + pStudioDefs.getProjectName());

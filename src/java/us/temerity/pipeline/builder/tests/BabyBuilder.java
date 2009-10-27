@@ -105,6 +105,9 @@ public class BabyBuilder
       validateBuiltInParams();
       pMakeChild = getBooleanParamValue(new ParamMapping(aMakeChild));
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
+      
+      setParamValue(new ParamMapping(aUtilContext, UtilContextUtilityParam.aView), getView());
+      
     }
 
     @Override

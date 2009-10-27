@@ -1,8 +1,9 @@
-// $Id: InternalBuilder.java,v 1.2 2009/04/16 20:15:13 jesse Exp $
+// $Id: InternalBuilder.java,v 1.3 2009/10/27 05:30:56 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.InternalCollection.v1_0_0;
 
 import java.lang.reflect.*;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -82,6 +83,9 @@ class InternalBuilder
     {
       validateBuiltInParams();
       
+      String view = getUniqueViewName();
+      setContext(new UtilContext(pContext.getAuthor(), view, pContext.getToolset()));
+      
       pLog.logAndFlush(Kind.Ops, Level.Info, "Hurray here I am in the Internal Builder");
       pLog.logAndFlush(Kind.Ops, Level.Info, "The project is " + pStudioDefs.getProjectName());
     }
@@ -112,6 +116,7 @@ class InternalBuilder
       try {
         BaseBuilder builder = (BaseBuilder) c.newInstance(args);
         addSubBuilder(builder);
+        builder.setContext(pContext);
       }
       catch (Exception ex) {
         String message = Exceptions.getFullMessage("Error creating the builder", ex);
@@ -119,6 +124,13 @@ class InternalBuilder
       }
       
     }
+    
+    private String 
+    getUniqueViewName()
+    {
+      return getName() + new Date().getTime();
+    }
+    
     
     private static final long serialVersionUID = -8900490049414099723L;
   }
