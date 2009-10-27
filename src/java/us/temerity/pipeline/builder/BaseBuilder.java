@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.79 2009/10/09 04:33:21 jesse Exp $
+// $Id: BaseBuilder.java,v 1.80 2009/10/27 05:42:28 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1763,7 +1763,7 @@ class BaseBuilder
 	toReturn.addAll(pClient.submitJobs(getAuthor(), getView(), nodeName, null));
       }
       catch(PipelineException ex) {
-	pLog.log(Kind.Ops, Level.Finest, 
+	pLog.log(Kind.Ops, Level.Warning, 
 	  "No job was generated for node (" + nodeName + ")\n" + ex.getMessage()); 
       }
     }
