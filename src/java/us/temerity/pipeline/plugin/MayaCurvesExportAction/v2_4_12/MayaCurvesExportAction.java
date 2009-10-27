@@ -88,9 +88,11 @@ import us.temerity.pipeline.plugin.*;
  *   
  *   Pre Export MEL <BR>
  *   <DIV style="margin-left: 40px;">
- *     A MEL snippet that will get pasted into the MEL script right before the
- *     export happens.  Use this to modify what is selected to change what is
- *     getting exported.
+ *     A MEL snippet that will get pasted into the MEL script right before the export happens.  
+ *     Use this to modify what is selected to change what is getting exported.  In the case 
+ *     that this action is being run in the mode that exports multiple animations into
+ *     secondary sequences, it will be included multiple times, once for each animation
+ *     being exported.    
  * </DIV>  
  */
 public 
@@ -427,6 +429,17 @@ class MayaCurvesExportAction
 	  }
 	}
       }
+      
+      String preExportSnippet = null;
+      try {
+        preExportSnippet = getMelSnippet(agenda, aPreExportMEL);
+      }
+      catch (IOException ex) {
+        throw new PipelineException
+        ("Unable to read the pre export mel file for Job " + 
+         "(" + agenda.getJobID() + ")!\n" +
+         ex.getMessage());
+      }
         
       for (Entry<String, String> entry : pToExportSceneType.entrySet()) {
         String exportSet = entry.getKey();
@@ -441,8 +454,10 @@ class MayaCurvesExportAction
 
         out.write("string $export = \"" + exportSet + "\";\n");
 
-      
         out.write("select -r $export;\n");
+        
+        if (preExportSnippet != null)
+          out.write(preExportSnippet);
       
         Path actualTarget = newScene;
       

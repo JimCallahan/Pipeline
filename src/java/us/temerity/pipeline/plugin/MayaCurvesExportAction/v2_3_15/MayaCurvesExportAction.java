@@ -344,7 +344,7 @@ class MayaCurvesExportAction
 	  }
 	  catch (IOException ex) {
 	    throw new PipelineException
-	    ("Unable to read the export mod mel file for Job " + 
+	    ("Unable to read the alternative bake mel file for Job " + 
 	     "(" + agenda.getJobID() + ")!\n" +
 	     ex.getMessage());
 	  }
@@ -358,6 +358,19 @@ class MayaCurvesExportAction
       Path actualTarget = targetScene;
       if (tempScene)
 	actualTarget = newScene;
+      
+      String preExportSnippet = null;
+      try {
+        preExportSnippet = getMelSnippet(agenda, aPreExportMEL);
+      }
+      catch (IOException ex) {
+        throw new PipelineException
+        ("Unable to read the pre export mel file for Job " + 
+         "(" + agenda.getJobID() + ")!\n" +
+         ex.getMessage());
+      }
+      if (preExportSnippet != null)
+        out.write(preExportSnippet);
       
       out.write
         ("if (catch(`file -f " +
