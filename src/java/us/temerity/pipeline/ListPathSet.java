@@ -1,4 +1,4 @@
-// $Id: ListPathSet.java,v 1.1 2009/10/14 02:23:18 jim Exp $
+// $Id: ListPathSet.java,v 1.2 2009/10/27 18:39:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -164,7 +164,7 @@ class ListPathSet<E>
    * @param ls
    *   The list to add.
    * 
-   * @returns
+   * @return
    *   True if this set did not already contain the specified element.
    */
   public boolean 
@@ -216,7 +216,7 @@ class ListPathSet<E>
    * @param ls
    *   The list to be removed from this set, if present.
    * 
-   * @returns
+   * @return
    *   True if this set contained the specified list.
    */ 
   public boolean 	
