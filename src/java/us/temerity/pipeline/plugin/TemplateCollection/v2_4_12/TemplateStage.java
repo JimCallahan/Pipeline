@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
+// $Id: TemplateStage.java,v 1.2 2009/10/27 05:24:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateCollection.v2_4_12;
 
@@ -59,6 +59,7 @@ class TemplateStage
     pContexts = contexts;
     pNodeDatabase = nodeDatabase;
     pTemplateRange = templateRange;
+    pActualRange = (templateRange != null) ? templateRange : range;
     pInhibitCopyFiles = inhibitCopy;
     pExternal = external;
     
@@ -96,6 +97,7 @@ class TemplateStage
     pContexts = contexts;
     pNodeDatabase = nodeDatabase;
     pTemplateRange = templateRange;
+    pActualRange = null;
     pInhibitCopyFiles = inhibitCopy;
     pExternal = external;
     
@@ -152,8 +154,8 @@ class TemplateStage
       
       for (TreeMap<String, String> replacements : secReplacements) {
         FileSeq targetSeq = stringReplaceSeq(seq, replacements);
-        if (pTemplateRange != null) {
-          targetSeq = new FileSeq(targetSeq.getFilePattern(), pTemplateRange);
+        if (pActualRange != null) {
+          targetSeq = new FileSeq(targetSeq.getFilePattern(), pActualRange);
         }
         LogMgr.getInstance().log(Kind.Bld, Level.Finest,
           "Adding the secondary sequence: " + targetSeq);
@@ -1182,6 +1184,7 @@ class TemplateStage
   private TemplateNode pTemplateNode;
   private NodeMod pSourceMod;
   private FrameRange pTemplateRange;
+  private FrameRange pActualRange;
   
   private MappedSet<FileSeq, FileSeq> pSecSeqs;
   private MappedSet<String, String> pUnlinkNodes;

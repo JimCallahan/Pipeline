@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.20 2009/10/09 04:31:11 jesse Exp $
+// $Id: TemplateStage.java,v 1.21 2009/10/27 05:24:46 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -63,6 +63,7 @@ class TemplateStage
     pAnnotCache = annotCache;
     pTemplateInfo = templateInfo;
     pTemplateRange = templateRange;
+    pActualRange = (templateRange != null) ? templateRange : range;
     pIgnoredNodes = ignoredNodes;
     pIgnorableProducts = ignorableProducts;
     pSkippedNodes = skippedNodes;
@@ -106,6 +107,7 @@ class TemplateStage
     pAnnotCache = annotCache;
     pTemplateInfo = templateInfo;
     pTemplateRange = templateRange;
+    pActualRange = null;
     pSkippedNodes = skippedNodes;
     pIgnoredNodes = ignoredNodes;
     pIgnorableProducts = ignorableProducts;
@@ -184,8 +186,8 @@ class TemplateStage
     
     for (FileSeq seq : sourceMod.getSecondarySequences()) {
       FileSeq targetSeq = stringReplaceSeq(seq);
-      if (pTemplateRange != null) {
-        targetSeq = new FileSeq(targetSeq.getFilePattern(), pTemplateRange);
+      if (pActualRange != null) {
+        targetSeq = new FileSeq(targetSeq.getFilePattern(), pActualRange);
       }
       LogMgr.getInstance().log(Kind.Bld, Level.Finest,
         "Adding the secondary sequence: " + targetSeq);
@@ -1119,6 +1121,7 @@ class TemplateStage
   private NodeMod pSourceMod;
   
   private FrameRange pTemplateRange;
+  private FrameRange pActualRange;
   
   private MappedSet<FileSeq, FileSeq> pSecSeqs;
   
