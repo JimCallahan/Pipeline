@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.1 2009/02/02 22:06:27 jesse Exp $
+// $Id: MayaRenderAction.java,v 1.2 2009/10/27 05:46:51 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderAction.v2_4_5;
 
@@ -471,7 +471,8 @@ class MayaRenderAction
                 ("Particle cache setup features not yet supported for Windows!"); 
 
             ActionInfo info = agenda.getSourceActionInfo(particleSourceName);
-            if (!info.getName().equals("MayaPartCacheGroup") || !info.isEnabled()) {
+            if (info == null || !info.getName().equals("MayaPartCacheGroup") || 
+                !info.isEnabled()) {
               throw new PipelineException
                 ("Only nodes with the MayaPartCacheGroup Action enabled can be hooked into " +
                  "the Particle Cache source param.");
