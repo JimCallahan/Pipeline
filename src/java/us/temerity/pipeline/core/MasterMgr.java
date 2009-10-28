@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.306 2009/10/28 06:06:17 jim Exp $
+// $Id: MasterMgr.java,v 1.307 2009/10/28 19:57:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6795,6 +6795,8 @@ class MasterMgr
           releaseHelper(new NodeID(name, author, view), true, true, true, timer);
       }
       
+      /* determine whether to abort early and/or remove the user as well */ 
+      boolean removeUser = false;
       timer.aquire();
       synchronized(pWorkingAreaViews) {
 	timer.resume();	
@@ -6805,7 +6807,6 @@ class MasterMgr
 	  return new SuccessRsp(timer);
 
 	/* determine whether to remove the user as well */
-	boolean removeUser = false;
 	if(view.equals("default")) {
 	  if(views.size() > 1) 
 	    throw new PipelineException
@@ -6813,18 +6814,24 @@ class MasterMgr
 	       "the only remaining view!");
 	  removeUser = true;
 	}
+      }
 
-        /* remove the working area production files directory */ 
-        {
-          FileMgrClient fclient = acquireFileMgrClient();
-          try {
-            fclient.removeWorkingArea(author, removeUser ? null : view);
-          }
-          finally {
-            releaseFileMgrClient(fclient);
-          }
+      /* remove the working area production files directory */ 
+      {
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          fclient.removeWorkingArea(author, removeUser ? null : view);
         }
-        
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+      }
+
+      /* clean up the database dirs... */ 
+      timer.aquire();
+      synchronized(pWorkingAreaViews) {
+	timer.resume();	
+
 	/* remove working area view database directory (if empty) */ 
         {
           File dir = new File(pNodeDir, "working/" + author + "/" + view);
