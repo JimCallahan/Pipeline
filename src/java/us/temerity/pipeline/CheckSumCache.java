@@ -1,4 +1,4 @@
-// $Id: CheckSumCache.java,v 1.1 2009/08/28 02:10:46 jim Exp $
+// $Id: CheckSumCache.java,v 1.2 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,7 +47,9 @@ class CheckSumCache
   }
 
   /** 
-   * Construct a checksum cache by copying the checksums from a checked-in version of a node.
+   * Construct a checksum cache by copying the checksums from a checked-in version of a node.<P>
+   * 
+   * The newly created checksums will have an updated-on timestamp of 0L.
    * 
    * @param nodeID
    *   The unique working version identifier.
@@ -65,17 +67,16 @@ class CheckSumCache
     pNodeID = nodeID;
 
     pCheckSums = new TreeMap<String,TransientCheckSum>();
-    long stamp = System.currentTimeMillis(); 
     for(Map.Entry<String,CheckSum> entry : vsn.getCheckSums().entrySet()) {
       String fname = entry.getKey(); 
       CheckSum sum = entry.getValue(); 
-      pCheckSums.put(fname, new TransientCheckSum(sum, stamp)); 
+      pCheckSums.put(fname, new TransientCheckSum(sum, 0L)); 
     }
   }
 
   /** 
    * Construct a checksum cache by copying the checksums from another cache while renaming
-   * the files. 
+   * the files. <P> 
    * 
    * @param nodeID
    *   The unique working version identifier.
@@ -98,16 +99,14 @@ class CheckSumCache
    CheckSumCache ocache
   ) 
   {
-    pNodeID = nodeID;
+    pNodeID    = nodeID;
+    pCheckSums = new TreeMap<String,TransientCheckSum>();    
 
-    pCheckSums = new TreeMap<String,TransientCheckSum>();
-    long stamp = System.currentTimeMillis(); 
-    
     int wk;
     for(wk=0; wk<ofnames.size() && wk<nfnames.size(); wk++) {
       TransientCheckSum osum = ocache.pCheckSums.get(ofnames.get(wk)); 
       if(osum != null) 
-        pCheckSums.put(nfnames.get(wk), new TransientCheckSum(osum, stamp));
+        pCheckSums.put(nfnames.get(wk), new TransientCheckSum(osum));
     }
   }
 
@@ -285,6 +284,72 @@ class CheckSumCache
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Recompute the checksum for the given file regarless of whether a checksum already 
+   * exists in the cache for the file.<P> 
+   * 
+   * The newly created checksums will have an updated-on timestamp of 0L.
+   * 
+   * @param prodDir
+   *   The root production directory. 
+   * 
+   * @param fname
+   *   The short filename without any directory components.
+   * 
+   * @throws IOException
+   *   If the source file does not exist or are otherwise unable to compute its checksum.
+   */
+  public void 
+  recompute
+  (
+   Path prodDir, 
+   String fname
+  ) 
+    throws IOException 
+  {
+    Path wpath = new Path(prodDir, pNodeID.getWorkingParent());
+    pCheckSums.put(fname, new TransientCheckSum(new Path(wpath, fname), 0L));
+    pWasModified = true;
+  }
+  
+  /**
+   * Replace the updated on timestamp associated with a checksum already being cached. <P> 
+   * 
+   * This is used internally by various server processes to update checksum timestamps without 
+   * recomputing them.  Often used in combination with {@link #recompute} which initially
+   * sets a 0L timestamp which this method then replaces with a more useful timestamp.
+   * 
+   * @param fname
+   *   The short filename without any directory components.
+   * 
+   * @param stamp
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the file 
+   *   was last modified.
+   */ 
+  public void 
+  replaceUpdatedOn
+  (
+   String fname, 
+   long stamp   
+  ) 
+  {
+    TransientCheckSum found = pCheckSums.get(fname); 
+    if(found != null) {
+      pCheckSums.put(fname, new TransientCheckSum(found, stamp+1L));
+      pWasModified = true;
+
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finer)) {
+        Path wpath = new Path(PackageInfo.sProdPath, 
+                              new Path(pNodeID.getWorkingParent(), fname));
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Sum, LogMgr.Level.Finer,
+           "Replacing timestamp of checksum for: " + wpath);
+      }
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -328,6 +393,19 @@ class CheckSumCache
 
   
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Remove checksums for the given file.
+   */ 
+  public void 
+  remove
+  (
+   String fname
+  )
+  {
+    if(pCheckSums.remove(fname) != null) 
+      pWasModified = true;
+  }
   
   /**
    * Remove checksums for the files which are members of the given file sequences.

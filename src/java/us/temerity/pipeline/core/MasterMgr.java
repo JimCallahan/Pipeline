@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.305 2009/10/26 15:08:56 jim Exp $
+// $Id: MasterMgr.java,v 1.306 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8797,11 +8797,9 @@ class MasterMgr
 
             /* create and save new cache */ 
             {
-              ArrayList<String> ofnames = new ArrayList<String>();
-              for(FileSeq fseq : omod.getSecondarySequences()) {
-                for(Path path : fseq.getPaths())
-                  ofnames.add(path.toString());
-              }
+              ArrayList<String> ofnames = new ArrayList<String>(); 
+              for(Path path : omod.getPrimarySequence().getPaths()) 
+                ofnames.add(path.toString()); 
                 
               ArrayList<String> nfnames = new ArrayList<String>();
               {
@@ -8813,11 +8811,37 @@ class MasterMgr
                   nfnames.add(npath.toString()); 
               }
 
-              for(Path path : omod.getPrimarySequence().getPaths()) {
-                ofnames.add(path.toString()); 
-                nfnames.add(path.toString()); 
+              for(FileSeq fseq : omod.getSecondarySequences()) {
+                for(Path path : fseq.getPaths()) {
+                  ofnames.add(path.toString()); 
+                  nfnames.add(path.toString()); 
+                }
               }
 
+              /* first copy checksums from old to new names, 
+                   then lookup the timestamps of the newly named files and set the updated-on
+                   stamps for the checksums accordingly */ 
+              CheckSumCache ncache = new CheckSumCache(nid, nfnames, ofnames, ocache);
+              {
+                FileMgrClient fclient = acquireFileMgrClient();
+                try {
+                  ArrayList<Long> stamps = fclient.getWorkingTimeStamps(nid, nfnames); 
+                  int wk;
+                  for(wk=0; wk<stamps.size(); wk++) {
+                    String fname = nfnames.get(wk);
+                    Long stamp = stamps.get(wk);
+                    if(stamp != null) 
+                      ncache.replaceUpdatedOn(fname, stamp);
+                    else 
+                      ncache.remove(fname);
+                  }
+                }
+                finally {
+                  releaseFileMgrClient(fclient);
+                }
+              }
+              
+              /* update the save the checksum bundle to disk */ 
               timer.aquire();
               ReentrantReadWriteLock clock = getCheckSumLock(nid);
               clock.writeLock().lock();
@@ -8825,7 +8849,7 @@ class MasterMgr
                 timer.resume();
               
                 CheckSumBundle cbundle = getCheckSumBundle(nid);   
-                cbundle.setCache(new CheckSumCache(nid, nfnames, ofnames, ocache));  
+                cbundle.setCache(ncache);  
                 writeCheckSumCache(cbundle.getCache()); 
               }
               finally {
@@ -11452,6 +11476,34 @@ class MasterMgr
 
       /* initialize the checksum cache for the new working version */ 
       {
+        /* copy the checksums from the checked-in version without updated-on timestamps */ 
+        CheckSumCache wcache = new CheckSumCache(nodeID, vsn); 
+        
+        /* lookup timestamps of the working files to set the checksum updated-on times */ 
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          ArrayList<String> fnames = new ArrayList<String>();
+          for(FileSeq fseq : vsn.getSequences()) {
+            for(Path path : fseq.getPaths())
+              fnames.add(path.toString());
+          }
+              
+          ArrayList<Long> stamps = fclient.getWorkingTimeStamps(nodeID, fnames); 
+          int wk;
+          for(wk=0; wk<stamps.size(); wk++) {
+            String fname = fnames.get(wk);
+            Long stamp = stamps.get(wk);
+            if(stamp != null) 
+              wcache.replaceUpdatedOn(fname, stamp);
+            else 
+              wcache.remove(fname);
+          }
+        }
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+
+        /* update the save the checksum bundle to disk */ 
         timer.aquire();
         ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
         clock.writeLock().lock();
@@ -11460,7 +11512,7 @@ class MasterMgr
 
           CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
           if(filesCreated) 
-            cbundle.setCache(new CheckSumCache(nodeID, vsn)); 
+            cbundle.setCache(wcache); 
           writeCheckSumCache(cbundle.getCache()); 
         }
         finally {
@@ -11745,6 +11797,34 @@ class MasterMgr
 	  
           /* create or update the checksum cache for the new working version */ 
           {
+            /* copy the checksums from the checked-in version without updated-on timestamps */ 
+            CheckSumCache wcache = new CheckSumCache(nodeID, vsn); 
+        
+            /* lookup timestamps of the working links to set the checksum updated-on times */ 
+            FileMgrClient fclient = acquireFileMgrClient();
+            try {
+              ArrayList<String> fnames = new ArrayList<String>();
+              for(FileSeq fseq : vsn.getSequences()) {
+                for(Path path : fseq.getPaths())
+                  fnames.add(path.toString());
+              }
+              
+              ArrayList<Long> stamps = fclient.getWorkingTimeStamps(nodeID, fnames); 
+              int wk;
+              for(wk=0; wk<stamps.size(); wk++) {
+                String fname = fnames.get(wk);
+                Long stamp = stamps.get(wk);
+                if(stamp != null) 
+                  wcache.replaceUpdatedOn(fname, stamp);
+                else 
+                  wcache.remove(fname);
+              }
+            }
+            finally {
+              releaseFileMgrClient(fclient);
+            }
+
+            /* update the save the checksum bundle to disk */ 
             timer.aquire();
             ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
             clock.writeLock().lock();
@@ -11752,7 +11832,7 @@ class MasterMgr
               timer.resume();
               
               CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
-              cbundle.setCache(new CheckSumCache(nodeID, vsn)); 
+              cbundle.setCache(wcache); 
               writeCheckSumCache(cbundle.getCache()); 
             }
             finally {
@@ -11961,6 +12041,19 @@ class MasterMgr
           }
         }
         
+        /* lookup timestamps of the working files */ 
+        ArrayList<String> fnames = new ArrayList<String>(checksums.keySet());
+        ArrayList<Long> stamps = null;
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          stamps = fclient.getWorkingTimeStamps(nodeID, fnames); 
+        }
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+
+        /* update the save the checksum bundle to disk, 
+             while setting the updated-in timestamps to match the reverted files */ 
         timer.aquire();
         ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
         clock.writeLock().lock();
@@ -11969,11 +12062,14 @@ class MasterMgr
           
           CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
           CheckSumCache cache = cbundle.getCache(); 
-          long stamp = System.currentTimeMillis(); 
-          for(String fname : checksums.keySet()) {
+
+          int wk;
+          for(wk=0; wk<stamps.size(); wk++) {
+            String fname = fnames.get(wk);
+            Long stamp = stamps.get(wk);
             CheckSum sum = checksums.get(fname); 
-            if(sum != null) 
-              cache.add(fname, new TransientCheckSum(sum, stamp)); 
+            if((sum != null) && (stamp != null)) 
+              cache.add(fname, new TransientCheckSum(sum, stamp+1L)); 
           }
 
           writeCheckSumCache(cache); 
@@ -12208,6 +12304,37 @@ class MasterMgr
             clock.writeLock().unlock();
           }  
         }
+        
+        /* first copy checksums from original to cloned names, 
+             then lookup the timestamps of the cloned files and set the updated-on
+             stamps for the checksums accordingly */ 
+        CheckSumCache ncache = null;
+        {
+          ArrayList<String> ofnames = new ArrayList<String>();
+          ArrayList<String> nfnames = new ArrayList<String>();
+          for(Map.Entry<File,File> entry : files.entrySet()) {
+            ofnames.add(entry.getKey().getPath()); 
+            nfnames.add(entry.getValue().getPath()); 
+          }
+          ncache = new CheckSumCache(targetID, nfnames, ofnames, ocache);
+
+          FileMgrClient fclient = acquireFileMgrClient();
+          try {
+            ArrayList<Long> stamps = fclient.getWorkingTimeStamps(targetID, nfnames); 
+            int wk;
+            for(wk=0; wk<stamps.size(); wk++) {
+              String fname = nfnames.get(wk);
+              Long stamp = stamps.get(wk);
+              if(stamp != null) 
+                ncache.replaceUpdatedOn(fname, stamp);
+              else 
+                ncache.remove(fname);
+            }
+          }
+          finally {
+            releaseFileMgrClient(fclient);
+          }
+        }
 
         /* use them to initialize the target node's cache */ 
         {
@@ -12217,15 +12344,8 @@ class MasterMgr
           try {
             timer.resume();
 
-            ArrayList<String> ofnames = new ArrayList<String>();
-            ArrayList<String> nfnames = new ArrayList<String>();
-            for(Map.Entry<File,File> entry : files.entrySet()) {
-              ofnames.add(entry.getKey().getPath()); 
-              nfnames.add(entry.getValue().getPath()); 
-            }
-
             CheckSumBundle cbundle = getCheckSumBundle(targetID);   
-            cbundle.setCache(new CheckSumCache(targetID, nfnames, ofnames, ocache));  
+            cbundle.setCache(ncache);  
             writeCheckSumCache(cbundle.getCache()); 
           }
           finally {

@@ -211,6 +211,7 @@ TOKEN :
 | <LOG_COL: 	     "col">        
 | <LOG_SCH: 	     "sch">   
 | <LOG_SUB: 	     "sub">         
+| <LOG_SUM: 	     "sum">         
 | <LOG_EXT: 	     "ext">        
 | <LOG_TIM: 	     "tim">        
 | <COLON:  	     ":">        : LOG_LEVEL  
@@ -480,7 +481,7 @@ LogMgr.Kind LogKind() :
 {
   (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=GluKind() | 
    g=DspKind() | g=JobKind() | g=SelKind() | g=ColKind() | g=SchKind() | 
-   g=SubKind() | g=ExtKind() | g=MemKind() | g=TimKind())
+   g=SubKind() | g=SumKind() | g=ExtKind() | g=MemKind() | g=TimKind())
   {
     return g;
   }
@@ -591,6 +592,15 @@ LogMgr.Kind SubKind() :
   <LOG_SUB>
   {
     return LogMgr.Kind.Sub;
+  }
+}
+
+LogMgr.Kind SumKind() : 
+{}
+{
+  <LOG_SUM>
+  {
+    return LogMgr.Kind.Sum;
   }
 }
 

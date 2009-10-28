@@ -1,4 +1,4 @@
-// $Id: NativeFileStat.java,v 1.3 2009/07/13 11:22:45 jim Exp $
+// $Id: NativeFileStat.java,v 1.4 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,7 +18,7 @@ import java.math.*;
  * queries are required for a given file, this class is more efficient since it only 
  * performs a single "stat" system call while File duplicates these calls for each query.<P>
  * 
- * Only the Unix operating system is supported by this class.
+ * Windows operating system is not supported by this class.
  */
 public
 class NativeFileStat
@@ -48,9 +48,8 @@ class NativeFileStat
   {
     switch(PackageInfo.sOsType) {
     case Windows:
-    case MacOS:
       throw new IllegalStateException
-        ("Only the Unix operating system is supported at this time!");
+        ("The Windows operating system is not supported!");
     }
     
     loadLibrary();

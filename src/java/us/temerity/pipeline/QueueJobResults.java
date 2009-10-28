@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.11 2009/08/28 02:10:46 jim Exp $
+// $Id: QueueJobResults.java,v 1.12 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,7 +99,6 @@ class QueueJobResults
     pPageFaults   = pageFaults;
     pCache        = cache;
   }
-
 
    
   /*----------------------------------------------------------------------------------------*/
@@ -208,6 +207,22 @@ class QueueJobResults
     if(pCache != null) 
       return new CheckSumCache(pCache); 
     return null;
+  } 
+
+  /**
+   * Set the checksums for each of the target files. <P> 
+   * 
+   * This should only be used by the Queue Manager internally to update checksum timestamps
+   * the target files of jobs run on a Windows host.  This is the only mutator method of this
+   * class which is otherwise strictly functional.  
+   */ 
+  public void 
+  setCheckSumCache
+  (
+   CheckSumCache cache
+  ) 
+  {
+    pCache = cache;
   } 
 
 

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.97 2009/09/26 04:44:41 jim Exp $
+// $Id: FileMgr.java,v 1.98 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1003,7 +1003,7 @@ class FileMgr
                     throw new IllegalStateException(); 
                   File latest = new File(ldir, file.getPath());
                   try {
-                    // WE DO THIS WITHOUT REALPATH!
+                    // WE CAN DO THIS WITHOUT REALPATH!
                     //
                     // Check if "latest" is a file or a link.  If a file, its the target
                     // of the symlink.  If its a link, then use whatever it points at as the
@@ -1313,6 +1313,11 @@ class FileMgr
                   NativeFileStat after = new NativeFileStat(apath);
                   Long[] both = movedStamps.get(fname); 
                   both[1] = after.lastCriticalChange(ctime); 
+
+                  /* replace the updated-on timestamp for checksum since the symlink is now 
+                     newer than the original file and would cause the checksum to be
+                     recomputed otherwise at the next status/check-in */ 
+                  wcheck.replaceUpdatedOn(fname, both[1]);
                 }
                 catch(IOException ex2) {
                   throw new PipelineException
@@ -3561,6 +3566,50 @@ class FileMgr
 	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the last modification time stamp of all existing files associated with the given 
+   * working version.  
+   * 
+   * @param req 
+   *   The change mode request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the time stamps of the files.
+   */
+  public Object
+  getWorkingTimeStamps
+  (
+   FileGetWorkingTimeStampsReq req
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+
+    TaskTimer timer = new TaskTimer("FileMgr.getWorkingTimeStamps(): " + nodeID);
+
+    Path wpath = new Path(pFileStatPath.get(), nodeID.getWorkingParent());
+    ArrayList<String> fnames = req.getFileNames(); 
+    ArrayList<Long> stamps = new ArrayList<Long>(fnames.size());
+    for(String fname : fnames) {
+      Long stamp = null;
+      try {
+        NativeFileStat work = new NativeFileStat(new Path(wpath, fname));
+        if(work.isValid()) 
+          stamp = work.lastModOrChange();
+      }
+      catch(IOException ex) {
+        /* silently ignore missing files */ 
+      }
+      
+      stamps.add(stamp); 
+    }
+    
+    return new FileGetWorkingTimeStampsRsp(timer, stamps); 
   }
 
 

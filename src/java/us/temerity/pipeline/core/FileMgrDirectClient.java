@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.20 2009/09/21 23:21:45 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.21 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -577,8 +577,7 @@ class FileMgrDirectClient
   ) 
     throws PipelineException 
   {
-    FileChangeModeReq req = 
-      new FileChangeModeReq(id, mod.getSequences(), writeable);
+    FileChangeModeReq req = new FileChangeModeReq(id, mod.getSequences(), writeable);
 
     Object obj = pFileMgr.changeMode(req);
     handleSimpleResponse(obj);
@@ -602,11 +601,44 @@ class FileMgrDirectClient
   ) 
     throws PipelineException
   {
-    FileTouchAllReq req = 
-      new FileTouchAllReq(id, mod.getSequences());
+    FileTouchAllReq req = new FileTouchAllReq(id, mod.getSequences());
 
     Object obj = pFileMgr.touchAll(req);
     handleSimpleResponse(obj);
+  }
+
+  /**
+   * Get the newest of the last modification and last change time stamps for all of the 
+   * given files associated with the given working version.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param fnames
+   *   The working primary/secondary file names.
+   * 
+   * @return
+   *   The timestamps for each file or <CODE>null</CODE> if a file is missing.
+   */ 
+  public ArrayList<Long>
+  getWorkingTimeStamps
+  (
+   NodeID id, 
+   ArrayList<String> fnames
+  ) 
+    throws PipelineException
+  {
+    FileGetWorkingTimeStampsReq req = new FileGetWorkingTimeStampsReq(id, fnames);
+
+    Object obj = pFileMgr.getWorkingTimeStamps(req);
+    if(obj instanceof FileGetWorkingTimeStampsRsp) {
+      FileGetWorkingTimeStampsRsp rsp = (FileGetWorkingTimeStampsRsp) obj;
+      return rsp.getTimeStamps();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   }
 
   /**

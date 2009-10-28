@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.50 2009/09/21 23:21:45 jim Exp $
+// $Id: FileMgrClient.java,v 1.51 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -440,6 +440,27 @@ interface FileMgrClient
   (
    NodeID id, 
    NodeMod mod
+  ) 
+    throws PipelineException;
+
+  /**
+   * Get the newest of the last modification and last change time stamps for all of the 
+   * given files associated with the given working version.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param fnames
+   *   The working primary/secondary file names.
+   * 
+   * @return
+   *   The timestamps for each file or <CODE>null</CODE> if a file is missing.
+   */ 
+  public ArrayList<Long>
+  getWorkingTimeStamps
+  (
+   NodeID id, 
+   ArrayList<String> fnames
   ) 
     throws PipelineException;
 

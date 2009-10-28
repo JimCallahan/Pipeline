@@ -1,4 +1,4 @@
-// $Id: TransientCheckSum.java,v 1.1 2009/08/28 02:10:46 jim Exp $
+// $Id: TransientCheckSum.java,v 1.2 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -119,8 +119,8 @@ class TransientCheckSum
   /**
    * Whether the given checksum was generated after the this checksum.<P> 
    * 
-   * @param stamp
-   *   The timestamp being tested.  
+   * @param sum
+   *   The checksum being tested.  
    */ 
   public boolean
   isNewerThan

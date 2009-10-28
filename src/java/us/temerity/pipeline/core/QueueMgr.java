@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.125 2009/09/29 20:44:41 jesse Exp $
+// $Id: QueueMgr.java,v 1.126 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -900,6 +900,12 @@ class QueueMgr
 	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sub);
 	  if(level != null) 
 	    mgr.setLevel(LogMgr.Kind.Sub, level);
+	}
+
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sum);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Sum, level);
 	}
       }
       
@@ -10380,7 +10386,7 @@ class QueueMgr
 
               /* perform post-completion file system tasks */ 
               if(!remonitored) 
-                postFinishFileOps();
+                postFinishFileOps(results);
             }
             catch(Exception ex) {
               LogMgr.getInstance().log
@@ -10683,9 +10689,15 @@ class QueueMgr
     
     /**
      * Perform post-completion file system tasks.
+     * 
+     * @param results
+     *   The results of executing the job.
      */ 
     private void 
-    postFinishFileOps()
+    postFinishFileOps
+    (
+     QueueJobResults results
+    )
       throws PipelineException
     {
       long jobID = getJobID();
@@ -10935,7 +10947,37 @@ class QueueMgr
           }
         }
       }
-      
+
+      /* replace the updated-on timestamps for the checksums of that target files of the job 
+         to be just newer than the latest of the change and modification timestamps of the 
+         working files/symlinks */ 
+      if(results != null) {    
+        CheckSumCache cache = results.getCheckSumCache();
+        if(cache != null) {
+          boolean updated = false;
+          for(FileSeq fseq : agenda.getTargetSequences()) {
+            for(Path target : fseq.getPaths()) {
+              Path path = new Path(wpath, target);
+              try {
+                NativeFileStat stat = new NativeFileStat(path); 
+                if(stat.isValid()) 
+                  cache.replaceUpdatedOn(target.toOsString(), stat.lastModOrChange());
+                updated = true;
+              }
+              catch(IOException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Job, LogMgr.Level.Warning,
+                   "Unable to determine and update the timestamps of target file " + 
+                   "(" + path + ") of job (" + jobID + ")!");
+              }
+            }
+          }
+          
+          if(updated) 
+            results.setCheckSumCache(cache); 
+        }
+      }
+
       /* remove the windows job target directory (and its contents) */ 
       switch(pHostOsType) {
       case Windows:

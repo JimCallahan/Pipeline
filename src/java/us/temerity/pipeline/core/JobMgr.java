@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.51 2009/09/01 19:26:38 jim Exp $
+// $Id: JobMgr.java,v 1.52 2009/10/28 06:06:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1281,18 +1281,17 @@ class JobMgr
     ) 
     {
       CheckSumCache cache = new CheckSumCache(agenda.getNodeID()); 
+      Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent());
       for(FileSeq fseq : agenda.getTargetSequences()) {
         for(Path fpath : fseq.getPaths()) {
           try {
-            cache.update(PackageInfo.sProdPath, fpath.toOsString(), 
-                         System.currentTimeMillis());
+            cache.recompute(PackageInfo.sProdPath, fpath.toOsString()); 
           }
-          catch(IOException ex) {     
-            Path path = new Path(PackageInfo.sProdPath, 
-                                 new Path(agenda.getNodeID().getWorkingParent(), fpath));
+          catch(IOException ex) {    
+            Path path = new Path(wpath, fpath);
             LogMgr.getInstance().log
               (LogMgr.Kind.Sum, LogMgr.Level.Warning, 
-               "Unable to compute the checksum for target file (" + fpath + ") of job " + 
+               "Unable to compute the checksum for target file (" + path + ") of job " + 
                "(" + agenda.getJobID()  + "):\n\n  " + ex.getMessage()); 
           }
         }
