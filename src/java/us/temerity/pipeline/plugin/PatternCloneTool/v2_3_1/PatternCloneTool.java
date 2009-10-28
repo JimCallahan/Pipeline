@@ -87,7 +87,7 @@ class PatternCloneTool
 
         pNewPattern = UIFactory.createTitledEditableTextField
         	      (tpanel, "New Pattern:", sTSize, vpanel,
-	               "new ", sVSize, 
+	               "new", sVSize, 
         	       "The string to be added in the node names.");
         
         UIFactory.addVerticalSpacer(tpanel, vpanel, 12);

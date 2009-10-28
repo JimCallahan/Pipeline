@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.146 2009/10/09 04:16:25 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.147 2009/10/28 05:31:17 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -6336,6 +6336,7 @@ class MasterMgrClient
         BaseAction action = new BaseAction(oldMod.getAction());
         newMod.setAction(action);
         modifyProperties(author, view, newMod);
+        newMod = getWorkingVersion(author, view, newName);
       }
     }
 
