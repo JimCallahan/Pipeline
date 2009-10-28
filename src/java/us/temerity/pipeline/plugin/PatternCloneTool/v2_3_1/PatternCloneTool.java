@@ -1,3 +1,5 @@
+// $Id: PatternCloneTool.java,v 1.9 2009/10/28 05:45:23 jesse Exp $
+
 package us.temerity.pipeline.plugin.PatternCloneTool.v2_3_1;
 
 import java.awt.Component;
