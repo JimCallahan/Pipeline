@@ -1,9 +1,8 @@
-// $Id: AfterFXBuildStage.java,v 1.1 2008/02/07 10:20:03 jesse Exp $
+// $Id: AfterFXBuildStage.java,v 1.2 2009/10/29 20:26:27 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
 import java.awt.*;
-import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -14,10 +13,37 @@ import us.temerity.pipeline.plugin.*;
 /*   A F T E R   F X   B U I L D   S T A G E                                                */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * Helper stage for creating nodes that use the AfterFXBuild Action. 
+ */
 public abstract
 class AfterFXBuildStage
   extends AfterFXSceneStage
 {
+  /**
+   * Constructor
+   * 
+   * @param name
+   *   The name of the stage.
+   *   
+   * @param desc
+   *   A description of the stage.
+   *   
+   * @param stageInformation
+   *   The stage information
+   *   
+   * @param context
+   *   The {@link UtilContext} the stage will work in.
+   *   
+   * @param client
+   *   The instance of {@link MasterMgrClient} used to make the node.
+   *   
+   * @param nodeName
+   *   The name of the node.
+   *   
+   * @param compName
+   *   The name of the composition to create in the AfterFX scene.
+   */
   protected 
   AfterFXBuildStage
   (
@@ -36,7 +62,10 @@ class AfterFXBuildStage
     
     addSingleParamValue(aCompName, compName);
   }
-  
+
+  /**
+   * Set the dimensions of the composition.
+   */
   protected void
   setDimensions
   (
@@ -49,7 +78,10 @@ class AfterFXBuildStage
       addSingleParamValue(CompositeActionUtils.aCompWidth, d.getWidth());
     }
   }
-  
+
+  /**
+   * Set the pixel ratio of the composition.
+   */
   protected void
   setPixelRatio
   (
@@ -61,6 +93,9 @@ class AfterFXBuildStage
     pRatio = ratio;
   }
   
+  /**
+   * Set the frame rate of the composition.
+   */
   protected void
   setFrameRate
   (
@@ -71,18 +106,29 @@ class AfterFXBuildStage
     addSingleParamValue(CompositeActionUtils.aCompFrameRate, framerate);
     pFrameRate = framerate;
   }
-  
+
   /**
-   * Uses the same Pixel Aspect Ratio and Framerate as the comp.
+   * Add a source to this composite.
    * <p>
-   * The {@link #setPixelRatio(Double)} and {@link #setFrameRate(Double)} methods
-   * must be called before a source is added using this method.
+   * Uses the same Pixel Aspect Ratio and Framerate as the comp. The
+   * {@link #setPixelRatio(Double)} and {@link #setFrameRate(Double)} methods must be called
+   * before a source is added using this method. Gives the source an Alpha Mode of
+   * PreMultipled and a PreMultipled Color of Black.
+   *
    * @param sourceName
+   *   The name of the source.
+   * 
    * @param layer
+   *   The layer the source should be added to.
+   * 
    * @param pass
+   *   The pass the source represents.
+   * 
    * @param order
+   *   The order that the source should appear in.
+   * 
    * @param blendMode
-   * @throws PipelineException
+   *   The blend mode to add the source.
    */
   protected void
   addSource
@@ -100,7 +146,35 @@ class AfterFXBuildStage
         CompositeActionUtils.aPreMultipled, CompositeActionUtils.aBlack);
     }
   }
-  
+
+  /**
+   * Add a source to this composite.
+   * <p>
+   * 
+   * @param sourceName
+   *   The name of the source.
+   *   
+   * @param layer
+   *   The layer the source should be added to.
+   *   
+   * @param pass
+   *   The pass the source represents.
+   *   
+   * @param order
+   *   The order that the source should appear in.
+   *   
+   * @param blendMode
+   *   The blend mode to add the source.
+   * 
+   * @param pixelRatio
+   *   The pixel ratio to use with the source.
+   *   
+   * @param frameRate
+   *   The frame rate for the source.
+   * @param alphaMode
+   * @param preMultColor
+   * @throws PipelineException
+   */
   protected void
   addSource
   (

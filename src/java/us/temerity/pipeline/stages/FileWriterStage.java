@@ -3,14 +3,51 @@ package us.temerity.pipeline.stages;
 import java.io.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.StageFunction;
-import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 
+/**
+ * Helper stage that creates a single file node and then writes data into that file.
+ * <p>
+ * The {@link #setFileContents(String) setFileContents} method should be called in the
+ * constructor of the stage with a string that contains the full content of the file to be 
+ * written to disk.
+ * <p>
+ * This stage is intended for situations where a builder wants to create some script or other 
+ * text document that there is not a programatic way to create.  This often includes things 
+ * like MEL scripts, bash scripts, etc.
+ */
 public 
 class FileWriterStage
   extends StandardStage
 {
+  /**
+   * Constructor.
+   * 
+   * @param name
+   *   The name of the stage.
+   *   
+   * @param desc
+   *   A description of what the stage does.
+   *   
+   * @param info
+   *   The builder information.
+   *   
+   * @param context
+   *   The {@link UtilContext} the stage will work in.
+   *   
+   * @param client
+   *   The instance of {@link MasterMgrClient} used to make the node.
+   *   
+   * @param nodeName
+   *   The name of the node.
+   *   
+   * @param suffix
+   *   The suffix for the node.
+   *   
+   * @param stageFunction
+   *   The stage function that can be used to set the editor for the node.
+   */
   protected 
   FileWriterStage
   (
@@ -37,7 +74,12 @@ class FileWriterStage
           stageFunction);
     pFileContents = null;
   }
-  
+
+  /**
+   * Set the string that will be written into the file.
+   * <p>
+   * This should be called in the constructor of the stage.
+   */
   protected void
   setFileContents
   (
