@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.16 2007/05/28 13:59:49 jim Exp $
+// $Id: BaseArchiver.java,v 1.17 2009/10/30 18:58:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -339,7 +339,16 @@ class BaseArchiver
       throw new IllegalArgumentException
 	("No parameter named (" + param.getName() + ") exists for this archiver!");
 
-    param.setValue(value);
+    try {
+      param.setValue(value);
+    }
+    catch(IllegalArgumentException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "While attempting to set a parameter of the Archiver " +
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+         ex.getMessage());
+    }
   }
 
   /** 
@@ -365,9 +374,11 @@ class BaseArchiver
 	  param.setValue(aparam.getValue());
 	}
 	catch(IllegalArgumentException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	     ex.getMessage());
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+             "While attempting to set a parameter of the Archiver " +
+             "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+             ex.getMessage());
 	}
       }
     }

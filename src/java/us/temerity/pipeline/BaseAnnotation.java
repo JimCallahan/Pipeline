@@ -1,4 +1,4 @@
-// $Id: BaseAnnotation.java,v 1.7 2009/10/09 03:59:13 jesse Exp $
+// $Id: BaseAnnotation.java,v 1.8 2009/10/30 18:58:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -524,7 +524,16 @@ class BaseAnnotation
       throw new IllegalArgumentException
 	("No parameter named (" + param.getName() + ") exists for this annotation!");
 
-    param.setValue(value);
+    try {
+      param.setValue(value);
+    }
+    catch(IllegalArgumentException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "While attempting to set a parameter of the Annotation " +
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+         ex.getMessage());
+    }
   }
 
   /** 
@@ -555,6 +564,8 @@ class BaseAnnotation
           catch(IllegalArgumentException ex) {
             LogMgr.getInstance().log
               (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               "While attempting to set a parameter of the Annotation " +
+               "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
                ex.getMessage());
           }
         }
@@ -617,9 +628,11 @@ class BaseAnnotation
               param.setValue(nvalue); 
             }
           }
-          catch(IllegalArgumentException ex) {
+          catch(IllegalArgumentException ex) { 
             LogMgr.getInstance().log
               (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               "While attempting to set a parameter of the Annotation " +
+               "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
                ex.getMessage());
           }
         }

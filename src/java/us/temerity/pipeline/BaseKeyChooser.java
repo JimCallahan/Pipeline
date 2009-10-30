@@ -1,4 +1,4 @@
-// $Id: BaseKeyChooser.java,v 1.6 2009/10/27 05:51:40 jesse Exp $
+// $Id: BaseKeyChooser.java,v 1.7 2009/10/30 18:58:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -413,7 +413,16 @@ class BaseKeyChooser
       throw new IllegalArgumentException
         ("No parameter named (" + name + ") exists for this action!");
 
-    param.setValue(value);
+    try {
+      param.setValue(value);
+    }
+    catch(IllegalArgumentException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "While attempting to set a parameter of the KeyChooser " +
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+         ex.getMessage());
+    }
   }
 
   /** 
@@ -441,6 +450,8 @@ class BaseKeyChooser
         catch(IllegalArgumentException ex) {
           LogMgr.getInstance().log
             (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+             "While attempting to set a parameter of the KeyChooser " +
+             "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
              ex.getMessage());
         }
       }

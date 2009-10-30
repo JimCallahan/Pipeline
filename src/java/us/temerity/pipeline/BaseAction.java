@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.49 2007/12/15 07:43:04 jesse Exp $
+// $Id: BaseAction.java,v 1.50 2009/10/30 18:58:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -267,9 +267,19 @@ class BaseAction
     ActionParam param = pSingleParams.get(name);
     if(param == null) 
       throw new IllegalArgumentException
-	("No parameter named (" + name + ") exists for this action!");
+	("No parameter named (" + name + ") exists for the Action " +
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + ")!");
 
-    param.setValue(value);
+    try {
+      param.setValue(value);
+    }
+    catch(IllegalArgumentException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "While attempting to set a single valued parameter of the Action " + 
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+         ex.getMessage());
+    }
   }
 
   /** 
@@ -297,7 +307,9 @@ class BaseAction
 	catch(IllegalArgumentException ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	     ex.getMessage());
+             "While attempting to set a single valued parameter of the Action " + 
+             "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+             ex.getMessage());
 	}
       }
     }
@@ -419,13 +431,14 @@ class BaseAction
     TreeMap<String,ActionParam> params = getInitialSourceParams();
     if(params == null)
       throw new IllegalStateException
-        ("The action overrides hasSourceParams(), but returned (null) from " + 
-         "getInitialSourceParams()!"); 
+        ("The Action (" + pName + " v" + pVersionID + ") from vendor (" + pVendor + ") " + 
+         "overrides hasSourceParams(), but returned (null) from getInitialSourceParams()!"); 
     if(params.isEmpty())
       throw new IllegalStateException
-        ("The action overrides hasSourceParams(), but returned an empty table of source " + 
+        ("The Action (" + pName + " v" + pVersionID + ") from vendor (" + pVendor + ") " + 
+         "overrides hasSourceParams(), but returned an empty table of source " + 
          "parameters from getInitialSourceParams()!"); 
-    
+
     pSourceParams.put(source, params);
   }
 
@@ -455,11 +468,13 @@ class BaseAction
     TreeMap<String,ActionParam> params = getInitialSourceParams();
     if(params == null)
       throw new IllegalStateException
-        ("The action overrides hasSourceParams(), but returned (null) from " + 
+        ("The Action (" + pName + " v" + pVersionID + ") from vendor (" + pVendor + ") " + 
+         "overrides hasSourceParams(), but returned (null) from " + 
          "getInitialSourceParams()!"); 
     if(params.isEmpty())
       throw new IllegalStateException
-        ("The action overrides hasSourceParams(), but returned an empty table of source " + 
+        ("The Action (" + pName + " v" + pVersionID + ") from vendor (" + pVendor + ") " + 
+         "overrides hasSourceParams(), but returned an empty table of source " + 
          "parameters from getInitialSourceParams()!"); 
     
     TreeMap<FilePattern,TreeMap<String,ActionParam>> ftable = pSecondaryParams.get(source);
@@ -776,10 +791,20 @@ class BaseAction
     ActionParam param = table.get(name);
     if(param == null) 
       throw new IllegalArgumentException
-	("No parameter named (" + param.getName() + ") exists for primary file sequence " + 
-	 "of the upstream node (" + source + ")!");
+	("No parameter named (" + param.getName() + ") exists in the Action " + 
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + ") for primary " + 
+         "file sequence of the upstream node (" + source + ")!");
     
-    param.setValue(value);    
+    try {
+      param.setValue(value);    
+    }
+    catch(IllegalArgumentException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "While attempting to set a primary file sequence parameter of the Action " + 
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+         ex.getMessage());
+    }
   }
 
   /**
@@ -831,10 +856,20 @@ class BaseAction
     ActionParam param = table.get(name);
     if(param == null) 
       throw new IllegalArgumentException
-	("No parameter named (" + param.getName() + ") exists for the secondary file " + 
-	 "sequence (" + fpat + ") of the upstream node (" + source + ")!");    
+	("No parameter named (" + param.getName() + ") exists in the Action " + 
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + ") for secondary " + 
+         "file sequence (" + fpat + ") of the upstream node (" + source + ")!");
 
-    param.setValue(value);    
+    try {
+      param.setValue(value);       
+    }
+    catch(IllegalArgumentException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "While attempting to set a secondary file sequence parameter of the Action " + 
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+         ex.getMessage());
+    }      
   }
 
   /** 
@@ -873,9 +908,11 @@ class BaseAction
 	      param.setValue(aparam.getValue());
 	    }
 	    catch(IllegalArgumentException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-		 ex.getMessage());
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                 "While attempting to set a primary file sequence parameter of the " + 
+                 "Action (" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):" + 
+                 "\n  " + ex.getMessage());
 	    }
 	  }
 	}
@@ -899,7 +936,9 @@ class BaseAction
 	      catch(IllegalArgumentException ex) {
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-		   ex.getMessage());
+                   "While attempting to set a secondary file sequence parameter of the " + 
+                   "Action (" + pName + " v" + pVersionID + ") from vendor " + 
+                   "(" + pVendor + "):\n  " + ex.getMessage());
 	      }
 	    }
 	  }

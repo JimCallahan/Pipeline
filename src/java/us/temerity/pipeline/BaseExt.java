@@ -1,4 +1,4 @@
-// $Id: BaseExt.java,v 1.6 2007/07/08 01:18:16 jim Exp $
+// $Id: BaseExt.java,v 1.7 2009/10/30 18:58:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -358,7 +358,16 @@ class BaseExt
       throw new IllegalArgumentException
 	("No parameter named (" + param.getName() + ") exists for this extension!");
 
-    param.setValue(value);
+    try {
+      param.setValue(value);
+    }
+    catch(IllegalArgumentException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "While attempting to set a parameter of the Extension " +
+         "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+         ex.getMessage());
+    }
   }
 
   /** 
@@ -384,9 +393,11 @@ class BaseExt
 	  param.setValue(aparam.getValue());
 	}
 	catch(IllegalArgumentException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	     ex.getMessage());
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+             "While attempting to set a parameter of the Extension " +
+             "(" + pName + " v" + pVersionID + ") from vendor (" + pVendor + "):\n  " + 
+             ex.getMessage());
 	}
       }
     }
