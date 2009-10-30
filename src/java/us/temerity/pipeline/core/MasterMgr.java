@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.307 2009/10/28 19:57:44 jim Exp $
+// $Id: MasterMgr.java,v 1.308 2009/10/30 04:31:36 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6831,6 +6831,11 @@ class MasterMgr
       timer.aquire();
       synchronized(pWorkingAreaViews) {
 	timer.resume();	
+	
+	/* abort if it doesn't exist */  
+        TreeSet<String> views = pWorkingAreaViews.get(author);
+        if((views == null) || !views.contains(view))
+          return new SuccessRsp(timer);
 
 	/* remove working area view database directory (if empty) */ 
         {
@@ -23873,7 +23878,7 @@ class MasterMgr
 	  NodeVersion vsn = 
 	    new NodeVersion(work, vid, lvids, locked, isNovel, checksums, 
 			    rnodeID.getAuthor(), pRequest.getMessage(), 
-			    rnodeID.getName(), pRootVersionID);
+			    rnodeID.getName(), pRootVersionID, pRequest.getRequestor());
 
 	  writeCheckedInVersion(vsn);
 
