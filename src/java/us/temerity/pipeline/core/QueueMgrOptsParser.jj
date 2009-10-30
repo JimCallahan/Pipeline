@@ -214,6 +214,7 @@ TOKEN :
 | <LOG_SUM: 	     "sum">         
 | <LOG_EXT: 	     "ext">        
 | <LOG_TIM: 	     "tim">        
+| <LOG_WRI: 	     "wri">
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -481,7 +482,8 @@ LogMgr.Kind LogKind() :
 {
   (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=GluKind() | 
    g=DspKind() | g=JobKind() | g=SelKind() | g=ColKind() | g=SchKind() | 
-   g=SubKind() | g=SumKind() | g=ExtKind() | g=MemKind() | g=TimKind())
+   g=SubKind() | g=SumKind() | g=ExtKind() | g=MemKind() | g=TimKind() |
+   g=WriKind())
   {
     return g;
   }
@@ -622,6 +624,14 @@ LogMgr.Kind TimKind() :
   }
 }
 
+LogMgr.Kind WriKind() : 
+{}
+{
+  <LOG_WRI>
+  {
+    return LogMgr.Kind.Wri;
+  }
+}
 
 
 

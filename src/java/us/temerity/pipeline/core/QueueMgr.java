@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.126 2009/10/28 06:06:17 jim Exp $
+// $Id: QueueMgr.java,v 1.127 2009/10/30 04:44:35 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,14 +6,15 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.*;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.toolset.Toolset;
+import us.temerity.pipeline.toolset.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R                                                                      */
@@ -148,7 +149,9 @@ class QueueMgr
       pReady    = new TreeMap<Long,JobProfile>();
       pJobRanks = new JobRank[1024]; 
       pRunning  = new DoubleMap<String,Long,MonitorTask>(); 
-
+      
+      pWriteList    = new LinkedBlockingQueue<Long>();
+      pDeleteList   = new LinkedBlockingQueue<Long>();
       pJobFileLocks = new TreeMap<Long,Object>();
       pJobs         = new TreeMap<Long,QueueJob>();
       
@@ -798,6 +801,7 @@ class QueueMgr
       lc.setLevel(LogMgr.Kind.Col, mgr.getLevel(LogMgr.Kind.Col));
       lc.setLevel(LogMgr.Kind.Sch, mgr.getLevel(LogMgr.Kind.Sch));
       lc.setLevel(LogMgr.Kind.Ext, mgr.getLevel(LogMgr.Kind.Ext));
+      lc.setLevel(LogMgr.Kind.Wri, mgr.getLevel(LogMgr.Kind.Wri));
 
     }
 
@@ -901,7 +905,13 @@ class QueueMgr
 	  if(level != null) 
 	    mgr.setLevel(LogMgr.Kind.Sub, level);
 	}
-
+	
+	{
+          LogMgr.Level level = lc.getLevel(LogMgr.Kind.Wri);
+          if(level != null) 
+            mgr.setLevel(LogMgr.Kind.Wri, level);
+        }
+	
 	{
 	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sum);
 	  if(level != null) 
@@ -6355,6 +6365,148 @@ class QueueMgr
   }
 
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   W R I T E R                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Write all the jobs currently in the update jobs queue to disk.
+   */
+  public void
+  writer()
+  {
+    TaskTimer timer = new TaskTimer("Writer");
+   
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Writer [Writing Modified Jobs]");
+      
+      while(true) {
+        Long jobID = pWriteList.poll();
+        if(jobID == null) 
+          break;
+
+        QueueJob job = null;
+        tm.aquire();
+        synchronized(pJobs) {
+          tm.resume();
+          QueueJob temp = pJobs.get(jobID);
+          if (temp != null)
+            job = new QueueJob(temp);
+        }
+
+        /* 
+         * Could be possible if the job ran, finished, and was cleaned-up before we got around 
+         * to writing the changes to disk.
+         */
+        if (job == null)
+          continue;
+        try {
+          deleteJobFile(jobID);
+          writeJob(job);
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().log
+          (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+            "An error occurred when the writer thread tried to write job (" + jobID + ") " +
+            "to disk.\n" + ex.getMessage()); 
+        }
+      }
+      LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+       tm, timer);
+    }
+    
+    TreeMap<Long,QueueJob> deadJobs = new TreeMap<Long,QueueJob>();
+    TreeMap<Long,QueueJobInfo> deadInfos = new TreeMap<Long,QueueJobInfo>();
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Writer [Deleting Jobs]");
+      
+      /* delete the dead jobs */ 
+      while(true) {
+        Long jobID = pDeleteList.poll();
+        if(jobID == null) 
+          break;
+
+        tm.aquire();
+
+        QueueJob job = null;
+        synchronized(pJobs) {
+          tm.resume();
+          job = pJobs.remove(jobID);
+        }
+        try {
+          if(job != null) {
+            deleteJobFile(jobID);
+            deadJobs.put(jobID, job);
+          }
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+            ex.getMessage());
+        }
+
+        tm.aquire();
+        QueueJobInfo info = null;
+        synchronized(pJobInfo) {
+          tm.resume();
+          info = pJobInfo.remove(jobID);
+        }
+        try {
+          if(info != null) {
+            deleteJobInfoFile(jobID);
+            deadInfos.put(jobID, info);
+          }
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+            ex.getMessage());
+        }
+      }
+      LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+       tm, timer);
+    }
+
+    /* post-cleanup task */ 
+    if(!deadJobs.isEmpty() && !deadInfos.isEmpty())  
+      startExtensionTasks(timer, new CleanupJobsExtFactory(deadJobs, deadInfos));
+    
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      LogMgr.getInstance().logStage
+        (LogMgr.Kind.Wri, LogMgr.Level.Fine,
+         timer); 
+
+      long nap = sWriterInterval - timer.getTotalDuration();
+      if(nap > 0) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+           "Writer: Sleeping for (" + nap + ") msec...");
+
+        try {
+          Thread.sleep(nap);
+        }
+        catch(InterruptedException ex) {
+        }
+      }
+      else {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+           "Writer: Overbudget by (" + (-nap) + ") msec...");
+      }
+
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+         "\n-----------------------------------------------------------------------------\n");
+    }
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   D I S P A T C H E R                                                                  */
@@ -6658,6 +6810,7 @@ class QueueMgr
             if(job != null) {
               job.setJobRequirements(reqs);
               changedIDs.add(jobID);
+              pWriteList.add(jobID);
             }
           }
           break;
@@ -6667,6 +6820,8 @@ class QueueMgr
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
        tm, timer);
+    LogMgr.getInstance().log(Kind.Wri, Level.Finest, 
+      "Adding jobs with ids " + changedIDs + " to the write list");
   }
 
   /** 
@@ -8067,8 +8222,9 @@ class QueueMgr
       synchronized(pJobs) {
 	timer.resume();
 	for(Long jobID : pJobs.keySet()) 
-	  if(!live.contains(jobID))
+	  if(!live.contains(jobID)) {
 	    dead.add(jobID);
+	  }
       }
 
       timer.aquire();
@@ -8079,56 +8235,17 @@ class QueueMgr
 	    dead.add(jobID);
       }
     }
-      
-    /* delete the dead jobs */ 
-    TreeMap<Long,QueueJob> deadJobs = new TreeMap<Long,QueueJob>();
-    TreeMap<Long,QueueJobInfo> deadInfos = new TreeMap<Long,QueueJobInfo>();    
-    for(Long jobID : dead) {
-      timer.aquire();
-      synchronized(pJobs) {
-	timer.resume();
-	try {
-	  QueueJob job = pJobs.remove(jobID);
-	  if(job != null) {
-	    deleteJobFile(jobID);
-	    deadJobs.put(jobID, job);
-	  }
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	     ex.getMessage());
-	}
-      }
 
-      timer.aquire();
-      synchronized(pJobInfo) {
-	timer.resume();
-	try {
-	  QueueJobInfo info = pJobInfo.remove(jobID);
-	  if(info != null) {
-	    deleteJobInfoFile(jobID);
-	    deadInfos.put(jobID, info);
-	  }
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	     ex.getMessage());
-	}
-      }      
-    }
-
+    LogMgr.getInstance().log(Kind.Wri, Level.Finest, 
+      "Adding jobs with ids " + dead + " to the delete list");
+    pDeleteList.addAll(dead);
+    
     /* tell the job servers to cleanup any resources associated with the dead jobs */ 
     {
       CleanupJobResourcesTask task = new CleanupJobResourcesTask(live);
       task.start();
     }
-
-    /* post-cleanup task */ 
-    if(!deadJobs.isEmpty() && !deadInfos.isEmpty())  
-      startExtensionTasks(timer, new CleanupJobsExtFactory(deadJobs, deadInfos));
-
+      
     LogMgr.getInstance().logStage
       (LogMgr.Kind.Ops, LogMgr.Level.Finer,
        timer); 
@@ -11151,6 +11268,8 @@ class QueueMgr
    */ 
   private static final long  sSchedulerInterval = 300000L;  /* 5-minutes */ 
 
+  private static final long  sWriterInterval = 60000L; /* 1-minute*/
+
   /**
    * The time (in milliseconds) between reports of the JVM heap statistics.
    */ 
@@ -11579,6 +11698,22 @@ class QueueMgr
    */ 
   private int  pDispatcherCycles; 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The IDs of all the jobs that need to be written to disk during the next Writer run.
+   * <p>
+   * No locking is required.
+   */
+  private LinkedBlockingQueue<Long> pWriteList;
+  
+  /**
+   * The IDs of all the jobs that have been marked as garbage and need to be removed during 
+   * the next  Writer run.
+   * <p>
+   * No locking is required.
+   */
+  private LinkedBlockingQueue<Long> pDeleteList;
 
   /*----------------------------------------------------------------------------------------*/
 

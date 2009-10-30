@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.24 2009/05/16 02:06:18 jim Exp $
+// $Id: JobReqs.java,v 1.25 2009/10/30 04:44:35 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -193,6 +193,34 @@ class JobReqs
     pHardwareKeys = new TreeSet<String>();
     if(hardwareKeys != null) 
       pHardwareKeys.addAll(hardwareKeys);
+  }
+  
+  /**
+   * Copy Constructor.
+   * 
+   * @param reqs
+   *   The Job Requirements to copy.
+   */
+  public 
+  JobReqs
+  (
+    JobReqs reqs
+  )
+  {
+    setPriority(reqs.getPriority());
+    setRampUp(reqs.getRampUp());
+    setMaxLoad(reqs.getMaxLoad());
+    setMinMemory(reqs.getMinMemory());
+    setMinDisk(reqs.getMinDisk());
+
+    pLicenseKeys = new TreeSet<String>();
+    pLicenseKeys.addAll(reqs.getLicenseKeys());
+
+    pSelectionKeys = new TreeSet<String>();
+    pSelectionKeys.addAll(reqs.getSelectionKeys());
+
+    pHardwareKeys = new TreeSet<String>();
+    pHardwareKeys.addAll(reqs.getHardwareKeys());
   }
   
   /**

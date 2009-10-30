@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.102 2009/09/16 03:54:40 jesse Exp $
+// $Id: ScriptApp.java,v 1.103 2009/10/30 04:44:35 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1350,6 +1350,8 @@ class ScriptApp
       logLevelMessage(controls, LogMgr.Kind.Plg, buf);
       logLevelMessage(controls, LogMgr.Kind.Mem, buf);
       logLevelMessage(controls, LogMgr.Kind.Ext, buf);
+      logLevelMessage(controls, LogMgr.Kind.Wri, buf);
+      logLevelMessage(controls, LogMgr.Kind.Sum, buf);
     }
 
     LogMgr.getInstance().log

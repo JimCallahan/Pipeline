@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.69 2009/09/16 03:54:40 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.70 2009/10/30 04:44:35 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -94,9 +94,10 @@ class QueueMgrServer
       CollectorTask collector = new CollectorTask();
       DispatcherTask dispatcher = new DispatcherTask();
       SchedulerTask scheduler = new SchedulerTask();
+      WriterTask writer = new WriterTask();
 
       MasterConnectTask connector = 
-	new MasterConnectTask(collector, dispatcher, scheduler); 
+	new MasterConnectTask(collector, dispatcher, scheduler, writer); 
       connector.start();
 
       HeapStatsTask heapStats = new HeapStatsTask();
@@ -137,6 +138,15 @@ class QueueMgrServer
 
 	  dispatcher.join();
 	}
+	
+	{
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Info,
+             "Waiting on Writer...");
+          LogMgr.getInstance().flush();
+
+          writer.join();
+        }
 
 	scheduler.interrupt();
 	scheduler.join();
@@ -198,6 +208,14 @@ class QueueMgrServer
       }
 
       PluginMgrClient.getInstance().disconnect();
+      
+      {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+           "Calling Writer one final time to clear cache...");
+        LogMgr.getInstance().flush();
+        pQueueMgr.writer();
+      }
       pQueueMgr.shutdown();
 
       pTimer.suspend();
@@ -1127,13 +1145,15 @@ class QueueMgrServer
     (
      CollectorTask collector,
      DispatcherTask dispatcher,
-     SchedulerTask scheduler
+     SchedulerTask scheduler,
+     WriterTask writer
     ) 
     {
       super("QueueMgrServer:MasterConnectTask"); 
       pCollector = collector;
       pDispatcher = dispatcher;
       pScheduler = scheduler;
+      pWriter = writer;
     }
 
     @Override
@@ -1159,6 +1179,7 @@ class QueueMgrServer
 	pCollector.start();
 	pDispatcher.start();
 	pScheduler.start();
+	pWriter.start();
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
@@ -1171,6 +1192,7 @@ class QueueMgrServer
     private CollectorTask  pCollector;
     private DispatcherTask pDispatcher;
     private SchedulerTask  pScheduler;
+    private WriterTask     pWriter;
   }
 
   /**
@@ -1215,6 +1237,48 @@ class QueueMgrServer
     }
   }
 
+  /**
+   * Write out jobs whose requirements have been updated.
+   */
+  private 
+  class WriterTask
+    extends Thread
+  {
+    public 
+    WriterTask() 
+    {
+      super("QueueMgrServer:WriterTask");
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      try {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Wri, LogMgr.Level.Fine,
+           "Job Writer Started.");       
+        LogMgr.getInstance().flush();
+
+        while(!pShutdown.get()) {
+          pQueueMgr.writer();
+        }
+      }
+      catch (Exception ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Job Writer Failed:", ex)); 
+        LogMgr.getInstance().flush();   
+      }
+      finally {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Wri, LogMgr.Level.Fine,
+           "Job Writer Finished.");      
+        LogMgr.getInstance().flush();
+      }
+    }
+  }
+  
   /**
    * Assigns jobs to available hosts.
    */

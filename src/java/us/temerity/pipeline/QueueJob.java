@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.17 2009/10/07 08:09:50 jim Exp $
+// $Id: QueueJob.java,v 1.18 2009/10/30 04:44:35 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -78,8 +78,31 @@ class QueueJob
     pJobGroupID = jobGroupID;
   }
 
-  
+  /**
+   * Lightweight copy constructor for use by the writer() thread in the QueueMgr.
+   * <p>
+   * Makes a deep copy of the job requirements, but just shallow copies of everything else in
+   * the job. If jobs are every changed to make things besides the job requirements modifiable,
+   * those will also have to be made into deep copies in this constructor.
+   * 
+   * @param job
+   *  The Job to copy
+   */
+  public
+  QueueJob
+  (
+    QueueJob job 
+  ) 
+  {
+    pActionAgenda = job.pActionAgenda;
+    pAction = job.pAction;
+    pJobReqs = new JobReqs(job.pJobReqs);
+    pSourceJobIDs = job.pSourceJobIDs;
+    pJobGroupID = job.pJobGroupID;
+  }
    
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
