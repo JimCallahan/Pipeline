@@ -1,19 +1,14 @@
-// $Id: JNodeHistoryPanel.java,v 1.34 2009/08/19 23:37:19 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.35 2009/10/30 04:56:31 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import java.awt.*;
+import java.util.*;
+
+import javax.swing.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import java.text.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   H I S T O R Y   P A N E L                                                    */
@@ -125,6 +120,7 @@ class JNodeHistoryPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -142,6 +138,7 @@ class JNodeHistoryPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -167,6 +164,7 @@ class JNodeHistoryPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -183,6 +181,7 @@ class JNodeHistoryPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -192,6 +191,7 @@ class JNodeHistoryPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -343,10 +343,19 @@ class JNodeHistoryPanel
 		hbox2.add(Box.createRigidArea(new Dimension(4, 0)));
 	      
 		{
-		  JLabel label = new JLabel(msg.getAuthor());
+		  String author = msg.getAuthor();
+		  String impostor = msg.getImpostor();
+		  
+		  JLabel label;
+		  if (impostor == null)
+		    label = new JLabel(author);
+		  else
+		    label = new JLabel(author + " (" + impostor + ")");
 		  label.setForeground(color);
 		  label.setToolTipText(UIFactory.formatToolTip
-                    ("The name of the user who created the version."));
+                    ("The name of the user whose working area the version was created from " +
+                     "followed by the name of the user who requested the check-in if it is " +
+                     "different from the first name."));
 		  hbox2.add(label);
 		}
 		
@@ -513,6 +522,7 @@ class JNodeHistoryPanel
       super("JBaseNodeHistoryPanel:ScrollTask");
     }
 
+    @Override
     public void 
     run() 
     {    

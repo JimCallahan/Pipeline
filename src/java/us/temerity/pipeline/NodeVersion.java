@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.28 2009/08/28 02:10:46 jim Exp $
+// $Id: NodeVersion.java,v 1.29 2009/10/30 04:56:31 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -70,6 +70,9 @@ class NodeVersion
    * @param rootVersionID
    *   The revision number of the new version of the root node created by the check-in 
    *   operation.
+   *   
+   * @param impostor
+   *   The name of the user who requested the creation of the version.
    */
   public 
   NodeVersion
@@ -83,7 +86,8 @@ class NodeVersion
    String author, 
    String msg, 
    String rootName, 
-   VersionID rootVersionID 
+   VersionID rootVersionID,
+   String impostor
   ) 
   {
     super(mod);
@@ -94,7 +98,15 @@ class NodeVersion
 
     if(msg == null) 
       throw new IllegalArgumentException("The check-in message cannot be (null)!");
-    pMessage = new LogMessage(author, msg, rootName, rootVersionID);
+    
+    if (author == null)
+      throw new IllegalArgumentException("The author cannot be (null)!");
+    
+    String imp = impostor;
+    if (author.equals(imp))
+      imp = null;
+    
+    pMessage = new LogMessage(author, msg, rootName, rootVersionID, imp);
 
     pSources = new TreeMap<String,LinkVersion>();
     for(LinkMod link : mod.getSources()) 
@@ -257,6 +269,16 @@ class NodeVersion
   getAuthor() 
   {
     return pMessage.getAuthor();
+  }
+  
+  /**
+   * Get the name of the user who requested the check-in of the version if it is different 
+   * from {@link #getAuthor()} or <code>null</code> if it is the same.
+   */ 
+  public String
+  getImpostor() 
+  {
+    return pMessage.getImpostor();
   }
 
   /**

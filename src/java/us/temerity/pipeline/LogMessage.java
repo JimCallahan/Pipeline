@@ -1,11 +1,8 @@
-// $Id: LogMessage.java,v 1.10 2007/03/28 19:31:03 jim Exp $
+// $Id: LogMessage.java,v 1.11 2009/10/30 04:56:31 jesse Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L O G   M E S S A G E                                                                  */
@@ -48,6 +45,9 @@ class LogMessage
    * @param rootVersionID
    *   The revision number of the new version of the root node created by the check-in 
    *   operation.
+   *   
+   * @param impostor
+   *   The name of the user who requested the check-in.
    */ 
   public 
   LogMessage
@@ -55,13 +55,15 @@ class LogMessage
    String author, 
    String msg, 
    String rootName, 
-   VersionID rootVersionID 
+   VersionID rootVersionID,
+   String impostor
   ) 
   {
     super(author, msg);
 
     pRootName      = rootName;
     pRootVersionID = rootVersionID;
+    pImpostor      = impostor;
   }
 
   /**
@@ -130,6 +132,25 @@ class LogMessage
   {
     return pRootVersionID; 
   }
+  
+  /**
+   * Get the name of the user who requested the check-in.
+   * <p>
+   * This field will only have a value in cases where the requesting user is different than
+   * the owner of the working area the check-in was submitted from.  In all other cases this
+   * value will be <code>null</code>.
+   * <p>
+   * Nodes created in versions of Pipeline before 2.4.13 will never have a value other
+   * than <code>null</code>.
+   * 
+   * @return
+   *   The name of the user who requested the check-in or <code>null</code>
+   */
+  public String
+  getImpostor()
+  {
+    return pImpostor;
+  }
 
 
 
@@ -143,6 +164,7 @@ class LogMessage
    * @param obj 
    *   The reference object with which to compare.
    */
+  @Override
   public boolean
   equals
   (
@@ -158,7 +180,9 @@ class LogMessage
 	 (((pRootName == null) && (log.pRootName == null)) ||
 	  ((pRootName != null) && pRootName.equals(log.pRootName))) && 
 	 (((pRootVersionID == null) && (log.pRootVersionID == null)) ||
-	  ((pRootVersionID != null) && pRootVersionID.equals(log.pRootVersionID))))
+	  ((pRootVersionID != null) && pRootVersionID.equals(log.pRootVersionID))) &&
+	 (((pImpostor == null) && (log.pImpostor == null)) ||
+	  ((pImpostor != null) && pImpostor.equals(log.pImpostor))))
 	return true;
     }
     return false;
@@ -170,6 +194,7 @@ class LogMessage
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  @Override
   public void 
   toGlue
   ( 
@@ -184,8 +209,12 @@ class LogMessage
 
     if(pRootVersionID != null) 
       encoder.encode("RootVersionID", pRootVersionID);
+    
+    if (pImpostor != null)
+      encoder.encode("Impostor", pImpostor);
   }
 
+  @Override
   public void 
   fromGlue
   (
@@ -202,6 +231,10 @@ class LogMessage
     VersionID vid = (VersionID) decoder.decode("RootVersionID");
     if(vid != null) 
       pRootVersionID = vid;
+    
+    String impostor = (String) decoder.decode("Impostor");
+    if(impostor != null) 
+      pImpostor = impostor;
   }
 
 
@@ -228,7 +261,14 @@ class LogMessage
    * operation.
    */ 
   private VersionID  pRootVersionID; 
-
+  
+  /**
+   * The name of the user that requested this check-in if it was not the user whose working
+   * area the check-in originated from.  If the working area and the requesting user were the
+   * same, this field will be null.  It will always be null for nodes created in versions of
+   * Pipeline before 2.4.13. impostor
+   */
+  private String pImpostor;
 }
 
 

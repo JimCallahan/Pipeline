@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.12 2009/07/02 00:23:21 jim Exp $
+// $Id: LogMgr.java,v 1.13 2009/10/30 04:55:39 jesse Exp $
   
 package us.temerity.pipeline;
 
@@ -702,7 +702,12 @@ class LogMgr
     /**
      * Internal Builder Operations
      */
-    Bld;
+    Bld,
+    
+    /**
+     * Activity of the Queue Manager job writer thread.
+     */
+    Wri;
 
     /**
      * Get the list of all possible states.
@@ -800,7 +805,8 @@ class LogMgr
     "SCH", 
     "EXT", 
     "TIM",
-    "BLD"
+    "BLD",
+    "WRI"
   };
 
 
