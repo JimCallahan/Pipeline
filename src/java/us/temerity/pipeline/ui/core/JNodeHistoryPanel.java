@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.35 2009/10/30 04:56:31 jesse Exp $
+// $Id: JNodeHistoryPanel.java,v 1.36 2009/10/30 18:57:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -353,9 +353,12 @@ class JNodeHistoryPanel
 		    label = new JLabel(author + " (" + impostor + ")");
 		  label.setForeground(color);
 		  label.setToolTipText(UIFactory.formatToolTip
-                    ("The name of the user whose working area the version was created from " +
-                     "followed by the name of the user who requested the check-in if it is " +
-                     "different from the first name."));
+                    ("The name of the user owning the working version of the node that was " + 
+                     "checked-in, optionally followed by the name of the user who actually " + 
+                     "performed check-in (in parentheses) if different from the owner of " +
+                     "the node.  The owner can be different than the user performing the " +
+                     "check-in when its performed by a Node Manager in another user's " +
+                     "working area."));
 		  hbox2.add(label);
 		}
 		
