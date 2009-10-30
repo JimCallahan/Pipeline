@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.70 2009/10/30 04:44:35 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.71 2009/10/30 19:04:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -212,7 +212,7 @@ class QueueMgrServer
       {
         LogMgr.getInstance().log
           (LogMgr.Kind.Ops, LogMgr.Level.Info,
-           "Calling Writer one final time to clear cache...");
+           "Writing Any Jobs Remaining in Cache...");
         LogMgr.getInstance().flush();
         pQueueMgr.writer();
       }
