@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.2 2009/10/27 05:24:46 jesse Exp $
+// $Id: TemplateStage.java,v 1.3 2009/10/30 05:30:35 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateCollection.v2_4_12;
 
@@ -1084,7 +1084,8 @@ class TemplateStage
   {
     Comparable value = param.getValue();
     if (param instanceof StringAnnotationParam ||
-        param instanceof TextAreaAnnotationParam) 
+        param instanceof TextAreaAnnotationParam ||
+        param instanceof ParamNameAnnotationParam) 
       value = stringReplace((String) value, pReplacements);
     
     return value;
