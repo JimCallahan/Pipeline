@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.127 2009/10/30 04:44:35 jesse Exp $
+// $Id: QueueMgr.java,v 1.128 2009/10/30 18:59:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -802,7 +802,7 @@ class QueueMgr
       lc.setLevel(LogMgr.Kind.Sch, mgr.getLevel(LogMgr.Kind.Sch));
       lc.setLevel(LogMgr.Kind.Ext, mgr.getLevel(LogMgr.Kind.Ext));
       lc.setLevel(LogMgr.Kind.Wri, mgr.getLevel(LogMgr.Kind.Wri));
-
+      lc.setLevel(LogMgr.Kind.Sum, mgr.getLevel(LogMgr.Kind.Sum));
     }
 
     return new MiscGetLogControlsRsp(timer, lc);
