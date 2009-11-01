@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.98 2009/10/28 06:06:17 jim Exp $
+// $Id: FileMgr.java,v 1.99 2009/11/01 23:32:57 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4263,18 +4263,26 @@ class FileMgr
     if(files != null) {
       /* empty directory must be the leaf revision number named directory */ 
       if(files.length == 0) {
-        task.addOffline();
-        
-        String name = dir.getParent().substring(head);
-        VersionID vid = new VersionID(dir.getName());
-        
-        TreeSet<VersionID> vids = offlined.get(name);
-        if(vids == null) {
-          vids = new TreeSet<VersionID>();
-          offlined.put(name, vids);
+        try {
+          VersionID vid = new VersionID(dir.getName());
+
+          task.addOffline();
+          String name = dir.getParent().substring(head);
+          TreeSet<VersionID> vids = offlined.get(name);
+          if(vids == null) {
+            vids = new TreeSet<VersionID>();
+            offlined.put(name, vids);
+          }
+          
+          vids.add(vid);
         }
-        
-        vids.add(vid);
+        catch(IllegalArgumentException ex) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+             "During Offlined Cache Rebuild, found an empty repository directory " + 
+             "(" + dir + ") which should have had a revision number as its last " + 
+             "component (" + dir.getName() + ")!  Ignoring it..."); 
+        }
       }
       
       /* process any subdirectories */ 
