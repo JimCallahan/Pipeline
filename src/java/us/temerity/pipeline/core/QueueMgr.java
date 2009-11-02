@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.130 2009/11/02 21:58:38 jim Exp $
+// $Id: QueueMgr.java,v 1.131 2009/11/02 22:00:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6507,10 +6507,6 @@ class QueueMgr
              "Writer: Overbudget by (" + (-nap) + ") msec...");
         }
       }
-
-      LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-         "\n-----------------------------------------------------------------------------\n");
     }
   }
   
