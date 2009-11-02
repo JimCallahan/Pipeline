@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.7 2009/03/19 21:55:59 jesse Exp $
+// $Id: JOwnerViewDialog.java,v 1.8 2009/11/02 03:27:40 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -269,24 +269,22 @@ class JOwnerViewDialog
 	String view = diag.getName();
 	if(view != null) {
 	  UIMaster master = UIMaster.getInstance();
-
-	  if(master.beginPanelOp("Creating New Working Area...")) {
-	    MasterMgrClient client = master.acquireMasterMgrClient();
-	    try {
-	      client.createWorkingArea(author, view);
-	    }
-	    catch(PipelineException ex) {
-	      showErrorDialog(ex);
-	      setVisible(false);
-	      return;
-	    }
-	    finally {
-	      master.releaseMasterMgrClient(client);
-	      master.endPanelOp("Done.");
-	    }
+	  long opID = master.beginDialogOp("Creating New Working Area...");
+          MasterMgrClient client = master.acquireMasterMgrClient();
+          try {
+            client.createWorkingArea(author, view);
+          }
+          catch(PipelineException ex) {
+            showErrorDialog(ex);
+            setVisible(false);
+            return;
+          }
+          finally {
+            master.releaseMasterMgrClient(client);
+            master.endDialogOp(opID, "Done.");
+          }
 	  
-	    updateWorkingAreas(author, view);
-	  }
+          updateWorkingAreas(author, view);
 	}      
       }
     }

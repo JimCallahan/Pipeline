@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.115 2009/10/14 02:23:18 jim Exp $
+// $Id: UIMaster.java,v 1.116 2009/11/02 03:27:40 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -105,17 +105,8 @@ class UIMaster
     if(remoteServer) 
       pRemoteServer = new RemoteServer(this);
 
-    {
-      pOpsLocks   = new ReentrantLock[10];
-      pOpsRunning = new AtomicBoolean[10];
-      pOpsTimers  = new TaskTimer[10];
-      int wk; 
-      for(wk=0; wk<pOpsLocks.length; wk++) {
-	pOpsLocks[wk]   = new ReentrantLock();
-	pOpsRunning[wk] = new AtomicBoolean(false);
-      }
-    }
-
+    pOpLoggers = new TreeMap<Long, OpLogger>();
+    pNextLoggerID = new AtomicLong(9L); 
 
     pEditorPlugins = 
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
@@ -906,18 +897,15 @@ class UIMaster
     TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
     
     if(name != null) {
-      if(beginSilentPanelOp(channel)) {
-        MasterMgrClient client = acquireMasterMgrClient();
-	try {
-	  views.putAll(client.getWorkingAreasContaining(name));
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
-	finally {
-	  releaseMasterMgrClient(client);
-	  endSilentPanelOp(channel);
-	}
+      MasterMgrClient client = acquireMasterMgrClient();
+      try {
+        views.putAll(client.getWorkingAreasContaining(name));
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+      }
+      finally {
+        releaseMasterMgrClient(client);
       }
     }
 
@@ -946,18 +934,15 @@ class UIMaster
     TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
     
     if(name != null) {
-      if(beginSilentPanelOp(channel)) {
-        MasterMgrClient client = acquireMasterMgrClient();
-	try {
-	  views.putAll(client.getWorkingAreasEditing(name));
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
-	finally {
-	  releaseMasterMgrClient(client);
-	  endSilentPanelOp(channel);
-	}
+      MasterMgrClient client = acquireMasterMgrClient();
+      try {
+        views.putAll(client.getWorkingAreasEditing(name));
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+      }
+      finally {
+        releaseMasterMgrClient(client);
       }
     }
 
@@ -4092,65 +4077,102 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Try to acquire a panel operation lock. <P> 
-   * 
-   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
-   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
+   * Start a non-blocking dialog operation.<P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
-   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * of this methods must call {@link #endPanelOp} with the returned message handle.
    * 
    * @return
-   *   Whether the panel operation should proceed.
+   *   A unique handle for this operation. 
    */ 
-  public boolean
-  beginPanelOp()
+  public long
+  beginDialogOp()
   {
-    return beginPanelOpHelper(0, "", false);
+    return beginDialogOp("");
   }
-  
-  /**
-   * Try to acquire a panel operation lock, but generate no progress messages. <P> 
-   * 
-   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
-   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
-   * 
-   * Once the operation is complete or if it is aborted early, the caller
-   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
-   * 
-   * @return
-   *   Whether the panel operation should proceed.
-   */ 
-   public boolean
-   beginSilentPanelOp() 
-   {
-     return beginPanelOpHelper(0, "", true);
-   }
 
   /**
-   * Try to acquire a panel operation lock, but generate no progress messages. <P> 
-   * 
-   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
-   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
+   * Start a non-blocking dialog operation.<P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
-   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * of this methods must call {@link #endPanelOp} with the returned message handle.
    * 
-   * @param channel
-   *   The index of the update channel.
+   * @param msg
+   *   A short message describing the operation.
    * 
    * @return
-   *   Whether the panel operation should proceed.
+   *   A unique handle for this operation. 
    */ 
-   //Santized
-   public boolean
-   beginSilentPanelOp
-   (
-    int channel
-   ) 
-   {
-     return beginPanelOpHelper(channel, "", true);
-   }
+  public long
+  beginDialogOp
+  (
+   String msg
+  )
+  {
+    long opID = pNextLoggerID.incrementAndGet();
+
+    OpLogger logger = new OpLogger();
+    synchronized(pOpLoggers) {
+      pOpLoggers.put(opID, logger);
+    }      
+    logger.beginOp(msg);
+
+    return opID;
+  }
+
+  /**
+   * Update the operation message in mid-operation.
+   * 
+   * @param opID
+   *   A unique handle for this operation. 
+   * 
+   * @param msg
+   *   A short message describing the operation.
+   */ 
+  public void
+  updateDialogOp
+  (
+   long opID,
+   String msg 
+  )
+  {
+    OpLogger logger = pOpLoggers.get(opID);
+    if(logger != null) 
+      logger.updateOp(msg);
+  }
+
+  /**
+   * End a non-blocking dialog operation.<P> 
+   * 
+   * @param opID
+   *   A unique handle for this operation. 
+   * 
+   * @param msg
+   *   A short completion message.
+   */
+  public void 
+  endDialogOp
+  (
+   long opID,
+   String msg 
+  ) 
+  {
+    OpLogger logger = null;
+    synchronized(pOpLoggers) {
+      logger = pOpLoggers.remove(opID); 
+    }
+
+    if(logger != null) {
+      logger.endOp(msg);
+    } 
+    else {
+      throw new IllegalStateException
+        ("Somehow no non-blocking dialog operation with the ID (" + opID + ") exists!"); 
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Try to acquire a panel operation lock. <P> 
@@ -4167,14 +4189,13 @@ class UIMaster
    * @return
    *   Whether the panel operation should proceed.
    */
-   // Sanitized
    public boolean
    beginPanelOp
    (
     int channel
    ) 
    {
-     return beginPanelOpHelper(channel, "", false);
+     return beginPanelOp(channel, "");
    }
 
   /**
@@ -4187,31 +4208,6 @@ class UIMaster
    * Once the operation is complete or if it is aborted early, the caller
    * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
    * 
-   * @param msg
-   *   A short message describing the operation.
-   * 
-   * @return
-   *   Whether the panel operation should proceed.
-   */ 
-  public boolean
-  beginPanelOp
-  (
-   String msg
-  )
-  {
-    return beginPanelOpHelper(0, msg, false);
-  }
-  
-  /**
-   * Try to acquire a panel operation lock and if successfully notify the user that 
-   * an operation is in progress. <P> 
-   * 
-   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
-   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
-   * 
-   * Once the operation is complete or if it is aborted early, the caller
-   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
-   * 
    * @param channel
    *   The index of the update channel.
    * 
@@ -4228,78 +4224,34 @@ class UIMaster
    String msg
   )
   {
-    return beginPanelOpHelper(channel, msg, false);
-  }
+    if((channel < 1) || (channel > 9))
+      throw new IllegalArgumentException
+        ("The panel update channel must be in the range 1-9 inclusive."); 
 
-  /**
-   * Try to acquire a panel operation lock and if successfully notify the user that 
-   * an operation is in progress. <P> 
-   * 
-   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
-   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
-   * 
-   * Once the operation is complete or if it is aborted early, the caller
-   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
-   * 
-   * @param channel
-   *   The index of the update channel.
-   * 
-   * @param msg
-   *   A short message describing the operation.
-   * 
-   * @param silent
-   *   Whether the operation should be performed without progress messages.
-   * 
-   * @return
-   *   Whether the panel operation should proceed.
-   */ 
-  private boolean
-  beginPanelOpHelper
-  (
-   int channel,
-   String msg, 
-   boolean silent
-  )
-  {
-    assert((channel >= 0) && (channel < 10)); 
-    boolean aquired = pOpsLocks[channel].tryLock();
+    boolean acquired = false;
+    {
+      OpLogger logger = null;
+      synchronized(pOpLoggers) {
+        logger = pOpLoggers.get((long) channel);
+      }      
 
-    if(!silent) {
-      pOpsRunning[channel].set(true);
-      pOpsTimers[channel] = new TaskTimer();
+      if(logger != null) {
+        acquired = logger.tryLock();
+        if(acquired)
+          logger.beginOp(msg);
+      }
     }
 
-    if(aquired) {
-      if(!silent)
-	SwingUtilities.invokeLater(new BeginOpsTask(channel, msg));
-    }
-    else {
-      if(UIFactory.getBeepPreference())
-	Toolkit.getDefaultToolkit().beep();
-    }
+    if(UIFactory.getBeepPreference())
+      Toolkit.getDefaultToolkit().beep();
 
-    return aquired;
+    return acquired;
   }
 
  
   /**
    * Update the operation message in mid-operation.
    * 
-   * @param msg
-   *   A short message describing the operation.
-   */ 
-  public void
-  updatePanelOp
-  (
-   String msg
-  )
-  {
-    updatePanelOp(0, msg);
-  }
-
-  /**
-   * Update the operation message in mid-operation.
-   * 
    * @param channel
    *   The index of the update channel.
    * 
@@ -4313,26 +4265,19 @@ class UIMaster
    String msg
   )
   {
-    assert((channel >= 0) && (channel < 10)); 
-    assert(pOpsLocks[channel].isLocked());
-    SwingUtilities.invokeLater(new UpdateOpsTask(channel, msg));
+    if((channel < 1) || (channel > 9))
+      throw new IllegalArgumentException
+        ("The panel update channel must be in the range 1-9 inclusive."); 
+
+    OpLogger logger = null;
+    synchronized(pOpLoggers) {
+      logger = pOpLoggers.get((long) channel);
+    }  
+
+    if(logger != null) 
+      logger.updateOp(msg);
   }
 
-
-  /**
-   * Release the panel operation lock. <P>
-   * 
-   * @param msg
-   *   A short completion message.
-   */
-  public void 
-  endPanelOp
-  (
-   String msg   
-  ) 
-  {
-    endPanelOpHelper(0, msg, false);
-  }
 
   /**
    * Release the panel operation lock. <P>
@@ -4346,22 +4291,7 @@ class UIMaster
    int channel
   ) 
   {
-    endPanelOpHelper(channel, "", false);
-  }
-
-  /**
-   * Release the panel operation lock, but generate no progress messages. <P>
-   * 
-   * @param channel
-   *   The index of the update channel.
-   */ 
-  public void 
-  endSilentPanelOp
-  ( 
-   int channel
-  ) 
-  {
-    endPanelOpHelper(channel, "", true);
+    endPanelOp(channel, "");
   }
 
   /**
@@ -4381,54 +4311,21 @@ class UIMaster
    String msg
   )
   {
-    endPanelOpHelper(channel, msg, false);
+    if((channel < 1) || (channel > 9))
+      throw new IllegalArgumentException
+        ("The panel update channel must be in the range 1-9 inclusive."); 
+
+    OpLogger logger = null;
+    synchronized(pOpLoggers) {
+      logger = pOpLoggers.get((long) channel);
+    }  
+
+    if(logger != null) 
+      logger.endOp(msg); 
   }
 
-  /**
-   * Release the panel operation lock and notify the user that the operation has 
-   * completed. <P>
-   * 
-   * @param channel
-   *   The index of the update channel.
-   * 
-   * @param msg
-   *   A short completion message.
-   */ 
-  private void 
-  endPanelOpHelper
-  (
-   int channel,
-   String msg, 
-   boolean silent
-  )
-  {
-    assert((channel >= 0) && (channel < 10)); 
-    try {
-      String timedMsg = msg;
-      if(!silent) {
-	TaskTimer timer = pOpsTimers[channel]; 
-	if(timer != null) {
-	  timer.suspend();
-	  timedMsg = 
-            (msg + "   (" + TimeStamps.formatInterval(timer.getActiveDuration()) + ")");
-	}
 
-	pOpsRunning[channel].set(false);
-      }
-
-      pOpsLocks[channel].unlock();  
-
-      if(!silent) 
-	SwingUtilities.invokeLater(new EndOpsTask(channel, timedMsg)); 
-    }
-    catch(IllegalMonitorStateException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 "Internal Error:\n" + 
-	 "  " + ex.getMessage());
-    }
-  }
-
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Show only the panel operation progress components associated with used channel groups.
@@ -4436,11 +4333,11 @@ class UIMaster
   public void 
   updateOpsBar() 
   {
-    if(pProgressBoxes == null) 
+    if(pOpLoggers == null) 
       return;
 
     int idx;
-    for(idx=1; idx<pProgressBoxes.length; idx++) {
+    for(idx=1; idx<10; idx++) {
       boolean unused = 
  	(pNodeBrowserPanels.isGroupUnused(idx) && 
  	 pNodeViewerPanels.isGroupUnused(idx) && 
@@ -4456,8 +4353,15 @@ class UIMaster
  	 pQueueJobViewerPanels.isGroupUnused(idx) && 
  	 pQueueJobDetailsPanels.isGroupUnused(idx));
 
-      if(unused) 
-	pProgressBoxes[idx].setVisible(false);
+      if(unused) {
+        OpLogger logger = null;
+        synchronized(pOpLoggers) {
+          logger = pOpLoggers.get((long) idx);
+        }  
+        
+        if(logger != null) 
+          logger.invisible(); 
+      }
     }
 
     pProgressPanel.revalidate();
@@ -5166,46 +5070,12 @@ class UIMaster
 	      panel.add(hbox);
 	    }
 
-	    {
-	      pProgressBoxes  = new Box[10];
-	      pProgressLights = new JLabel[10];
-	      pProgressFields = new JTextField[10];
-
+            {
 	      int idx;
-	      for(idx=0; idx<pProgressLights.length; idx++) {
-		Box hbox = new Box(BoxLayout.X_AXIS);   
-		pProgressBoxes[idx] = hbox; 
-		hbox.setVisible(false);
+	      for(idx=1; idx<10; idx++) 
+                pOpLoggers.put((long) idx, new OpLogger(idx));
+            }
 
-		hbox.add(Box.createRigidArea(new Dimension(6, 0)));
-
-		{
-		  JLabel label = new JLabel(sProgressFinishedIcons[idx]);
-		  pProgressLights[idx] = label;
-	      
-		  Dimension size = new Dimension(19, 19);
-		  label.setMinimumSize(size);
-		  label.setMaximumSize(size);
-		  label.setPreferredSize(size);
-		  
-		  hbox.add(label);
-		}
-
-		hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-		{
-		  JTextField field = UIFactory.createTextField(null, 30, JLabel.LEFT);
-		  pProgressFields[idx] = field;
-		  
-		  hbox.add(field);
-		}
-
-		hbox.add(Box.createRigidArea(new Dimension(6, 0)));
-
-		panel.add(hbox);
-	      }
-	    }
-	    
 	    root.add(panel);
 	  }
 	  
@@ -5331,47 +5201,277 @@ class UIMaster
 
     private UIMaster  pMaster;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
   
+  private 
+  class OpLogger
+  {
+    /** 
+     * Create a new non-blocking dialog operation logger.
+     */
+    public 
+    OpLogger()
+    {
+      this(0); 
+    }
+
+    /** 
+     * Create a new blocking panel operation logger.
+     * 
+     * @param channel
+     *   The channel icon number to display.
+     */
+    public 
+    OpLogger
+    (
+     int channel
+    ) 
+    {
+      if((channel < 0) || (channel > 9)) 
+        throw new IllegalArgumentException
+        ("The panel update channel must be in the range 0-9 inclusive."); 
+
+      if(channel > 0) 
+        pOpLock = new ReentrantLock();
+      pChannel = channel;
+
+      Box hbox = new Box(BoxLayout.X_AXIS);   
+      pProgressBox = hbox; 
+      hbox.setVisible(false);
+      
+      hbox.add(Box.createRigidArea(new Dimension(6, 0)));
+      
+      {
+        JLabel label = new JLabel(sProgressFinishedIcons[channel]);
+        pProgressLight = label;
+	
+        Dimension size = new Dimension(19, 19);
+        label.setMinimumSize(size);
+        label.setMaximumSize(size);
+        label.setPreferredSize(size);
+	
+        hbox.add(label);
+      }
+      
+      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+      
+      {
+        JTextField field = UIFactory.createTextField(null, 30, JLabel.LEFT);
+        pProgressField = field;
+	
+        hbox.add(field);
+      }
+      
+      hbox.add(Box.createRigidArea(new Dimension(6, 0)));
+      
+      pProgressPanel.add(hbox);
+    }
+
+
+    /*-- LOCKING METHODS -------------------------------------------------------------------*/
+
+    /**
+     * Try to acquire the operation lock (if any exists).
+     */ 
+    public synchronized boolean
+    tryLock()
+    {
+      if(pOpLock != null) 
+        return pOpLock.tryLock();  
+      return true;
+    }
+
+
+    /*-- OPS -------------------------------------------------------------------------------*/
+
+    /**
+     * Mark the start of a logged operation displaying the given message.
+     */ 
+    public synchronized void 
+    beginOp
+    (
+     String msg
+    )
+    {
+      pMessage = msg;
+      pTimer = new TaskTimer();
+      pIsRunning = true;
+      SwingUtilities.invokeLater(new BeginOpsTask(this));
+    }
+     
+    /**
+     * Update the operation message in mid-operation.
+     */ 
+    public synchronized void 
+    updateOp
+    (
+     String msg
+    )
+    {
+      if((pOpLock != null) && !pOpLock.isLocked())
+        throw new IllegalStateException
+          ("Somehow an update message was given when the channel was NOT locked!"); 
+
+      pMessage = msg;
+      SwingUtilities.invokeLater(new UpdateOpsTask(this));
+    }
+
+    /**
+     * Mark the end of a logged operation displaying the given message.
+     */ 
+    public synchronized void 
+    endOp
+    (
+     String msg
+    )
+    {
+      if(pTimer != null) {
+        pTimer.suspend();
+        pMessage = 
+          (msg + "   (" + TimeStamps.formatInterval(pTimer.getActiveDuration()) + ")");
+      }
+      else {
+        pMessage = msg;
+      }
+      
+      pIsRunning = false;
+      
+      try {
+        if(pOpLock != null) 
+          pOpLock.unlock();  
+      }
+      catch(IllegalMonitorStateException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Internal Error:\n" + 
+           "  " + ex.getMessage());
+      }
+
+      SwingUtilities.invokeLater(new EndOpsTask(this)); 
+    }
+    
+
+    /*-- UI METHODS ------------------------------------------------------------------------*/
+
+    public synchronized void 
+    invisible()
+    {
+      pProgressBox.setVisible(false);
+    }
+     
+    public synchronized void 
+    beginUI()
+    {
+      pProgressLight.setIcon(sProgressRunningIcons[pChannel]); 
+      pProgressField.setText(pMessage);
+      
+      if(!pProgressBox.isVisible()) {
+        pNoProgressBox.setVisible(false); 
+	pProgressBox.setVisible(true);
+	pProgressPanel.revalidate();
+	pProgressPanel.repaint();
+      }
+
+      if(pChannel > 0) {
+        ArrayList<JTopLevelPanel> panels = getChannelPanels(pChannel); 
+        for(JTopLevelPanel panel : panels) 
+          panel.prePanelOp();
+      }
+    }
+
+    public synchronized void 
+    updateUI()
+    {
+      pProgressField.setText(pMessage);
+      pProgressPanel.repaint();
+    }
+
+    public synchronized void 
+    endUI() 
+    {
+      if(pChannel > 0) {
+        ArrayList<JTopLevelPanel> panels = getChannelPanels(pChannel); 
+        for(JTopLevelPanel panel : panels) 
+          panel.postPanelOp();
+      }
+
+      pProgressField.setText(pMessage); 
+      pProgressLight.setIcon(sProgressFinishedIcons[pChannel]); 
+
+      if(!pIsRunning) {
+        WaitHideOpsTask task = new WaitHideOpsTask(this); 
+	task.start();
+      }
+    }
+     
+    public synchronized void 
+    hideUI()
+    {
+      if(!pIsRunning && pProgressBox.isVisible()) {
+	if(pChannel > 0) 
+          pProgressBox.setVisible(false);
+        else 
+          pProgressPanel.remove(pProgressBox); 
+
+	pProgressPanel.revalidate();
+	pProgressPanel.repaint();
+      }
+    }
+     
+    private int           pChannel;
+    private ReentrantLock pOpLock; 
+    private String        pMessage; 
+    private TaskTimer     pTimer;
+    private boolean       pIsRunning;
+
+    private Box        pProgressBox;                                
+    private JLabel     pProgressLight;
+    private JTextField pProgressField;
+  }
+
+  /**
+   * Base class for all panel operation logging tasks.
+   */ 
+  private
+  class BaseOpsTask
+    extends Thread
+  { 
+    BaseOpsTask
+    ( 
+     String title,
+     OpLogger logger 
+    ) 
+    {
+      super("UIMaster:" + title + "OpsTask");
+      pLogger = logger;
+    }
+
+    protected OpLogger pLogger; 
+  }
+
   /**
    * Notify the user that a panel operation is underway.
    */ 
   private
   class BeginOpsTask
-    extends Thread
+    extends BaseOpsTask
   { 
     BeginOpsTask
     ( 
-     int channel, 
-     String msg
+     OpLogger logger 
     ) 
     {
-      super("UIMaster:BeginOpsTask");
-
-      pIdx = channel;
-      pMsg = msg;
+      super("Begin", logger);
     }
 
     @Override
     public void 
     run() 
     { 
-      pProgressLights[pIdx].setIcon(sProgressRunningIcons[pIdx]);
-      pProgressFields[pIdx].setText(pMsg);
-      
-      if(pNoProgressBox.isVisible() || !pProgressBoxes[pIdx].isVisible()) {
-	pNoProgressBox.setVisible(false);
-	pProgressBoxes[pIdx].setVisible(true);
-	pProgressPanel.revalidate();
-	pProgressPanel.repaint();
-      }
-
-      ArrayList<JTopLevelPanel> panels = getChannelPanels(pIdx); 
-      for(JTopLevelPanel panel : panels) 
-        panel.prePanelOp();
+      pLogger.beginUI();
     }
-
-    private int     pIdx; 
-    private String  pMsg;
   }
 
   /* 
@@ -5379,29 +5479,22 @@ class UIMaster
    */ 
   private
   class UpdateOpsTask
-    extends Thread
+    extends BaseOpsTask
   { 
     UpdateOpsTask
     ( 
-     int channel, 
-     String msg
+     OpLogger logger 
     ) 
     {
-      super("UIMaster:UpdateOpsTask");
-
-      pIdx = channel;
-      pMsg = msg;
+      super("Update", logger);
     }
 
     @Override
     public void 
     run() 
     {
-      pProgressFields[pIdx].setText(pMsg);
+      pLogger.updateUI();
     }
-
-    private int     pIdx; 
-    private String  pMsg;
   }
 
   /**
@@ -5409,39 +5502,22 @@ class UIMaster
    */ 
   private
   class EndOpsTask
-    extends Thread
+    extends BaseOpsTask
   { 
     EndOpsTask
     ( 
-     int channel, 
-     String msg
+     OpLogger logger
     ) 
     {
-      super("UIMaster:EndOpsTask");
-
-      pIdx = channel;
-      pMsg = msg;
+      super("End", logger);
     }
 
     @Override
     public void 
     run() 
     {
-      ArrayList<JTopLevelPanel> panels = getChannelPanels(pIdx); 
-      for(JTopLevelPanel panel : panels) 
-        panel.postPanelOp();
-
-      pProgressFields[pIdx].setText(pMsg);
-      pProgressLights[pIdx].setIcon(sProgressFinishedIcons[pIdx]); 
-      
-      if(!pOpsRunning[pIdx].get()) {
-	WaitHideOpsTask task = new WaitHideOpsTask(pIdx); 
-	task.start();
-      }
+      pLogger.endUI();
     }
-
-    private int     pIdx; 
-    private String  pMsg;
   }
 
   /**
@@ -5449,16 +5525,14 @@ class UIMaster
    */ 
   private
   class WaitHideOpsTask
-    extends Thread
+    extends BaseOpsTask
   { 
     WaitHideOpsTask
     ( 
-     int channel
+     OpLogger logger 
     ) 
     {
-      super("UIMaster:WaitHideOpsTask");
-
-      pIdx = channel;
+      super("WaitHide", logger);
     }
 
     @Override
@@ -5471,10 +5545,8 @@ class UIMaster
       catch(InterruptedException ex) {
       }
       
-      SwingUtilities.invokeLater(new HideOpsTask(pIdx)); 
+      SwingUtilities.invokeLater(new HideOpsTask(pLogger)); 
     }
-
-    private int pIdx; 
   }
   
   /**
@@ -5482,43 +5554,22 @@ class UIMaster
    */ 
   private
   class HideOpsTask
-    extends Thread
+    extends BaseOpsTask
   { 
     HideOpsTask
     ( 
-     int channel
+     OpLogger logger 
     ) 
     {
-      super("UIMaster:HideOpsTask");
-
-      pIdx = channel;
+      super("Hide", logger);
     }
 
     @Override
     public void 
     run() 
     {
-      if(!pOpsRunning[pIdx].get() && pProgressBoxes[pIdx].isVisible()) {
-	pProgressBoxes[pIdx].setVisible(false);
-	
-	boolean anyVisible = false;
-	int wk; 
-	for(wk=0; wk< pProgressBoxes.length; wk++) {
-	  if(pProgressBoxes[wk].isVisible()) {
-	    anyVisible = true;
-	    break;
-	  }
-	}
-	
-	if(!anyVisible) 
-	  pNoProgressBox.setVisible(true);
-	
-	pProgressPanel.revalidate();
-	pProgressPanel.repaint();
-      }
+      pLogger.hideUI();
     }
-
-    private int pIdx; 
   }
 
 
@@ -6968,19 +7019,18 @@ class UIMaster
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Database Backup...")) {
-        MasterMgrClient client = master.acquireMasterMgrClient();
-	try {
-	  client.backupDatabase(pBackupFile);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.releaseMasterMgrClient(client);
-	  master.endPanelOp("Done.");
-	}
+      long opID = master.beginDialogOp("Database Backup...");
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+        client.backupDatabase(pBackupFile);
+      }
+      catch(PipelineException ex) {
+        master.showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
       }
     }
 
@@ -7334,21 +7384,6 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * A lock used to serialize panel operations.
-   */ 
-  private ReentrantLock[] pOpsLocks;
-
-  /**
-   * Whether a panel operation is currently running.
-   */ 
-  private AtomicBoolean[] pOpsRunning;
-
-  /**
-   * Timers used to measure and report the duration of panel operations.
-   */ 
-  private TaskTimer[] pOpsTimers; 
-
-  /**
    * The top-level progress message container.
    */ 
   private JPanel  pProgressPanel; 
@@ -7356,18 +7391,18 @@ class UIMaster
   /**
    * The channel progress message containiers.
    */ 
-  private Box[]  pProgressBoxes;
-  private Box    pNoProgressBox;
+  private Box pNoProgressBox;
 
   /**
-   * The icons warning that a panel operation is in progress for a given channel.
+   * The existing loggers indexed by panel operation ID.
    */ 
-  private JLabel[]  pProgressLights;
+  private TreeMap<Long, OpLogger>  pOpLoggers;
 
   /**
-   * The channel progress message fields.
-   */ 
-  private JTextField[]  pProgressFields;
+   * The next unique panel operation ID to give out.
+   */                                                
+  private AtomicLong  pNextLoggerID;
+
 
 
   /*----------------------------------------------------------------------------------------*/

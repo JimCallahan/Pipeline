@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.30 2009/10/09 09:30:16 jlee Exp $
+// $Id: JNodeBrowserPanel.java,v 1.31 2009/11/02 03:27:40 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -558,32 +558,29 @@ class JNodeBrowserPanel
     /* get the updated node tree */ 
     NodeTreeComp comp = null;
     {
+      updatePrivileges();
+
       UIMaster master = UIMaster.getInstance();
-      if(master.beginSilentPanelOp(pGroupID)) {
-
-	updatePrivileges();
-        MasterMgrClient client = master.acquireMasterMgrClient();
-	try { 
-	  TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
-	  {
-	    for(String path : expanded)
-	      paths.put(path, (deep != null) && path.equals(deep));
-
-	    for(String path : pSelected)
-	      if(expandSelected || UserPrefs.getInstance().getExpandSelected())
-		paths.put(path, false);
-	  }
-	  
-	  comp = client.updatePaths(pAuthor, pView, paths); 
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.releaseMasterMgrClient(client);
-	  master.endSilentPanelOp(pGroupID);
-	}
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try { 
+        TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+        {
+          for(String path : expanded)
+            paths.put(path, (deep != null) && path.equals(deep));
+          
+          for(String path : pSelected)
+            if(expandSelected || UserPrefs.getInstance().getExpandSelected())
+              paths.put(path, false);
+        }
+        
+        comp = client.updatePaths(pAuthor, pView, paths); 
+      }
+      catch(PipelineException ex) {
+        master.showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
       }
     }
 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.70 2009/10/07 08:09:50 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.71 2009/11/02 03:27:40 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1893,25 +1893,22 @@ class JQueueJobViewerPanel
     
 	if(pLastJobHintID != jobID) {
           UIMaster master = UIMaster.getInstance();
-          if(master.beginSilentPanelOp()) {
-            QueueMgrClient qclient = master.acquireQueueMgrClient();
-            try {
-              QueueJob job = qclient.getJob(jobID);
-              QueueJobInfo info = qclient.getJobInfo(jobID);
-              
-              pViewerJobHint.updateHint(job, info); 
-              pViewerJobHint.setPosition(vunder.getPosition());
-              pViewerJobHint.setVisible(true);
-              
-              pLastJobHintID = jobID;
-              hideHint = false;              
-            }
-            catch(PipelineException ex) {
-            }
-            finally {
-              master.releaseQueueMgrClient(qclient);
-              master.endSilentPanelOp(0);
-            }
+          QueueMgrClient qclient = master.acquireQueueMgrClient();
+          try {
+            QueueJob job = qclient.getJob(jobID);
+            QueueJobInfo info = qclient.getJobInfo(jobID);
+            
+            pViewerJobHint.updateHint(job, info); 
+            pViewerJobHint.setPosition(vunder.getPosition());
+            pViewerJobHint.setVisible(true);
+            
+            pLastJobHintID = jobID;
+            hideHint = false;              
+          }
+          catch(PipelineException ex) {
+          }
+          finally {
+            master.releaseQueueMgrClient(qclient);
           }
 	}
         else {
