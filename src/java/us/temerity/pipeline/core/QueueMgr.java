@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.128 2009/10/30 18:59:37 jim Exp $
+// $Id: QueueMgr.java,v 1.129 2009/11/02 20:52:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11268,7 +11268,10 @@ class QueueMgr
    */ 
   private static final long  sSchedulerInterval = 300000L;  /* 5-minutes */ 
 
-  private static final long  sWriterInterval = 60000L; /* 1-minute*/
+  /**
+   * The minimum time a cycle of the job writer loop should take (in milliseconds).
+   */ 
+  private static final long  sWriterInterval = 60000L;  /* 1-minute */
 
   /**
    * The time (in milliseconds) between reports of the JVM heap statistics.
