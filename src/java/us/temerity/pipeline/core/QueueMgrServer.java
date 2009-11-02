@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.71 2009/10/30 19:04:50 jim Exp $
+// $Id: QueueMgrServer.java,v 1.72 2009/11/02 21:58:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -214,7 +214,7 @@ class QueueMgrServer
           (LogMgr.Kind.Ops, LogMgr.Level.Info,
            "Writing Any Jobs Remaining in Cache...");
         LogMgr.getInstance().flush();
-        pQueueMgr.writer();
+        pQueueMgr.writer(false);
       }
       pQueueMgr.shutdown();
 
@@ -1261,7 +1261,7 @@ class QueueMgrServer
         LogMgr.getInstance().flush();
 
         while(!pShutdown.get()) {
-          pQueueMgr.writer();
+          pQueueMgr.writer(true);
         }
       }
       catch (Exception ex) {

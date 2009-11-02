@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.129 2009/11/02 20:52:07 jim Exp $
+// $Id: QueueMgr.java,v 1.130 2009/11/02 21:58:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6372,9 +6372,15 @@ class QueueMgr
   
   /**
    * Write all the jobs currently in the update jobs queue to disk.
+   * 
+   * @param sleep
+   *   Whether to sleep for the remaining time instead of returning immediately.
    */
   public void
-  writer()
+  writer
+  (
+   boolean sleep
+  )
   {
     TaskTimer timer = new TaskTimer("Writer");
    
@@ -6482,22 +6488,24 @@ class QueueMgr
         (LogMgr.Kind.Wri, LogMgr.Level.Fine,
          timer); 
 
-      long nap = sWriterInterval - timer.getTotalDuration();
-      if(nap > 0) {
-        LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-           "Writer: Sleeping for (" + nap + ") msec...");
-
-        try {
-          Thread.sleep(nap);
+      if(sleep) {
+        long nap = sWriterInterval - timer.getTotalDuration();
+        if(nap > 0) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+             "Writer: Sleeping for (" + nap + ") msec...");
+          
+          try {
+            Thread.sleep(nap);
+          }
+          catch(InterruptedException ex) {
+          }
         }
-        catch(InterruptedException ex) {
+        else {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+             "Writer: Overbudget by (" + (-nap) + ") msec...");
         }
-      }
-      else {
-        LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-           "Writer: Overbudget by (" + (-nap) + ") msec...");
       }
 
       LogMgr.getInstance().logAndFlush
