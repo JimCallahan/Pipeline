@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.68 2009/09/01 10:59:39 jim Exp $
+// $Id: MasterRequest.java,v 1.69 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -854,9 +854,9 @@ enum MasterRequest
   ArchiveQuery, 
 
   /**
-   * An instance of {@link MiscGetArchiveSizesReq} is next.
+   * An instance of {@link MiscGetArchivedSizesReq} is next.
    */
-  GetArchiveSizes, 
+  GetArchivedSizes, 
 
   /**
    * An instance of {@link MiscArchiveReq} is next.

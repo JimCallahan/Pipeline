@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.105 2009/09/01 10:59:39 jim Exp $
+// $Id: MasterMgrServer.java,v 1.106 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1646,10 +1646,10 @@ class MasterMgrServer
                 }
                 break;  
 
-              case GetArchiveSizes:
+              case GetArchivedSizes:
                 {
-                  MiscGetArchiveSizesReq req = (MiscGetArchiveSizesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getArchiveSizes(req));
+                  MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getArchivedSizes(req));
                   objOut.flush(); 
                 }
                 break;
@@ -1681,7 +1681,7 @@ class MasterMgrServer
 
               case GetOfflineSizes:
                 {
-                  MiscGetOfflineSizesReq req = (MiscGetOfflineSizesReq) objIn.readObject();
+                  MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getOfflineSizes(req));
                   objOut.flush(); 
                 }
@@ -1730,7 +1730,7 @@ class MasterMgrServer
 	    
               case GetRestoreSizes:
                 {
-                  MiscGetRestoreSizesReq req = (MiscGetRestoreSizesReq) objIn.readObject();
+                  MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getRestoreSizes(req));
                   objOut.flush(); 
                 }

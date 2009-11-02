@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.308 2009/10/30 04:31:36 jesse Exp $
+// $Id: MasterMgr.java,v 1.309 2009/11/02 03:44:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13386,7 +13386,7 @@ class MasterMgr
       {
         timer.aquire();
         ReentrantReadWriteLock lock = getCheckedInLock(name);
-        lock.readLock().lock();
+        lock.writeLock().lock();
         try {
           timer.resume();	
           
@@ -13496,7 +13496,7 @@ class MasterMgr
 	  }
         }
         finally {
-          lock.readLock().unlock();
+          lock.writeLock().unlock();
         }  
       }
 
@@ -15659,16 +15659,17 @@ class MasterMgr
 	  (timer, "Illegal Node Name Pattern:\n\n" + ex.getMessage());
       }
       
-      /* lock online/offline status */ 
-      timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(matches);
-      try {
-	timer.resume();	
-
-	/* process the matching nodes */ 
-	ArrayList<ArchiveInfo> archiveInfo = new ArrayList<ArchiveInfo>();
-	for(String name : matches) {
+      /* process the matching nodes */ 
+      ArrayList<ArchiveInfo> archiveInfo = new ArrayList<ArchiveInfo>();
+      for(String name : matches) {
 	  
+        /* lock online/offline status */ 
+        timer.aquire();
+        ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
+        onOffLock.readLock().lock();
+        try {
+          timer.resume();	
+
 	  /* get the revision numbers and creation timestamps of the included versions, 
                excluding all versions which are intermediate */ 
 	  TreeMap<VersionID,Long> stamps = new TreeMap<VersionID,Long>();
@@ -15752,12 +15753,12 @@ class MasterMgr
 	    }
 	  }
 	}
-	
-	return new MiscArchiveQueryRsp(timer, archiveInfo);
+        finally {
+          onOffLock.readLock().unlock();
+        }  
       }
-      finally {
-	onlineOfflineReadUnlock(onOffLocks);
-      }  
+
+      return new MiscArchiveQueryRsp(timer, archiveInfo);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -15779,9 +15780,9 @@ class MasterMgr
    *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
    */ 
   public Object
-  getArchiveSizes
+  getArchivedSizes
   (
-   MiscGetArchiveSizesReq req
+   MiscGetSizesReq req
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -15791,71 +15792,73 @@ class MasterMgr
     try {
       timer.resume();	
 
-      /* the checked-in node versions */ 
-      TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+      /* process the nodes */ 
+      DoubleMap<String,VersionID,Long> sizes = new DoubleMap<String,VersionID,Long>();
+      for(Map.Entry<String,TreeSet<VersionID>> entry : req.getVersions().entrySet()) {
+        String name = entry.getKey();
+        TreeSet<VersionID> versions = entry.getValue(); 
 
-      /* get the file sequences for the given checked-in versions */ 
-      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = 
-	new TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>();
-      {
-	for(String name : versions.keySet()) {
-	  TreeMap<VersionID,TreeSet<FileSeq>> vfseqs = 
-	    new TreeMap<VersionID,TreeSet<FileSeq>>();
-	  fseqs.put(name, vfseqs);
+        /* compute the sizes of the files */ 
+        {
+          /* lock online/offline status */ 
+          timer.aquire();
+          ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
+          onOffLock.readLock().lock();
+          try {
+            timer.resume();	
 
-	  timer.aquire();
-	  ReentrantReadWriteLock lock = getCheckedInLock(name);
-	  lock.readLock().lock(); 
-	  try {
-	    timer.resume();
+            /* get the file sequences for each checked-in version of the node */ 
+            MappedSet<VersionID,FileSeq> vfseqs = new MappedSet<VersionID,FileSeq>();
+            { 
+              timer.aquire();
+              ReentrantReadWriteLock lock = getCheckedInLock(name);
+              lock.readLock().lock(); 
+              try {
+                timer.resume();
+                
+                TreeMap<VersionID,CheckedInBundle> checkedIn = 
+                  getCheckedInBundles(name, false);
 
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-            for(VersionID vid : versions.get(name)) {
-              CheckedInBundle bundle = checkedIn.get(vid);
-              if(bundle != null) {
-                NodeVersion vsn = bundle.getVersion();
-                if(!vsn.isIntermediate()) 
-                  vfseqs.put(vid, vsn.getSequences());
+                for(VersionID vid : versions) {
+                  CheckedInBundle bundle = checkedIn.get(vid);
+                  if(bundle != null) {
+                    NodeVersion vsn = bundle.getVersion();
+                    if(!vsn.isIntermediate()) 
+                      vfseqs.put(vid, vsn.getSequences());
+                  }
+                }
+              }
+              finally {
+                lock.readLock().unlock();
               }
             }
-	  }
-	  finally {
-	    lock.readLock().unlock();
-	  }
-	}
-      } 
-
-      /* lock online/offline status */ 
-      timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
-      try {
-	timer.resume();	
-
-	/* compute the sizes of the files */ 
-	TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
-	{
-	  FileMgrClient fclient = acquireFileMgrClient();
-	  try {
-	    sizes = fclient.getArchiveSizes(fseqs);
-	  }
-	  finally {
-	    releaseFileMgrClient(fclient);
-	  }
-	}
-
-	return new MiscGetSizesRsp(timer, sizes);
+            
+            /* compute the sizes of the files */ 
+            {
+              FileMgrClient fclient = acquireFileMgrClient();
+              try {
+                sizes.put(name, fclient.getArchiveSizes(name, vfseqs)); 
+              }
+              finally {
+                releaseFileMgrClient(fclient);
+              }
+            }
+          }
+          finally {
+            onOffLock.readLock().unlock();
+          }
+        }
       }
-      finally {
-	onlineOfflineReadUnlock(onOffLocks);
-      }
+
+      return new MiscGetSizesRsp(timer, sizes);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
       pDatabaseLock.readLock().unlock();
-    } 
-  }
+    }
+  } 
 
   /**
    * Archive the files associated with the given checked-in versions. <P> 
@@ -15910,8 +15913,9 @@ class MasterMgr
       BaseArchiver archiver = req.getArchiver();
 
       /* the checked-in node versions */ 
-      TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
-      
+      //TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+      MappedSet<String,VersionID> versions = req.getVersions();
+
       /* lock online/offline status of the nodes to be archived */ 
       timer.aquire();
       List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
@@ -15921,11 +15925,11 @@ class MasterMgr
 	/* validate the file sequences to be archived */ 
 	TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = 
 	  new TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>();
-	TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
+	DoubleMap<String,VersionID,Long> sizes = null;
 	{
 	  /* recheck the sizes of the versions */ 
 	  {
-	    Object obj = getArchiveSizes(new MiscGetArchiveSizesReq(versions));
+	    Object obj = getArchivedSizes(new MiscGetSizesReq(versions));
 	    if(obj instanceof FailureRsp) {
 	      FailureRsp rsp = (FailureRsp) obj;
 	      throw new PipelineException(rsp.getMessage());	
@@ -15946,7 +15950,8 @@ class MasterMgr
 	    try {
 	      timer.resume();
 
-	      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	      TreeMap<VersionID,CheckedInBundle> checkedIn = 
+                getCheckedInBundles(name, false);
 
 	      synchronized(pOfflinedLock) {
 		TreeSet<VersionID> offline = pOfflined.get(name);
@@ -16205,7 +16210,9 @@ class MasterMgr
 	    lock.readLock().lock();  
 	    try {
 	      timer.resume();	
-	      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	      TreeMap<VersionID,CheckedInBundle> checkedIn = 
+                getCheckedInBundles(name, false);
+
 	      int wk = 0;
 	      for(VersionID vid : checkedIn.keySet()) {
 		if((exclude != null) && (wk >= (checkedIn.size() - exclude)))
@@ -16411,7 +16418,7 @@ class MasterMgr
   public Object
   getOfflineSizes
   (
-   MiscGetOfflineSizesReq req
+   MiscGetSizesReq req
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -16426,130 +16433,122 @@ class MasterMgr
           ("The GetOfflineSizes operation will not be available until the offlined node " +
            "version cache has finished being rebuilt.");
 
-      TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+      /* process the nodes */ 
+      DoubleMap<String,VersionID,Long> sizes = new DoubleMap<String,VersionID,Long>();
+      for(Map.Entry<String,TreeSet<VersionID>> entry : req.getVersions().entrySet()) {
+        String name = entry.getKey();
+        TreeSet<VersionID> toBeOfflined = entry.getValue(); 
 
-      /* lock online/offline status of the nodes */ 
-      timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
-      try {
-	timer.resume();	
+        /* lock online/offline status */ 
+        timer.aquire();
+        ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
+        onOffLock.readLock().lock();
+        try {
+          timer.resume();	
 
-	/* determine which files contribute the to offlined size */ 
-	TreeMap<String,TreeMap<VersionID,TreeSet<File>>> contribute = 
-	  new TreeMap<String,TreeMap<VersionID,TreeSet<File>>>();
-	for(String name : versions.keySet()) {
+          /* the currently offline revision numbers */ 
+          TreeSet<VersionID> offlined = new TreeSet<VersionID>();
+          timer.aquire();
+          synchronized(pOfflinedLock) {
+            timer.resume();
+              
+            if(pOfflined.get(name) != null)
+              offlined.addAll(pOfflined.get(name));
+          }
+          
+          /* determine which files contribute the to offlined size */ 
+          MappedSet<VersionID,File> contribute = new MappedSet<VersionID,File>();
+          {
+            timer.aquire();
+            ReentrantReadWriteLock lock = getCheckedInLock(name);
+            lock.readLock().lock(); 
+            try {
+              timer.resume();
+                
+              TreeMap<VersionID,CheckedInBundle> checkedIn = 
+                getCheckedInBundles(name, false);
 
-	  /* the currently offline revision numbers */ 
-	  TreeSet<VersionID> offlined = new TreeSet<VersionID>();
-	  timer.aquire();
-	  synchronized(pOfflinedLock) {
-	    timer.resume();
-
-	    if(pOfflined.get(name) != null)
-	      offlined.addAll(pOfflined.get(name));
-	  }
-
-	  timer.aquire();
-	  ReentrantReadWriteLock lock = getCheckedInLock(name);
-	  lock.readLock().lock(); 
-	  try {
-	    timer.resume();
-
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
-	    
-	    /* process the to be offlined versions */ 
-	    TreeSet<VersionID> toBeOfflined = versions.get(name);
-	    for(VersionID vid : toBeOfflined) {
-
-	      /* ignore currently offline versions */ 
-	      if(!offlined.contains(vid)) {
-		CheckedInBundle bundle = checkedIn.get(vid);
-		if(bundle == null) 
-		  throw new PipelineException 
-		    ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
-
-                /* ignore intermediate versions */ 
-                if(!bundle.getVersion().isIntermediate()) {
-		
-                  /* determine which files contributes to the offlined size */ 
-                  TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
-                  for(File file : novelty.keySet()) {
+              ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
+                
+              /* process the to be offlined versions */ 
+              for(VersionID vid : toBeOfflined) {
+                  
+                /* ignore currently offline versions */ 
+                if(!offlined.contains(vid)) {
+                  CheckedInBundle bundle = checkedIn.get(vid);
+                  if(bundle == null) 
+                    throw new PipelineException 
+                      ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
                     
-                    /* we are only concerned with files exist and are new */ 
-                    Boolean[] isNovel = novelty.get(file);
-                    int vidx = vids.indexOf(vid);
-                    if((isNovel[vidx] != null) && isNovel[vidx]) {
+                  /* ignore intermediate versions */ 
+                  if(!bundle.getVersion().isIntermediate()) {
                       
-                      /* step through later versions to determine whether the current file
-                         should contribute to the offlined size */ 
-                      boolean selected = true;
-                      {
-                        int vk;
-                        for(vk=vidx+1; vk<isNovel.length; vk++) {
-                          VersionID nvid = vids.get(vk);
-                          
-                          if((isNovel[vk] == null) || isNovel[vk]) {
-                            break;
-                          }
-                          else if(!toBeOfflined.contains(nvid) && !offlined.contains(nvid)) {
-                            selected = false;
-                            break;
-                          }
-                        }
-                      }
-                      
-                      /* add the current file to the offlined size */ 
-                      if(selected) {
-                        TreeMap<VersionID,TreeSet<File>> cversions = contribute.get(name);
-                        if(cversions == null) {
-                          cversions = new TreeMap<VersionID,TreeSet<File>>();
-                          contribute.put(name, cversions);
-                        }
-
-                        TreeSet<File> cfiles = cversions.get(vid);
-                        if(cfiles == null) {
-                          cfiles = new TreeSet<File>();
-                          cversions.put(vid, cfiles);
-                        }
+                    /* determine which files contributes to the offlined size */ 
+                    TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
+                    for(File file : novelty.keySet()) {
                         
-                        cfiles.add(file);
+                      /* we are only concerned with files exist and are new */ 
+                      Boolean[] isNovel = novelty.get(file);
+                      int vidx = vids.indexOf(vid);
+                      if((isNovel[vidx] != null) && isNovel[vidx]) {
+                          
+                        /* step through later versions to determine whether the current file
+                           should contribute to the offlined size */ 
+                        boolean selected = true;
+                        {
+                          int vk;
+                          for(vk=vidx+1; vk<isNovel.length; vk++) {
+                            VersionID nvid = vids.get(vk);
+                              
+                            if((isNovel[vk] == null) || isNovel[vk]) {
+                              break;
+                            }
+                            else if(!toBeOfflined.contains(nvid) && 
+                                    !offlined.contains(nvid)) {
+                              selected = false;
+                              break;
+                            }
+                          }
+                        }
+                          
+                        /* add the current file to those which contribute */ 
+                        if(selected) 
+                          contribute.put(vid, file);
                       }
                     }
-		  }
-		}
-	      }
-	    }
-	  }
-	  finally {
-	    lock.readLock().unlock();
-	  }
-	}
+                  }
+                }
+              }
+            }
+            finally {
+              lock.readLock().unlock();
+            }
+          }
 
-	/* compute the sizes of the files */
-	TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
-	{
-	  FileMgrClient fclient = acquireFileMgrClient();
-	  try {
-	    sizes = fclient.getOfflineSizes(contribute);
-	  }
-	  finally {
-	    releaseFileMgrClient(fclient);
-	  }
-	}
-	
-	return new MiscGetSizesRsp(timer, sizes);
+          /* compute the sizes of the files */
+          {
+            FileMgrClient fclient = acquireFileMgrClient();
+            try {
+              sizes.put(name, fclient.getOfflineSizes(name, contribute));
+            }
+            finally {
+              releaseFileMgrClient(fclient);
+            }
+          }
+        }
+        finally {
+          onOffLock.readLock().unlock();
+        }
       }
-      finally {
-	onlineOfflineReadUnlock(onOffLocks);
-      }  
+
+      return new MiscGetSizesRsp(timer, sizes);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
       pDatabaseLock.readLock().unlock();
-    }  
+    }
   }
 
   /**
@@ -16578,7 +16577,7 @@ class MasterMgr
    MiscOfflineReq req
   ) 
   {
-    TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+    MappedSet<String,VersionID> versions = req.getVersions();
       
     TaskTimer timer = new TaskTimer("MasterMgr.offline()");
     
@@ -16637,7 +16636,8 @@ class MasterMgr
 	  checkedInLock.readLock().lock();  
 	  try {
 	    timer.resume();	
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = 
+              getCheckedInBundles(name, false);
 	    
 	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
 	    TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
@@ -17212,7 +17212,7 @@ class MasterMgr
   public Object
   getRestoreSizes
   (
-   MiscGetRestoreSizesReq req
+   MiscGetSizesReq req
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17221,8 +17221,8 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
-
-      TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+      
+      MappedSet<String,VersionID> versions = req.getVersions();
 
       /* get the names of all archives which contain any of the given versions */ 
       TreeSet<String> anames = new TreeSet<String>();
@@ -17231,14 +17231,16 @@ class MasterMgr
 	synchronized(pArchivedIn) {
 	  timer.resume();
 
-	  for(String name : versions.keySet()) {
+          for(Map.Entry<String,TreeSet<VersionID>> entry : versions.entrySet()) {
+            String name = entry.getKey();
+
 	    TreeMap<VersionID,TreeSet<String>> varchives = pArchivedIn.get(name);
 	    if(varchives == null) 
 	      throw new PipelineException 
 		("Cannot compute restored size of checked-in node (" + name + ") " + 
 		 "since no versions have ever been archived!");
 
-	    for(VersionID vid : versions.get(name)) {
+	    for(VersionID vid : entry.getValue()) {
 	      TreeSet<String> vanames = varchives.get(vid);
 	      if(vanames == null) 
 		throw new PipelineException 
@@ -17252,13 +17254,13 @@ class MasterMgr
       }
 	  
       /* lookup the sizes of the versions from the archives */ 
-      TreeMap<String,TreeMap<VersionID,Long>> sizes = 
-	new TreeMap<String,TreeMap<VersionID,Long>>();
+      DoubleMap<String,VersionID,Long> sizes = new DoubleMap<String,VersionID,Long>();
       {
-	ArrayList<String> names = new ArrayList<String>();
+	ArrayList<String> names   = new ArrayList<String>();
 	ArrayList<VersionID> vids = new ArrayList<VersionID>();
-	for(String name : versions.keySet()) {
-	  for(VersionID vid : versions.get(name)) {
+        for(Map.Entry<String,TreeSet<VersionID>> entry : versions.entrySet()) {
+          String name = entry.getKey();
+          for(VersionID vid : entry.getValue()) {
 	    names.add(name);
 	    vids.add(vid);
 	  }
@@ -17267,7 +17269,7 @@ class MasterMgr
 	for(String aname : anames) {
 	  ArchiveVolume volume = readArchive(aname);
 	  
-	  ArrayList<String> rnames = new ArrayList<String>();
+	  ArrayList<String> rnames   = new ArrayList<String>();
 	  ArrayList<VersionID> rvids = new ArrayList<VersionID>();
 
 	  int wk;
@@ -17277,14 +17279,7 @@ class MasterMgr
 
 	    if(volume.contains(name, vid)) {
 	      long size = volume.getSize(name, vid);
-	    
-	      TreeMap<VersionID,Long> vsizes = sizes.get(name);
-	      if(vsizes == null) {
-		vsizes = new TreeMap<VersionID,Long>();
-		sizes.put(name, vsizes);
-	      }
-	    
-	      vsizes.put(vid, size);		
+              sizes.put(name, vid, size);
 	    }
 	    else {
 	      rnames.add(name);
@@ -17405,7 +17400,8 @@ class MasterMgr
 	  checkedInLock.readLock().lock();  
 	  try {
 	    timer.resume();	
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = 
+              getCheckedInBundles(name, false);
 	  
 	    for(VersionID vid : versions.get(name)) {
 	      if(!vol.contains(name, vid)) 
@@ -17540,7 +17536,8 @@ class MasterMgr
 	  checkedInLock.readLock().lock();  
 	  try {
 	    timer.resume();	
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	    TreeMap<VersionID,CheckedInBundle> checkedIn =
+              getCheckedInBundles(name, false);
 
 	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
 	    TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
@@ -17878,26 +17875,22 @@ class MasterMgr
       synchronized(pArchivedIn) {
 	timer.resume();
 	
-	TreeMap<String,TreeMap<VersionID,TreeSet<String>>> archives = 
-	  new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
+        DoubleMappedSet<String,VersionID,String> archives = 
+          new DoubleMappedSet<String,VersionID,String>();
 
-	TreeMap<String,TreeSet<VersionID>> vsns = req.getVersions();
-	for(String name : vsns.keySet()) {
+        MappedSet<String,VersionID> vsns = req.getVersions();
+        for(String name : vsns.keySet()) {
 	  TreeMap<VersionID,TreeSet<String>> aversions = pArchivedIn.get(name);
-	  if(aversions != null) {
+          if(aversions != null) {
 	    for(VersionID vid : vsns.get(name)) {
 	      TreeSet<String> anames = aversions.get(vid);
 	      if(anames != null) {
-		TreeMap<VersionID,TreeSet<String>> oaversions = archives.get(name);
-		if(oaversions == null) {
-		  oaversions = new TreeMap<VersionID,TreeSet<String>>();
-		  archives.put(name, oaversions);
-		}
-		oaversions.put(vid, anames);
-	      }
-	    }
-	  }
-	}
+                for(String aname : anames)
+                  archives.put(name, vid, aname);
+              }
+            }
+          }
+        }
 	
 	return new MiscGetArchivesContainingRsp(timer, archives);
       }
@@ -20298,11 +20291,38 @@ class MasterMgr
    * 
    * @param name 
    *   The fully resolved node name.
+   * 
+   * @param addToCache
+   *   Whether new checked-in versions read from disk should be added to the node cache.
    */
   private TreeMap<VersionID,CheckedInBundle>
   getCheckedInBundles
   ( 
    String name
+  ) 
+    throws PipelineException
+  {
+    return getCheckedInBundles(name, true); 
+  }
+
+  /**
+   * Get the table of checked-in bundles for the node with the given name.
+   * 
+   * This method assumes that a read/write lock for the checked-in version has already been 
+   * aquired.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param addToCache
+   *   Whether new checked-in versions read from disk should be added to the node cache.
+   *   If set to (false), then the returned CheckedInBundles should be considered read-only.
+   */
+  private TreeMap<VersionID,CheckedInBundle>
+  getCheckedInBundles
+  ( 
+   String name, 
+   boolean addToCache
   ) 
     throws PipelineException
   {
@@ -20321,13 +20341,15 @@ class MasterMgr
       throw new PipelineException
 	("No checked-in versions exist for node (" + name + ")!");
 
-    synchronized(pCheckedInBundles) {
-      pCheckedInBundles.put(name, table);
-    }    
-
-    /* keep track of the change to the node version cache */ 
-    for(VersionID vid : table.keySet()) 
-      incrementCheckedInCounter(name, vid);
+    if(addToCache) {
+      synchronized(pCheckedInBundles) {
+        pCheckedInBundles.put(name, table);
+      }    
+      
+      /* keep track of the change to the node version cache */ 
+      for(VersionID vid : table.keySet()) 
+        incrementCheckedInCounter(name, vid);
+    }
 
     return table;
   }
@@ -20345,6 +20367,30 @@ class MasterMgr
   getWorkingBundle
   (
    NodeID nodeID
+  )
+    throws PipelineException
+  {
+    return getWorkingBundle(nodeID, true); 
+  }
+
+  /** 
+   * Get the working bundle with the given working version ID.
+   * 
+   * This method assumes that a read/write lock for the working version has already been 
+   * aquired.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier.
+   * 
+   * @param addToCache
+   *   Whether new working versions read from disk should be added to the node cache.
+   *   If set to (false), then the returned WorkingBundle should be considered read-only.
+   */
+  private WorkingBundle
+  getWorkingBundle
+  (
+   NodeID nodeID,
+   boolean addToCache
   )
     throws PipelineException
   { 
@@ -20379,12 +20425,14 @@ class MasterMgr
     
     bundle = new WorkingBundle(mod);
 
-    synchronized(pWorkingBundles) {
-      pWorkingBundles.get(name).put(nodeID, bundle);
+    if(addToCache) {
+      synchronized(pWorkingBundles) {
+        pWorkingBundles.get(name).put(nodeID, bundle);
+      }
+      
+      /* keep track of the change to the node version cache */ 
+      incrementWorkingCounter(nodeID); 
     }
-    
-    /* keep track of the change to the node version cache */ 
-    incrementWorkingCounter(nodeID); 
 
     return bundle;
   }
@@ -20402,6 +20450,30 @@ class MasterMgr
   getCheckSumBundle
   (
    NodeID nodeID
+  )
+    throws PipelineException
+  {
+    return getCheckSumBundle(nodeID, true); 
+  }
+
+  /** 
+   * Get the checksum cache bundle with the given working version ID.
+   * 
+   * This method assumes that a read/write lock for the checksum cache has already been 
+   * aquired.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param addToCache
+   *   Whether new working checksums read from disk should be added to the checksum cache.
+   *   If set to (false), then the returned CheckSumBundle should be considered read-only.
+   */
+  private CheckSumBundle
+  getCheckSumBundle
+  (
+   NodeID nodeID,
+   boolean addToCache
   )
     throws PipelineException
   { 
@@ -20426,8 +20498,12 @@ class MasterMgr
 
     bundle = new CheckSumBundle(cache); 
 
-    synchronized(pCheckSumBundles) {
-      pCheckSumBundles.put(name, nodeID, bundle); 
+    if(addToCache) {
+      synchronized(pCheckSumBundles) {
+        pCheckSumBundles.put(name, nodeID, bundle); 
+      }
+
+      // add caching counters here!!!
     }
 
     return bundle;

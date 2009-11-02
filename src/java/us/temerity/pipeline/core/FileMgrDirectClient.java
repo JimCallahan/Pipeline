@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.21 2009/10/28 06:06:17 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.22 2009/11/02 03:44:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -924,20 +924,24 @@ class FileMgrDirectClient
    * considerably more than the actual amount of disk space used when several versions of 
    * a node have identical files. <P> 
    * 
+   * @param name
+   *   The fully resolved name of the node.
+   * 
    * @param fseqs
-   *   The files sequences indexed by fully resolved node names and revision numbers.
+   *   The files sequences indexed by checked-in revision numbers.
    * 
    * @return
-   *   The total version file sizes indexed by fully resolved node name and revision number.
+   *   The total per-version file sizes indexed by revision number.
    */ 
-  public TreeMap<String,TreeMap<VersionID,Long>>
+  public TreeMap<VersionID,Long>
   getArchiveSizes
   (
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
+   String name, 
+   MappedSet<VersionID,FileSeq> vfseqs
   ) 
     throws PipelineException 
   {
-    FileGetArchiveSizesReq req = new FileGetArchiveSizesReq(fseqs);
+    FileGetArchiveSizesReq req = new FileGetArchiveSizesReq(name, vfseqs);
 
     Object obj = pFileMgr.getArchiveSizes(req);
     if(obj instanceof FileGetSizesRsp) {
@@ -1011,20 +1015,24 @@ class FileMgrDirectClient
    * Only files which contribute to the offline size should be passed to this method
    * as members of the <CODE>files</CODE> parameter.
    * 
+   * @param name
+   *   The fully resolved name of the node.
+   * 
    * @param files
-   *   The specific files indexed by fully resolved node names and revision numbers.
+   *   The specific files indexed by checked-in revision numbers.
    * 
    * @return
-   *   The total version file sizes indexed by fully resolved node name and revision number.
+   *   The total version file sizes indexed by revision number.
    */ 
-  public TreeMap<String,TreeMap<VersionID,Long>>
+  public TreeMap<VersionID,Long>
   getOfflineSizes
   (
-   TreeMap<String,TreeMap<VersionID,TreeSet<File>>> files
+   String name,
+   MappedSet<VersionID,File> files
   ) 
     throws PipelineException 
   {
-    FileGetOfflineSizesReq req = new FileGetOfflineSizesReq(files);
+    FileGetOfflineSizesReq req = new FileGetOfflineSizesReq(name, files);
 
     Object obj = pFileMgr.getOfflineSizes(req);
     if(obj instanceof FileGetSizesRsp) {

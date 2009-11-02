@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.152 2009/10/14 02:23:18 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.153 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7574,7 +7574,7 @@ class JNodeViewerPanel
     run() 
     {
       if(pRestoreDialog == null) 
-	pRestoreDialog = new JRequestRestoreDialog(pGroupID, getTopFrame());
+	pRestoreDialog = new JRequestRestoreDialog(getTopFrame());
 
       pRestoreDialog.setVersions(pVersions);
       pRestoreDialog.setVisible(true);

@@ -1,4 +1,4 @@
-// $Id: MiscArchiveReq.java,v 1.6 2007/07/01 23:54:23 jim Exp $
+// $Id: MiscArchiveReq.java,v 1.7 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -50,7 +50,7 @@ class MiscArchiveReq
   MiscArchiveReq
   (
    String prefix, 
-   TreeMap<String,TreeSet<VersionID>> versions, 
+   MappedSet<String,VersionID> versions, 
    BaseArchiver archiver, 
    String toolset, 
    boolean dryrun
@@ -95,7 +95,7 @@ class MiscArchiveReq
   /**
    * Get the fully resolved names and revision numbers of the checked-in versions to archive.
    */ 
-  public TreeMap<String,TreeSet<VersionID>>
+  public MappedSet<String,VersionID>
   getVersions()
   {
     return pVersions; 
@@ -171,7 +171,7 @@ class MiscArchiveReq
     throws IOException, ClassNotFoundException
   {
     pPrefix = (String) in.readObject();
-    pVersions = (TreeMap<String,TreeSet<VersionID>>) in.readObject();
+    pVersions = (MappedSet<String,VersionID>) in.readObject();
     
     BaseArchiver arch = (BaseArchiver) in.readObject();
     try {
@@ -209,7 +209,7 @@ class MiscArchiveReq
   /**
    * The fully resolved names and revision numbers of the checked-in versions to archive.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pVersions; 
+  private MappedSet<String,VersionID>  pVersions; 
 
   /**
    * The archiver plugin instance used to perform the archive operation.

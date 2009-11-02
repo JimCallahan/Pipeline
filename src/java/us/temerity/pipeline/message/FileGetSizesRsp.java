@@ -1,4 +1,4 @@
-// $Id: FileGetSizesRsp.java,v 1.4 2009/08/19 22:48:06 jim Exp $
+// $Id: FileGetSizesRsp.java,v 1.5 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,14 +30,13 @@ class FileGetSizesRsp
    *   The timing statistics for a task.
    * 
    * @param sizes
-   *   The total version file sizes indexed by fully resolved node name and 
-   *   revision number.
+   *   The total per-version file sizes indexed by revision number.
    */
   public
   FileGetSizesRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeMap<VersionID,Long>> sizes
+   TreeMap<VersionID,Long> sizes
   )
   { 
     super(timer);
@@ -58,10 +57,9 @@ class FileGetSizesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the total version file sizes indexed by fully resolved node name and 
-   * revision number.
+   * Gets the total per-version file sizes indexed by revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,Long>>
+  public TreeMap<VersionID,Long>
   getSizes() 
   {
     return pSizes; 
@@ -82,10 +80,9 @@ class FileGetSizesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The total version file sizes indexed by fully resolved node name and 
-   * revision number.
+   * The total per-version file sizes indexed by revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Long>>  pSizes; 
+  private TreeMap<VersionID,Long>  pSizes; 
 
 
 }

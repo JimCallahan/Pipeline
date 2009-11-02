@@ -1,4 +1,4 @@
-// $Id: MiscGetOfflineSizesReq.java,v 1.1 2005/03/14 16:08:21 jim Exp $
+// $Id: MiscGetSizesReq.java,v 1.3 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   O F F L I N E   S I Z E S   R E Q                                    */
+/*   M I S C   G E T   S I Z E S   R E Q                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * A request to calculate the total size (in bytes) of the files associated with the given 
- * checked-in versions for offlining purposes. <P> 
+ * checked-in versions. 
  */
 public
-class MiscGetOfflineSizesReq
+class MiscGetSizesReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,9 +31,9 @@ class MiscGetOfflineSizesReq
    *   The fully resolved node names and revision numbers of the checked-in versions.
    */
   public
-  MiscGetOfflineSizesReq
+  MiscGetSizesReq
   (
-   TreeMap<String,TreeSet<VersionID>> versions
+   MappedSet<String,VersionID> versions
   )
   { 
     if(versions == null) 
@@ -50,19 +50,19 @@ class MiscGetOfflineSizesReq
   /**
    * Gets the fully resolved node names and revision numbers of the checked-in versions.
    */
-  public TreeMap<String,TreeSet<VersionID>>
+  public MappedSet<String,VersionID>
   getVersions()
   {
     return pVersions;
   }
   
 
-
+ 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  private static final long serialVersionUID = -1453259913153817961L;
+  private static final long serialVersionUID = 4702556090402734822L;
 
   
 
@@ -73,7 +73,7 @@ class MiscGetOfflineSizesReq
   /**
    * The fully resolved node names and revision numbers of the checked-in versions.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pVersions;
+  private MappedSet<String,VersionID>  pVersions;
 
 }
   

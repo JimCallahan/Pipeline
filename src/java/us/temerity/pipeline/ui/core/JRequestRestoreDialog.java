@@ -1,4 +1,4 @@
-// $Id: JRequestRestoreDialog.java,v 1.5 2009/03/19 21:55:59 jesse Exp $
+// $Id: JRequestRestoreDialog.java,v 1.6 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -32,22 +32,16 @@ class JRequestRestoreDialog
   /**
    * Construct a new dialog.
    * 
-   * @param channel
-   *   The index of the update channel.
-   * 
    * @param owner
    *   The parent frame.
    */ 
   public 
   JRequestRestoreDialog
   (
-   int channel, 
    Frame owner
   )
   {
     super(owner, "Request Restore");
-
-    pChannel = channel;
 
     /* create dialog body components */ 
     {
@@ -237,19 +231,18 @@ class JRequestRestoreDialog
     {
       UIMaster master = UIMaster.getInstance();
       TreeMap<String,TreeSet<VersionID>> versions = null;
-      if(master.beginPanelOp(pChannel, "Searching for Offline Versions...")) {
-        MasterMgrClient client = master.acquireMasterMgrClient();
-	try {
-	  versions = client.restoreQuery(pPattern); 
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.releaseMasterMgrClient(client);
-	  master.endPanelOp("Done.");
-	}
+      long opID = master.beginDialogOp("Searching for Offline Versions..."); 
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+        versions = client.restoreQuery(pPattern); 
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
       }
 
       if(versions != null && !versions.isEmpty()) {
@@ -258,7 +251,7 @@ class JRequestRestoreDialog
       }
     }
 
-    private String   pPattern;
+    private String pPattern;
   }
 
   /** 
@@ -312,12 +305,6 @@ class JRequestRestoreDialog
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The index of the update channel.
-   */ 
-  private int  pChannel; 
-
 
   /**
    * The versions table model.

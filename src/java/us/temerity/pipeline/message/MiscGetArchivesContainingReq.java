@@ -1,4 +1,4 @@
-// $Id: MiscGetArchivesContainingReq.java,v 1.1 2005/03/21 07:04:36 jim Exp $
+// $Id: MiscGetArchivesContainingReq.java,v 1.2 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -33,7 +33,7 @@ class MiscGetArchivesContainingReq
   public
   MiscGetArchivesContainingReq
   (
-   TreeMap<String,TreeSet<VersionID>> versions
+   MappedSet<String,VersionID> versions
   )
   { 
     if(versions == null) 
@@ -50,7 +50,7 @@ class MiscGetArchivesContainingReq
   /**
    * Gets the fully resolved node names and revision numbers of the checked-in versions.
    */
-  public TreeMap<String,TreeSet<VersionID>>
+  public MappedSet<String,VersionID> 
   getVersions()
   {
     return pVersions;
@@ -73,7 +73,7 @@ class MiscGetArchivesContainingReq
   /**
    * The fully resolved node names and revision numbers of the checked-in versions.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pVersions;
+  private MappedSet<String,VersionID>   pVersions;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: MiscOfflineReq.java,v 1.3 2007/07/01 23:54:23 jim Exp $
+// $Id: MiscOfflineReq.java,v 1.4 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -40,7 +40,7 @@ class MiscOfflineReq
   public
   MiscOfflineReq
   (
-   TreeMap<String,TreeSet<VersionID>> versions,
+   MappedSet<String,VersionID> versions,
    boolean dryrun
   )
   {
@@ -63,7 +63,7 @@ class MiscOfflineReq
   /**
    * Get the fully resolved names and revision numbers of the checked-in versions to offline.
    */ 
-  public TreeMap<String,TreeSet<VersionID>>
+  public MappedSet<String,VersionID>
   getVersions()
   {
     return pVersions; 
@@ -96,7 +96,7 @@ class MiscOfflineReq
   /**
    * The fully resolved names and revision numbers of the checked-in versions to offline.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pVersions; 
+  private MappedSet<String,VersionID> pVersions; 
 
   /**
    * Whether to show what files would have been offlined without actually performing

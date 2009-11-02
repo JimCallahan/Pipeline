@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.103 2009/10/30 04:44:35 jesse Exp $
+// $Id: ScriptApp.java,v 1.104 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -784,23 +784,16 @@ class ScriptApp
     }
 
     /* determine the total size of files associated with each selected version */ 
-    TreeMap<String,TreeMap<VersionID,Long>> versionSizes = null;
+    DoubleMap<String,VersionID,Long> versionSizes = null;
     {
-      TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
-      for(ArchiveInfo info : infos) {
-	TreeSet<VersionID> vids = versions.get(info.getName());
-	if(vids == null) {
-	  vids = new TreeSet<VersionID>();
-	  versions.put(info.getName(), vids);
-	}
-	vids.add(info.getVersionID());
-      }
-      
+      MappedSet<String,VersionID> versions = new MappedSet<String,VersionID>();
+      for(ArchiveInfo info : infos) 
+        versions.put(info.getName(), info.getVersionID());
       versionSizes = client.getArchivedSizes(versions);
     }
 
     /* assign enough versions to fill one archive volume */ 
-    TreeMap<String,TreeSet<VersionID>> selected = new TreeMap<String,TreeSet<VersionID>>();
+    MappedSet<String,VersionID> selected = new MappedSet<String,VersionID>();
     long total = 0L;
     if(versionSizes != null) {
       long capacity = archiver.getCapacity();
@@ -820,13 +813,7 @@ class ScriptApp
 	    }
 	  }
 	  else {
-	    TreeSet<VersionID> vids = selected.get(name);
-	    if(vids == null) {
-	      vids = new TreeSet<VersionID>();
-	      selected.put(name, vids);
-	    }
-	    
-	    vids.add(vid);
+            selected.put(name, vid);
 	    total += size;
 	  }
 	}
@@ -954,15 +941,9 @@ class ScriptApp
 
     /* offline the versions */ 
     {
-      TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
-      for(OfflineInfo info : infos) {
-	TreeSet<VersionID> vids = versions.get(info.getName());
-	if(vids == null) {
-	  vids = new TreeSet<VersionID>();
-	  versions.put(info.getName(), vids);
-	}
-	vids.add(info.getVersionID());
-      }
+      MappedSet<String,VersionID> versions = new MappedSet<String,VersionID>();
+      for(OfflineInfo info : infos) 
+        versions.put(info.getName(), info.getVersionID());
 
       StringBuilder dryRunResults = null;
       if(dryrun) {

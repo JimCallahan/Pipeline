@@ -1,4 +1,4 @@
-// $Id: MiscGetArchivesContainingRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
+// $Id: MiscGetArchivesContainingRsp.java,v 1.3 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -39,7 +39,7 @@ class MiscGetArchivesContainingRsp
   MiscGetArchivesContainingRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeMap<VersionID,TreeSet<String>>> archives
+   DoubleMappedSet<String,VersionID,String> archives
   )
   { 
     super(timer);
@@ -63,7 +63,7 @@ class MiscGetArchivesContainingRsp
    * Gets the names of the archives containing the requested checked-in versions indexed by 
    * fully resolved node name and revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,TreeSet<String>>>
+  public DoubleMappedSet<String,VersionID,String>
   getArchiveNames()
   {
     return pArchives;
@@ -87,7 +87,7 @@ class MiscGetArchivesContainingRsp
    * The names of the archives containing the requested checked-in versions indexed by 
    * fully resolved node name and revision number.
    */ 
-  private  TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchives;
+  private DoubleMappedSet<String,VersionID,String> pArchives;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: MiscGetSizesRsp.java,v 1.4 2009/08/19 22:48:06 jim Exp $
+// $Id: MiscGetSizesRsp.java,v 1.5 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,7 +37,7 @@ class MiscGetSizesRsp
   MiscGetSizesRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeMap<VersionID,Long>> sizes
+   DoubleMap<String,VersionID,Long> sizes
   )
   { 
     super(timer);
@@ -61,7 +61,7 @@ class MiscGetSizesRsp
    * Gets the total version file sizes indexed by fully resolved node name and 
    * revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,Long>>
+  public DoubleMap<String,VersionID,Long>
   getSizes() 
   {
     return pSizes; 
@@ -85,7 +85,7 @@ class MiscGetSizesRsp
    * The total version file sizes indexed by fully resolved node name and 
    * revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Long>>  pSizes; 
+  private DoubleMap<String,VersionID,Long>  pSizes; 
 
 
 }

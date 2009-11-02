@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.147 2009/10/28 05:31:17 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.148 2009/11/02 03:44:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -7861,18 +7861,18 @@ class MasterMgrClient
    * @return
    *   The total version file sizes indexed by fully resolved node name and revision number.
    */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  public synchronized DoubleMap<String,VersionID,Long>
   getArchivedSizes
   (
-   TreeMap<String,TreeSet<VersionID>> versions
+   MappedSet<String,VersionID> versions
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    MiscGetArchiveSizesReq req = new MiscGetArchiveSizesReq(versions);
+    MiscGetSizesReq req = new MiscGetSizesReq(versions);
 
-    Object obj = performLongTransaction(MasterRequest.GetArchiveSizes, req, 15000, 60000);  
+    Object obj = performLongTransaction(MasterRequest.GetArchivedSizes, req, 15000, 60000);  
     if(obj instanceof MiscGetSizesRsp) {
       MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
       return rsp.getSizes();
@@ -7911,7 +7911,7 @@ class MasterMgrClient
   archive
   (
    String prefix, 
-   TreeMap<String,TreeSet<VersionID>> versions, 
+   MappedSet<String,VersionID> versions, 
    BaseArchiver archiver, 
    String toolset
   ) 
@@ -7953,7 +7953,7 @@ class MasterMgrClient
   archive
   (
    String prefix, 
-   TreeMap<String,TreeSet<VersionID>> versions, 
+   MappedSet<String,VersionID> versions, 
    BaseArchiver archiver, 
    String toolset, 
    StringBuilder dryRunResults
@@ -8078,16 +8078,16 @@ class MasterMgrClient
    * @return
    *   The total version file sizes indexed by fully resolved node name and revision number.
    */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  public synchronized DoubleMap<String,VersionID,Long>
   getOfflineSizes
   (
-   TreeMap<String,TreeSet<VersionID>> versions
+   MappedSet<String,VersionID> versions
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    MiscGetOfflineSizesReq req = new MiscGetOfflineSizesReq(versions);
+    MiscGetSizesReq req = new MiscGetSizesReq(versions);
 
     Object obj = performLongTransaction(MasterRequest.GetOfflineSizes, req, 15000, 60000);  
     if(obj instanceof MiscGetSizesRsp) {
@@ -8119,7 +8119,7 @@ class MasterMgrClient
    public synchronized void
    offline
    (
-    TreeMap<String,TreeSet<VersionID>> versions
+    MappedSet<String,VersionID> versions
    ) 
      throws PipelineException
    {
@@ -8150,7 +8150,7 @@ class MasterMgrClient
   public synchronized void
   offline
   (
-   TreeMap<String,TreeSet<VersionID>> versions, 
+   MappedSet<String,VersionID> versions,
    StringBuilder dryRunResults   
   ) 
     throws PipelineException
@@ -8288,16 +8288,16 @@ class MasterMgrClient
    * @return
    *   The total version file sizes indexed by fully resolved node name and revision number.
    */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  public synchronized DoubleMap<String,VersionID,Long>
   getRestoreSizes
   (
-   TreeMap<String,TreeSet<VersionID>> versions
+   MappedSet<String,VersionID> versions
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    MiscGetRestoreSizesReq req = new MiscGetRestoreSizesReq(versions);
+    MiscGetSizesReq req = new MiscGetSizesReq(versions);
 
     Object obj = performTransaction(MasterRequest.GetRestoreSizes, req);
     if(obj instanceof MiscGetSizesRsp) {
@@ -8556,10 +8556,10 @@ class MasterMgrClient
    * @throws PipelineException 
    *   If determine which archives contain the versions.
    */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,TreeSet<String>>>
+  public synchronized DoubleMappedSet<String,VersionID,String>
   getArchivesContaining
   (
-   TreeMap<String,TreeSet<VersionID>> versions
+    MappedSet<String,VersionID> versions
   ) 
     throws PipelineException
   {

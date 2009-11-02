@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.10 2009/08/19 23:53:51 jim Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.11 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,8 +39,6 @@ class JArchiveVolumesDialog
     {
       pArchiveVolumes = new TreeMap<String,ArchiveVolume>();
       pRestoredOn     = new TreeMap<String,TreeSet<Long>>();
-
-      pUpdateLock = new Object();
     }
 
     /* create dialog body components */ 
@@ -758,34 +756,31 @@ class JArchiveVolumesDialog
     {
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
-      synchronized(pUpdateLock) {
-	if(master.beginPanelOp()) {
-	  try {
-	    synchronized(pArchiveVolumes) {
-	      TreeMap<String,Long> archives = client.getArchivedOn();
-	      for(String aname : archives.keySet()) {
-		ArchiveVolume vol = pArchiveVolumes.get(aname);
-		if(vol == null) {
-		  master.updatePanelOp("Loading Archive Volume: " + aname);
-		  vol = client.getArchive(aname);
-		  pArchiveVolumes.put(aname, vol);
-		}
-	      }
-	    }
-	    
-	    synchronized(pRestoredOn) {
-	      pRestoredOn.clear();
-	      pRestoredOn.putAll(client.getRestoredOn());
-	    }
-	  }
-	  catch(PipelineException ex) {
-	    showErrorDialog(ex);
-	  }
-	  finally {
-	    master.releaseMasterMgrClient(client);
-	    master.endPanelOp("Done.");
-	  }
-	}
+      long opID = master.beginDialogOp(); 
+      try {
+        synchronized(pArchiveVolumes) {
+          TreeMap<String,Long> archives = client.getArchivedOn();
+          for(String aname : archives.keySet()) {
+            ArchiveVolume vol = pArchiveVolumes.get(aname);
+            if(vol == null) {
+              master.updateDialogOp(opID, "Loading Archive Volume: " + aname);
+              vol = client.getArchive(aname);
+              pArchiveVolumes.put(aname, vol);
+            }
+          }
+        }
+        
+        synchronized(pRestoredOn) {
+          pRestoredOn.clear();
+          pRestoredOn.putAll(client.getRestoredOn());
+        }
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
       }
 
       UpdateTask task = new UpdateTask(pParent);
@@ -875,35 +870,32 @@ class JArchiveVolumesDialog
       ArchiveVolume volume = null;
       TreeMap<String,TreeSet<VersionID>> offline = new TreeMap<String,TreeSet<VersionID>>();
       if(pArchiveName != null) {
-	synchronized(pUpdateLock) {
-	  if(master.beginPanelOp("Loading Offlined Versions...")) {
-	    try {
-	      synchronized(pArchiveVolumes) {
-		volume = pArchiveVolumes.get(pArchiveName);
-		for(String aname : volume.getNames()) {
-		  TreeSet<VersionID> ovids = client.getOfflineVersionIDs(aname);
-		  for(VersionID vid : volume.getVersionIDs(aname)) {
-		    if(ovids.contains(vid)) {
-		      TreeSet<VersionID> vids = offline.get(aname);
-		      if(vids == null) {
-			vids = new TreeSet<VersionID>();
-			offline.put(aname, vids);
-		      }
-		      vids.add(vid);
-		    }		
-		  }
-		}
-	      }
-	    }
-	    catch(PipelineException ex) {
-	      showErrorDialog(ex);
-	    }
-	    finally {
-	      master.releaseMasterMgrClient(client);
-	      master.endPanelOp("Done.");
-	    }
-	  }
-	}
+        long opID = master.beginDialogOp("Loading Offlined Versions..."); 
+        try {
+          synchronized(pArchiveVolumes) {
+            volume = pArchiveVolumes.get(pArchiveName);
+            for(String aname : volume.getNames()) {
+              TreeSet<VersionID> ovids = client.getOfflineVersionIDs(aname);
+              for(VersionID vid : volume.getVersionIDs(aname)) {
+                if(ovids.contains(vid)) {
+                  TreeSet<VersionID> vids = offline.get(aname);
+                  if(vids == null) {
+                    vids = new TreeSet<VersionID>();
+                    offline.put(aname, vids);
+                  }
+                  vids.add(vid);
+                }		
+              }
+            }
+          }
+        }
+        catch(PipelineException ex) {
+          showErrorDialog(ex);
+        }
+        finally {
+          master.releaseMasterMgrClient(client);
+          master.endDialogOp(opID, "Done.");
+        }
       }
 
       UpdateVersionsTask task = new UpdateVersionsTask(volume, offline);
@@ -975,21 +967,18 @@ class JArchiveVolumesDialog
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      synchronized(pUpdateLock) {
-	if(master.beginPanelOp("Requesting Restore...")) {
-	  MasterMgrClient client = master.acquireMasterMgrClient();
-	  try {
-	    client.requestRestore(pVersions);
-	  }
-	  catch(PipelineException ex) {
-	    showErrorDialog(ex);
-	    return;
-	  }
-	  finally {
-	    master.releaseMasterMgrClient(client);
-	    master.endPanelOp("Done.");
-	  }
-	}
+      long opID = master.beginDialogOp("Requesting Restore..."); 
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+        client.requestRestore(pVersions);
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
       }
     }
 
@@ -1022,21 +1011,18 @@ class JArchiveVolumesDialog
     {
       UIMaster master = UIMaster.getInstance();
       String output = null;
-      synchronized(pUpdateLock) {
-	if(master.beginPanelOp("Loading Archiver Output: " + pName)) {
-	  MasterMgrClient client = master.acquireMasterMgrClient(); 
-	  try {
-	    output = client.getArchivedOutput(pName);
-	  }
-	  catch(PipelineException ex) {
-	    showErrorDialog(ex);
-	    return;
-	  }
-	  finally {
-	    master.releaseMasterMgrClient(client);
-	    master.endPanelOp("Done.");
-	  }
-	}
+      long opID = master.beginDialogOp("Loading Archiver Output: " + pName); 
+      MasterMgrClient client = master.acquireMasterMgrClient(); 
+      try {
+        output = client.getArchivedOutput(pName);
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
       }
 
       ShowOutputTask task = 
@@ -1074,23 +1060,20 @@ class JArchiveVolumesDialog
     {
       UIMaster master = UIMaster.getInstance();
       String output = null;
-      synchronized(pUpdateLock) {
-	if(master.beginPanelOp("Loading Archiver Output: " + pName)) {
-	  MasterMgrClient client = master.acquireMasterMgrClient();
-	  try {
-	    output = client.getRestoredOutput(pName, pStamp);
-	  }
-	  catch(PipelineException ex) {
-	    showErrorDialog(ex);
-	    return;
-	  }
-	  finally {
-	    master.releaseMasterMgrClient(client);
-	    master.endPanelOp("Done.");
-	  }
-	}
+      long opID = master.beginDialogOp("Loading Archiver Output: " + pName);
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+        output = client.getRestoredOutput(pName, pStamp);
       }
-
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
+      }
+    
       ShowOutputTask task = 
 	new ShowOutputTask("Archive Volume:  " + pName, 
 			   "Output from Archive Restoration:  " + TimeStamps.format(pStamp), 
@@ -1168,11 +1151,6 @@ class JArchiveVolumesDialog
    * The timestamps of when each archive volume was restored indexed by archive volume name.
    */
   private TreeMap<String,TreeSet<Long>>  pRestoredOn; 
-
-  /**
-   * A lock used to synchronize communication with the plmaster(1).
-   */ 
-  private Object  pUpdateLock; 
 
     
   /*----------------------------------------------------------------------------------------*/

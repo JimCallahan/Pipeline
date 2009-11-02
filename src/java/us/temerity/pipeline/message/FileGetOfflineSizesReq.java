@@ -1,4 +1,4 @@
-// $Id: FileGetOfflineSizesReq.java,v 1.1 2005/03/14 16:08:21 jim Exp $
+// $Id: FileGetOfflineSizesReq.java,v 1.2 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,15 +30,23 @@ class FileGetOfflineSizesReq
    * Only files which contribute to the offline size should be passed to this method
    * as members of the <CODE>files</CODE> parameter.
    *
-   * @param fseqs
-   *   The specific files indexed by fully resolved node names and revision numbers.
+   * @param name
+   *   The fully resolved name of the node.
+   * 
+   * @param files
+   *   The specific files indexed by checked-in revision numbers.
    */
   public
   FileGetOfflineSizesReq
   (
-   TreeMap<String,TreeMap<VersionID,TreeSet<File>>> files
+   String name,
+   MappedSet<VersionID,File> files
   )
   { 
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+    pName = name; 
+
     if(files == null) 
       throw new IllegalArgumentException("The files cannot be (null)!");
     pFiles = files;
@@ -51,9 +59,18 @@ class FileGetOfflineSizesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the specific files indexed by fully resolved node names and revision numbers.
+   * Gets the fully resolved node name.
    */
-  public TreeMap<String,TreeMap<VersionID,TreeSet<File>>>
+  public String
+  getName() 
+  {
+    return pName;
+  }
+
+  /**
+   * Get the specific files indexed by checked-in revision numbers.
+   */
+  public MappedSet<VersionID,File>
   getFiles()
   {
     return pFiles;
@@ -74,9 +91,14 @@ class FileGetOfflineSizesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The specific files indexed by fully resolved node names and revision numbers.
+   * The fully resolved node name.
    */ 
-  private TreeMap<String,TreeMap<VersionID,TreeSet<File>>>  pFiles;
+  private String  pName; 
+
+  /**
+   * The specific files indexed by checked-in revision numbers.
+   */ 
+  private MappedSet<VersionID,File>  pFiles;
 
 }
   

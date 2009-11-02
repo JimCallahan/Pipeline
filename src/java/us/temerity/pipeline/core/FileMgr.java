@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.99 2009/11/01 23:32:57 jim Exp $
+// $Id: FileMgr.java,v 1.100 2009/11/02 03:44:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3639,29 +3639,23 @@ class FileMgr
   {
     TaskTimer timer = new TaskTimer();
     try {
-      TreeMap<String,TreeMap<VersionID,Long>> sizes =
-	new TreeMap<String,TreeMap<VersionID,Long>>();
+      TreeMap<VersionID,Long> sizes = new TreeMap<VersionID,Long>();
 
-      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getFileSequences();
-      for(String name : fseqs.keySet()) {
-	TreeMap<VersionID,TreeSet<FileSeq>> versions = fseqs.get(name);
-
-	TreeMap<VersionID,Long> vsizes = new TreeMap<VersionID,Long>();
-	sizes.put(name, vsizes);
+      String name = req.getName();
+      MappedSet<VersionID,FileSeq> versions = req.getFileSequences();
 	
-	for(VersionID vid : versions.keySet()) {
-	  File dir = new File(pRepoDir, name + "/" + vid);
+      for(VersionID vid : versions.keySet()) {
+        File dir = new File(pRepoDir, name + "/" + vid);
 	  
-	  long total = 0L;
-	  for(FileSeq fseq : versions.get(vid)) {
-	    for(File file : fseq.getFiles()) { 
-	      File target = new File(dir, file.getPath());
-	      total += target.length();
-	    }
-	  }
-	  
-	  vsizes.put(vid, total);  
-	}
+        long total = 0L;
+        for(FileSeq fseq : versions.get(vid)) {
+          for(File file : fseq.getFiles()) { 
+            File target = new File(dir, file.getPath());
+            total += target.length();
+          }
+        }
+	
+        sizes.put(vid, total);  
       }
 
       return new FileGetSizesRsp(timer, sizes);
@@ -3872,27 +3866,21 @@ class FileMgr
   {
     TaskTimer timer = new TaskTimer();
     try {
-      TreeMap<String,TreeMap<VersionID,Long>> sizes =
-	new TreeMap<String,TreeMap<VersionID,Long>>();
+      TreeMap<VersionID,Long> sizes = new TreeMap<VersionID,Long>();
 
-      TreeMap<String,TreeMap<VersionID,TreeSet<File>>> files = req.getFiles();
-      for(String name : files.keySet()) {
-	TreeMap<VersionID,TreeSet<File>> versions = files.get(name);
-
-	TreeMap<VersionID,Long> vsizes = new TreeMap<VersionID,Long>();
-	sizes.put(name, vsizes);
+      String name = req.getName();
+      MappedSet<VersionID,File> files = req.getFiles();
 	
-	for(VersionID vid : versions.keySet()) {
-	  File dir = new File(pRepoDir, name + "/" + vid);
+      for(VersionID vid : files.keySet()) {
+        File dir = new File(pRepoDir, name + "/" + vid);
 	  
-	  long total = 0L;
-	  for(File file : versions.get(vid)) {
-	    File target = new File(dir, file.getPath());
-	    total += target.length();
-	  }
+        long total = 0L;
+        for(File file : files.get(vid)) {
+          File target = new File(dir, file.getPath());
+          total += target.length();
+        }
 	  
-	  vsizes.put(vid, total);  
-	}
+        sizes.put(vid, total);  
       }
 
       return new FileGetSizesRsp(timer, sizes);

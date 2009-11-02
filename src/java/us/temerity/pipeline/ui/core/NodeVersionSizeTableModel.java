@@ -1,4 +1,4 @@
-// $Id: NodeVersionSizeTableModel.java,v 1.2 2009/08/19 23:42:47 jim Exp $
+// $Id: NodeVersionSizeTableModel.java,v 1.3 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -132,22 +132,13 @@ class NodeVersionSizeTableModel
   /**
    * Get the file sizes indexed by fully resolved node name and revision number.
    */ 
-  public TreeMap<String,TreeMap<VersionID,Long>>
+  public DoubleMap<String,VersionID,Long>
   getData()
   {
-    TreeMap<String,TreeMap<VersionID,Long>> table = 
-      new TreeMap<String,TreeMap<VersionID,Long>>();
-
+    DoubleMap<String,VersionID,Long> table = new DoubleMap<String,VersionID,Long>();    
     int wk;
-    for(wk=0; wk<pNames.size(); wk++) {
-      String name = pNames.get(wk);
-      TreeMap<VersionID,Long> versions = table.get(name);
-      if(versions == null) {
-	versions = new TreeMap<VersionID,Long>();
-	table.put(name, versions);
-      }
-      versions.put(pVersionIDs.get(wk), pSizes.get(wk));
-    }
+    for(wk=0; wk<pNames.size(); wk++) 
+      table.put(pNames.get(wk), pVersionIDs.get(wk), pSizes.get(wk));
 
     return table;
   }
@@ -156,7 +147,7 @@ class NodeVersionSizeTableModel
    * Get the file sizes indexed by fully resolved node name and revision number 
    * for all rows except the given rows. 
    */ 
-  public TreeMap<String,TreeMap<VersionID,Long>>
+  public DoubleMap<String,VersionID,Long>
   getDataExcept
   (
    int[] rows
@@ -166,20 +157,11 @@ class NodeVersionSizeTableModel
     int wk;
     for(wk=0; wk<rows.length; wk++) 
       exclude.add(pRowToIndex[rows[wk]]);
-      
-    TreeMap<String,TreeMap<VersionID,Long>> table = 
-      new TreeMap<String,TreeMap<VersionID,Long>>();
 
+    DoubleMap<String,VersionID,Long> table = new DoubleMap<String,VersionID,Long>();
     for(wk=0; wk<pNames.size(); wk++) {
-      if(!exclude.contains(wk)) {
-	String name = pNames.get(wk);
-	TreeMap<VersionID,Long> versions = table.get(name);
-	if(versions == null) {
-	  versions = new TreeMap<VersionID,Long>();
-	  table.put(name, versions);
-	}
-	versions.put(pVersionIDs.get(wk), pSizes.get(wk));
-      }
+      if(!exclude.contains(wk)) 
+        table.put(pNames.get(wk), pVersionIDs.get(wk), pSizes.get(wk));
     }
 
     return table;
@@ -194,7 +176,7 @@ class NodeVersionSizeTableModel
   public void
   setData
   (
-   TreeMap<String,TreeMap<VersionID,Long>> data
+   DoubleMap<String,VersionID,Long> data
   ) 
   {
     pNames.clear();
@@ -202,11 +184,10 @@ class NodeVersionSizeTableModel
     pSizes.clear();
     if(data != null) {
       for(String name : data.keySet()) {
-	TreeMap<VersionID,Long> versions = data.get(name);
-	for(VersionID vid : versions.keySet()) {
+        for(VersionID vid : data.keySet(name)) {
 	  pNames.add(name);
 	  pVersionIDs.add(vid);
-	  pSizes.add(versions.get(vid));
+	  pSizes.add(data.get(name, vid));
 	}
       }
     }

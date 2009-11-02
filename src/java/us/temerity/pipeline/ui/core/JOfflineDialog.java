@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.9 2009/03/19 21:55:59 jesse Exp $
+// $Id: JOfflineDialog.java,v 1.10 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -367,18 +367,10 @@ class JOfflineDialog
     TreeMap<String,TreeSet<VersionID>> selected
   ) 
   {
-    TreeMap<String,TreeMap<VersionID,Long>> data = pOfflineTableModel.getData();
+    DoubleMap<String,VersionID,Long> data = pOfflineTableModel.getData();
     for(String name : selected.keySet()) {
-      TreeMap<VersionID,Long> versions = data.get(name);
-      if(versions == null) {
-	versions = new TreeMap<VersionID,Long>();
-	data.put(name, versions);
-      }
-
-      for(VersionID vid : selected.get(name)) {
-	if(!versions.containsKey(vid))
-	  versions.put(vid, null);
-      }
+      for(VersionID vid : selected.get(name)) 
+        data.put(name, vid, null);
     }
 
     pOfflineTableModel.setData(data);    
@@ -413,21 +405,12 @@ class JOfflineDialog
   private void 
   doCalcOffline() 
   {
-    TreeMap<String,TreeSet<VersionID>> versions = null;
+    MappedSet<String,VersionID> versions = new MappedSet<String,VersionID>();
     {
-      TreeMap<String,TreeMap<VersionID,Long>> data = pOfflineTableModel.getData();
-      versions = new TreeMap<String,TreeSet<VersionID>>();
+      DoubleMap<String,VersionID,Long> data = pOfflineTableModel.getData();
       for(String name : data.keySet()) {
-	TreeMap<VersionID,Long> vsizes = data.get(name);
-	for(VersionID vid : vsizes.keySet()) {
-	  TreeSet<VersionID> vids = versions.get(name);
-	  if(vids == null) {
-	    vids = new TreeSet<VersionID>();
-	    versions.put(name, vids);
-	  }
-	    
-	  vids.add(vid);
-	}
+        for(VersionID vid : data.keySet(name)) 
+          versions.put(name, vid);
       }
     }
 
@@ -444,11 +427,13 @@ class JOfflineDialog
   private void 
   doOffline() 
   {
-    TreeMap<String,TreeMap<VersionID,Long>> data = pOfflineTableModel.getData();
-    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
-    for(String name : data.keySet()) 
-      versions.put(name, new TreeSet<VersionID>(data.get(name).keySet()));
-
+    DoubleMap<String,VersionID,Long> data = pOfflineTableModel.getData();
+    MappedSet<String,VersionID> versions = new MappedSet<String,VersionID>();
+    for(String name : data.keySet()) {
+      for(VersionID vid : data.keySet(name)) 
+        versions.put(name, vid);
+    }
+    
     if(!versions.isEmpty()) {
       JConfirmDialog confirm = new JConfirmDialog(this, "Are you sure?");
       confirm.setVisible(true);
@@ -530,18 +515,17 @@ class JOfflineDialog
     {
       UIMaster master = UIMaster.getInstance();
       ArrayList<OfflineInfo> info = null;
-      if(master.beginPanelOp("Searching for Candidate Versions...")) {
-        MasterMgrClient client = master.acquireMasterMgrClient();
-	try {
-	  info = client.offlineQuery(pPattern, pExcludeLatest, pMinArchives, pUnusedOnly);
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
-	finally {
-	  master.releaseMasterMgrClient(client);
-	  master.endPanelOp("Done.");
-	}
+      long opID = master.beginDialogOp("Searching for Candidate Versions..."); 
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+        info = client.offlineQuery(pPattern, pExcludeLatest, pMinArchives, pUnusedOnly);
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
       }
 	
       UpdateTask task = new UpdateTask(info);
@@ -594,7 +578,7 @@ class JOfflineDialog
     public 
     CalcOfflineSizesTask
     (
-     TreeMap<String,TreeSet<VersionID>> versions
+     MappedSet<String,VersionID> versions
     )     
     {
       super("JOfflineDialog:CalcOfflineSizesTask");
@@ -608,34 +592,27 @@ class JOfflineDialog
     {
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
-      TreeMap<String,TreeMap<VersionID,Long>> data = null;
-      if(master.beginPanelOp("Calculating File Sizes...")) {
-	try {
-	  data = client.getOfflineSizes(pVersions);
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
-	finally {
-	  master.releaseMasterMgrClient(client);
-	  master.endPanelOp("Done.");
-	}
+      DoubleMap<String,VersionID,Long> data = null;
+      long opID = master.beginDialogOp("Calculating File Sizes..."); 
+      try {
+        data = client.getOfflineSizes(pVersions);
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
       }
 	
       /* add versions without sizes */ 
       if(data != null) {
 	for(String name : pVersions.keySet()) {
 	  TreeSet<VersionID> oversions = pVersions.get(name);
-	  TreeMap<VersionID,Long> versions = data.get(name);
-	  if(versions == null) {
-	    versions = new TreeMap<VersionID,Long>();
-	    data.put(name, versions);
-	  }
-	  
 	  for(VersionID vid : oversions) {
-	    if(!versions.containsKey(vid)) 
-	      versions.put(vid, null);
-	  }
+            if(!data.containsKey(name, vid)) 
+              data.put(name, vid, null);
+          }
 	}
 
 	UpdateSizesTask task = new UpdateSizesTask(data);
@@ -643,7 +620,7 @@ class JOfflineDialog
       }
     }
 
-    private TreeMap<String,TreeSet<VersionID>>  pVersions;
+    private MappedSet<String,VersionID>  pVersions;
   }
 
   /** 
@@ -656,7 +633,7 @@ class JOfflineDialog
     public 
     UpdateSizesTask
     (
-     TreeMap<String,TreeMap<VersionID,Long>> data
+     DoubleMap<String,VersionID,Long> data
     ) 
     {
       super("JOfflineDialog:UpdateSizesTask");
@@ -682,7 +659,7 @@ class JOfflineDialog
     }
     
     
-    private TreeMap<String,TreeMap<VersionID,Long>>  pData; 
+    private DoubleMap<String,VersionID,Long> pData; 
   }
 
 
@@ -698,7 +675,7 @@ class JOfflineDialog
     public 
     OfflineTask
     (
-     TreeMap<String,TreeSet<VersionID>> versions
+     MappedSet<String,VersionID> versions
     )     
     {
       super("JOfflineDialog:OfflineTask");
@@ -712,25 +689,24 @@ class JOfflineDialog
     {  
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
-      if(master.beginPanelOp("Offlining Checked-In Versions...")) {
-	try {
-	  client.offline(pVersions); 
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.releaseMasterMgrClient(client);
-	  master.endPanelOp("Done.");
-	}
-
-	RemoveAllTask task = new RemoveAllTask();
-	SwingUtilities.invokeLater(task);      
+      long opID = master.beginDialogOp("Offlining Checked-In Versions..."); 
+      try {
+        client.offline(pVersions); 
       }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+        master.endDialogOp(opID, "Done.");
+      }
+      
+      RemoveAllTask task = new RemoveAllTask();
+      SwingUtilities.invokeLater(task);      
     }
 
-    private TreeMap<String,TreeSet<VersionID>>  pVersions;
+    private MappedSet<String,VersionID>  pVersions;
   }
 
   /** 

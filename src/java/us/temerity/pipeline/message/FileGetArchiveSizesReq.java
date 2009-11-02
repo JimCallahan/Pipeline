@@ -1,4 +1,4 @@
-// $Id: FileGetArchiveSizesReq.java,v 1.1 2005/03/14 16:08:21 jim Exp $
+// $Id: FileGetArchiveSizesReq.java,v 1.2 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -27,15 +27,23 @@ class FileGetArchiveSizesReq
   /** 
    * Constructs a new request.
    * 
+   * @param name
+   *   The fully resolved name of the node.
+   * 
    * @param fseqs
-   *   The files sequences indexed by fully resolved node names and revision numbers.
+   *   The files sequences indexed by checked-in revision numbers.
    */
   public
   FileGetArchiveSizesReq
   (
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
+   String name, 
+   MappedSet<VersionID,FileSeq> fseqs
   )
   { 
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+    pName = name; 
+
     if(fseqs == null) 
       throw new IllegalArgumentException("The file sequences cannot be (null)!");
     pFileSeqs = fseqs;
@@ -47,9 +55,18 @@ class FileGetArchiveSizesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the files sequences indexed by fully resolved node names and revision numbers.
+   * Gets the fully resolved node name.
    */
-  public TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>
+  public String
+  getName() 
+  {
+    return pName;
+  }
+    
+  /**
+   * Gets the files sequences indexed by checked-in revision numbers.
+   */
+  public MappedSet<VersionID,FileSeq> 
   getFileSequences()
   {
     return pFileSeqs;
@@ -71,9 +88,14 @@ class FileGetArchiveSizesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The files sequences indexed by fully resolved node names and revision numbers.
+   * The fully resolved node name.
    */ 
-  private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs;
+  private String  pName; 
+
+  /**
+   * The files sequences indexed by checked-in revision numbers.
+   */ 
+  private MappedSet<VersionID,FileSeq>   pFileSeqs;
 
 }
   
