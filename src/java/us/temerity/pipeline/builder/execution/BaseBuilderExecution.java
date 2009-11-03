@@ -1,4 +1,4 @@
-// $Id: BaseBuilderExecution.java,v 1.10 2009/10/02 04:52:15 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.11 2009/11/03 03:48:00 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -27,7 +27,7 @@ class BaseBuilderExecution
    * @param builder
    *   The Builder to execute.
    *   
-   * @throws PipelineException
+   * @throws IllegalArgumentException
    *   If <code>null</code> is passed in for the Builder.
    */
   public
@@ -35,14 +35,11 @@ class BaseBuilderExecution
   (
     BaseBuilder builder  
   )
-    throws PipelineException
   {
     if (builder == null)
-      throw new PipelineException("The builder param cannot be (null");
+      throw new IllegalArgumentException("The builder cannot be (null");
 
     pLog = LogMgr.getInstance();
-    
-    validateCommandLineParams(builder, builder.getBuilderInformation());
     
     pBuilder = builder;
     pRunningBuilder = null;
@@ -657,21 +654,29 @@ class BaseBuilderExecution
     return false;
   }
   
+  /**
+   * Get the top level builder that run() was invoked on.
+   */
   protected BaseBuilder 
   getBuilder()
   {
     return pBuilder;
   }
-  
+ 
+  /**
+   * Get the builder that is currently running.
+   * <p>
+   * This value is only relevant during Construct Pass execution.
+   */
   protected BaseBuilder
   getRunningBuilder()
   {
     return pRunningBuilder; 
   }
   
+  
   /**
-   * Gets a list of Builders 
-   * @return
+   * Gets a list of Builders.
    */
   protected List<BaseBuilder>
   getRunBuilders()

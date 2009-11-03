@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.46 2009/10/09 04:32:12 jesse Exp $
+// $Id: BaseUtil.java,v 1.47 2009/11/03 03:48:00 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -674,8 +674,8 @@ class BaseUtil
     default: 
       {
         pLog.logAndFlush(Kind.Ops, Level.Warning, 
-          "The node (" + status.getName() + ") which was expected to be in the Finished state " +
-          "was actually in the (" + state + ") state");
+          "The node (" + status.getName() + ") which was expected to be in the Finished " +
+          "state " + "was actually in the (" + state + ") state");
         return false;
       }
     }
@@ -1388,6 +1388,84 @@ class BaseUtil
     return canSetSimpleParamFromString(mapping.getParamName());
   }
   
+  @SuppressWarnings("unchecked")
+  /**
+   * Add all the parameter names and values from this Utility to a MultiMap.
+   * <p>
+   * The first entry in the MultiMap will be the full prefixed name of the utility, which will 
+   * be followed by all the keys representing the parameters, with the current parameter value
+   * being stored as the value on the last parameter map node. This data structure is what 
+   * would be need to be feed to a BuilderInformation file if a builder was going to be rerun 
+   * with the current parameters.
+   * <p> 
+   * This map will not contain the values of constant parameters.
+   */
+  protected final MultiMap<String, String>
+  getParamValues
+  (
+    MultiMap<String, String> toReturn
+  )
+    throws PipelineException
+  {
+    LinkedList<String> builderName = new LinkedList<String>();
+    if (pPrefixName == null)
+      builderName.add(pName);
+    else
+      builderName.add(pPrefixName.toString());
+    
+    for (UtilityParam param : getParams()) {
+      LinkedList<String> pKeys = new LinkedList<String>(builderName);
+      pKeys.add(param.getName());
+      if (param instanceof SimpleParam) {
+        if (!(param instanceof ConstantStringUtilityParam)) {
+          Comparable value = ((SimpleParam) param).getValue();
+          String stringValue = null;
+          if (value != null)
+            stringValue = value.toString();
+          toReturn.putValue(pKeys, stringValue, true);
+        }
+      }
+      else if (param instanceof ComplexParam) {
+        getParamValuesHelper((ComplexParam) param, pKeys, toReturn);
+      }
+      else
+        throw new PipelineException
+          ("Cannot determine the parameter type of the parameter (" + param.getName()  +") " +
+           "in builder (" + builderName + ")");
+    }
+    return toReturn;
+  }
+  
+  private void 
+  getParamValuesHelper
+  (
+    ComplexParam param,
+    LinkedList<String> keys,
+    MultiMap<String, String> toReturn
+  )
+    throws PipelineException
+  {
+    for (Object child : param.getParams().values() ) {
+      LinkedList<String> pKeys = new LinkedList<String>(keys);
+      if (child instanceof SimpleParam) {
+        if (!(child instanceof ConstantStringUtilityParam)) {
+          pKeys.add(((SimpleParam) child).getName());
+          Comparable value = ((SimpleParam) child).getValue();
+          String stringValue = null;
+          if (value != null)
+            stringValue = value.toString();
+          toReturn.putValue(pKeys, stringValue, true);
+        }
+      }
+      else if (child instanceof ComplexParam) {
+        getParamValuesHelper((ComplexParam) child, pKeys, toReturn);
+      }
+      else
+        throw new PipelineException
+          ("Cannot determine the parameter type of the parameter (" + param.getName()  +") " +
+           "in builder (" + keys + ")");
+    }
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1475,7 +1553,6 @@ class BaseUtil
     }
     return toReturn;
   }
-  
   
   /**
    * Recursively search the parameter groups to collect the parameter names and verify
@@ -2065,7 +2142,8 @@ class BaseUtil
   protected final LogMgr pLog = LogMgr.getInstance();
   
   /**
-   * Boolean which signals that no more params or other volatile parts can be added to the Util.
+   * Boolean which signals that no more params or other volatile parts can be added to the 
+   * Util.
    * <p>
    * Locking is triggered by calling setLayout.
    */

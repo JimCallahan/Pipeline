@@ -1,4 +1,4 @@
-// $Id: ConstantStringParam.java,v 1.1 2008/11/19 04:32:03 jesse Exp $
+// $Id: ConstantStringParam.java,v 1.2 2009/11/03 03:48:00 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -9,7 +9,7 @@ import us.temerity.pipeline.glue.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An plugin parameter with a short String value which cannot be changed. 
+ * A plugin parameter with a short String value which cannot be changed. 
  * <P>
  * Used for creating complex parameters who have some values which cannot change.
  */

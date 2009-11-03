@@ -1,8 +1,9 @@
-// $Id: TemplateBuilderTool.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
+// $Id: TemplateBuilderTool.java,v 1.2 2009/11/03 03:48:00 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateBuilderTool.v2_4_12;
 
 import java.lang.reflect.*;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -54,26 +55,64 @@ class TemplateBuilderTool
     throws PipelineException
   {
     
-    BuilderInformation info = 
-      new BuilderInformation(true, false, false, false, new MultiMap<String, String>());
+    MultiMap<String, String> params = new MultiMap<String, String>();
     
+    {
+      LinkedList<String> keys = new LinkedList<String>();
+      keys.add("TemplateGlueBuilder");
+      keys.add(aTemplateNode);
+      params.putValue(keys, pPrimary, true);
+    }
+    
+    {
+      LinkedList<String> keys = new LinkedList<String>();
+      keys.add("TemplateGlueBuilder");
+      keys.add("UtilContext");
+      keys.add("Author");
+      params.putValue(keys, getAuthor(), true);
+    }
+    
+    {
+      LinkedList<String> keys = new LinkedList<String>();
+      keys.add("TemplateGlueBuilder");
+      keys.add("UtilContext");
+      keys.add("View");
+      params.putValue(keys, getView(), true);
+    }
+    
+    BuilderInformation info = 
+      new BuilderInformation(true, false, false, false, params);
+    
+//    BaseBuilderCollection collection = 
+//      PluginMgrClient.getInstance().newBuilderCollection
+//        ("Template", new VersionID("2.4.12"), "Temerity");
+//    
+//    Class[] arguments = {MasterMgrClient.class, QueueMgrClient.class, 
+//                         BuilderInformation.class, String.class, String.class, String.class};
+//    
+//    Constructor construct = collection.getBuilderConstructor("TemplateInfoBuilder", arguments);
+
     BaseBuilderCollection collection = 
       PluginMgrClient.getInstance().newBuilderCollection
-        ("Template", new VersionID("2.4.12"), "Temerity");
+        ("TemplateGlue", new VersionID("2.4.12"), "Temerity");
     
-    Class[] arguments = {MasterMgrClient.class, QueueMgrClient.class, 
-                         BuilderInformation.class, String.class, String.class, String.class};
+//    Class[] arguments = {MasterMgrClient.class, QueueMgrClient.class, 
+//                         BuilderInformation.class};
     
-    Constructor construct = collection.getBuilderConstructor("TemplateInfoBuilder", arguments);
+//  Constructor construct = collection.getBuilderConstructor("TemplateGlueBuilder", arguments);
     
-    BaseBuilder builder;
+    BaseBuilder builder = 
+      collection.instantiateBuilder
+        ("TemplateGlueBuilder", new MasterMgrClient(), new QueueMgrClient(), info);
+
     try {
-      builder = (BaseBuilder) construct.newInstance
-        (mclient, qclient, info, pPrimary, getAuthor(), getView());
+//      builder = (BaseBuilder) construct.newInstance
+//        (mclient, qclient, info, pPrimary, getAuthor(), getView());
+//      builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
     }
     catch (Exception ex) {
       String message = Exceptions.getFullMessage
-        ("Could not create TemplateInfoBuilder constructor", ex);
+        ("Could not create TemplateGlueBuilder constructor", ex);
       throw new PipelineException(message);
     }
     
@@ -98,4 +137,6 @@ class TemplateBuilderTool
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -1240521156104955998L;
+  
+  public static final String aTemplateNode = "TemplateNode";
 }

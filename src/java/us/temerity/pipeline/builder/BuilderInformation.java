@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.23 2009/08/10 20:50:13 jesse Exp $
+// $Id: BuilderInformation.java,v 1.24 2009/11/03 03:48:00 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -355,6 +355,9 @@ class BuilderInformation
   /*   S T A G E   I N F O R M A T I O N                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * A wrapper for a {@link StageState}
+   */
   public 
   class StageInformation
   {

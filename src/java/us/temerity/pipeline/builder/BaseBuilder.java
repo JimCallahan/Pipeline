@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.80 2009/10/27 05:42:28 jesse Exp $
+// $Id: BaseBuilder.java,v 1.81 2009/11/03 03:48:00 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -2585,7 +2585,32 @@ class BaseBuilder
     return set.add(value);
   }
   
-
+  public final MultiMap<String, String>
+  getAllParamValues()
+    throws PipelineException
+  {
+    MultiMap<String, String> toReturn = new MultiMap<String, String>();
+    getAllParamValuesHelper(this, toReturn);
+    return toReturn;
+  }
+  
+  private void
+  getAllParamValuesHelper
+  (
+    BaseBuilder builder,
+    MultiMap<String, String> toReturn
+  )
+    throws PipelineException
+  {
+    builder.getParamValues(toReturn);
+    
+    for (BaseBuilder child : pSubBuilders.values()) {
+      child.getAllParamValuesHelper(child, toReturn);
+    }
+    for (BaseNames names : pSubNames.values()) {
+      names.getParamValues(toReturn);
+    }
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*  E N U M E R A T I O N S                                                               */

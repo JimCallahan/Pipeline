@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.10 2009/10/02 04:52:15 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.11 2009/11/03 03:48:00 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -19,7 +19,6 @@ class CommandLineExecution
   (
     BaseBuilder builder  
   )
-    throws PipelineException
   {
     super(builder);
   }
@@ -31,6 +30,7 @@ class CommandLineExecution
   {
     pLog.log(Kind.Ops, Level.Fine, "Starting the command line execution.");
     try {
+      validateCommandLineParams(getBuilder(), getBuilder().getBuilderInformation());
       pLog.log(Kind.Ops, Level.Fine, "Beginning execution of SetupPasses.");
       executeFirstLoop();
       checkActions();
@@ -66,7 +66,7 @@ class CommandLineExecution
   handleException
   (
     Throwable ex
-  )
+  ) 
     throws PipelineException
   {
     ExecutionPhase phase = getPhase();
@@ -92,9 +92,19 @@ class CommandLineExecution
 
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
       if (getRunningBuilder() != null && getRunningBuilder().releaseOnError() && phase.haveNodesBeenMade()) {
-        releaseNodes(getRunningBuilder());
+        try {
+          releaseNodes(getRunningBuilder());
+        }
+        catch (PipelineException ex1) {
+          handleException(ex1);
+        }
       }
-      releaseView(true);
+      try {
+        releaseView(true);
+      }
+      catch (PipelineException ex1) {
+        handleException(ex1);
+      }
       if (!getBuilder().useBuilderLogging())
         throw new PipelineException(message);
       if (getBuilder().terminateAppOnQuit()) {

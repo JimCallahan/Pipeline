@@ -1,6 +1,6 @@
 package us.temerity.pipeline.builder;
 
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Represents the name of the utility.
@@ -32,7 +32,8 @@ class PrefixedName
   /**
    * Creates a name with no prefixes.
    */
-  public PrefixedName
+  public 
+  PrefixedName
   (
     String name
   )
@@ -44,7 +45,8 @@ class PrefixedName
   /**
    * Builds a new name from an existing {@link PrefixedName}, while appending a new name. 
    */
-  public PrefixedName
+  public 
+  PrefixedName
   (
     PrefixedName prefixName,
     String name
@@ -61,7 +63,8 @@ class PrefixedName
   /**
    * Copy Constructor.
    */
-  public PrefixedName
+  public 
+  PrefixedName
   (
     PrefixedName prefixName
   )
@@ -72,6 +75,15 @@ class PrefixedName
       pPrefixes = new LinkedList<String>(prefixName.pPrefixes);
   }
   
+  /**
+   * Get the list of all the name components used to construct this name.
+   */
+  public List<String>
+  getNames()
+  {
+    return Collections.unmodifiableList(pPrefixes); 
+  }
+   
   @Override
   public String 
   toString()

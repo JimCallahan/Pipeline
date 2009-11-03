@@ -1,8 +1,9 @@
-// $Id: GUIExecution.java,v 1.14 2009/10/08 22:49:41 jesse Exp $
+// $Id: GUIExecution.java,v 1.15 2009/11/03 03:48:00 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
 import java.awt.event.*;
+import java.lang.reflect.*;
 import java.util.*;
 
 import javax.swing.*;
@@ -44,7 +45,6 @@ class GUIExecution
   (
     BaseBuilder builder  
   )
-    throws PipelineException
   {
     super(builder);
     pRunning = false;
@@ -59,7 +59,7 @@ class GUIExecution
   {
     ExecutionPhase phase = getPhase();
     if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error &&
-        phase != ExecutionPhase.ReleaseView) {
+        phase != ExecutionPhase.ReleaseView || phase != ExecutionPhase.Finished) {
       String header = "The builder was unable to successfully complete.";
       
       String message;
@@ -104,7 +104,7 @@ class GUIExecution
     }
     else if (phase == ExecutionPhase.ReleaseView) {
       String header = 
-        "A problem occured after execution when attempting to release the working area: ";
+        "A problem occurred after execution when attempting to release the working area: ";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
       setPhase(ExecutionPhase.Error);
@@ -112,7 +112,14 @@ class GUIExecution
     }
     else if (phase == ExecutionPhase.Error) {
       String header = 
-        "An additional problem occured while handling the first problem: ";
+        "An additional problem occurred while handling the first problem: ";
+      String message = Exceptions.getFullMessage(header, ex);
+      pLog.logAndFlush(Kind.Ops, Level.Severe, message);
+      SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
+    }
+    else if (phase == ExecutionPhase.Finished) {
+      String header =
+        "An error occurred when trying to relaunch the builder.";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
       SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
@@ -184,19 +191,25 @@ class GUIExecution
     {
       String header = "Node Builder:  " + getBuilder().getNameUI();
       String cancel = "Abort";
-      String[][] extras = new String[3][2];
+      String[][] extras = new String[4][2];
       extras[0][0] = "Next";
       extras[0][1] = "next-pass";
       extras[1][0] = "Run Next";
       extras[1][1] = "run-next-pass";
       extras[2][0] = "Run All";
       extras[2][1] = "run-all-passes";
+      extras[3][0] = "Relaunch";
+      extras[3][1] = "relaunch";
+
 
       pTopPanel = new JBuilderTopPanel(getBuilder(), this);
       JButton buttons[] = super.initUI(header, pTopPanel, null, null, extras, cancel);
       pNextButton = buttons[0];
       pNextActionButton = buttons[1];
       pRunAllButton = buttons[2];
+      pRelaunchButton = buttons[3];
+      
+      pRelaunchButton.setEnabled(false);
 
       pTopPanel.setupListeners();
 
@@ -224,6 +237,7 @@ class GUIExecution
       pNextButton.setEnabled(false);
       pNextActionButton.setEnabled(false);
       pRunAllButton.setEnabled(false);
+      pRelaunchButton.setEnabled(false);
     }
 
     /**
@@ -245,6 +259,12 @@ class GUIExecution
     makeQuitButton()
     {
       pCancelButton.setText("Quit"); 
+    }
+    
+    private void
+    enableRelaunchButton()
+    {
+      pRelaunchButton.setEnabled(true);
     }
 
     private void
@@ -298,13 +318,15 @@ class GUIExecution
     {
       String cmd = e.getActionCommand();
       if(cmd.equals("next-pass")) 
-        doNextPass();
+          doNextPass();
       else if(cmd.equals("run-next-pass")) 
         runNextPass();
       else if(cmd.equals("run-all-passes"))
         runAllPasses();
       else if(cmd.equals("cancel")) 
         doCancel();
+      else if (cmd.equals("relaunch"))
+        relaunch();
     }
 
     /*-- TREE SELECTION LISTENER METHODS ---------------------------------------------------*/
@@ -403,6 +425,12 @@ class GUIExecution
       }
       else 
         this.setVisible(false);
+    }
+    
+    private void
+    relaunch()
+    {
+      new RelaunchBuilderTask().start();
     }
 
     private
@@ -569,6 +597,7 @@ class GUIExecution
         else
           setPhase(ExecutionPhase.Error);
         disableAllButtons();
+        enableRelaunchButton();
         makeQuitButton();
         enableCancelButton();
         pLog.logAndFlush(Kind.Ops, Level.Info, "Execution is now complete");
@@ -716,6 +745,7 @@ class GUIExecution
     private JButton pNextButton;
     private JButton pNextActionButton;
     private JButton pRunAllButton;
+    private JButton pRelaunchButton;
 
     private JBuilderTopPanel pTopPanel;
   }
@@ -940,6 +970,7 @@ class GUIExecution
     run()
     {
       try {
+        validateCommandLineParams(getBuilder(), getBuilder().getBuilderInformation());
         initialSetupPases();
         SwingUtilities.invokeLater(pDialog.new NextParameterPassTask());
       }
@@ -970,6 +1001,41 @@ class GUIExecution
       catch (LinkageError er ) {
         handleException(er);
       }
+    }
+  }
+  
+  private
+  class RelaunchBuilderTask
+    extends Thread
+  {
+    @SuppressWarnings("unchecked")
+    @Override
+    public void 
+    run()
+    {
+      BaseBuilder top = getBuilder();
+      Class<? extends BaseBuilder> builderClass = top.getClass();
+      Class args[] = {MasterMgrClient.class, QueueMgrClient.class, BuilderInformation.class};
+      BaseBuilder newBuilder = null;
+      try {
+        Constructor<? extends BaseBuilder> construct = builderClass.getConstructor(args);
+        MultiMap<String, String> params = top.getAllParamValues();
+        BuilderInformation info = top.getBuilderInformation();
+        BuilderInformation newInfo = 
+          new BuilderInformation(info.usingGui(), info.terminateAppOnQuit(), 
+                                 info.abortOnBadParam(), info.useBuilderLogging(), params);
+        MasterMgrClient mclient = new MasterMgrClient();
+        QueueMgrClient qclient = new QueueMgrClient();
+        newBuilder = construct.newInstance(mclient, qclient, newInfo);
+      }
+      catch (Exception ex) {
+        handleException(ex);
+      }
+      catch (LinkageError er ) {
+        handleException(er);
+      }
+      if (newBuilder != null)
+        new GUIExecution(newBuilder).run();
     }
   }
 
