@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.32 2009/10/09 04:31:42 jesse Exp $
+// $Id: BuilderApp.java,v 1.33 2009/11/03 04:03:04 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -29,7 +29,8 @@ public class BuilderApp
   /**
    * Construct and run the application with the given command-line arguments.
    */
-  public BuilderApp()
+  public 
+  BuilderApp()
   {
     super("plbuilder");
     pCommandLineParams = new MultiMap<String, String>();
