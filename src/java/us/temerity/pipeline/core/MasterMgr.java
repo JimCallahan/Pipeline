@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.309 2009/11/02 03:44:10 jim Exp $
+// $Id: MasterMgr.java,v 1.310 2009/11/04 18:35:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -18342,7 +18342,10 @@ class MasterMgr
 
     timer.aquire();
     ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-    workingLock.writeLock().lock();  // THIS SHOULD BE A READ-LOCK FOR STATUS ONLY OPS!
+    if(!isLightweight && nodeOp.writesWorking()) 
+      workingLock.writeLock.lock();
+    else 
+      workingLock.readLock.lock();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
     if(!isLightweight && nodeOp.writesCheckedIn())
       checkedInLock.writeLock().lock();
@@ -19440,8 +19443,11 @@ class MasterMgr
       if(!isLightweight && nodeOp.writesCheckedIn())
 	checkedInLock.writeLock().unlock();
       else 
-	checkedInLock.readLock().unlock();
-      workingLock.writeLock().unlock();
+	checkedInLock.readLock().unlock(); 
+      if(!isLightweight && nodeOp.writesWorking()) 
+        workingLock.writeLock.unlock();
+      else 
+        workingLock.readLock.unlock();
     }
 
 
@@ -23698,6 +23704,15 @@ class MasterMgr
     {}
 
     /**
+     * Does this operation modify the current working version of the node?
+     */ 
+    public boolean
+    writesWorking()
+    {
+      return false;
+    }
+
+    /**
      * Does this operation modify the checked-in versions of the node?
      */ 
     public boolean
@@ -24051,6 +24066,16 @@ class MasterMgr
 	    startExtensionTasks(timer, new CheckInExtFactory(new NodeVersion(vsn)));
 	}
       }
+    }
+
+    /**
+     * Does this operation modify the current working version of the node?
+     */ 
+    @Override
+    public boolean
+    writesWorking()
+    {
+      return true;
     }
 
     /**
