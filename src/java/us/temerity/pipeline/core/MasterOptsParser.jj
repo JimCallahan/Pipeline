@@ -134,15 +134,15 @@ TOKEN :
 | <LOG:               "--log">                : LOG_SEP
 
   /* performance tuning options */ 
-| <MIN_FREE_MEMORY:           "--min-free-memory">           : INTEGER_SEP
+| <MIN_FREE_MEMORY:           "--min-free-memory">           : BYTE_SIZE_SEP
 | <GC_INTERVAL:               "--gc-interval">               : INTEGER_SEP
-| <GC_MISSES:                 "--gc-misses">                 : INTEGER_SEP
+| <GC_MISSES:                 "--gc-misses">                 : BYTE_SIZE_SEP
 | <CACHE_FACTOR:              "--cache-factor">              : REAL_SEP
 
-| <REPO_CACHE_SIZE:           "--repo-cache-size">           : INTEGER_SEP  
-| <WORK_CACHE_SIZE:           "--work-cache-size">           : INTEGER_SEP  
-| <CHECK_CACHE_SIZE:          "--check-cache-size">          : INTEGER_SEP  
-| <ANNOT_CACHE_SIZE:          "--annot-cache-size">          : INTEGER_SEP  
+| <REPO_CACHE_SIZE:           "--repo-cache-size">           : BYTE_SIZE_SEP  
+| <WORK_CACHE_SIZE:           "--work-cache-size">           : BYTE_SIZE_SEP  
+| <CHECK_CACHE_SIZE:          "--check-cache-size">          : BYTE_SIZE_SEP  
+| <ANNOT_CACHE_SIZE:          "--annot-cache-size">          : BYTE_SIZE_SEP  
 
 | <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
 
@@ -181,6 +181,26 @@ TOKEN :
   <INTEGER:         (["0"-"9"])+>    : DEFAULT
 | <MISSING_INTEGER: ["\0"]>          : IGNORE_STATE
 | <ILLEGAL_INTEGER: (~["\0"])+>      : IGNORE_STATE
+}
+
+
+/* byte size arguments */ 
+<BYTE_SIZE_SEP> 
+TOKEN :
+{
+  <EQ8:                     "=">   : BYTE_SIZE_STATE
+| <MISSING_BYTE_SIZE_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<BYTE_SIZE_STATE> 
+TOKEN :
+{
+  <BYTE_SIZE:         (["0"-"9"])+>   
+| <KILO:              ["k","K"]>                           : DEFAULT
+| <MEGA:              ["m","M"]>                           : DEFAULT
+| <GIGA:              ["g","G"]>                           : DEFAULT
+| <AE5:               ["\0"]>                              : DEFAULT
+| <ILLEGAL_BYTE_SIZE: (~["k","K","m","M","g","G","\0"])+>  : IGNORE_STATE
 }
 
 
@@ -754,13 +774,13 @@ LogMgr.Level FinestLevel() :
 void MinFreeMemory()
   throws PipelineException : 
 {
-  Token t;
+  long v; 
 }
 {
-  <MIN_FREE_MEMORY> EQ() t=<INTEGER>
+  <MIN_FREE_MEMORY> EQ() v=ByteSize()
   {
     try {
-      pControls.setMinFreeMemory(Long.parseLong(t.image)); 
+      pControls.setMinFreeMemory(v); 
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex);
@@ -788,13 +808,13 @@ void GCInterval()
 void GCMisses()
   throws PipelineException : 
 {
-  Token t;
+  long v; 
 }
 {
-  <GC_MISSES> EQ() t=<INTEGER>
+  <GC_MISSES> EQ() v=ByteSize()
   {
     try {
-      pControls.setCacheGCMisses(Long.parseLong(t.image));
+      pControls.setCacheGCMisses(v);
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex);
@@ -822,13 +842,13 @@ void CacheFactor()
 void RepoCacheSize()
   throws PipelineException : 
 {
-  Token t;
+  long v; 
 }
 {
-  <REPO_CACHE_SIZE> EQ() t=<INTEGER>
+  <REPO_CACHE_SIZE> EQ() v=ByteSize()
   {
     try {
-      pControls.setRepoCacheSize(Long.parseLong(t.image));
+      pControls.setRepoCacheSize(v);
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex);
@@ -839,13 +859,13 @@ void RepoCacheSize()
 void WorkCacheSize()
   throws PipelineException : 
 {
-  Token t;
+  long v;
 }
 {
-  <WORK_CACHE_SIZE> EQ() t=<INTEGER>
+  <WORK_CACHE_SIZE> EQ() v=ByteSize()
   {
     try {
-      pControls.setWorkCacheSize(Long.parseLong(t.image));
+      pControls.setWorkCacheSize(v);
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex);
@@ -856,13 +876,13 @@ void WorkCacheSize()
 void CheckCacheSize()
   throws PipelineException : 
 {
-  Token t;
+  long v;
 }
 {
-  <CHECK_CACHE_SIZE> EQ() t=<INTEGER>
+  <CHECK_CACHE_SIZE> EQ() v=ByteSize()
   {
     try {
-      pControls.setCheckCacheSize(Long.parseLong(t.image));
+      pControls.setCheckCacheSize(v);
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex);
@@ -873,13 +893,13 @@ void CheckCacheSize()
 void AnnotCacheSize()
   throws PipelineException : 
 {
-  Token t;
+  long v;
 }
 {
-  <ANNOT_CACHE_SIZE> EQ() t=<INTEGER>
+  <ANNOT_CACHE_SIZE> EQ() v=ByteSize()
   {
     try {
-      pControls.setAnnotCacheSize(Long.parseLong(t.image));
+      pControls.setAnnotCacheSize(v);
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex);
@@ -927,8 +947,63 @@ void CheckSumDir() :
 }
 
 
+
 /*------------------------------------------------------------------------------------------*/
 /*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+long 
+ByteSize()
+  throws PipelineException : 
+{
+  Token t; 
+  long scale = 1L;
+}
+{
+  t=<BYTE_SIZE> (scale=Kilo() | scale=Mega() | scale=Giga())?
+  {
+    try {
+      return Long.parseLong(t.image) * scale;
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
+long 
+Kilo() :
+{}
+{
+  <KILO> 
+  {
+    return 1024L;
+  }
+}
+
+long 
+Mega() :
+{}
+{
+  <MEGA> 
+  {
+    return 1048576L;
+  }
+}
+
+long 
+Giga() :
+{}
+{
+  <GIGA> 
+  {
+    return 1073741824L;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S E P A R A T O R   T O K E N S                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 Token
@@ -937,7 +1012,7 @@ AE() :
   Token t;
 }
 {
-  (t=<AE1> | t=<AE2> | t=<AE4>)
+  (t=<AE1> | t=<AE2> | t=<AE4> | t=<AE5>)
   { 
     return t; 
   }
@@ -950,7 +1025,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ6> | t=<EQ7>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ6> | t=<EQ7> | t=<EQ8>)
   { 
     return t; 
   }

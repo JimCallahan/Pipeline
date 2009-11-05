@@ -404,14 +404,14 @@ TOKEN :
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">       : INTEGER_SEP
 | <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">        : INTEGER_SEP
 
-| <MIN_FREE_MEMORY:           "--min-free-memory">           : INTEGER_SEP
+| <MIN_FREE_MEMORY:           "--min-free-memory">           : BYTE_SIZE_SEP	 
 | <GC_INTERVAL:               "--gc-interval">               : INTEGER_SEP
-| <GC_MISSES:                 "--gc-misses">                 : INTEGER_SEP
+| <GC_MISSES:                 "--gc-misses">                 : BYTE_SIZE_SEP
 | <CACHE_FACTOR:              "--cache-factor">              : REAL_SEP
-| <REPO_CACHE_SIZE:           "--repo-cache-size">           : INTEGER_SEP  
-| <WORK_CACHE_SIZE:           "--work-cache-size">           : INTEGER_SEP  
-| <CHECK_CACHE_SIZE:          "--check-cache-size">          : INTEGER_SEP  
-| <ANNOT_CACHE_SIZE:          "--annot-cache-size">          : INTEGER_SEP  
+| <REPO_CACHE_SIZE:           "--repo-cache-size">           : BYTE_SIZE_SEP
+| <WORK_CACHE_SIZE:           "--work-cache-size">           : BYTE_SIZE_SEP
+| <CHECK_CACHE_SIZE:          "--check-cache-size">          : BYTE_SIZE_SEP
+| <ANNOT_CACHE_SIZE:          "--annot-cache-size">          : BYTE_SIZE_SEP
 | <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
 
 | <FILE_STAT_DIR:             "--file-stat-dir">             : PATH_SEP
@@ -3436,7 +3436,8 @@ GetRuntimeMaster()
 }
 
 void 
-RuntimeMasterOpts() :
+RuntimeMasterOpts()
+  throws PipelineException : 
 {}
 {
   (RemoteLog() | 
@@ -3446,14 +3447,15 @@ RuntimeMasterOpts() :
   {}
 }
 
-void MinFreeMemory() :
+void MinFreeMemory()
+  throws PipelineException :
 {
-  Token t;
+  long v;
 }
 {
-  <MIN_FREE_MEMORY> EQ() t=<INTEGER> AE()
+  <MIN_FREE_MEMORY> EQ() v=ByteSize() AE()
   {
-    pMinFreeMemory = Long.parseLong(t.image); 
+    pMinFreeMemory = v; 
   }
 }
 
@@ -3468,14 +3470,15 @@ void GCInterval() :
   }
 }
 
-void GCMisses() :
+void GCMisses()
+  throws PipelineException :
 {
-  Token t;
+  long v;
 }
 {
-  <GC_MISSES> EQ() t=<INTEGER> AE()
+  <GC_MISSES> EQ() v=ByteSize() AE()
   {
-    pCacheGCMisses = Long.parseLong(t.image);
+    pCacheGCMisses = v;
   }
 }
 
@@ -3490,47 +3493,51 @@ void CacheFactor() :
   }
 }
 
-void RepoCacheSize() :
+void RepoCacheSize()
+  throws PipelineException :
 {
-  Token t;
+  long v;
 }
 {
-  <REPO_CACHE_SIZE> EQ() t=<INTEGER> AE()
+  <REPO_CACHE_SIZE> EQ() v=ByteSize() AE()
   {
-    pRepoCacheSize = Long.parseLong(t.image);
+    pRepoCacheSize = v;
   }
 }
 
-void WorkCacheSize() :
+void WorkCacheSize()
+  throws PipelineException :
 {
-  Token t;
+  long v;
 }
 {
-  <WORK_CACHE_SIZE> EQ() t=<INTEGER> AE()
+  <WORK_CACHE_SIZE> EQ() v=ByteSize() AE()
   {
-    pWorkCacheSize = Long.parseLong(t.image);
+    pWorkCacheSize = v;
   }
 }
 
-void CheckCacheSize() :
+void CheckCacheSize()
+  throws PipelineException :
 {
-  Token t;
+  long v;
 }
 {
-  <CHECK_CACHE_SIZE> EQ() t=<INTEGER> AE()
+  <CHECK_CACHE_SIZE> EQ() v=ByteSize() AE()
   {
-    pCheckCacheSize = Long.parseLong(t.image);
+    pCheckCacheSize = v;
   }
 }
 
-void AnnotCacheSize() :
+void AnnotCacheSize()
+  throws PipelineException :
 {
-  Token t;
+  long v;
 }
 {
-  <ANNOT_CACHE_SIZE> EQ() t=<INTEGER> AE()
+  <ANNOT_CACHE_SIZE> EQ() v=ByteSize() AE()
   {
-    pAnnotCacheSize = Long.parseLong(t.image);
+    pAnnotCacheSize = v;
   }
 }
 

@@ -485,7 +485,7 @@
       <br>
        The following parameters can be used to tune Pipeline's use of caching: <br><br>
 
-    <span style="font-weight: bold;"><a name="--min-free-memory"></a>--min-free-memory</span>=<span style="font-style: italic;">bytes</span><br><br>
+    <span style="font-weight: bold;"><a name="--min-free-memory"></a>--min-free-memory</span>=<span style="font-style: italic;">bytes</span>[K|M|G]<br><br>
 
     <div style="margin-left: 40px;">
       Overrides the default amount of memory (<span style=
@@ -505,7 +505,7 @@
       <br>
     </div>
 
-    <span style="font-weight: bold;"><a name="--gc-misses"></a>--gc-misses</span>=<span style="font-style: italic;">count</span><br><br>
+    <span style="font-weight: bold;"><a name="--gc-misses"></a>--gc-misses</span>=<span style="font-style: italic;">count</span>[K|M|G]<br><br>
 
     <div style="margin-left: 40px;">
       Overrides the number of cache misses (<span style=
@@ -525,10 +525,10 @@
     </div>
 
 
-    <span style="font-weight: bold;"><a name="--repo-cache-size"></a>--repo-cache-size</span>=<span style="font-style: italic;">items</span><br>
-    <span style="font-weight: bold;"><a name="--work-cache-size"></a>--work-cache-size</span>=<span style="font-style: italic;">items</span><br>
-    <span style="font-weight: bold;"><a name="--check-cache-size"></a>--check-cache-size</span>=<span style="font-style: italic;">items</span><br>
-    <span style="font-weight: bold;"><a name="--annot-cache-size"></a>--annot-cache-size</span>=<span style="font-style: italic;">items</span><br><br>
+    <span style="font-weight: bold;"><a name="--repo-cache-size"></a>--repo-cache-size</span>=<span style="font-style: italic;">items</span>[K|M|G]<br>
+    <span style="font-weight: bold;"><a name="--work-cache-size"></a>--work-cache-size</span>=<span style="font-style: italic;">items</span>[K|M|G]<br>
+    <span style="font-weight: bold;"><a name="--check-cache-size"></a>--check-cache-size</span>=<span style="font-style: italic;">items</span>[K|M|G]<br>
+    <span style="font-weight: bold;"><a name="--annot-cache-size"></a>--annot-cache-size</span>=<span style="font-style: italic;">items</span>[K|M|G]<br><br>
 
     <div style="margin-left: 40px;">
       Sets initial minimum size (<span style="font-style: italic;">items</span>) of each of the four node related caches managed by Pipeline.  The caches include checked-in node versions (<strong>repo</strong>), working area node versions (<strong>work</strong>), working version checksums (<strong>check</strong>) and per-node annotations (<strong>annot</strong>).  Since all of the caches are continually dynamically resized during operation of the cache garbage collector, changing the value with these parameters is only really useful to help the collector more quickly converge to a reasonable size.

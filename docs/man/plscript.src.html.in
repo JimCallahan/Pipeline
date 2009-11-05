@@ -3263,23 +3263,22 @@
     "font-weight: normal;">=</span><span style=
     "font-style: italic; font-weight: normal;">logger:level</span><span style="font-weight: normal;">[</span><span style="font-style: italic; font-weight: normal;">,logger:level</span><span style="font-weight: normal;">[...]]]</span><br>
 
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--min-free-memory"><span style="font-weight: bold;">--min-free-memory</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">bytes</span><span style="font-weight: normal;">]</span>
+    <span style="font-weight: normal;">[</span><a href="plmaster.html#--min-free-memory"><span style="font-weight: bold;">--min-free-memory</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">bytes</span><span style="font-weight: normal;">[K|M|G]]</span>
 
     <span style="font-weight: normal;">[</span><a href="plmaster.html#--gc-interval"><span style="font-weight: bold;">--gc-interval</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">msec</span><span style="font-weight: normal;">]</span>
 
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--gc-misses"><span style="font-weight: bold;">--gc-misses</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">count</span><span style="font-weight: normal;">]</span>
+    <span style="font-weight: normal;">[</span><a href="plmaster.html#--gc-misses"><span style="font-weight: bold;">--gc-misses</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">count</span><span style="font-weight: normal;">[K|M|G]]</span>
 
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--cache-factor"><span style="font-weight: bold;">--cache-factor</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">percentage</span><span style="font-weight: normal;">]</span><br>
+    <span style="font-weight: normal;">[</span><a href="plmaster.html#--cache-factor"><span style="font-weight: bold;">--cache-factor</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">percentage</span><span style="font-weight: normal;">]</span>
 
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--repo-cache-size"><span style="font-weight: bold;">--repo-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">]</span>
+    <span style="font-weight: normal;">[</span><a href="plmaster.html#--repo-cache-size"><span style="font-weight: bold;">--repo-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
 
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--work-cache-size"><span style="font-weight: bold;">--work-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">]</span>
+    <span style="font-weight: normal;">[</span><a href="plmaster.html#--work-cache-size"><span style="font-weight: bold;">--work-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
 
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--check-cache-size"><span style="font-weight: bold;">--check-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">]</span>
+    <span style="font-weight: normal;">[</span><a href="plmaster.html#--check-cache-size"><span style="font-weight: bold;">--check-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
 
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--annot-cache-size"><span style="font-weight: bold;">--annot-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">]</span>
+    <span style="font-weight: normal;">[</span><a href="plmaster.html#--annot-cache-size"><span style="font-weight: bold;">--annot-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
 
-<br>
     <span style="font-weight: normal;">[</span><a href=
     "plmaster.html#--restore-cleanup-interval"><span style=
     "font-weight: bold;">-</span></a><span class=

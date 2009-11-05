@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.25 2009/11/05 00:23:31 jim Exp $
+// $Id: MasterApp.java,v 1.26 2009/11/05 21:21:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -170,10 +170,20 @@ class MasterApp
       return "an unknown command";
 
     case MasterOptsParserConstants.INTEGER:
+    case ScriptOptsParserConstants.BYTE_SIZE:
       return "an integer";
 
+    case ScriptOptsParserConstants.KILO:
+      return "\"K\" kilo";
+
+    case ScriptOptsParserConstants.MEGA:
+      return "\"M\" mega";
+
+    case ScriptOptsParserConstants.GIGA:
+      return "\"G\" giga";
+
     case MasterOptsParserConstants.REAL:
-      return "an real numbet";
+      return "an real number";
 
     case MasterOptsParserConstants.PATH_ARG:
       return "an file system path";
