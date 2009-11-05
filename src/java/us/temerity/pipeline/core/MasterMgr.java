@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.312 2009/11/05 00:23:31 jim Exp $
+// $Id: MasterMgr.java,v 1.313 2009/11/05 18:28:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -239,7 +239,7 @@ class MasterMgr
       pCacheFactor     = new AtomicReference<Double>(new Double(0.0)); 
       pCacheTrigger    = new CacheTrigger(0L); 
       
-      pAnnotationCounters = new CacheCounters("Per-Version Annotations",  100L, 100L); 
+      pAnnotationCounters = new CacheCounters("Per-Node Annotations",     100L, 100L); 
       pCheckedInCounters  = new CacheCounters("Checked-In Node Versions", 500L, 500L); 
       pWorkingCounters    = new CacheCounters("Working Node Versions",    250L, 250L); 
       pCheckSumCounters   = new CacheCounters("Working Node CheckSums",   250L, 250L); 
