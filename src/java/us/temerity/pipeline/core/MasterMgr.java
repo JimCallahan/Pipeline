@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.310 2009/11/04 18:35:13 jim Exp $
+// $Id: MasterMgr.java,v 1.311 2009/11/05 00:19:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -18343,9 +18343,9 @@ class MasterMgr
     timer.aquire();
     ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
     if(!isLightweight && nodeOp.writesWorking()) 
-      workingLock.writeLock.lock();
+      workingLock.writeLock().lock();
     else 
-      workingLock.readLock.lock();
+      workingLock.readLock().lock();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
     if(!isLightweight && nodeOp.writesCheckedIn())
       checkedInLock.writeLock().lock();
@@ -19445,9 +19445,9 @@ class MasterMgr
       else 
 	checkedInLock.readLock().unlock(); 
       if(!isLightweight && nodeOp.writesWorking()) 
-        workingLock.writeLock.unlock();
+        workingLock.writeLock().unlock();
       else 
-        workingLock.readLock.unlock();
+        workingLock.readLock().unlock();
     }
 
 
