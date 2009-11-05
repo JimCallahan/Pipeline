@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.24 2009/07/06 10:25:26 jim Exp $
+// $Id: MasterApp.java,v 1.25 2009/11/05 00:23:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -171,6 +171,9 @@ class MasterApp
 
     case MasterOptsParserConstants.INTEGER:
       return "an integer";
+
+    case MasterOptsParserConstants.REAL:
+      return "an real numbet";
 
     case MasterOptsParserConstants.PATH_ARG:
       return "an file system path";

@@ -47,18 +47,7 @@ MasterOptsParser
   private void 
   init()
   {
-    pFileStatDir    = PackageInfo.sProdPath; 
-    pChecksumDir    = PackageInfo.sProdPath; 
-
-    pNodeGCInterval = 300000L;  /* 5-minutes */ 
-
-    Runtime rt = Runtime.getRuntime();
-    double maxMemory = (double) rt.maxMemory();
-    pMinOverhead = (long) (maxMemory * 0.2);
-    pMaxOverhead = (long) (maxMemory * 0.3);
-
-    pAvgNodeSize = 16384L; 
-    pRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
+    pControls = new MasterControls(PackageInfo.sProdPath, PackageInfo.sProdPath); 
 
     pLogBackups = 10;
   }
@@ -100,40 +89,9 @@ MasterOptsParser
 
 
   /**
-   * An alternative root production directory accessed via a different NFS mount point
-   * to provide an exclusively network for file status query traffic.  
+   * Runtime performance tuning parameters for the Master Manager server daemon.
    */ 
-  private Path pFileStatDir;
-
-  /**
-   * An alternative root production directory accessed via a different NFS mount point
-   * to provide an exclusively network for checksum generation traffic. 
-   */ 
-  private Path pChecksumDir;
-
-  /**
-   * The minimum time a cycle of the node cache garbage collector loop should 
-   * take (in milliseconds).
-   */ 
-  private long  pNodeGCInterval;  
-
-  /**
-   * The minimum amount of memory overhead to maintain at all times.  The maximum amount of 
-   * memory overhead required to be available after a node garbage collection.
-   */ 
-  private long  pMinOverhead;
-  private long  pMaxOverhead;
-
-  /**
-   * The estimated memory size of a node version (in bytes).
-   */ 
-  private long  pAvgNodeSize;
-
-  /**
-   * The maximum age of a resolved (Restored or Denied) restore request before it 
-   * is deleted (in milliseconds).
-   */ 
-  private long  pRestoreCleanupInterval; 
+  private MasterControls  pControls; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -169,9 +127,6 @@ TOKEN :
 | <PRESERVE_OFFLINED: "--preserve-offlined"> 
 | <FILE_MGR:          "--file-mgr">   
 
-| <FILE_STAT_DIR:     "--file-stat-dir">      : PATH_SEP
-| <CHECKSUM_DIR:      "--checksum-dir">       : PATH_SEP
-
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_DIR:  "--standard-log-dir">   : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
@@ -179,11 +134,21 @@ TOKEN :
 | <LOG:               "--log">                : LOG_SEP
 
   /* performance tuning options */ 
+| <MIN_FREE_MEMORY:           "--min-free-memory">           : INTEGER_SEP
+| <GC_INTERVAL:               "--gc-interval">               : INTEGER_SEP
+| <GC_MISSES:                 "--gc-misses">                 : INTEGER_SEP
+| <CACHE_FACTOR:              "--cache-factor">              : REAL_SEP
+
+| <REPO_CACHE_SIZE:           "--repo-cache-size">           : INTEGER_SEP  
+| <WORK_CACHE_SIZE:           "--work-cache-size">           : INTEGER_SEP  
+| <CHECK_CACHE_SIZE:          "--check-cache-size">          : INTEGER_SEP  
+| <ANNOT_CACHE_SIZE:          "--annot-cache-size">          : INTEGER_SEP  
+
 | <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
-| <NODE_GC_INTERVAL:          "--node-gc-interval">          : INTEGER_SEP
-| <MIN_OVERHEAD:              "--min-overhead">              : INTEGER_SEP  
-| <MAX_OVERHEAD:              "--max-overhead">              : INTEGER_SEP  
-| <AVG_NODE_SIZE:             "--avg-node-size">             : INTEGER_SEP  
+
+| <FILE_STAT_DIR:             "--file-stat-dir">             : PATH_SEP
+| <CHECKSUM_DIR:              "--checksum-dir">              : PATH_SEP
+
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -214,8 +179,26 @@ TOKEN :
 TOKEN :
 {
   <INTEGER:         (["0"-"9"])+>    : DEFAULT
-| <MISSING_INTEGER: ["\0"]>      : IGNORE_STATE
-| <ILLEGAL_INTEGER: (~["\0"])+>  : IGNORE_STATE
+| <MISSING_INTEGER: ["\0"]>          : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~["\0"])+>      : IGNORE_STATE
+}
+
+
+/* real arguments */ 
+<REAL_SEP> 
+TOKEN :
+{
+  <EQ7:                "=">   : REAL_STATE
+| <MISSING_REAL_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<REAL_STATE> 
+TOKEN :
+{
+  <REAL:         ((["0"-"9"])+ "." (["0"-"9"])*) | 
+		 ((["0"-"9"])* "." (["0"-"9"])+)>    : DEFAULT
+| <MISSING_REAL: ["\0"]>                             : IGNORE_STATE
+| <ILLEGAL_REAL: (~["\0"])+>                         : IGNORE_STATE
 }
 
 
@@ -352,9 +335,7 @@ CommandLine()
 
       /* create the server */ 
       return new MasterMgrServer(pApp, pRebuildCache, pPreserveOfflinedCache, 
-                                 pInternalFileMgr, pAvgNodeSize, pMinOverhead, pMaxOverhead, 
-                                 pNodeGCInterval, pRestoreCleanupInterval,
-                                 pFileStatDir, pChecksumDir);
+                                 pInternalFileMgr, pControls); 
     }
 
     return null;
@@ -459,10 +440,10 @@ GlobalOpts()
 {}
 {
   (Rebuild() | PreserveOfflined() | FileMgr() |
-   FileStatDir() | ChecksumDir() | 
    Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
-   NodeGCInterval() | MinOverhead() | MaxOverhead() | AvgNodeSize() |
-   RestoreCleanupInterval())
+   MinFreeMemory() | GCInterval() | GCMisses() | CacheFactor() | 
+   RepoCacheSize() | WorkCacheSize() | CheckCacheSize() | AnnotCacheSize() |
+   RestoreCleanupInterval() | FileStatDir() | CheckSumDir())
   {}
 }
 
@@ -492,32 +473,6 @@ void FileMgr() :
     pInternalFileMgr = true; 
   }
 }
-
-
-void FileStatDir() :
-{
-  Token t;
-}
-{
-  <FILE_STAT_DIR> EQ() t=<PATH_ARG>
-  { 
-    pFileStatDir = new Path(t.image); 
-  }
-}
-
-
-void ChecksumDir() :
-{
-  Token t;
-}
-{
-  <CHECKSUM_DIR> EQ() t=<PATH_ARG>
-  { 
-    pChecksumDir = new Path(t.image); 
-  }
-}
-
-
 
 
 
@@ -796,70 +751,141 @@ LogMgr.Level FinestLevel() :
 
 /*------------------------------------------------------------------------------------------*/
 
-void NodeGCInterval()
+void MinFreeMemory()
   throws PipelineException : 
 {
   Token t;
 }
 {
-  <NODE_GC_INTERVAL> EQ() t=<INTEGER>
+  <MIN_FREE_MEMORY> EQ() t=<INTEGER>
   {
-    Long msec = Long.parseLong(t.image);
-    if(msec <= 0) 
-      throw new PipelineException
-        ("The node garbage collection interval (" + msec + ") must be positive!");
-    pNodeGCInterval = msec;
+    try {
+      pControls.setMinFreeMemory(Long.parseLong(t.image)); 
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
   }
 }
 
-void MinOverhead()
+void GCInterval()
   throws PipelineException : 
 {
   Token t;
 }
 {
-  <MIN_OVERHEAD> EQ() t=<INTEGER>
+  <GC_INTERVAL> EQ() t=<INTEGER>
   {
-    Long size = Long.parseLong(t.image);
-    if(size <= 0) 
-      throw new PipelineException
-        ("The minimum overhead (" + size + ") must be positive!");
-    pMinOverhead = size;
+    try {
+      pControls.setCacheGCInterval(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
   }
 }
 
-void MaxOverhead()
+void GCMisses()
   throws PipelineException : 
 {
   Token t;
 }
 {
-  <MAX_OVERHEAD> EQ() t=<INTEGER>
+  <GC_MISSES> EQ() t=<INTEGER>
   {
-    Long size = Long.parseLong(t.image);
-    if(size <= 0) 
-      throw new PipelineException
-        ("The maximum overhead (" + size + ") must be positive!");
-    pMaxOverhead = size;
+    try {
+      pControls.setCacheGCMisses(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
   }
 }
 
-void AvgNodeSize()
+void CacheFactor()
   throws PipelineException : 
 {
   Token t;
 }
 {
-  <AVG_NODE_SIZE> EQ() t=<INTEGER>
+  <CACHE_FACTOR> EQ() t=<REAL>
   {
-    Long size = Long.parseLong(t.image);
-    if(size <= 0) 
-      throw new PipelineException
-        ("The average node size (" + size + ") must be positive!");
-    pAvgNodeSize = size;
+    try {
+      pControls.setCacheFactor(Double.parseDouble(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
   }
 }
 
+void RepoCacheSize()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <REPO_CACHE_SIZE> EQ() t=<INTEGER>
+  {
+    try {
+      pControls.setRepoCacheSize(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+}
+
+void WorkCacheSize()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <WORK_CACHE_SIZE> EQ() t=<INTEGER>
+  {
+    try {
+      pControls.setWorkCacheSize(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+}
+
+void CheckCacheSize()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <CHECK_CACHE_SIZE> EQ() t=<INTEGER>
+  {
+    try {
+      pControls.setCheckCacheSize(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+}
+
+void AnnotCacheSize()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <ANNOT_CACHE_SIZE> EQ() t=<INTEGER>
+  {
+    try {
+      pControls.setAnnotCacheSize(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+}
 
 void RestoreCleanupInterval()
   throws PipelineException : 
@@ -869,11 +895,34 @@ void RestoreCleanupInterval()
 {
   <RESTORE_CLEANUP_INTERVAL> EQ() t=<INTEGER>
   {
-    Long msec = Long.parseLong(t.image);
-    if(msec <= 0) 
-      throw new PipelineException
-        ("The restore cleanup interval (" + msec + ") must be positive!");
-    pRestoreCleanupInterval = msec;
+    try {
+      pControls.setRestoreCleanupInterval(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+}
+
+void FileStatDir() :
+{
+  Token t;
+}
+{
+  <FILE_STAT_DIR> EQ() t=<PATH_ARG>
+  { 
+    pControls.setFileStatDir(new Path(t.image)); 
+  }
+}
+
+void CheckSumDir() :
+{
+  Token t;
+}
+{
+  <CHECKSUM_DIR> EQ() t=<PATH_ARG>
+  { 
+    pControls.setCheckSumDir(new Path(t.image)); 
   }
 }
 
@@ -901,7 +950,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ6>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ6> | t=<EQ7>)
   { 
     return t; 
   }

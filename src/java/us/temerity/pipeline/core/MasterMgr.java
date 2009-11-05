@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.311 2009/11/05 00:19:00 jim Exp $
+// $Id: MasterMgr.java,v 1.312 2009/11/05 00:23:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -16,6 +16,7 @@ import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
 
@@ -209,33 +210,8 @@ class MasterMgr
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
-   * @param avgNodeSize
-   *   The estimated memory size of a node version (in bytes).
-   * 
-   * @param minOverhead
-   *   The minimum amount of memory overhead to maintain at all times.
-   * 
-   * @param maxOverhead
-   *   The maximum amount of memory overhead required to be available after a node garbage
-   *   collection.
-   * 
-   * @param nodeGCInterval
-   *   The minimum time a cycle of the node cache garbage collector loop should 
-   *   take (in milliseconds).
-   * 
-   * @param restoreCleanupInterval
-   *   The maximum age of a resolved (Restored or Denied) restore request before it 
-   *   is deleted (in milliseconds).
-   * 
-   * @param fileStatDir
-   *   An alternative root production directory accessed via a different NFS mount point
-   *   to provide an exclusively network for file status query traffic.  Setting this to 
-   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
-   * 
-   * @param checksumDir
-   *   An alternative root production directory accessed via a different NFS mount point
-   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
-   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * @param controls
+   *   The runtime controls.
    * 
    * @throws PipelineException 
    *   If unable to properly initialize the manager.
@@ -246,13 +222,7 @@ class MasterMgr
    boolean rebuildCache, 
    boolean preserveOfflinedCache, 
    boolean internalFileMgr, 
-   long avgNodeSize, 
-   long minOverhead, 
-   long maxOverhead, 
-   long nodeGCInterval, 
-   long restoreCleanupInterval, 
-   Path fileStatDir, 
-   Path checkSumDir
+   MasterControls controls
   )
     throws PipelineException 
   { 
@@ -262,43 +232,26 @@ class MasterMgr
     pPreserveOfflinedCache = preserveOfflinedCache;
     pInternalFileMgr       = internalFileMgr;
 
-    pNodeCacheSize = new AtomicLong(0L);
-
-    if(avgNodeSize <= 2048L) 
-      throw new PipelineException
-	("The average node size (" + avgNodeSize + " bytes) must be at least 2K!");
-    pAverageNodeSize = new AtomicLong(avgNodeSize); 
-
-    if(minOverhead <= 8388608L) 
-      throw new PipelineException 
-	("The minimum memory overhead (" + minOverhead + " bytes) must at least 8M!"); 
-    if(maxOverhead <= 16777216L) 
-      throw new PipelineException 
-	("The maximum memory overhead (" + maxOverhead + " bytes) must at least 16M!"); 
-    if(maxOverhead <= minOverhead) 
-      throw new PipelineException 
-	("The maximum memory overhead (" + maxOverhead + " bytes) must greater-than the " + 
-	 "minimum memory overhead (" + minOverhead + " bytes)!"); 
-    pMinimumOverhead = new AtomicLong(minOverhead); 
-    pMaximumOverhead = new AtomicLong(maxOverhead);
-
-    if(nodeGCInterval < 15000L) 
-      throw new PipelineException
-	("The node garbage collection interval (" + nodeGCInterval + " ms) must be at " +
-	 "least 15 seconds!");
-    pNodeGCInterval  = new AtomicLong(nodeGCInterval); 
-
-    if(restoreCleanupInterval < 3600000L) 
-      throw new PipelineException
-	("The restore cleanup interval (" + restoreCleanupInterval + " ms) must be at " + 
-	 "least 1 hour!"); 
-    pRestoreCleanupInterval = new AtomicLong(restoreCleanupInterval); 
+    /* init runtime controls */ 
+    {
+      pMinFreeMemory   = new AtomicLong();
+      pCacheGCInterval = new AtomicLong(); 
+      pCacheFactor     = new AtomicReference<Double>(new Double(0.0)); 
+      pCacheTrigger    = new CacheTrigger(0L); 
+      
+      pAnnotationCounters = new CacheCounters("Per-Version Annotations",  100L, 100L); 
+      pCheckedInCounters  = new CacheCounters("Checked-In Node Versions", 500L, 500L); 
+      pWorkingCounters    = new CacheCounters("Working Node Versions",    250L, 250L); 
+      pCheckSumCounters   = new CacheCounters("Working Node CheckSums",   250L, 250L); 
+      
+      pRestoreCleanupInterval = new AtomicLong(); 
+      
+      setRuntimeControlsHelper(controls);
+    }
 
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
     pNodeDir = PackageInfo.sNodePath.toFile();  // CHANGE THIS TO A Path!!!
-
-    pCheckSumPath = new AtomicReference<Path>(checkSumDir);
 
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
@@ -314,7 +267,8 @@ class MasterMgr
 
       /* initialize the internal file manager instance */ 
       if(pInternalFileMgr) {
-	pFileMgrDirectClient = new FileMgrDirectClient(fileStatDir, checkSumDir);
+	pFileMgrDirectClient = 
+          new FileMgrDirectClient(controls.getFileStatDir(), controls.getCheckSumDir());
       }
       /* make a connection to the remote file manager */ 
       else {
@@ -435,16 +389,20 @@ class MasterMgr
       pNodeTree         = new NodeTree();
 
       pAnnotationLocks = new TreeMap<String,ReentrantReadWriteLock>();
-      pAnnotations     = new TreeMap<String,TreeMap<String,BaseAnnotation>>();
+      pAnnotations     = new TreeMap<String,TreeMap<String,BaseAnnotation>>(); 
+      pAnnotationsRead = new LinkedBlockingDeque<String>();
 
       pCheckedInLocks   = new TreeMap<String,ReentrantReadWriteLock>();
       pCheckedInBundles = new TreeMap<String,TreeMap<VersionID,CheckedInBundle>>();
+      pCheckedInRead    = new LinkedBlockingDeque<String>();
 
       pWorkingLocks   = new TreeMap<NodeID,ReentrantReadWriteLock>();
-      pWorkingBundles = new TreeMap<String,TreeMap<NodeID,WorkingBundle>>();       
+      pWorkingBundles = new TreeMap<String,TreeMap<NodeID,WorkingBundle>>();    
+      pWorkingRead    = new LinkedBlockingDeque<NodeID>();   
 
       pCheckSumLocks   = new TreeMap<NodeID,ReentrantReadWriteLock>();
-      pCheckSumBundles = new DoubleMap<String,NodeID,CheckSumBundle>();
+      pCheckSumBundles = new DoubleMap<String,NodeID,CheckSumBundle>();    
+      pCheckSumsRead   = new LinkedBlockingDeque<NodeID>();
 
       pDownstreamLocks = new TreeMap<String,ReentrantReadWriteLock>();
       pDownstream      = new TreeMap<String,DownstreamLinks>();
@@ -1941,10 +1899,16 @@ class MasterMgr
           releaseFileMgrClient(fclient);
         }
       }
-      
-      controls.setAverageNodeSize(pAverageNodeSize.get()); 
-      controls.setOverhead(pMinimumOverhead.get(), pMaximumOverhead.get()); 
-      controls.setNodeGCInterval(pNodeGCInterval.get()); 
+      controls.setMinFreeMemory(pMinFreeMemory.get());
+      controls.setCacheGCInterval(pCacheGCInterval.get()); 
+      controls.setCacheGCMisses(pCacheTrigger.getOpsUntil()); 
+      controls.setCacheFactor(pCacheFactor.get()); 
+
+      controls.setRepoCacheSize(pCheckedInCounters.getMinimum());    
+      controls.setWorkCacheSize(pWorkingCounters.getMinimum());  
+      controls.setCheckCacheSize(pCheckSumCounters.getMinimum());   
+      controls.setAnnotCacheSize(pAnnotationCounters.getMinimum()); 
+
       controls.setRestoreCleanupInterval(pRestoreCleanupInterval.get()); 
 
       return new MiscGetMasterControlsRsp(timer, controls);
@@ -1977,50 +1941,7 @@ class MasterMgr
 	  ("Only a user with Master Admin privileges may change the runtime parameters!");
 
       MasterControls controls = req.getControls();
-
-      {
-	Long size = controls.getAverageNodeSize();
-	if(size != null) 
-	  pAverageNodeSize.set(size); 
-      }
-
-      {
-	Long min = controls.getMinimumOverhead();
-	if(min == null) 
-	  min = pMinimumOverhead.get();
-
-	Long max = controls.getMaximumOverhead();
-	if(max == null) 
-	  max = pMaximumOverhead.get();
-
-	if(max <= min)
-	  throw new PipelineException
-	    ("The maximum memory overhead (" + max + " bytes) must greater-than the " + 
-	     "minimum memory overhead (" + min + " bytes)!"); 
-
-	pMinimumOverhead.set(min);
-	pMaximumOverhead.set(max);
-      }
-
-      {
-	Long interval = controls.getNodeGCInterval();
-	if(interval != null) 
-	  pNodeGCInterval.set(interval);
-      }
-
-      {
-	Long interval = controls.getRestoreCleanupInterval();
-	if(interval != null) 
-	  pRestoreCleanupInterval.set(interval);
-      }
-
-      {
-        Path path = controls.getCheckSumDir();
-        if(path == null) 
-          pCheckSumPath.set(PackageInfo.sProdPath);
-        else 
-          pCheckSumPath.set(path);
-      }
+      setRuntimeControlsHelper(controls);
 
       FileMgrClient fclient = acquireFileMgrClient();
       try {
@@ -2037,6 +1958,94 @@ class MasterMgr
     }
   }
   
+  /**
+   * Helper method for setting the controls directly and logging the changes.
+   *
+   * @param controls
+   *   The runtime controls.
+   */ 
+  private void 
+  setRuntimeControlsHelper
+  (
+   MasterControls controls
+  )
+  {
+    StringBuilder buf = new StringBuilder();
+    buf.append
+      ("--- MasterMgr Runtime Controls ---------------------------------------------\n");
+    
+    {
+      Long minFreeMem = controls.getMinFreeMemory();
+      if(minFreeMem != null) 
+        pMinFreeMemory.set(minFreeMem);
+      minFreeMem = pMinFreeMemory.get();
+      buf.append("   Min Free Memory : " + minFreeMem + " " +
+                 "(" + ByteSize.longToFloatString(minFreeMem) + ")\n");
+    }
+    
+    {
+      Long gcInterval = controls.getCacheGCInterval();
+      if(gcInterval != null) 
+        pCacheGCInterval.set(gcInterval);
+      buf.append(" Cache GC Interval : " + pCacheGCInterval.get() + " (msec)\n");
+    }
+    
+    {
+      Long gcMisses = controls.getCacheGCMisses();     
+      if(gcMisses != null) 
+        pCacheTrigger.setOpsUntil(gcMisses); 
+      buf.append("   Cache GC Misses : " + pCacheTrigger.getOpsUntil() + " (msec)\n");
+    }
+
+    {
+      Double cacheFactor = controls.getCacheFactor();       
+      if(cacheFactor != null) 
+        pCacheFactor.set(cacheFactor); 
+      buf.append("      Cache Factor : " + pCacheFactor.get() + "\n"); 
+    }
+
+    {
+      Long repoCacheSize = controls.getRepoCacheSize(); 
+      if(repoCacheSize != null) 
+        pCheckedInCounters.setLowerBounds(repoCacheSize);
+      buf.append("   Repo Cache Size : " + pCheckedInCounters.getMinimum() + "\n"); 
+    }
+
+    {
+      Long workCacheSize = controls.getWorkCacheSize(); 
+      if(workCacheSize != null) 
+        pWorkingCounters.setLowerBounds(workCacheSize);
+      buf.append("   Work Cache Size : " + pWorkingCounters.getMinimum() + "\n"); 
+    }
+
+    {
+      Long checkCacheSize = controls.getCheckCacheSize(); 
+      if(checkCacheSize != null) 
+        pCheckSumCounters.setLowerBounds(checkCacheSize);
+      buf.append("  Check Cache Size : " + pCheckSumCounters.getMinimum() + "\n"); 
+    }
+
+    {
+      Long annotCacheSize = controls.getAnnotCacheSize(); 
+      if(annotCacheSize != null) 
+        pAnnotationCounters.setLowerBounds(annotCacheSize);
+      buf.append("  Annot Cache Size : " + pAnnotationCounters.getMinimum() + "\n"); 
+    }
+
+    {
+      Long interval = controls.getRestoreCleanupInterval();
+      if(interval != null) 
+        pRestoreCleanupInterval.set(interval);
+      buf.append("   Restore Cleanup : " + pRestoreCleanupInterval.get() + " (msec)\n");
+    }
+    
+    buf.append
+      ("----------------------------------------------------------------------------"); 
+    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -7615,7 +7624,7 @@ class MasterMgr
       table.remove(aname); 
 
       /* if no annotations exist now, get rid of the entry too */ 
-      if (table.isEmpty()) {  
+      if(table.isEmpty()) {  
         synchronized(pAnnotations) {
           pAnnotations.remove(name); 
         }
@@ -8775,9 +8784,8 @@ class MasterMgr
 
             /* write the new working version to disk */ 
             writeWorkingVersion(nid, nmod);
-            
-            /* update the bundle */ 
-            bundle.setVersion(nmod);
+
+            /* no need to update the bundle here since "nmod" is live */ 
           }
 	  
           /* copy checksums from old to new nodes */ 
@@ -15679,7 +15687,8 @@ class MasterMgr
 	    lock.readLock().lock();  
 	    try {
 	      timer.resume();	
-	      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	      TreeMap<VersionID,CheckedInBundle> checkedIn = 
+                getCheckedInBundles(name, false);
               
               for(Map.Entry<VersionID,CheckedInBundle> entry : checkedIn.entrySet()) {
                 NodeVersion vsn = entry.getValue().getVersion();
@@ -16300,7 +16309,7 @@ class MasterMgr
 		    try {
 		      timer.resume();	
 		      
-		      WorkingBundle bundle = getWorkingBundle(nodeID);
+		      WorkingBundle bundle = getWorkingBundle(nodeID, false);
 		      NodeMod mod = bundle.getVersion();
 		      if(vid.equals(mod.getWorkingID())) {
 			if((checkedOut == null) || (checkedOut < mod.getTimeStamp())) {
@@ -16691,7 +16700,7 @@ class MasterMgr
 		  for(String author : views.keySet()) {
 		    for(String view : views.get(author)) {
 		      NodeID nodeID = new NodeID(author, view, name);
-		      NodeMod mod = getWorkingBundle(nodeID).getVersion();
+		      NodeMod mod = getWorkingBundle(nodeID, false).getVersion();
 		      if(vid.equals(mod.getWorkingID())) 
 			throw new PipelineException
 			  ("The checked-in version (" + vid + ") of node (" + name + ") " + 
@@ -20271,8 +20280,10 @@ class MasterMgr
       table = pAnnotations.get(name);
     }
 
-    if(table != null) 
+    if(table != null) {
+      pAnnotationCounters.hit();
       return table;
+    }
 
     /* read in the annotations from disk */ 
     table = readAnnotations(name);
@@ -20283,7 +20294,7 @@ class MasterMgr
       pAnnotations.put(name, table);
     }    
 
-    /* keep track of the change to the node version cache (annotations count as a version) */ 
+    /* keep track of the change to the cache */ 
     incrementAnnotationCounter(name); 
 
     return table;
@@ -20338,8 +20349,10 @@ class MasterMgr
       table = pCheckedInBundles.get(name);
     }
 
-    if(table != null) 
+    if(table != null) {
+      pCheckedInCounters.hits(table.size());
       return table;
+    }
 
     /* read in the bundles from disk */ 
     table = readCheckedInVersions(name);
@@ -20352,9 +20365,8 @@ class MasterMgr
         pCheckedInBundles.put(name, table);
       }    
       
-      /* keep track of the change to the node version cache */ 
-      for(VersionID vid : table.keySet()) 
-        incrementCheckedInCounter(name, vid);
+      /* keep track of the change to the cache */ 
+      incrementCheckedInCounters(name, table.keySet());
     }
 
     return table;
@@ -20419,6 +20431,7 @@ class MasterMgr
     }
 
     if(bundle != null) {
+      pWorkingCounters.hit();
       return bundle;
     }
 
@@ -20436,7 +20449,7 @@ class MasterMgr
         pWorkingBundles.get(name).put(nodeID, bundle);
       }
       
-      /* keep track of the change to the node version cache */ 
+      /* keep track of the change to the cache */ 
       incrementWorkingCounter(nodeID); 
     }
 
@@ -20494,8 +20507,10 @@ class MasterMgr
       bundle = pCheckSumBundles.get(name, nodeID);
     }
 
-    if(bundle != null) 
+    if(bundle != null) {
+      pCheckSumCounters.hit();
       return bundle;
+    }
 
     /* read in the bundle from disk */ 
     CheckSumCache cache = readCheckSumCache(nodeID);
@@ -20509,7 +20524,8 @@ class MasterMgr
         pCheckSumBundles.put(name, nodeID, bundle); 
       }
 
-      // add caching counters here!!!
+      /* keep track of the change to the cache */ 
+      incrementCheckSumCounter(nodeID); 
     }
 
     return bundle;
@@ -20560,324 +20576,279 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Monitors the amount of memory held by the node version caches (both checked-in and
-   * working) and the amount of free memory to determine when the size of the node cache
-   * should be reduced.  When the cache needs to be reduced, the nodes with the oldest 
-   * last accessed timestamps will be removed from the checked-in/working node bundle
-   * tables.
+   * Monitors and manages the amount of memory held by various caches of node related 
+   * information.
    */ 
   public void 
-  nodeGC() 
+  cacheGC() 
   {
-    TaskTimer timer = new TaskTimer();
+    TaskTimer timer = new TaskTimer("Cache Garbage Collector");
 
-    /* estimate the amount of memory currently held in the node cache */ 
-    long cacheMemory = pNodeCacheSize.get() * pAverageNodeSize.get();
-    
-    /* lookup the amount of memory currenting being used by the JVM */ 
+    /* lookup the amount of memory currently being used by the JVM */ 
     Runtime rt = Runtime.getRuntime();
-    long freeMemory  = rt.freeMemory();
-    long totalMemory = rt.totalMemory();
-    long maxMemory   = rt.maxMemory();
-    long overhead    = maxMemory - totalMemory + freeMemory;
+    long minMemory  = pMinFreeMemory.get(); 
+    long maxMemory  = rt.maxMemory();
+    long freeMemory = maxMemory - rt.totalMemory() + rt.freeMemory();
 
-    /* if the overhead is below the minimun, 
-         first force a JVM garbage collection in order to see if enough overhead can 
-	 by freed up without a node collection and recompute the memory stats */ 
-    if(overhead < pMinimumOverhead.get()) {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("NodeGC [JVM Pre-GC]");
-      {
-	rt.gc();
+    /* report the current memory statistics */ 
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
+      LogMgr.getInstance().logAndFlush
+	(LogMgr.Kind.Mem, LogMgr.Level.Fine,
+         "Memory Report:\n" + 
+	 "  ---- JVM HEAP ----------------------\n" + 
+	 "       Free = " + freeMemory + 
+         " (" + ByteSize.longToFloatString(freeMemory) + ")\n" + 
+         "    Minimum = " + minMemory + 
+         " (" + ByteSize.longToFloatString(minMemory) + ")\n" +
+	 "    Maximum = " + maxMemory + 
+         " (" + ByteSize.longToFloatString(maxMemory) + ")\n" +
+	 "  ------------------------------------");
+    }
 
-	/* wait for the garbage collector to finish */ 
-	tm.aquire();
-	try {
-	  Thread.sleep(3000);
-	}
-	catch(InterruptedException ex) {
-	}
-	finally {
-	  tm.resume();
-	}
-	
-	freeMemory  = rt.freeMemory();
-	totalMemory = rt.totalMemory();
-	maxMemory   = rt.maxMemory();
-	overhead    = maxMemory - totalMemory + freeMemory;
+    boolean reduce = (freeMemory < minMemory); 
+    long totalFreed = 0L; 
+
+    /* checked-in garbage collection */ 
+    {
+      pCheckedInCounters.adjustBounds(reduce);
+      pCheckedInCounters.logStats();
+      pCheckedInCounters.reset();
+
+      if(pCheckedInCounters.hasExceededMax()) {
+        timer.suspend();
+        TaskTimer tm = new TaskTimer();
+
+        long freed = 0L;
+        while(pCheckedInCounters.hasExceededMin()) {
+          String name = pCheckedInRead.poll();
+          if(name == null) 
+            break;
+          
+          tm.aquire();
+          ReentrantReadWriteLock lock = getCheckedInLock(name);
+          lock.writeLock().lock();
+          try {
+            tm.resume();	
+            
+            TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+            tm.aquire();
+            synchronized(pCheckedInBundles) {
+              tm.resume();	
+              checkedIn = pCheckedInBundles.remove(name); 
+            }
+            
+            if(checkedIn != null) {
+              for(VersionID vid : checkedIn.keySet()) {
+                decrementCheckedInCounter(name, vid); 
+                freed++;
+              }
+            }
+          }
+          finally {
+            lock.writeLock().unlock();
+          }  
+        }
+
+        totalFreed += freed;
+        
+        tm.suspend();
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Mem, LogMgr.Level.Finer,
+           pCheckedInCounters.getTitle() + " [GC]: " + 
+           pCheckedInCounters.getCurrent() + "/" + freed + " (cached/freed)\n  " + tm);
+        timer.accum(tm);
       }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Mem, LogMgr.Level.Finer, 
-	 tm, timer);
+    }
+
+    /* working garbage collection */ 
+    {
+      pWorkingCounters.adjustBounds(reduce);
+      pWorkingCounters.logStats();
+      pWorkingCounters.reset();
+      
+      if(pWorkingCounters.hasExceededMax()) {
+        timer.suspend();
+        TaskTimer tm = new TaskTimer();
+
+        long freed = 0L;
+        while(pWorkingCounters.hasExceededMin()) {
+          NodeID nodeID = pWorkingRead.poll();
+          if(nodeID == null) 
+            break;
+          
+          tm.aquire();
+          ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+          workingLock.writeLock().lock();
+          try {
+            tm.resume();	
+            
+            String name = nodeID.getName();
+            boolean found = false;
+            tm.aquire();
+            synchronized(pWorkingBundles) {
+              tm.resume();	
+              TreeMap<NodeID,WorkingBundle> bundles = pWorkingBundles.get(name); 
+              if(bundles != null) {
+                bundles.remove(nodeID);
+                if(bundles.isEmpty()) 
+                  pWorkingBundles.remove(name); 
+                found = true;
+              }
+            }
+
+            if(found) {
+              decrementWorkingCounter(nodeID); 
+              freed++;
+            }
+          }
+          finally {
+            workingLock.writeLock().unlock();
+          }  
+        }
+        
+        totalFreed += freed;
+
+        tm.suspend();
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Mem, LogMgr.Level.Finer,
+           pWorkingCounters.getTitle() + " [GC]: " + 
+           pWorkingCounters.getCurrent() + "/" + freed + " (cached/freed)\n  " + tm);
+        timer.accum(tm);
+      }
     }
     
-    /* report the current memory statistics */ 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finer)) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Mem, LogMgr.Level.Finer,
-	 "Pre-GC Memory Stats:\n" + 
-	 "  ---- JVM HEAP ----------------------\n" + 
-	 "    Free = " + freeMemory + 
-	             " (" + ByteSize.longToFloatString(freeMemory) + ")\n" + 
-	 "   Total = " + totalMemory + 
-	             " (" + ByteSize.longToFloatString(totalMemory) + ")\n" +
-	 "     Max = " + maxMemory + 
-	             " (" + ByteSize.longToFloatString(maxMemory) + ")\n" +
-	 "  ---- OVERHEAD ----------------------\n" + 
-	 "     Avl = " + overhead + 
-	             " (" + ByteSize.longToFloatString(overhead) + ")\n" +
-	 "     Min = " + pMinimumOverhead.get() + 
-	             " (" + ByteSize.longToFloatString(pMinimumOverhead.get()) + ")\n" +
-	 "     Max = " + pMaximumOverhead.get() + 
-	             " (" + ByteSize.longToFloatString(pMaximumOverhead.get()) + ")\n" +
-	 "  ---- NODE CACHE --------------------\n" + 
-	 "   Cache = " + pNodeCacheSize.get() + " (node versions)\n" + 
-	 "    Node = " + pAverageNodeSize.get() + " (bytes/version)\n" +
-	 "     Mem = " + cacheMemory +
-	             " (" + ByteSize.longToFloatString(cacheMemory) + ")\n" +
-	 "  ------------------------------------");
-      LogMgr.getInstance().flush();
-    }
+    /* checksum garbage collection */ 
+    {
+      pCheckSumCounters.adjustBounds(reduce);
+      pCheckSumCounters.logStats();
+      pCheckSumCounters.reset();
 
-    /* nothing cached, so no reason to run the node garbage collector */ 
-    if(pNodeCacheSize.get() == 0) {
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	   "NodeGC: (empty cache)\n  " + timer); 
+      if(pCheckSumCounters.hasExceededMax()) {
+        timer.suspend();
+        TaskTimer tm = new TaskTimer();
+
+        long freed = 0L;
+        while(pCheckSumCounters.hasExceededMin()) {
+          NodeID nodeID = pCheckSumsRead.poll();
+          if(nodeID == null) 
+            break;
+          
+          tm.aquire();
+          ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+          clock.writeLock().lock();
+          try {
+            tm.resume();	
+            
+            boolean found = false;
+            tm.aquire();
+            synchronized(pCheckSumBundles) {
+              tm.resume();	
+              CheckSumBundle bundle = pCheckSumBundles.remove(nodeID.getName(), nodeID);
+              if(bundle != null) 
+                found = true;
+            }
+
+            if(found) {
+              decrementCheckSumCounter(nodeID); 
+              freed++;
+            }
+          }
+          finally {
+            clock.writeLock().unlock();
+          }  
+        }
+        
+        totalFreed += freed;
+
+        tm.suspend();
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Mem, LogMgr.Level.Finer,
+           pCheckSumCounters.getTitle() + " [GC]: " + 
+           pCheckSumCounters.getCurrent() + "/" + freed + " (cached/freed)\n  " + tm);
+        timer.accum(tm);
       }
     }
-    else {
-      /* if the amount of overhead is less than the minimum, 
-	   free up enough node versions from the cache to raise the overhead up to 
-	   the maximum */
-      long exceeded = 0L;
-      if(overhead < pMinimumOverhead.get()) {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("NodeGC [Reducing Node Cache]");
-	{
-	  /* the estimated number of nodes to free */ 
-	  exceeded = (pMaximumOverhead.get() - overhead) / pAverageNodeSize.get();
-	  
-	  /* make sure we don't try to free more versions than are available to be freed */
-	  if(exceeded > pNodeCacheSize.get()) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Mem, LogMgr.Level.Warning,
-	       "The maximum overhead (" + pMaximumOverhead.get() + ") cannot be achieved " + 
-	       "even by freeing all (" + pNodeCacheSize.get() + ") versions from the node " + 
-	       "cache!  Either the maximum overhead is set too high or the maximum heap " + 
-	       "size (" + maxMemory + ") is set too low to provide a sufficent amount of " + 
-	       "node cache needed for efficient operation."); 
-	    
-	    exceeded = pNodeCacheSize.get();
-	  }
-	  
-	  tm.aquire();
-	  pDatabaseLock.writeLock().lock();
-	  try {
-	    tm.resume();
-	    
-	    /* sort the cached versions by newest last access time */
-	    long cached = 0L;
-	    TreeMap<Long,String> sorted = new TreeMap<Long,String>();
-	    {
-              // THIS LOOKS WRONG IN SEVERAL WAYS: 
-              //
-              // 1. There is no guarentee that the timestamps are unique, so making a table
-              //    indexed by them is a bad idea.
-              // 
-              // 2. Sorting them this way is not efficient.  We should instead build an
-              //    array of a temp class which contains just the timestamp and node name
-              //    then sort it with Arrays.sort(). 
 
-	      TreeSet<String> names = new TreeSet<String>();
-	      names.addAll(pCheckedInBundles.keySet());
-	      names.addAll(pWorkingBundles.keySet());
-	      
-	      for(String name : names) {
-		long newest = 0L;
-		long count = 0L;
+    /* annotation garbage collection */ 
+    {
+      pAnnotationCounters.adjustBounds(reduce);
+      pAnnotationCounters.logStats();
+      pAnnotationCounters.reset();
 
-                if(pAnnotations.get(name) != null) 
-                  count++;
+      if(pAnnotationCounters.hasExceededMax()) {
+        timer.suspend();
+        TaskTimer tm = new TaskTimer();
 
-		{
-		  TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-		  if(table != null) {
-		    for(CheckedInBundle bundle : table.values()) {
-		      newest = Math.max(newest, bundle.getLastAccess());
-		      count++;
-		    }
-		  }
-		}
-		
-		{
-		  TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-		  if(table != null) {
-		    for(WorkingBundle bundle : table.values()) {
-		      newest = Math.max(newest, bundle.getLastAccess());
-		      count++;		
-		    }
-		  }
-		}
-	    
-		sorted.put(newest, name);
-		cached += count;
-	      }
-	    }
+        long freed = 0L;
+        while(pAnnotationCounters.hasExceededMin()) {
+          String name = pAnnotationsRead.poll();
+          if(name == null) 
+            break;
 
-	    /* sanity check */ 
-	    if(pNodeCacheSize.get() != cached) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Mem, LogMgr.Level.Warning,
-		 "The number of nodes computed by analyzing the node cache " +
-		 "(" + cached + ") did not match the node size counter " + 
-		 "(" + pNodeCacheSize.get() + ")!  " + 
-		 "Resetting the node size counter to actual cache size.");
-	  
-	      pNodeCacheSize.set(cached);
-	    }
+          tm.aquire();
+          ReentrantReadWriteLock clock = getAnnotationsLock(name);
+          clock.writeLock().lock();
+          try {
+            tm.resume();	
+            
+            boolean found = false;
+            tm.aquire();
+            synchronized(pAnnotations) {
+              tm.resume();	
+              found = (pAnnotations.remove(name) != null); 
+            }
 
-	    /* collect enough versions to lower the cache below the exceeded level */ 
-	    long freed = 0L;
-	    for(String name : sorted.values()) {
-	      if(freed >= exceeded) 
-		break;
-	  
-	      /* free working versions */ 
-	      {
-		TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-		if(table != null) {
-		  freed += table.size();
-		  pWorkingBundles.remove(name);
+            if(found) {
+              decrementAnnotationCounter(name); 
+              freed++;
+            }
+          }
+          finally {
+            clock.writeLock().unlock();
+          }  
+        }
+        
+        totalFreed += freed;
 
-		  for(NodeID id : table.keySet()) 
-		    decrementWorkingCounter(id);
-		}
-	      }
-	  
-	      /* free checked-in versions */ 
-	      {
-		TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-		if(table != null) {
-		  freed += table.size();
-		  pCheckedInBundles.remove(name);
-
-		  for(VersionID vid : table.keySet()) 
-		    decrementCheckedInCounter(name, vid);
-		}
-	      }
-
-              /* free annotations */ 
-              if(pAnnotations.get(name) != null) {
-                pAnnotations.remove(name);
-                decrementAnnotationCounter(name); 
-              }
-	    }
-	  }
-	  finally {
-	    pDatabaseLock.writeLock().unlock();
-	  } 
-	}
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Mem, LogMgr.Level.Finer, 
-	   tm, timer);
-      
-	/* force another JVM garbage collection in order to determine how much memory 
-	   was actually freed and adjust the average size of a node version */ 
-	long avgNodeSize = 0L;
-	{
-	  timer.suspend();
-	  TaskTimer tm2 = new TaskTimer("NodeGC [JVM Post-GC]");
-	  {
-	    rt.gc();
-	  
-	    /* wait for the garbage collector to finish */ 
-	    tm2.aquire();
-	    try {
-	      Thread.sleep(3000);
-	    }
-	    catch(InterruptedException ex) {
-	    }
-	    finally {
-	      tm2.resume();
-	    }
-	  
-	    long oldOverhead = overhead; 
-
-	    freeMemory  = rt.freeMemory();
-	    totalMemory = rt.totalMemory();
-	    maxMemory   = rt.maxMemory();
-	    overhead    = maxMemory - totalMemory + freeMemory;
-
-	    avgNodeSize = (overhead - oldOverhead) / exceeded;
-	    if(avgNodeSize > 0L) {
-	      long newSize = (long) (pAverageNodeSize.get()*0.85 + avgNodeSize*0.15);
-	      if((newSize > 2048L) && (newSize < 65536L))
-		pAverageNodeSize.set(newSize);
-	    }
-
-	    cacheMemory = pNodeCacheSize.get() * pAverageNodeSize.get();
-	  }
-	  LogMgr.getInstance().logSubStage
-	    (LogMgr.Kind.Mem, LogMgr.Level.Finer, 
-	     tm2, timer);
-	}
-
-	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	     "NodeGC: " + pNodeCacheSize.get() + "/" + exceeded + " (cached/freed)\n  " + 
-	     timer); 
-	}
-
-	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finer)) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Mem, LogMgr.Level.Finer,
-	     "Post-GC Memory Stats:\n" + 
-	     "  ---- JVM HEAP ----------------------\n" + 
-	     "    Free = " + freeMemory + 
-	                 " (" + ByteSize.longToFloatString(freeMemory) + ")\n" + 
-	     "   Total = " + totalMemory + 
-	                 " (" + ByteSize.longToFloatString(totalMemory) + ")\n" +
-	     "     Max = " + maxMemory + 
-	                 " (" + ByteSize.longToFloatString(maxMemory) + ")\n" +
-	     "  ---- OVERHEAD ----------------------\n" + 
-	     "     Avl = " + overhead + 
-	                 " (" + ByteSize.longToFloatString(overhead) + ")\n" +
-	     "     Min = " + pMinimumOverhead.get() + 
-	                 " (" + ByteSize.longToFloatString(pMinimumOverhead.get()) + ")\n" +
-	     "     Max = " + pMaximumOverhead.get() + 
-           	         " (" + ByteSize.longToFloatString(pMaximumOverhead.get()) + ")\n" +
-	     "  ---- NODE CACHE --------------------\n" + 
-	     "   Cache = " + pNodeCacheSize.get() + " (node versions)\n" + 
-	     "     Est = " + avgNodeSize + " (bytes/version)\n" + 
-	     "    Node = " + pAverageNodeSize.get() + " (bytes/version)\n" +
-	     "     Mem = " + cacheMemory +
-	                 " (" + ByteSize.longToFloatString(cacheMemory) + ")\n" +
-	     "  ------------------------------------");
-	  LogMgr.getInstance().flush();
-	}
-
-	/* post-op tasks */ 
-	if(exceeded > 0L) {
-	  MasterTaskFactory factory = 
-	    new NodeGarbageCollectExtFactory(pNodeCacheSize.get(), exceeded);
-	  startExtensionTasks(timer, factory);			    
-	}
+        tm.suspend();
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Mem, LogMgr.Level.Finer,
+           pAnnotationCounters.getTitle() + " [GC]: " + 
+           pAnnotationCounters.getCurrent() + "/" + freed + " (cached/freed)\n  " + tm);
+        timer.accum(tm);
       }
+    }
+
+    /* if we freed up a lot of cache entries, trigger a full JVM garbage collection now */ 
+    if(totalFreed > pCacheTrigger.getOpsUntil()) {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("JVM Heap [GC]: " + totalFreed + " (freed)");
+
+      rt.gc();
+
+      LogMgr.getInstance().logSubStage
+        (LogMgr.Kind.Mem, LogMgr.Level.Finer, 
+         tm, timer);
     }
 
     /* if we're ahead of schedule, take a nap */ 
     {
-      timer.suspend();
-      long nap = pNodeGCInterval.get() - timer.getTotalDuration();
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	 timer); 
+
+      long nap = pCacheGCInterval.get() - timer.getTotalDuration();
       if(nap > 0) {
 	try {
-	  Thread.sleep(nap);
+          pCacheTrigger.block(nap); 
 	}
 	catch(InterruptedException ex) {
 	}
+      }
+      else {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	   "Cache Monitor: Overbudget by (" + (-nap) + ") msec...");
       }
     }
   }
@@ -20886,91 +20857,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Record that a new set of annotations have been added to the node cache.
-   */ 
-  private void 
-  incrementAnnotationCounter
-  (
-   String name
-  ) 
-  {
-    pNodeCacheSize.getAndAdd(1L);
-
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	 "Cached Annotation: " + name + "\n" + 
-	 "  Total Cached = " + pNodeCacheSize.get()); 
-    }
-  }
-
-  /**
-   * Record that a new set of annotations have been freed from the node cache. 
-   */ 
-  private void 
-  decrementAnnotationCounter
-  (
-   String name
-  ) 
-  {
-    pNodeCacheSize.getAndAdd(-1L);
-
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	 "Freed Annotation: " + name + "\n" + 
-	 "  Total Cached = " + pNodeCacheSize.get()); 
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Record that a new working version has been added to the node cache.
-   */ 
-  private void 
-  incrementWorkingCounter
-  (
-   NodeID nodeID
-  ) 
-  {
-    pNodeCacheSize.getAndAdd(1L);
-
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	 "Cached Working Version: " + nodeID.getName() + 
-	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
-	 "  Total Cached = " + pNodeCacheSize.get()); 
-    }
-  }
-
-  /**
-   * Record that a working version has been freed from the node cache. 
-   */ 
-  private void 
-  decrementWorkingCounter
-  (
-   NodeID nodeID
-  ) 
-  {
-    pNodeCacheSize.getAndAdd(-1L);
-
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	 "Freed Working Version: " +  nodeID.getName() + 
-	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
-	 "  Total Cached = " + pNodeCacheSize.get()); 
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Record that a new checked-in version has been added to the node cache.
+   * Record that a new checked-in version has been added to the cache.
    */ 
   private void 
   incrementCheckedInCounter
@@ -20979,18 +20866,42 @@ class MasterMgr
    VersionID vid
   ) 
   {
-    pNodeCacheSize.getAndAdd(1L);
+    long cached = pCheckedInCounters.miss(); 
+    pCheckedInRead.add(name);
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Cached Checked-In Version: " + name + " v" + vid + "\n" + 
-	 "  Total Cached = " + pNodeCacheSize.get()); 
+	 "  Total Cached = " + cached); 
     }
   }
 
   /**
-   * Record that a checked-in version has been freed from the node cache. 
+   * Record that a new set of checked-in versions have been added to the cache.
+   */ 
+  private void 
+  incrementCheckedInCounters
+  (
+   String name, 
+   Set<VersionID> vids
+  ) 
+  {
+    for(VersionID vid : vids) {
+      long cached = pCheckedInCounters.miss(); 
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Mem, LogMgr.Level.Finest,
+           "Cached Checked-In Version: " + name + " v" + vid + "\n" + 
+	 "  Total Cached = " + cached); 
+      }
+    }
+
+    pCheckedInRead.add(name);
+  }
+
+  /**
+   * Record that a checked-in version has been freed from the cache. 
    */ 
   private void 
   decrementCheckedInCounter
@@ -20999,13 +20910,142 @@ class MasterMgr
    VersionID vid
   ) 
   {
-    pNodeCacheSize.getAndAdd(-1L);
+    long cached = pCheckedInCounters.free(); 
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Freed Checked-In Version: " + name + " v" + vid + "\n" + 
-	 "  Total Cached = " + pNodeCacheSize.get()); 
+	 "  Total Cached = " + cached); 
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Record that a new working version has been added to the cache.
+   */ 
+  private void 
+  incrementWorkingCounter
+  (
+   NodeID nodeID
+  ) 
+  {
+    long cached = pWorkingCounters.miss(); 
+    pWorkingRead.add(nodeID);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Cached Working Version: " + nodeID.getName() + 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
+	 "  Total Cached = " + cached); 
+    }
+  }
+
+  /**
+   * Record that a working version has been freed from the cache. 
+   */ 
+  private void 
+  decrementWorkingCounter
+  (
+   NodeID nodeID
+  ) 
+  {
+    long cached = pWorkingCounters.free(); 
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Freed Working Version: " +  nodeID.getName() + 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
+	 "  Total Cached = " + cached); 
+    }
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Record that a new working version checksum has been added to the cache.
+   */ 
+  private void 
+  incrementCheckSumCounter
+  (
+   NodeID nodeID
+  ) 
+  {
+    long cached = pCheckSumCounters.miss(); 
+    pCheckSumsRead.add(nodeID);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Cached Working CheckSum: " + nodeID.getName() + 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
+	 "  Total Cached = " + cached); 
+    }
+  }
+
+  /**
+   * Record that a working version checksum has been freed from the cache. 
+   */ 
+  private void 
+  decrementCheckSumCounter
+  (
+   NodeID nodeID
+  ) 
+  {
+    long cached = pCheckSumCounters.free(); 
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Freed Working CheckSum: " +  nodeID.getName() + 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
+	 "  Total Cached = " + cached); 
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Record that a new set of annotations have been added to the cache.
+   */ 
+  private void 
+  incrementAnnotationCounter
+  (
+   String name
+  ) 
+  {
+    long cached = pAnnotationCounters.miss(); 
+    pAnnotationsRead.add(name);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Cached Annotation: " + name + "\n" + 
+	 "  Total Cached = " + cached); 
+    }
+  }
+
+  /**
+   * Record that a new set of annotations have been freed from the cache. 
+   */ 
+  private void 
+  decrementAnnotationCounter
+  (
+   String name
+  ) 
+  {
+    long cached = pAnnotationCounters.free(); 
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Freed Annotation: " + name + "\n" + 
+	 "  Total Cached = " + cached); 
     }
   }
 
@@ -22676,7 +22716,7 @@ class MasterMgr
     throws PipelineException
   {
     File file = new File(pNodeDir, "etc/next-ids");
-    if(file.exists()) {
+    if(file.isFile()) {
       if(!file.delete())
 	throw new PipelineException
 	  ("Unable to remove the old job/group IDs file (" + file + ")!");
@@ -22711,7 +22751,7 @@ class MasterMgr
     throws PipelineException 
   {
     File file = new File(pNodeDir, "etc/next-ids");
-    if(file.exists()) {
+    if(file.isFile()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Next IDs.");
@@ -23159,7 +23199,7 @@ class MasterMgr
     File backup = new File(file + ".backup");
     
     try {
-      if(file.exists()) {
+      if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Working Version: " + id);
@@ -23174,7 +23214,7 @@ class MasterMgr
 	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
-	  if(backup.exists()) {
+	  if(backup.isFile()) {
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	       "Reading Working Version (Backup): " + id);
@@ -23321,7 +23361,7 @@ class MasterMgr
     File dir   = new File(pNodeDir, "checksum" + nodeID.getWorkingParent());
     File file  = new File(dir, ipath.getName()); 
     
-    if(!file.exists())
+    if(!file.isFile())
       return null;
 
     LogMgr.getInstance().log
@@ -23367,7 +23407,7 @@ class MasterMgr
     File dir   = new File(pNodeDir, "checksum" + nodeID.getWorkingParent());
     File file  = new File(dir, ipath.getName()); 
     
-    if(file.exists())
+    if(file.isFile())
       return; 
 
     try {
@@ -23531,7 +23571,7 @@ class MasterMgr
     File file = new File(pNodeDir, "downstream/" + name);
     
     try {
-      if(file.exists()) {
+      if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Downstream Links: " + name);
@@ -24110,6 +24150,312 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A set of counters for keeping track of the size and effectiveness of a database cache.
+   */ 
+  private class
+  CacheCounters
+  {
+    /**
+     * Construct a new cache counter.
+     * 
+     * @param title
+     *   An identifier to use in log messages and warnings.
+     * 
+     * @param size
+     *   The initial minimum size of the cache.
+     * 
+     * @param thresh
+     *   The lower bounds of minimum size.
+     */ 
+    public 
+    CacheCounters
+    (
+     String title, 
+     long size, 
+     long thresh
+    ) 
+    {
+      pTitle = title; 
+      pCurrent = 0L;
+
+      if(thresh < 1L) 
+        throw new IllegalArgumentException
+          ("The threshold (" + thresh + ") must be positive!"); 
+      pThreshold = thresh; 
+
+      setLowerBounds(size); 
+    }
+
+    
+    /*-- PREDICATES ------------------------------------------------------------------------*/
+    
+    public synchronized boolean
+    hasExceededMin() 
+    {
+      return pCurrent > pMinimum;
+    }
+
+    public synchronized boolean
+    hasExceededMax() 
+    {
+      return pCurrent >= pMaximum;
+    }
+
+
+    /*-- GETTERS ---------------------------------------------------------------------------*/
+
+    public String
+    getTitle()
+    {
+      return pTitle; 
+    }
+
+    public synchronized long
+    getCurrent()
+    {
+      return pCurrent;
+    }
+
+    public synchronized long
+    getHits()
+    {
+      return pHits; 
+    }
+
+    public synchronized long
+    getMisses()
+    {
+      return pMisses; 
+    }
+
+    public synchronized long
+    getMinimum()
+    {
+      return pMinimum;
+    }
+
+    public synchronized long
+    getMaximum()
+    {
+      return pMaximum;
+    }
+
+    
+    /*-- SETTERS ---------------------------------------------------------------------------*/
+
+    /**
+     * Set the minimum size of the cache to the given value and recompute the maximum based
+     * on this new minimum.
+     */ 
+    public synchronized void
+    setLowerBounds
+    (
+     long min
+    )
+    {
+      double factor = pCacheFactor.get();
+      pMinimum = Math.max(min, pThreshold); 
+      pMaximum = (long) (((double) pMinimum) / factor);
+    }
+    
+    /**
+     * Set the maximum size of the cache to the given value and recompute the minimum based
+     * on this new maximum.
+     */ 
+    public synchronized void
+    setUpperBounds
+    (
+     long max
+    )
+    {
+      double factor = pCacheFactor.get();
+      pMinimum = Math.max((long) (((double) max) * factor), pThreshold); 
+      pMaximum = (long) (((double) pMinimum) / factor);
+    }
+    
+    /**
+     * Dynamically adjust the min/max bounds of the cache based on usage.<P> 
+     *  
+     * @param reduce
+     *   Whether to reduce the size of the cache (or increase it).
+     */ 
+    public synchronized void 
+    adjustBounds
+    (
+     boolean reduce
+    ) 
+    {
+      long omin = pMinimum; 
+      long omax = pMaximum;
+
+      if(reduce) 
+        setUpperBounds(Math.min(pMinimum, pCurrent)); 
+      else if(pCurrent > pMinimum) 
+        setLowerBounds(pCurrent); 
+
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
+        if((omin != pMinimum) || (omax != pMaximum)) {
+          double ratioMin = ((double) pMinimum) / ((double) omin);
+          double deltaMin = (omin > pMinimum) ? -ratioMin+1.0 : ratioMin-1.0;
+        
+          double ratioMax = ((double) pMaximum) / ((double) omax);
+          double deltaMax = (omax > pMaximum) ? -ratioMax+1.0 : ratioMax-1.0;
+
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Mem, LogMgr.Level.Fine, 
+             pTitle + " [" + (reduce ? "Reduced" : "Increased") + "]: " + 
+             "Min=" + omin + "->" + pMinimum + 
+             "(" + String.format("%1$.1f", deltaMin*100.0) + "%)  " + 
+             "Max=" + omax + "->" + pMaximum +
+             "(" + String.format("%1$.1f", deltaMax*100.0) + "%)"); 
+        }
+      }
+    }
+      
+
+    /*-- STATISTICS ------------------------------------------------------------------------*/
+
+    public synchronized void
+    reset() 
+    {
+      pHits   = 0L; 
+      pMisses = 0L;
+    }
+
+    public synchronized void 
+    hit() 
+    {
+      pHits++; 
+    }
+
+    public synchronized void 
+    hits
+    (
+     long amount
+    ) 
+    {
+      pHits += amount; 
+    }
+
+    public synchronized long
+    miss() 
+    {
+      pMisses++; 
+      pCurrent++;
+      pCacheTrigger.performed();
+      return pCurrent; 
+    }
+
+    public synchronized long 
+    free() 
+    {
+      pCurrent--;
+      if(pCurrent < 0L) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Mem, LogMgr.Level.Warning, 
+           "Somehow the Current count of cached " + pTitle.toLowerCase() + " has become " +
+           "negative!  Resetting it to zero..."); 
+        pCurrent = 0L;
+      }
+      return pCurrent;
+    }
+
+    public synchronized void 
+    logStats() 
+    {
+      if(!LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finer))
+        return;
+
+      long total = pHits + pMisses;
+      double disk = (total > 0L) ? ((double) pMisses) / ((double) (total)) : 0.0;
+
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Mem, LogMgr.Level.Finer,
+         pTitle + ":\n" + 
+	 "  ---- CACHE STATS -------------------\n" +
+         "      Cached = " + pCurrent + "\n" + 
+         "     Min/Max = " + pMinimum + "/" + pMaximum + "\n" + 
+         "    Hit/Miss = " + pHits + "/" + pMisses + "\n" + 
+         "        Disk = " + String.format("%1$.1f", disk*100.0) + "%\n" + 
+	 "  ------------------------------------");
+    }
+
+
+    /*-- INTERNALS -------------------------------------------------------------------------*/
+
+    private String pTitle; 
+    private long pCurrent;
+    private long pThreshold;
+    private long pMinimum;
+    private long pMaximum;
+    private long pHits;
+    private long pMisses;
+  }
+
+  /**
+   * A helper class used to block the cache garbage collector thread until a certain number 
+   * operations have been performed or a time interval expires.
+   */ 
+  private class
+  CacheTrigger
+  {
+    public 
+    CacheTrigger
+    (
+     long opsUntil
+    )
+    {
+      pOpsLeft  = new Long(0L);
+      pOpsUntil = new AtomicLong(opsUntil);
+      pTrigger  = new Semaphore(0); 
+    }
+
+    public long
+    getOpsUntil()
+    {
+      return pOpsUntil.get();
+    }
+
+    public void 
+    setOpsUntil
+    (
+     long opsUntil     
+    )
+    {
+      pOpsUntil.set(opsUntil); 
+    }
+
+    public void 
+    performed()
+    {
+      synchronized(pOpsLeft) {
+        pOpsLeft--;
+        if(pOpsLeft < 0L) {
+          pOpsLeft = pOpsUntil.get();
+          pTrigger.release(); 
+        }
+      }
+    }
+    
+    public void 
+    block
+    (
+     long interval
+    ) 
+      throws InterruptedException
+    {
+      pTrigger.tryAcquire(1, interval, TimeUnit.MILLISECONDS);
+    }
+
+    private Long pOpsLeft;
+    private AtomicLong pOpsUntil;
+    private Semaphore  pTrigger; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * The information related to a working version of a node for a particular view owned by
@@ -24127,8 +24473,7 @@ class MasterMgr
      NodeMod mod
     ) 
     {
-      pVersion    = mod;
-      pLastAccess = System.currentTimeMillis();
+      pVersion = mod;
     }
 
     /**
@@ -24137,7 +24482,6 @@ class MasterMgr
     public NodeMod
     getVersion()
     {
-      pLastAccess = System.currentTimeMillis();
       return pVersion;
     }
    
@@ -24150,28 +24494,13 @@ class MasterMgr
      NodeMod mod
     )
     {
-      pLastAccess = System.currentTimeMillis();
-      pVersion    = mod; 
+      pVersion = mod; 
     }
    
-    /**
-     * Get the timestamp of when the version was last accessed.
-     */
-    public long
-    getLastAccess()
-    {
-      return pLastAccess;
-    }
-
     /**
      * The working version of a node. 
      */ 
     private NodeMod  pVersion;
-
-    /**
-     * The timestamp of when the version was last accessed.
-     */ 
-    private long  pLastAccess; 
   }
 
 
@@ -24194,7 +24523,6 @@ class MasterMgr
     ) 
     {
       pCache = new CheckSumCache(nodeID); 
-      pLastAccess = System.currentTimeMillis();
     }
 
     /** 
@@ -24207,7 +24535,6 @@ class MasterMgr
     ) 
     {
       pCache = cache; 
-      pLastAccess = System.currentTimeMillis();
     }
 
     /**
@@ -24216,7 +24543,6 @@ class MasterMgr
     public CheckSumCache
     getCache()
     {
-      pLastAccess = System.currentTimeMillis();
       return pCache; 
     }
    
@@ -24229,28 +24555,13 @@ class MasterMgr
      CheckSumCache cache
     )
     {
-      pLastAccess = System.currentTimeMillis();
       pCache = cache; 
     }
    
     /**
-     * Get the timestamp of when the cache was last accessed.
-     */
-    public long
-    getLastAccess()
-    {
-      return pLastAccess;
-    }
-
-    /**
      * The checksum cache. 
      */ 
     private CheckSumCache  pCache; 
-
-    /**
-     * The timestamp of when the cache was last accessed.
-     */ 
-    private long  pLastAccess; 
   }
 
 
@@ -24271,8 +24582,7 @@ class MasterMgr
      NodeVersion vsn
     ) 
     {
-      pVersion    = vsn;
-      pLastAccess = System.currentTimeMillis();
+      pVersion = vsn;
     }
 
     /**
@@ -24281,7 +24591,6 @@ class MasterMgr
     public NodeVersion
     getVersion()
     {
-      pLastAccess = System.currentTimeMillis();
       return pVersion;
     }
    
@@ -24294,28 +24603,13 @@ class MasterMgr
      NodeVersion vsn
     )
     {
-      pLastAccess = System.currentTimeMillis();
-      pVersion    = vsn; 
+      pVersion = vsn; 
     }
    
-    /**
-     * Get the timestamp of when the version was last accessed.
-     */
-    public long
-    getLastAccess()
-    {
-      return pLastAccess;
-    }
-
     /**
      * The checked-in version of a node.
      */ 
     public NodeVersion  pVersion;
-
-    /**
-     * The timestamp of when the version was last accessed.
-     */ 
-    private long  pLastAccess; 
   }
 
 
@@ -24679,32 +24973,26 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The current number of node versions (checked-in and working) cached in memory.
+   * The maximum amount of time between cache garbage collections regardless of activity.
    */ 
-  private AtomicLong  pNodeCacheSize; 
+  private AtomicLong  pCacheGCInterval; 
 
   /**
-   * The estimated memory size of a node version (in bytes).
+   * Used to block the cache garbage collector thread until a certain number operations have 
+   * been performed or a time interval expires.
    */ 
-  private AtomicLong  pAverageNodeSize; 
+  private CacheTrigger  pCacheTrigger; 
 
   /**
-   * The minimum and maximum amount of memory overhead which should be maintained at 
-   * all times.  Overhead is defined as the difference between the max heap size and 
-   * the total non-garbage heap allocation.  When the minimum amount of overhead is 
-   * no longer available a node garbage collection will take place which frees enough
-   * memory from the node version caches (checked-in and working) to raise the overhead
-   * up to the maximum value.
+   * The minimum amount of heap memory (max - total + free) to maintain.
    */ 
-  private AtomicLong  pMinimumOverhead; 
-  private AtomicLong  pMaximumOverhead; 
+  private AtomicLong  pMinFreeMemory;
 
   /**
-   * The minimum time a cycle of the node cache garbage collector loop should 
-   * take (in milliseconds).
+   * The percentage [0-1] of the maximum size of a cache to set its minimum.
    */ 
-  private AtomicLong  pNodeGCInterval; 
-
+  private AtomicReference<Double>  pCacheFactor;
+  
 
   /**
    * The per-node locks indexed by fully resolved node name. <P> 
@@ -24723,6 +25011,22 @@ class MasterMgr
   //private DoubleMap<String,String,BaseAnnotation>  pAnnotations;  <-- Use this instead.
 
   /**
+   * A set of counters for keeping track of the size of effectiveness of the per-node
+   * annotation cache.
+   */ 
+  private CacheCounters  pAnnotationCounters;
+
+  /**
+   * The fully resolved node names of annotations read from disk and placed into the
+   * annotations cache in the order they were read. <P> 
+   * 
+   * When looking to reduce the size of the cache, the garbage collector will free 
+   * entries from this FIFO in the order they were originally read.
+   */ 
+  private LinkedBlockingDeque<String>  pAnnotationsRead;
+
+
+  /**
    * The per-node locks indexed by fully resolved node name. <P> 
    * 
    * These locks protect the checked-in versions of each node. The per-node read-lock should 
@@ -24739,6 +25043,21 @@ class MasterMgr
    */ 
   private TreeMap<String,TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
   //private DoubleMap<String,VersionID,CheckedInBundle>  pCheckedInBundles;  <-- Use this 
+  
+  /**
+   * A set of counters for keeping track of the size of effectiveness of the checked-in
+   * node version cache. 
+   */ 
+  private CacheCounters  pCheckedInCounters;
+
+  /**
+   * The fully resolved node names of checked-in versions read from disk and placed into the
+   * cache in the order they were read. <P> 
+   * 
+   * When looking to reduce the size of the cache, the garbage collector will free 
+   * entries from this FIFO in the order they were originally read.
+   */ 
+  private LinkedBlockingDeque<String>  pCheckedInRead;
 
 
   /**
@@ -24759,6 +25078,21 @@ class MasterMgr
   private TreeMap<String,TreeMap<NodeID,WorkingBundle>>  pWorkingBundles;
   //private DoubleMap<String,NodeID,WorkingBundle>  pWorkingBundles;  <-- Use this instead.
  
+  /**
+   * A set of counters for keeping track of the size of effectiveness of the working
+   * node version cache. 
+   */ 
+  private CacheCounters  pWorkingCounters;
+
+  /**
+   * The workig version IDs of the working node versions read from disk and placed into the
+   * cache in the order they were read. <P> 
+   * 
+   * When looking to reduce the size of the cache, the garbage collector will free 
+   * entries from this FIFO in the order they were originally read.
+   */ 
+  private LinkedBlockingDeque<NodeID>  pWorkingRead;
+
 
   /**
    * The per-working version checksum cache locks indexed by working version node ID. <P> 
@@ -24777,6 +25111,21 @@ class MasterMgr
    */ 
   private DoubleMap<String,NodeID,CheckSumBundle>  pCheckSumBundles;
  
+  /**
+   * A set of counters for keeping track of the size of effectiveness of the working
+   * version checksum cache. 
+   */ 
+  private CacheCounters  pCheckSumCounters;
+
+  /**
+   * The workig version IDs of the working version checksums read from disk and placed into the
+   * cache in the order they were read. <P> 
+   * 
+   * When looking to reduce the size of the cache, the garbage collector will free 
+   * entries from this FIFO in the order they were originally read.
+   */ 
+  private LinkedBlockingDeque<NodeID>  pCheckSumsRead;
+
 
   /**
    * The per-node downstream links locks indexed by fully resolved node name. <P> 
@@ -24821,13 +25170,6 @@ class MasterMgr
    */ 
   private Stack<FileMgrNetClient>  pFileMgrNetClients;
  
-  /**
-   * An alternative root production directory accessed via a different NFS mount point
-   * to provide an exclusively network for checksum generation traffic.  Setting this to 
-   * <CODE>null</CODE> will cause the default root production directory to be used instead.
-   */ 
-  private AtomicReference<Path> pCheckSumPath;
-
 
   /*----------------------------------------------------------------------------------------*/
   

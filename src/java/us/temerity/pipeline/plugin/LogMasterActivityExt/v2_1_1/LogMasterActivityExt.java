@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.8 2009/10/09 15:58:40 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.9 2009/11/05 00:23:31 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -700,16 +700,6 @@ LogMasterActivityExt
 	   true);
 	addParam(param);
       }
-
-
-      {
-	ExtensionParam param = 
-	  new BooleanExtensionParam
-	  (aLogNodeGarbageCollect,
-	   "Enable logging of activity of the node garbage collector.", 
-	   true);
-	addParam(param);
-      }
     }
 
 
@@ -862,8 +852,6 @@ LogMasterActivityExt
 	sub.addSeparator();
 	sub.addEntry(aAllowRestore); 
 	sub.addEntry(aLogRestore); 
-	sub.addSeparator();
-	sub.addEntry(aLogNodeGarbageCollect); 
 
 	layout.addSubGroup(sub);
       }
@@ -4003,44 +3991,6 @@ LogMasterActivityExt
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether to run a tesk after running the node garbage collector.
-   */  
-  public boolean
-  hasPostNodeGarbageCollectTask() 
-  {
-    return true;
-  }
-  
-  /**
-   * The task to perform after running the node garbage collector.
-   * 
-   * @param cached
-   *   The total number of node versions currently cached.
-   * 
-   * @param freed
-   *   The number of node versions freed during this collection cycle.
-   */  
-  public void
-  postNodeGarbageCollectTask
-  (
-   long cached, 
-   long freed
-  ) 
-  {
-    String msg = 
-      ("NODE GARBAGE COLLECTED\n" + 
-       "  Cached Versions : " + cached + "\n" + 
-       "   Freed Versions : " + freed);
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
-       msg);
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -4178,7 +4128,5 @@ LogMasterActivityExt
 
   private static final String aAllowRestore             = "AllowRestore";      
   private static final String aLogRestore               = "LogRestore";      
-
-  private static final String aLogNodeGarbageCollect    = "LogNodeGarbageCollect";     
 
 }

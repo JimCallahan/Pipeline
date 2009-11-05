@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.104 2009/11/02 03:44:11 jim Exp $
+// $Id: ScriptApp.java,v 1.105 2009/11/05 00:23:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1264,13 +1264,15 @@ class ScriptApp
 
       buf.append
 	(tbar(80) + "\n" +
-	 " Average Node Size : " + controls.getAverageNodeSize() + " (bytes)\n" + 
-	 "  Minimum Overhead : " + controls.getMinimumOverhead() + 
-	 " (" + ByteSize.longToFloatString(controls.getMinimumOverhead()) + ")\n" +
-	 "  Maximum Overhead : " + controls.getMaximumOverhead() + 
-	 " (" + ByteSize.longToFloatString(controls.getMaximumOverhead()) + ")\n" +
-	 "  Node GC Interval : " + controls.getNodeGCInterval() + " (msec)\n" + 
-	 "  Restore Interval : " + controls.getRestoreCleanupInterval() + " (msec)\n" + 
+	 "    Min Free Memory : " + controls.getMinFreeMemory() + " (msec)\n" + 
+	 "  Cache GC Interval : " + controls.getCacheGCInterval() + " (msec)\n" + 
+	 "    Cache GC Misses : " + controls.getCacheGCMisses() + " (msec)\n" + 
+	 "       Cache Factor : " + controls.getCacheFactor() + " (msec)\n" + 
+         "   Repo Cache Size  : " + controls.getRepoCacheSize() + "\n" + 
+         "   Work Cache Size  : " + controls.getWorkCacheSize() + "\n" + 
+         "  Check Cache Size  : " + controls.getCheckCacheSize() + "\n" + 
+         "  Annot Cache Size  : " + controls.getAnnotCacheSize() + "\n" + 
+	 "   Restore Interval : " + controls.getRestoreCleanupInterval() + " (msec)\n" + 
 	 "\n" + 
 	 "     File Stat Dir : " + statDir + "\n" + 
 	 "      Checksum Dir : " + checksumDir + "\n" + 

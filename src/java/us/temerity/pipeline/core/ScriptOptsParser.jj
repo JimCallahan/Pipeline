@@ -174,10 +174,16 @@ ScriptOptsParser
   private Long    pDispatcherInterval;
   private Long    pNfsCacheInterval;
   
-  private Long  pNodeGCInterval;
-  private Long  pMinOverhead;
-  private Long  pMaxOverhead;
-  private Long  pAvgNodeSize;
+  private Long   pMinFreeMemory;
+  private Long   pCacheGCInterval;
+  private Long   pCacheGCMisses;
+  private Double pCacheFactor;
+                      
+  private Long  pRepoCacheSize; 
+  private Long  pWorkCacheSize;  
+  private Long  pCheckCacheSize;  
+  private Long  pAnnotCacheSize;
+
   private Long  pRestoreCleanupInterval;
 
   private Path    pFileStatDir;
@@ -393,17 +399,23 @@ TOKEN :
 | <SHUTDOWN_JOBMGRS:   "--shutdown-jobmgrs">       
 | <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr"> 
 | <REMOTE_LOG:               "--remote-log">                : REMOTE_LOG_SEP
+
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">      : INTEGER_SEP
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">       : INTEGER_SEP
 | <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">        : INTEGER_SEP
-| <RESTORE_CLEANUP_INTERVAL: "--restore-cleanup-interval">  : INTEGER_SEP
-| <NODE_GC_INTERVAL:         "--node-gc-interval">          : INTEGER_SEP
-| <MIN_OVERHEAD:             "--min-overhead">              : INTEGER_SEP  
-| <MAX_OVERHEAD:             "--max-overhead">              : INTEGER_SEP  
-| <AVG_NODE_SIZE:            "--avg-node-size">             : INTEGER_SEP  
 
-| <FILE_STAT_DIR:     "--file-stat-dir">      : PATH_SEP
-| <CHECKSUM_DIR:      "--checksum-dir">       : PATH_SEP
+| <MIN_FREE_MEMORY:           "--min-free-memory">           : INTEGER_SEP
+| <GC_INTERVAL:               "--gc-interval">               : INTEGER_SEP
+| <GC_MISSES:                 "--gc-misses">                 : INTEGER_SEP
+| <CACHE_FACTOR:              "--cache-factor">              : REAL_SEP
+| <REPO_CACHE_SIZE:           "--repo-cache-size">           : INTEGER_SEP  
+| <WORK_CACHE_SIZE:           "--work-cache-size">           : INTEGER_SEP  
+| <CHECK_CACHE_SIZE:          "--check-cache-size">          : INTEGER_SEP  
+| <ANNOT_CACHE_SIZE:          "--annot-cache-size">          : INTEGER_SEP  
+| <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
+
+| <FILE_STAT_DIR:             "--file-stat-dir">             : PATH_SEP
+| <CHECKSUM_DIR:              "--checksum-dir">              : PATH_SEP
 
 | <PATTERN:            "--pattern">         	: STRING_SEP	      
 | <MAX_ARCHIVES:       "--max-archives">    	: INTEGER_SEP	      
@@ -3339,10 +3351,14 @@ SetRuntimeMaster()
   throws PipelineException : 
 {
   pLogControls = null;
-  pNodeGCInterval = null;
-  pMinOverhead = null;
-  pMaxOverhead = null;
-  pAvgNodeSize = null;
+  pMinFreeMemory = null;
+  pCacheGCInterval = null;  
+  pCacheGCMisses = null;  
+  pCacheFactor = null;  
+  pRepoCacheSize = null; 
+  pWorkCacheSize = null;  
+  pCheckCacheSize = null;  
+  pAnnotCacheSize = null;
   pRestoreCleanupInterval = null;
   pFileStatDir = null; 
   pCheckSumDir = null; 
@@ -3356,29 +3372,38 @@ SetRuntimeMaster()
       noOpts = false;
     }
 
-    if((pNodeGCInterval != null) || (pMinOverhead != null) || (pMaxOverhead != null) || 
-       (pAvgNodeSize != null) || (pRestoreCleanupInterval != null) || 
+    if((pMinFreeMemory != null) || (pCacheGCInterval != null) ||
+       (pCacheGCMisses != null) || (pCacheFactor != null) || 
+       (pRepoCacheSize != null) || (pWorkCacheSize != null) ||
+       (pCheckCacheSize != null) || (pAnnotCacheSize != null) ||
+       (pRestoreCleanupInterval != null) || 
        (pFileStatDir != null) || (pCheckSumDir != null)) {
 
       MasterControls controls = pMasterMgrClient.getRuntimeControls();
 
-      if(pNodeGCInterval != null)
-        controls.setNodeGCInterval(pNodeGCInterval);
+      if(pMinFreeMemory != null)
+        controls.setMinFreeMemory(pMinFreeMemory);
 
-      if((pMinOverhead != null) || (pMaxOverhead != null)) {
-        Long min = controls.getMinimumOverhead();
-        if(pMinOverhead != null)
-          min = pMinOverhead;
+      if(pCacheGCInterval != null)
+        controls.setCacheGCInterval(pCacheGCInterval);
 
-        Long max = controls.getMaximumOverhead();
-        if(pMaxOverhead != null)
-          max = pMaxOverhead;
+      if(pCacheGCMisses != null)
+        controls.setCacheGCMisses(pCacheGCMisses);
 
-        controls.setOverhead(min, max);
-      }
+      if(pCacheFactor != null)
+        controls.setCacheFactor(pCacheFactor);
 
-      if(pAvgNodeSize != null)
-        controls.setAverageNodeSize(pAvgNodeSize);
+      if(pRepoCacheSize != null)
+        controls.setRepoCacheSize(pRepoCacheSize); 
+
+      if(pWorkCacheSize != null)
+        controls.setWorkCacheSize(pWorkCacheSize); 
+
+      if(pCheckCacheSize != null)
+        controls.setCheckCacheSize(pCheckCacheSize); 
+
+      if(pAnnotCacheSize != null)
+        controls.setAnnotCacheSize(pAnnotCacheSize); 
 
       if(pRestoreCleanupInterval != null)
         controls.setRestoreCleanupInterval(pRestoreCleanupInterval);
@@ -3411,93 +3436,112 @@ GetRuntimeMaster()
 }
 
 void 
-RuntimeMasterOpts() 
-  throws PipelineException : 
+RuntimeMasterOpts() :
 {}
 {
-  (RemoteLog() | NodeGCInterval() | MinOverhead() | MaxOverhead() | AvgNodeSize() | 
+  (RemoteLog() | 
+   MinFreeMemory() | GCInterval() | GCMisses() | CacheFactor() | 
+   RepoCacheSize() | WorkCacheSize() | CheckCacheSize() | AnnotCacheSize() |
    RestoreCleanupInterval() | FileStatDir() | CheckSumDir())
   {}
 }
 
-void NodeGCInterval()
-  throws PipelineException : 
+void MinFreeMemory() :
 {
   Token t;
 }
 {
-  <NODE_GC_INTERVAL> EQ() t=<INTEGER> AE()
+  <MIN_FREE_MEMORY> EQ() t=<INTEGER> AE()
   {
-    Long msec = Long.parseLong(t.image);
-    if(msec <= 0) 
-      throw new PipelineException
-        ("The node garbage collection interval (" + msec + ") must be positive!");
-    pNodeGCInterval = msec;
+    pMinFreeMemory = Long.parseLong(t.image); 
   }
 }
 
-void MinOverhead()
-  throws PipelineException : 
+void GCInterval() :
 {
   Token t;
 }
 {
-  <MIN_OVERHEAD> EQ() t=<INTEGER> AE()
+  <GC_INTERVAL> EQ() t=<INTEGER> AE()
   {
-    Long size = Long.parseLong(t.image);
-    if(size <= 0) 
-      throw new PipelineException
-        ("The minimum overhead (" + size + ") must be positive!");
-    pMinOverhead = size;
+    pCacheGCInterval = Long.parseLong(t.image);
   }
 }
 
-void MaxOverhead()
-  throws PipelineException : 
+void GCMisses() :
 {
   Token t;
 }
 {
-  <MAX_OVERHEAD> EQ() t=<INTEGER> AE()
+  <GC_MISSES> EQ() t=<INTEGER> AE()
   {
-    Long size = Long.parseLong(t.image);
-    if(size <= 0) 
-      throw new PipelineException
-        ("The maximum overhead (" + size + ") must be positive!");
-    pMaxOverhead = size;
+    pCacheGCMisses = Long.parseLong(t.image);
   }
 }
 
-void AvgNodeSize()
-  throws PipelineException : 
+void CacheFactor() :
 {
   Token t;
 }
 {
-  <AVG_NODE_SIZE> EQ() t=<INTEGER> AE()
+  <CACHE_FACTOR> EQ() t=<REAL> AE()
   {
-    Long size = Long.parseLong(t.image);
-    if(size <= 0) 
-      throw new PipelineException
-        ("The average node size (" + size + ") must be positive!");
-    pAvgNodeSize = size;
+    pCacheFactor = Double.parseDouble(t.image);
   }
 }
 
+void RepoCacheSize() :
+{
+  Token t;
+}
+{
+  <REPO_CACHE_SIZE> EQ() t=<INTEGER> AE()
+  {
+    pRepoCacheSize = Long.parseLong(t.image);
+  }
+}
 
-void RestoreCleanupInterval()
-  throws PipelineException : 
+void WorkCacheSize() :
+{
+  Token t;
+}
+{
+  <WORK_CACHE_SIZE> EQ() t=<INTEGER> AE()
+  {
+    pWorkCacheSize = Long.parseLong(t.image);
+  }
+}
+
+void CheckCacheSize() :
+{
+  Token t;
+}
+{
+  <CHECK_CACHE_SIZE> EQ() t=<INTEGER> AE()
+  {
+    pCheckCacheSize = Long.parseLong(t.image);
+  }
+}
+
+void AnnotCacheSize() :
+{
+  Token t;
+}
+{
+  <ANNOT_CACHE_SIZE> EQ() t=<INTEGER> AE()
+  {
+    pAnnotCacheSize = Long.parseLong(t.image);
+  }
+}
+
+void RestoreCleanupInterval() :
 {
   Token t;
 }
 {
   <RESTORE_CLEANUP_INTERVAL> EQ() t=<INTEGER> AE()
   {
-    Long msec = Long.parseLong(t.image);
-    if(msec <= 0) 
-      throw new PipelineException
-        ("The restore cleanup interval (" + msec + ") must be positive!");
-    pRestoreCleanupInterval = msec;
+    pRestoreCleanupInterval = Long.parseLong(t.image);
   }
 }
 
@@ -3523,8 +3567,6 @@ void CheckSumDir() :
     pCheckSumDir = new Path(t.image); 
   }
 }
-
-
 
 
 

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.100 2009/11/02 03:44:10 jim Exp $
+// $Id: FileMgr.java,v 1.101 2009/11/05 00:23:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -201,10 +201,7 @@ class FileMgr
         checksumPath = path;
     }
 
-    MasterControls controls = 
-      new MasterControls(null, null, null, null, null, fileStatPath, checksumPath);
-
-    return new MiscGetMasterControlsRsp(timer, controls);
+    return new MiscGetMasterControlsRsp(timer, new MasterControls(fileStatPath, checksumPath));
   }
 
   /**
@@ -252,8 +249,8 @@ class FileMgr
   ) 
   {
     StringBuilder buf = new StringBuilder();
-    buf.append("--- FileMgr Runtime Controls ---\n"); 
-
+    buf.append
+      ("--- FileMgr Runtime Controls -----------------------------------------------\n");
     {
       Path path = fileStatDir;
       if(path == null) 
@@ -261,7 +258,7 @@ class FileMgr
       else 
         pFileStatPath.set(path);
 
-      buf.append("  File Stat Root Directory: " + pFileStatPath.get() + "\n");
+      buf.append("  File Stat Root Directory : " + pFileStatPath.get() + "\n");
     }
     
     {
@@ -271,10 +268,11 @@ class FileMgr
       else 
         pCheckSumPath.set(path);
 
-      buf.append("   Checksum Root Directory: " + pCheckSumPath.get() + "\n");
+      buf.append("   Checksum Root Directory : " + pCheckSumPath.get() + "\n");
     }
     
-    buf.append("--------------------------------"); 
+    buf.append
+      ("----------------------------------------------------------------------------"); 
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,

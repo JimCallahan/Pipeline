@@ -1,4 +1,4 @@
-// $Id: BaseMasterExt.java,v 1.12 2009/10/09 15:58:40 jim Exp $
+// $Id: BaseMasterExt.java,v 1.13 2009/11/05 00:23:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2487,34 +2487,6 @@ class BaseMasterExt
   ) 
   {}
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether to run a tesk after running the node garbage collector.
-   */  
-  public boolean
-  hasPostNodeGarbageCollectTask() 
-  {
-    return false;
-  }
-  
-  /**
-   * The task to perform after running the node garbage collector.
-   * 
-   * @param cached
-   *   The total number of node versions currently cached.
-   * 
-   * @param freed
-   *   The number of node versions freed during this collection cycle.
-   */  
-  public void
-  postNodeGarbageCollectTask
-  (
-   long cached, 
-   long freed
-  ) 
-  {}
 
 
 

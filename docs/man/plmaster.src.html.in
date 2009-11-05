@@ -1,524 +1,636 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
+  <meta name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  <meta content="text/html; charset=us-ascii" http-equiv=
+  "content-type">
+
   <title>plmaster(1)</title>
 </head>
+
 <body>
-<h3><a name="Name"></a>Name</h3>
-<blockquote><b>plmaster</b> - the Pipeline Master daemon<br>
-</blockquote>
-<h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote><b>plmaster</b> [<a href="#Global_Options"><i>options</i></a>]<i><br>
-  </i><br>
-  <b>plmaster</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
-  <b>plmaster</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
-  <b>plmaster</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
-  <b>plmaster</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
-  <b>plmaster</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
-  <span style="font-weight: bold;">plmaster <a href="#--license">--license</a></span><br>
-</blockquote>
-<h3><a name="Description"></a>Description<br>
-</h3>
-<blockquote>The master daemon process which manages the node database
-and coordinates the activity of all other Pipeline daemons and client
-programs.&nbsp; <br>
-</blockquote>
-<h3> </h3>
-<h3><a name="Information_Options"></a>Information Options</h3>
-<blockquote>The following options provide information about <b>plmaster</b>(1)
-and then immediately exit:</blockquote>
-<blockquote><b><a name="--help"></a>--help</b><br>
-  <blockquote>Prints a brief usage message and exits.<br>
+  <h3><a name="Name" id="Name"></a>Name</h3>
+
+  <blockquote>
+    <b>plmaster</b> - the Pipeline Master Manager daemon<br>
   </blockquote>
-  <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser. </blockquote>
-  <b><a name="--version"></a>--version</b><br>
-  <blockquote>Prints the version number of this software and exits.<br>
+
+  <h3><a name="Synopsis" id="Synopsis"></a>Synopsis</h3>
+
+  <blockquote>
+    <b>plmaster</b> [<a href=
+    "#Global_Options"><i>options</i></a>]<br><br>
+    <b>plmaster</b> <a style="font-weight: bold;" href=
+    "#--help">--help</a><br>
+    <b>plmaster</b> <a style="font-weight: bold;" href=
+    "#--html-help">--html-help</a><br>
+    <b>plmaster</b> <a style="font-weight: bold;" href=
+    "#--version_">--version</a><br>
+    <b>plmaster</b> <a style="font-weight: bold;" href=
+    "#--release-date">--release-date</a><br>
+    <b>plmaster</b> <a style="font-weight: bold;" href=
+    "#--copyright">--copyright</a><br>
+    <span style="font-weight: bold;">plmaster <a href=
+    "#--license">--license</a></span><br>
   </blockquote>
-  <b><a name="--release-date"></a>--release-date</b><br>
-  <blockquote> Prints date that this software was released and exits.<br>
+
+  <h3><a name="Description" id=
+  "Description"></a>Description<br></h3>
+
+  <blockquote>
+    The master daemon process which manages the node database and
+    coordinates the activity of all other Pipeline daemons and
+    client programs.&nbsp;<br>
   </blockquote>
-  <b><a name="--copyright"></a>--copyright<br>
-  </b><br>
-  <div style="margin-left: 40px;"> Prints the <a href="#Copyright"><span
- style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-  <br>
+
+  <h3><a name="Information_Options" id=
+  "Information_Options"></a>Information Options</h3>
+
+  <blockquote>
+    The following options provide information about
+    <b>plmaster</b>(1) and then immediately exit:
+  </blockquote>
+
+  <blockquote>
+    <b><a name="--help"></a>--help</b><br>
+
+    <blockquote>
+      Prints a brief usage message and exits.<br>
+    </blockquote><b><a name="--html-help"></a>--html-help</b><br>
+
+    <blockquote>
+      Opens this page using the default web browser.
+    </blockquote><b><a name="--version"></a>--version</b><br>
+
+    <blockquote>
+      Prints the version number of this software and exits.<br>
+    </blockquote><b><a name=
+    "--release-date"></a>--release-date</b><br>
+
+    <blockquote>
+      Prints date that this software was released and exits.<br>
+    </blockquote><b><a name=
+    "--copyright"></a>--copyright<br></b><br>
+
+    <div style="margin-left: 40px;">
+      Prints the <a href="#Copyright"><span style=
+      "font-weight: bold;">copyright notice</span></a> for this
+      software and exits.<br>
+      <br>
+    </div><span style="font-weight: bold;"><a name=
+    "--license"></a>--license<br>
+    <br></span>
+
+    <div style="margin-left: 40px;">
+      Prints the <a href="#License_Agreement"><span style=
+      "font-weight: bold;">license agreement</span></a> for this
+      software and exits.<br>
+    </div>
+  </blockquote>
+
+  <h3><a name="Global_Options" id="Global_Options"></a>Global
+  Options<br></h3>
+
+  <div style="margin-left: 40px;">
+    <span style="font-weight: bold;"><a name=
+    "--rebuild"></a>--rebuild<br></span>
+
+    <div style="margin-left: 40px;">
+      <br>
+      When <span style="font-weight: bold;">plmaster</span>(1) is
+      properly shutdown, it saves some cached information to disk
+      which is read during the next startup to reduce startup
+      time.&nbsp; If <span style=
+      "font-weight: bold;">plmaster</span>(1) fails to write these
+      cache files due to a system crash or some other catastrophic
+      failure, they can be rebuilt using this option.&nbsp; Note
+      that <span style="font-weight: bold;">plmaster</span>(1) will
+      not start unless these cache files exist or this option is
+      given.&nbsp; This means that the first time <span style=
+      "font-weight: bold;">plmaster</span>(1) is started, this
+      option must be given.<br>
+      <br>
+    </div><span style="font-weight: bold;"><a name=
+    "--preserve-offlined"></a>--preserve-offlined<br></span>
+
+    <div style="margin-left: 40px;">
+      <br>
+      Normally, whem <span style=
+      "font-weight: bold;">plmaster</span>(1) starts up it reads
+      and then removes the database file containing the list of
+      currently offlined repository node versions.&nbsp; When
+      shutdown properly, this offlined versions cache file is
+      written back to disk.&nbsp; If <span style=
+      "font-weight: bold;">plmaster</span>(1) exits abruptly due to
+      a failure or hardware problem, the offined versions cache
+      must be rebuilt from scratch by scanning the production
+      repository directories.&nbsp; Usually, this behavior is
+      desirable since it insures that the offlined version cache is
+      always up-to-date.&nbsp; However, for very large production
+      file systems this rescan can be very time consuming and
+      sometimes it would be convienent to be able to avoid this
+      rescanning process.<br>
+      <br>
+      This option will prevent <span style=
+      "font-weight: bold;">plmaster</span>(1) from removing the
+      offlined versions cache file after startup.&nbsp; If given
+      with the --rebuild option, <span style=
+      "font-weight: bold;">plmaster</span>(1) will read any
+      existing offlined versions cache file instead of rebuilding
+      it after an unclean shutdown.&nbsp; This option also forces
+      <span style="font-weight: bold;">plmaster</span>(1) to save
+      the offline versions cache file after each offline/restore
+      operation.&nbsp; This should greatly speed up the rebuild
+      process for studios with large production file systems, but
+      is inherently dangerous since the offlined versions cache
+      file is not strictly guarenteed to be up-to-date if a failure
+      occurs during an offline/restore operation.<br>
+      <br>
+    </div><span style="font-weight: bold;"><a name=
+    "--file-mgr"></a>--file-mgr</span><br>
+
+    <div style="margin-left: 40px;">
+      <br>
+      Run the Pipeline file manager as an internal thread of
+      <span style="font-weight: bold;">plmaster</span>(1) instead
+      of running the file manager as a standalone <a href=
+      "plfilemgr.html"><span style=
+      "font-weight: bold;">plfilemgr</span></a>(1) daemon.&nbsp;
+      This option can only be used if the host configured to run
+      the <span style="font-weight: bold;">plmaster</span>(1) and
+      <a href="plfilemgr.html"><span style=
+      "font-weight: bold;">plfilemgr</span></a>(1) daemons are
+      identical.&nbsp; See the <a href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-host">
+      <span style="font-weight: bold;">--master-host</span></a> and
+      <a href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-host">
+      <span style="font-weight: bold;">--file-host</span></a>
+      options to <a href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <span style="font-weight: bold;">plconfig</span></a>(1) for
+      details.<br>
+      <br>
+      When the file manager and master manager are running on the
+      same host, it is preferable that this option is used to
+      reduce the network overhead and eliminate the need to run a
+      second Java Virtual Machine process.&nbsp; However, if the
+      best performance can usually be obtained by running the file
+      manager as the <a href="plfilemgr.html"><span style=
+      "font-weight: bold;">plfilemgr</span></a>(1) daemon on the
+      network file server so that the heavy file system activity of
+      the file manger can be performed locally and not over
+      NFS.&nbsp;&nbsp; When this is not possible or desirable to
+      run <a href="plfilemgr.html"><span style=
+      "font-weight: bold;">plfilemgr</span></a>(1) on the network
+      file server, the next best option is to run the file manager
+      internally using this option.<br>
+    </div><br>
+    <span class="postbody"><span style=
+    "font-weight: normal;"><span style=
+    "font-weight: bold;"><a name="--file-stat-dir"></a>--file-stat-dir</span>=<span style="font-style: italic;">dir<br>
+    </span></span></span>
+
+    <div style="margin-left: 40px;">
+      <br>
+      An alternative root production directory (see <a style=
+      "font-weight: bold;" href=
+      "file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir">
+      plconfig --prod-dir</a>) accessed via a different NFS mount
+      point to provide an exclusively network for file status query
+      traffic.&nbsp; In order to take advantage of this feature,
+      the machine running the File Manager daemon needs to have an
+      additional network interface dedicated file status related
+      NFS traffic.&nbsp; The same root production directory on the
+      network file server should then be mounted under the given
+      file status directory (dir) using an IP address for the file
+      server which will direct all traffic to this dedicated
+      network interface on the File Manager host.<br>
+      <br>
+      Since all traffic on this file status dedicated network will
+      be NFS metadata queries, you should mount the file status
+      directory using suitably small packet sizes and short NFS
+      client file and directory caching intervals (usually 1
+      second).<br>
+      <br>
+      If not provided, the default root production directory is
+      used instead.&nbsp;<br>
+      <br>
+      This option is silently ignored if <a href=
+      "#--file-mgr"><span style=
+      "font-weight: bold;">--file-mgr</span></a> is not also
+      specified.
+    </div><br>
+    <span class="postbody"><span style=
+    "font-weight: normal;"><span style=
+    "font-weight: bold;"><a name="--checksum-dir"></a>--checksum-dir</span>=<span style="font-style: italic;">dir</span></span></span><br>
+
+    <br>
+
+    <div style="margin-left: 40px;">
+      An alternative root production directory (see <a style=
+      "font-weight: bold;" href=
+      "file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir">
+      plconfig --prod-dir</a>) accessed via a different NFS mount
+      point to provide an exclusively network for checksum
+      generation I/O traffic.&nbsp; In order to take advantage of
+      this feature, the machine running the File Manager daemon
+      needs to have an additional network interface dedicated
+      checksum related NFS traffic.&nbsp; The same root production
+      directory on the network file server should then be mounted
+      under the given checksum directory (dir) using an IP address
+      for the file server which will direct all traffic to this
+      dedicated network interface on the File Manager host.<br>
+      <br>
+      The vast majority of the NFS traffic on this checksum
+      dedicated network will be reading the contents of production
+      data files which are likely to be large in size.&nbsp; You
+      should therefore set your NFS mount options to optimize for
+      this type of traffic.<br>
+      <br>
+      If not provided, the default root production directory is
+      used instead.<br>
+      <br>
+      This option is silently ignored if <a href=
+      "#--file-mgr"><span style=
+      "font-weight: bold;">--file-mgr</span></a> is not also
+      specified.
+    </div><br>
+    <span style="font-weight: bold;"><a name=
+    "--log-file"></a>--log-file</span>=<span style=
+    "font-style: italic;">filename<br>
+    <br></span>
+
+    <div style="margin-left: 40px;">
+      Write all output to the given log file (filename) instead of
+      printing to stdout.<br>
+      <br>
+    </div><span style="font-weight: bold;"><a name=
+    "--default-log-file"></a>--standard-log-file<br>
+    <br></span>
+
+    <div style="margin-left: 40px;">
+      Write all output to the standard log file for <span style=
+      "font-weight: bold;">plmaster</span>(1) instead of printing
+      to stdout.<br>
+      <br>
+      The standard log file for this site is:<br>
+
+      <div style="margin-left: 40px;">
+        <br>
+        @ROOT_INST_DIR@/logs/plmaster.log.#<br>
+        <br>
+      </div>
+    </div><span style="font-weight: bold;"><a name=
+    "--standard-log-dir"></a>--standard-log-dir</span>=<span style=
+    "font-style: italic;">dirname</span><br>
+    <br>
+
+    <div style="margin-left: 40px;">
+      Write all output to the standard log file for <span style=
+      "font-weight: bold;">plmaster</span>(1) written to the given
+      logs directory (<span style=
+      "font-style: italic;">dirname</span>) instead of printing to
+      stdout.
+    </div><br>
+    <span style="font-weight: bold;"><a name=
+    "--log-depth"></a>--log-backups</span>=<span style=
+    "font-style: italic;">num<br></span>
+
+    <div style="margin-left: 40px;">
+      <br>
+      When logging to a file using <a href=
+      "#--log-file"><span style=
+      "font-weight: bold;">--log-file</span></a>, this option sets
+      the number of rotating backups (<span style=
+      "font-style: italic;">num</span>) to maintain of the
+      logfile.&nbsp;&nbsp; The names of the backup files are the
+      same as the log file with the backup number appended to the
+      end of the name.&nbsp;&nbsp; The logfile will be
+      automatically close the current logfile, rotate the backups
+      and reopen the logfile whenever the log grows to larger than
+      10MB.<br>
+      <br>
+      The default number of backups is (10).
+    </div><br>
+    <span style="font-weight: bold;"><a name=
+    "--log"></a>--log</span>=<span style=
+    "font-style: italic;">logger:level</span>[<span style=
+    "font-style: italic;">,logger:level</span>[...]]
   </div>
-  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
-  <br>
-  </span>
-  <div style="margin-left: 40px;">Prints the <a
- href="#License_Agreement"><span style="font-weight: bold;">license
-agreement</span></a> for this software and exits.<br>
+
+  <div style="margin-left: 40px;">
+    <br>
+
+    <div style="margin-left: 40px;">
+      In addition to the normal output, <b>plmaster</b>(1) can
+      generate detailed output tracing the various stages of
+      internal execution.&nbsp; The arguments control the several
+      different types of logging information (<span style=
+      "font-style: italic;">logger</span>) and different amounts of
+      information (<span style="font-style: italic;">level</span>)
+      of each type to generate.&nbsp; Several loggers can be
+      modified in one option.<br>
+      <br>
+      The (<span style="font-style: italic;">logger</span>) portion
+      of the option's argument can be:<br>
+      <br>
+
+      <div style="margin-left: 40px;">
+        <span style="font-weight: bold;">all</span><br style=
+        "font-weight: bold;">
+      </div>
+
+      <div style="margin-left: 80px;">
+        A shortcut for specifying all loggers at once.<br>
+      </div>
+
+      <div style="margin-left: 40px;">
+        <br>
+        <span style="font-weight: bold;">arg</span><br>
+      </div>
+
+      <div style="margin-left: 40px;">
+        <div style="margin-left: 40px;">
+          Logs errors related to parsing the command-line options.
+        </div><br>
+        <span style="font-weight: bold;">ext<br></span>
+
+        <div style="margin-left: 40px;">
+          Logs the activity of server extension plugin tasks.
+        </div><br>
+        <span style="font-weight: bold;">glu<br></span>
+
+        <div style="margin-left: 40px;">
+          Logs the I/O activity related to <a style=
+          "font-weight: bold;" href=
+          "../javadoc/us/temerity/pipeline/glue/package-summary.html">
+          Glue</a> format files.
+        </div><br>
+        <span style="font-weight: bold;">ops</span>
+      </div>
+
+      <div style="margin-left: 80px;">
+        Logs node related operations performed by the <span style=
+        "font-weight: bold;">plmaster</span>(1).<br>
+        <br>
+      </div>
+
+      <div style="margin-left: 40px;">
+        <span style="font-weight: bold;">mem<br></span>
+
+        <div style="margin-left: 40px;">
+            Logs the activity of the cache garbage collecto (see <a href="#Cache_Garbage_Collector"><strong>below</strong></a>).
+            <br>
+          <br>
+        </div><span style="font-weight: bold;">net</span><br>
+      </div>
+
+      <div style="margin-left: 80px;">
+        Logs network connections and activity.<br>
+        <br>
+      </div>
+
+      <div style="margin-left: 40px;">
+        <span style="font-weight: bold;">plg<br></span>
+
+        <div style="margin-left: 40px;">
+          Logs the loading and initialization of Pipeline plugins.
+        </div><br>
+        <span style="font-weight: bold;">sub<br></span>
+
+        <div style="margin-left: 40px;">
+          Logs the launching and monitoring of OS level
+          subprocesses.<br>
+          <br>
+        </div>
+      </div>
+
+      <div style="margin-left: 40px;">
+        <span style="font-weight: bold;">sum</span><br>
+
+        <div style="margin-left: 40px;">
+          Logs the activity of checksums used to optimize
+          comparisons of the working area and repository files
+          associated with nodes.<br>
+        </div><br>
+      </div>The (<span style="font-style: italic;">level</span>)
+      portion of the option's argument can be:<br>
+      <br>
+
+      <div style="margin-left: 40px;">
+        <span style="font-weight: bold;">severe</span><br>
+      </div>
+
+      <div style="margin-left: 80px;">
+        This level is used for error messages and other
+        catastrophic events.<br>
+      </div>
+
+      <div style="margin-left: 40px;">
+        <br style="font-weight: bold;">
+        <span style="font-weight: bold;">warning</span><br>
+      </div>
+
+      <div style="margin-left: 80px;">
+        This level is used for non-fatal error messages and
+        advisory information.<br>
+      </div>
+
+      <div style="margin-left: 40px;">
+        <br style="font-weight: bold;">
+        <span style="font-weight: bold;">info</span><br>
+      </div>
+
+      <div style="margin-left: 80px;">
+        This is the default output level for all loggers and is
+        used for normal output from <b>plmaster</b>(1).<br>
+      </div>
+
+      <div style="margin-left: 40px;">
+        <br style="font-weight: bold;">
+        <span style="font-weight: bold;">fine</span><br>
+        <span style="font-weight: bold;">finer</span><br>
+        <span style="font-weight: bold;">finest</span><br>
+      </div>
+
+      <div style="margin-left: 80px;">
+        These three levels are used for increasingly more detailed
+        command tracing messages.<br>
+      </div>
+    </div>
   </div>
-  <blockquote> </blockquote>
-</blockquote>
-<h3><a name="Global_Options"></a>Global Options<br>
-</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--rebuild"></a>--rebuild<br>
-</span>
-<div style="margin-left: 40px;"><br>
-When <span style="font-weight: bold;">plmaster</span>(1) is properly
-shutdown, it saves some cached information to disk which is read during
-the next startup to reduce startup time.&nbsp; If <span
- style="font-weight: bold;">plmaster</span>(1) fails to write these
-cache files due to a system crash or some other catastrophic failure,
-they can be rebuilt using this option.&nbsp; Note that <span
- style="font-weight: bold;">plmaster</span>(1) will not start unless
-these cache files exist or this option is given.&nbsp; This means that
-the first time <span style="font-weight: bold;">plmaster</span>(1) is
-started, this option must be given.<br>
-<br>
-</div>
-<span style="font-weight: bold;">
-<a name="--preserve-offlined"></a>--preserve-offlined<br>
-</span>
-<div style="margin-left: 40px;"><br>
-Normally, whem <span style="font-weight: bold;">plmaster</span>(1)
-starts up it reads and then removes the database file containing the
-list of currently offlined repository node versions.&nbsp; When
-shutdown properly, this offlined versions cache file is written back to
-disk.&nbsp; If <span style="font-weight: bold;">plmaster</span>(1)
-exits abruptly due to a failure or hardware problem, the offined
-versions cache must be rebuilt from scratch by scanning the production
-repository directories.&nbsp; Usually, this behavior is desirable since
-it insures that the offlined version cache is always up-to-date.&nbsp;
-However, for very large production file systems this rescan can be very
-time consuming and sometimes it would be convienent to be able to avoid
-this rescanning process.<br>
-<br>
-This option will prevent <span style="font-weight: bold;">plmaster</span>(1)
-from removing the offlined versions cache file after startup.&nbsp; If
-given with the --rebuild option, <span style="font-weight: bold;">plmaster</span>(1)
-will read any existing offlined versions cache file instead of
-rebuilding it after an unclean shutdown.&nbsp; This option also forces <span
- style="font-weight: bold;">plmaster</span>(1) to save the offline
-versions cache file after each offline/restore operation.&nbsp; This
-should greatly speed up the rebuild process for studios with large
-production file systems, but is inherently dangerous since the offlined
-versions cache file is not strictly guarenteed to be up-to-date if a
-failure occurs during an offline/restore operation. <br>
-<br>
-</div>
-<span style="font-weight: bold;"><a name="--file-mgr"></a>--file-mgr</span><br>
-<div style="margin-left: 40px;"><br>
-Run the Pipeline file manager as an internal thread of <span
- style="font-weight: bold;">plmaster</span>(1) instead of running the
-file manager as a standalone <a href="plfilemgr.html"><span
- style="font-weight: bold;">plfilemgr</span></a>(1) daemon.&nbsp; This
-option can only be used if the host configured to run the <span
- style="font-weight: bold;">plmaster</span>(1) and <a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1)
-daemons are identical.&nbsp; See the <a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-host"><span
- style="font-weight: bold;">--master-host</span></a> and <a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-host"><span
- style="font-weight: bold;">--file-host</span></a> options to <a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1) for details.<br>
-<br>
-When the file manager and master manager are running on the same host,
-it is preferable that this option is used to reduce the network
-overhead and eliminate the need to run a second Java Virtual Machine
-process.&nbsp; However, if the best performance can usually be obtained
-by running the file manager as the <a href="plfilemgr.html"><span
- style="font-weight: bold;">plfilemgr</span></a>(1) daemon on the
-network file server so that the heavy file system activity of the file
-manger can be performed locally and not over NFS.&nbsp;&nbsp; When this
-is not possible or desirable to run <a href="plfilemgr.html"><span
- style="font-weight: bold;">plfilemgr</span></a>(1) on the network file
-server, the next best option is to run the file manager internally
-using this option.<br>
-</div>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;"><br>
-</span><span class="postbody"><span style="font-weight: normal;"> <span
- style="font-weight: bold;"><a name="--file-stat-dir"></a>--file-stat-dir</span>=<span
- style="font-style: italic;">dir<br>
-</span></span></span>
-<div style="margin-left: 40px;"><br>
-An alternative root production directory (see <a
- style="font-weight: bold;"
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir">plconfig
---prod-dir</a>) accessed via a different NFS mount point to provide an
-exclusively network for file status query traffic.&nbsp; In order to
-take advantage of this feature, the machine running the File Manager
-daemon needs to have an additional network interface dedicated file
-status related NFS traffic.&nbsp; The same root production directory on
-the network file server should then be mounted under the given file
-status directory (dir) using an IP address for the file server which
-will direct all traffic to this dedicated network interface on the File
-Manager host.<br>
-<br>
-Since all traffic on this file status dedicated network will be NFS
-metadata queries, you should mount the file status directory using
-suitably small packet sizes and short NFS client file and directory
-caching intervals (usually 1 second).<br>
-<br>
-If not provided, the default root production directory is used
-instead.&nbsp; <br>
-<br>
-This option is silently ignored if <a href="#--file-mgr"><span
- style="font-weight: bold;">--file-mgr</span></a> is not also specified.<br>
-</div>
-<span class="postbody"><span style="font-weight: normal;"><span
- style="font-style: italic;">
-</span><span style="font-weight: bold;"></span></span></span><span
- class="postbody"><span style="font-weight: normal;"><span
- style="font-weight: bold;"><br>
-<a name="--checksum-dir"></a>--checksum-dir</span>=<span
- style="font-style: italic;">dir</span><br>
-<span style="font-weight: bold;"><br>
-</span></span></span>
-<div style="margin-left: 40px;">An alternative root production
-directory (see <a style="font-weight: bold;"
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir">plconfig
---prod-dir</a>)
-accessed via a different NFS mount point to provide an exclusively
-network for checksum generation I/O traffic.&nbsp; In order to take
-advantage of
-this feature, the machine running the File Manager daemon needs to have
-an additional network interface dedicated checksum related NFS
-traffic.&nbsp; The same root production directory on the network file
-server
-should then be mounted under the given checksum directory (dir)
-using an IP address for the file server which will direct all traffic
-to this dedicated network interface on the File Manager host.<br>
-<br>
-The vast majority of the NFS traffic on this checksum dedicated network
-will be reading the contents of production data files which are likely
-to be large in size.&nbsp; You should therefore set your NFS mount
-options to optimize for this type of traffic.<br>
-<br>
-If not provided, the default root production directory is used instead.
-<br>
-<br>
-This option is silently ignored if <a href="#--file-mgr"><span
- style="font-weight: bold;">--file-mgr</span></a> is not also specified.</div>
-<span class="postbody"><span style="font-weight: normal;"><span
- style="font-weight: bold;">
-</span></span></span><br>
-<span style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span
- style="font-style: italic;">filename<br>
-<br>
-</span>
-<div style="margin-left: 40px;"><span style="font-style: italic;"><span
- style="font-style: italic;"></span></span>Write all output to the
-given log file (filename) instead of printing to stdout.<br>
-<br>
-<span style="font-style: italic;"></span></div>
-<span style="font-weight: bold;"><a name="--default-log-file"></a>--standard-log-file<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Write all output to the standard log
-file for <span style="font-weight: bold;">plmaster</span>(1) instead
-of printing to stdout.<br>
-<br>
-The standard log file for this site is:<br>
-<div style="margin-left: 40px;"><br>
-@ROOT_INST_DIR@/logs/plmaster.log.#<br>
-<br>
-</div>
-</div>
-<span style="font-weight: bold;"><a name="--standard-log-dir"></a>--standard-log-dir</span>=<span
- style="font-style: italic;">dirname</span><br>
-<span style="font-weight: bold;">
-</span><br>
-<span style="font-weight: bold;">
-</span>
-<div style="margin-left: 40px;">Write all output to the standard log
-file for <span style="font-weight: bold;">plmaster</span>(1) written
-to the given logs directory (<span style="font-style: italic;">dirname</span>)
-instead
-of printing to stdout.</div>
-<br>
-<span style="font-weight: bold;"><a name="--log-depth"></a>--log-backups</span>=<span
- style="font-style: italic;">num<br>
-</span>
-<div style="margin-left: 40px;"><br>
-When logging to a file using <a href="#--log-file"><span
- style="font-weight: bold;">--log-file</span></a>, this option sets the
-number of rotating backups (<span style="font-style: italic;">num</span>)
-to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
-are the same as the log file with the backup number appended to the end
-of the name.&nbsp;&nbsp; The logfile will be automatically close the
-current logfile, rotate the backups and reopen the logfile whenever the
-log grows to larger than 10MB.<br>
-<br>
-The default number of backups is (10).<br>
-</div>
-<span style="font-style: italic;"><br>
-</span><span style="font-weight: bold;"><a name="--log"></a>--log</span>=<span
- style="font-style: italic;">logger:level</span>[<span
- style="font-style: italic;">,logger:level</span>[...]]</div>
-<div style="margin-left: 40px;"><br>
-<div style="margin-left: 40px;">In addition to the normal output, <b>plmaster</b>(1)
-can
-generate
-detailed output tracing the various stages of internal execution.&nbsp;
-The arguments control the several different types
-of logging information (<span style="font-style: italic;">logger</span>)
-and different amounts of information (<span style="font-style: italic;">level</span>)
-of each type to generate.&nbsp; Several loggers can be modified in one
-option.<br>
-<br>
-The (<span style="font-style: italic;">logger</span>) portion of the
-option's argument can be:<br>
-<span style="font-weight: bold;"><br>
-</span>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br
- style="font-weight: bold;">
-</div>
-<div style="margin-left: 80px;">A shortcut for specifying all loggers
-at once.<br>
-</div>
-<div style="margin-left: 40px;"><br>
-<span style="font-weight: bold;">arg</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Logs errors related to parsing the
-command-line options.<br>
-</div>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">ext<br>
-</span>
-<div style="margin-left: 40px;">Logs the activity of server extension
-plugin tasks.<br>
-</div>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">glu<br>
-</span>
-<div style="margin-left: 40px;">Logs the I/O activity related to <a
- style="font-weight: bold;"
- href="../javadoc/us/temerity/pipeline/glue/package-summary.html">Glue</a>
-format files.<br>
-</div>
-<span style="font-weight: bold;"><br>
-ops</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs node related operations performed
-by the <span style="font-weight: bold;">plmaster</span>(1). <br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">mem<br>
-</span>
-<div style="margin-left: 40px;">Logs the activity of the node cache
-garbage collector.<br>
-<br>
-</div>
-<span style="font-weight: bold;">net</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs network connections and activity. <br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">plg<br>
-</span>
-<div style="margin-left: 40px;">Logs the loading and initialization of
-Pipeline plugins.</div>
-<span style="font-weight: bold;"><br>
-sub<br>
-</span>
-<div style="margin-left: 40px;">Logs the launching and monitoring
-of OS level subprocesses.<br>
-<br>
-</div>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span
- style="font-weight: bold;">sum</span><br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span>Logs
-the activity of checksums used to optimize
-comparisons of the working area and repository files associated with
-nodes.<br>
-</div>
-<br>
-</div>
-The (<span style="font-style: italic;">level</span>) portion of
-the option's argument can be:<br>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">This level is used for error messages
-and other catastrophic events.<br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">warning</span><br>
-</div>
-<div style="margin-left: 80px;">This level is used for non-fatal error
-messages and advisory information.<br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">info</span><br>
-</div>
-<div style="margin-left: 80px;">This is the default output level for
-all loggers and is used for normal output from <b>plmaster</b>(1). <br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">fine</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
-</div>
-<div style="margin-left: 80px;">These three levels are used for
-increasingly more detailed command tracing messages. <br>
-</div>
-</div>
-</div>
-<h3><a name="Performance_Tuning_Options"></a>Performance Tuning Options<br>
-</h3>
-<div style="margin-left: 40px;">
-<h4><span class="postbody"><span style="font-weight: bold;">Node
-Garbage Collector Parameters<br>
-</span></span></h4>
-Pipeline maintains an
-in memory cache of frequently accessed node
-version information to accelerate status updates and other node related
-operations.&nbsp; This cache contains both working and checked-in
-versions and mirrors the information stored on disk for frequently
-accessed nodes.&nbsp; When the size of non-garbage data maintained in
-the JVM heap grows to a level close to the maximum heap size, Pipeline
-will removed a number of least frequently used nodes from the cache to
-free up memory for other purposes in the JVM.&nbsp; The following
-options control the conditions under which this freeing of old node
-versions takes place.<br>
-<span class="postbody"><span style="font-weight: bold;"><span
- style="font-weight: bold;"></span><br>
-<a name="--node-gc-interval"></a>--node-gc-interval</span>=<span
- style="font-style: italic;">msec<br>
-</span></span>
-<div style="margin-left: 40px;"><br>
-Overrides the node garbage collection interval (<span
- style="font-style: italic;">msec</span>).&nbsp;&nbsp;
-Controls the maximum amount of time between runs of the Pipeline node
-garbage collector.&nbsp; Note that node collection will only take place
-when less than the minimum amount of memory overhead is
-available.&nbsp; When this occurs, enough node versions will be freed
-from the cache to increase the memory overhead to the maximum overhead
-level.&nbsp; See <span style="font-weight: bold;">--min-overhead</span>
-and <span style="font-weight: bold;">--max-overhead</span>
-below for details.<br>
-<br>
-The default value is (300000) msec.&nbsp; Which is (5) minutes.<br>
-<br>
-</div>
-<span style="font-weight: bold;"><a name="--min-overhead"></a>--min-overhead</span>=<span
- style="font-style: italic;">min</span><span style="font-weight: bold;"><br>
-<a name="--max-overhead"></a>--max-overhead</span>=<span
- style="font-style: italic;">max</span><span style="font-style: italic;"><br>
-</span><span style="font-style: italic;"><br>
-</span>
-<div style="margin-left: 40px;">Sets the minimum (<span
- style="font-style: italic;">min</span>) and maximum (<span
- style="font-style: italic;">max</span>) memory overhead sizes in
-bytes.&nbsp; Memory overhead is defined as the difference between the
-JVM maximum heap size (-Xmx) and the total amount of allocated
-non-garbage (total - free) memory.&nbsp; In other words, the amount of
-potential memory that could be allocated without causing the JVM to
-throw an OutOfMemoryError exception.&nbsp; The minimum and maximum
-overhead parameters control when and how often the node garbage
-collector is invoked.&nbsp; When overhead falls below the minimum, the
-node garbage collector frees enough nodes to increase the overhead up
-the maximum.<br>
-<br>
-The default minimum and maximum overhead sizes are set to 20% and 30%
-of the JVM maximum heap size respectively. <br>
-<br>
-</div>
-<span style="font-weight: bold;"><a name="--avg-node-size"></a>--avg-node-size</span>=<span
- style="font-style: italic;">size<br>
-</span>
-<div style="margin-left: 40px;"><br>
-Overrides the estimated average amout of memory required to cache a
-node version.&nbsp; This average size is used to calculate the number
-node versions to free from the cache in order to increase the memory
-overhead.&nbsp;&nbsp; Pipeline automatically adjusts this value after
-each node garbage collection based on the actual amount of memory freed
-by the collection cycle.&nbsp; Under normal circumstances this should
-not be manually changed, but is provided to allow resetting of the
-average size in emergency situations.<br>
-<br>
-The default value is (4000) bytes. <br>
-<br>
-</div>
-</div>
-<div style="margin-left: 40px;">
-<h4><span style="font-weight: bold;">Miscellaneous Tuning Parameters<br>
-</span></h4>
-<span style="font-weight: bold;">
-<a name="--restore-cleanup-interval"></a>-</span><span class="postbody"><span
- style="font-weight: bold;">-restore-cleanup-interval</span>=<span
- style="font-style: italic;">msec<br>
-<br>
-</span></span>
-<div style="margin-left: 40px;"><span class="postbody"></span>Overrides
-the maximum age (msec) of a resolved (Restored or Denied)
-restore request before it is deleted.&nbsp; Pipeline automatically
-cleans up these processed requests after a reasonable interval.&nbsp;
-Unresolved requests are never automatically removed.<br>
-<br>
-The default value is (172800000) msec.&nbsp; Which is (48) hours.<br>
-</div>
-</div>
-<span class="postbody"><span style="font-weight: bold;">
-</span></span>
-<h3><a name="See_Also"></a>See Also</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
-<br>
-</div>
-<div style="margin-left: 80px;"><a href="../javadoc/index.html"><span
- style="font-weight: bold;">Pipeline
-Java API</span></a><br>
-<br>
-</div>
-<div style="margin-left: 40px;">
-<span style="font-weight: bold;">Pipeline Programs</span><span
- style="font-weight: bold;"></span><span style="font-weight: bold;"></span><br>
-<div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
- style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
- href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-<a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-<a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
- href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-<a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-<a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
- href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-<a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1), <a
- href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-<a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-<span style="font-weight: bold;"></span><a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)</div>
-<span style="font-weight: bold;"></span>
-<blockquote>
-  <blockquote> </blockquote>
-</blockquote>
-<blockquote> </blockquote>
-<blockquote> </blockquote>
-</div>
-<h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
- href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.</div>
-<span style="font-weight: bold;">
-</span>
-<h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-</div>
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
+
+  <h3><a name="Performance_Tuning_Options" id=
+  "Performance_Tuning_Options"></a>Performance Tuning
+  Options<br></h3>
+
+  <div style="margin-left: 40px;">
+    <h4><span class="postbody"><span style=
+    "font-weight: bold;"><A name="Cache_Garbage_Collector">Cache Garbage Collector
+    Parameters</A></span></span></h4>
+       Pipeline maintains an in memory cache of frequently accessed database information to accelerate node status updates and other node related operations. There are separate caches for working and checked-in node versions as well as for working checksums and per-node annotatations. For ideal performance, these kinds of node related data would only be read from disk once and then looked up from cache for all subsequent accesses. However for medium to large scale productions this could easily require more memory than is available on the host running the server. Therefore, Pipeline manages the sizes of these caches to minimize both total memory usage and the number of times that data has to be read (or re-read) from disk. 
+      <br>
+      <br>
+      For each cache, Pipeline maintains a minumum and maximum number of items that should be cached.  When free memory is available, these sizes are dynamically increased so that the current number of items in the cache becomes the new minimum.  The maximum size is computed from the new minimum using the Caching Factor (see <a href="#--cache-factor"><strong>--cache-factor</strong></a>). When free memory becomes low the maximum size is reset to the current size and a new minimum size is computed using the Cache Factor. If at any time, the number of items currently cached is equal-to or more than the maximum size then the cache garbage collector is invoked. The amount of free memory which this algorithm tries to maintain is automatically computed from the total JMV heap size, but can be specified directly (see <a href="#--min-free-memory"><strong>--min-free-memory</strong></a>).
+      <br>
+      <br>
+      The entire cache garbage collection process, which begins by checking free memory and then resizing each cache, is initiated by one of two conditions.  The first condition is that a timer has expired which triggers the cache garbage collection at regular intervals (See <a href="#--gc-interval"><strong>--gc-interval</strong></a>).  The second condition is that a certain number of items (see <a href="#--gc-misses"><strong>--gc-misses</strong></a>) have be accessed which were missing from the cache and needed to be loaded from disk, thereby increasing the sizes of the caches.  Either condition may initiate a cache garbage collection.  The first condition is primarily concerned with deteacting and reacting to changes in the amount of non-cache free memory.  The second condition allows the cache garbage collector to react quickly to rapid increases in the size of caches due to user activity and keep their sizes under control to prevent the JVM from running out of memory.
+      <br>
+      <br>
+      The garbage collector for a specific cache operates by removing items from the cache in the order they were first inserted.  So the entire cache acts like a FIFO who's size can temporarily grow above the maximum size computed above but is reduced to the minimum size each time the cache garbage collector is invoked.  As long as the current number of items is less than the cache maximum size, no steps are taken to reduce the items cached.  So most invocations of the cache garbage collector merely involve adjusting the minimum and maximum sizes of the caches, which is extremely fast.  Even when the size of a particular cache must be reduced, very little effort or locking is involved in the process.  The biggest impact of a large reduction of one or more of these caches will be the triggering of a JVM level heap garbage collection cycle.
+      <br>
+      <br>
+       The following parameters can be used to tune Pipeline's use of caching: <br><br>
+
+    <span style="font-weight: bold;"><a name="--min-free-memory"></a>--min-free-memory</span>=<span style="font-style: italic;">bytes</span><br><br>
+
+    <div style="margin-left: 40px;">
+      Overrides the default amount of memory (<span style=
+      "font-style: italic;">bytes</span>) that should be reserved for
+      normal JVM operation and heap garbage collection overhead.  Great care should be taken if you choose to override this parameter. If the free memory is set too high it will lead to poor performance due to excessive file I/O since the caches will have to shrink to accomodate the extra memory reserved for the JVM. On the other hand, setting free memory too low can lead to a crash of the JVM due to an out-of-memory error. If you think your performance can be improved by adjusting this parameter its probably best to consult with someone from Temerity Software before changing it.
+      <br><br>
+      The default value is approximately 1/3rd of the total JVM heap size.<br>
+      <br>
+    </div>
+
+    <span style="font-weight: bold;"><a name="--gc-interval"></a>--gc-interval</span>=<span style="font-style: italic;">msec</span><br><br>
+
+    <div style="margin-left: 40px;">
+      Overrides the time interval (<span style="font-style: italic;">msec</span>) between periodic invocations of the Pipeline cache garbage collector.
+      <br><br>
+      The default value is (300000) msec. Which is (5) minutes.<br>
+      <br>
+    </div>
+
+    <span style="font-weight: bold;"><a name="--gc-misses"></a>--gc-misses</span>=<span style="font-style: italic;">count</span><br><br>
+
+    <div style="margin-left: 40px;">
+      Overrides the number of cache misses (<span style=
+      "font-style: italic;">count</span>) which will invoke an early cache garbage collection before the normal amount of time between periodic collections.  A cache miss occurs when an item is accessed which does not currently reside in the cache and has to be read from a file on disk.  Therefore cache misses are a good indication of growth in the memory footprint of the cache.
+      <br><br>
+      The default value is (2500) misses.<br>
+      <br>
+    </div>
+
+    <span style="font-weight: bold;"><a name="--cache-factor"></a>--cache-factor</span>=<span style="font-style: italic;">percentage</span><br><br>
+
+    <div style="margin-left: 40px;">
+      Sets the ratio (<span style="font-style: italic;">percentage</span>) as a real number in the range [0.5-0.95] between the minimum and maximum sizes for each cache.  As mentioned above, the cache garbage collection algorithm periodically resizes the caches based on available memory and usage pattern.  When a resizing occurs, one of either minimum or maximum size is set and the other computing using this factor.  A high factor would lead to more frequent, but less agressive reductions in the number of items in a cache when memory is low.  A low factor would lead to less frequent and more aggressive reductions during each pass of the collector.  The default value is likely pretty close to ideal in most situations.
+      <br><br>
+      The default value is (0.85).<br>
+      <br>
+    </div>
+
+
+    <span style="font-weight: bold;"><a name="--repo-cache-size"></a>--repo-cache-size</span>=<span style="font-style: italic;">items</span><br>
+    <span style="font-weight: bold;"><a name="--work-cache-size"></a>--work-cache-size</span>=<span style="font-style: italic;">items</span><br>
+    <span style="font-weight: bold;"><a name="--check-cache-size"></a>--check-cache-size</span>=<span style="font-style: italic;">items</span><br>
+    <span style="font-weight: bold;"><a name="--annot-cache-size"></a>--annot-cache-size</span>=<span style="font-style: italic;">items</span><br><br>
+
+    <div style="margin-left: 40px;">
+      Sets initial minimum size (<span style="font-style: italic;">items</span>) of each of the four node related caches managed by Pipeline.  The caches include checked-in node versions (<strong>repo</strong>), working area node versions (<strong>work</strong>), working version checksums (<strong>check</strong>) and per-node annotations (<strong>annot</strong>).  Since all of the caches are continually dynamically resized during operation of the cache garbage collector, changing the value with these parameters is only really useful to help the collector more quickly converge to a reasonable size.
+      <br><br>
+      The default values for the caches are (500, 250, 250 and 100) respectively.<br>
+      <br>
+    </div>
+
+  </div>
+
+  <div style="margin-left: 40px;">
+    <h4><span style="font-weight: bold;">Miscellaneous Tuning
+    Parameters<br></span></h4><span style=
+    "font-weight: bold;"><a name=
+    "--restore-cleanup-interval"></a>-</span><span class=
+    "postbody"><span style=
+    "font-weight: bold;">-restore-cleanup-interval</span>=<span style="font-style: italic;">msec<br>
+
+    <br></span></span>
+
+    <div style="margin-left: 40px;">
+      Overrides the maximum age (msec) of a resolved (Restored or
+      Denied) restore request before it is deleted.&nbsp; Pipeline
+      automatically cleans up these processed requests after a
+      reasonable interval.&nbsp; Unresolved requests are never
+      automatically removed.<br>
+      <br>
+      The default value is (172800000) msec.&nbsp; Which is (48)
+      hours.<br>
+    </div>
+  </div>
+
+  <h3><a name="See_Also" id="See_Also"></a>See Also</h3>
+
+  <div style="margin-left: 40px;">
+    <span style="font-weight: bold;">Documentation</span><br>
+  </div>
+
+  <div style="margin-left: 80px;">
+    <a href="../javadoc/index.html"><span style=
+    "font-weight: bold;">Pipeline Java API</span></a><br>
+    <br>
+  </div>
+
+  <div style="margin-left: 40px;">
+    <span style="font-weight: bold;">Pipeline Programs</span><br>
+
+    <div style="margin-left: 40px;">
+      <a href="plui.html"><span style=
+      "font-weight: bold;">plui</span></a>(1), <a href=
+      "plremote.html"><span style=
+      "font-weight: bold;">plremote</span></a>(1), plversion(1),
+      <a href="plscript.html"><span style=
+      "font-weight: bold;">plscript</span></a>(1), <a href=
+      "plpython.html"><span style=
+      "font-weight: bold;">plpython</span></a>(1), <a href=
+      "plplugin.html"></a><a href="plplugin.html"><span style=
+      "font-weight: bold;">plplugin</span></a>(1), <a href=
+      "plbuilder.html"><span style=
+      "font-weight: bold;">plbuilder</span></a>(1)<br>
+      <a href="plmaster.html"><span style=
+      "font-weight: bold;">plmaster</span></a>(1), <a href=
+      "pljobmgr.html"></a><a href="plmaster.html"></a> <a href=
+      "plfilemgr.html"></a><a href="plqueuemgr.html"><span style=
+      "font-weight: bold;">plqueuemgr</span></a>(1), <a href=
+      "plpluginmgr.html"><span style=
+      "font-weight: bold;">plpluginmgr</span></a>(1), <a href=
+      "plfilemgr.html"></a><a href="plfilemgr.html"><span style=
+      "font-weight: bold;">plfilemgr</span></a>(1), <a href=
+      "pljobmgr.html"><span style=
+      "font-weight: bold;">pljobmgr</span></a>(1)<br>
+      <a href="pls.html"><span style=
+      "font-weight: bold;">pls</span></a>(1), <a href=
+      "plbrowse.html"><span style=
+      "font-weight: bold;">plbrowse</span></a>(1), <a href=
+      "realpath.html"><span style=
+      "font-weight: bold;">realpath</span></a>(1)<br>
+      <a href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <span style="font-weight: bold;">plconfig</span></a>(1)
+    </div>
+  </div>
+
+  <h3><a name="Author" id="Author"></a>Author</h3>
+
+  <div style="margin-left: 40px;">
+    Created by <span style="font-weight: bold;">Jim Callahan</span>
+    of <a href="http://temerity.us/"><span style=
+    "font-weight: bold;">Temerity Software, Inc</span></a>.
+  </div>
+
+  <h3><a name="Copyright" id="Copyright"></a>Copyright</h3>
+
+  <div style="margin-left: 40px;">
+    @COPYRIGHT@<br>
+  </div>
+
+  <h3><a name="License_Agreement" id=
+  "License_Agreement"></a>License Agreement</h3>
+
+  <div style="margin-left: 40px;">
+    @LICENSE@
+  </div>
 </body>
 </html>

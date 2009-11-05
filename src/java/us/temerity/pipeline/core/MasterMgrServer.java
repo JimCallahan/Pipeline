@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.106 2009/11/02 03:44:11 jim Exp $
+// $Id: MasterMgrServer.java,v 1.107 2009/11/05 00:23:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -48,33 +48,8 @@ class MasterMgrServer
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
-   * @param avgNodeSize
-   *   The estimated memory size of a node version (in bytes).
-   * 
-   * @param minOverhead
-   *   The minimum amount of memory overhead to maintain at all times.
-   * 
-   * @param maxOverhead
-   *   The maximum amount of memory overhead required to be available after a node garbage
-   *   collection.
-   * 
-   * @param nodeGCInterval
-   *   The minimum time a cycle of the node cache garbage collector loop should 
-   *   take (in milliseconds).
-   * 
-   * @param restoreCleanupInterval
-   *   The maximum age of a resolved (Restored or Denied) restore request before it 
-   *   is deleted (in milliseconds).
-   * 
-   * @param fileStatDir
-   *   An alternative root production directory accessed via a different NFS mount point
-   *   to provide an exclusively network for file status query traffic.  Setting this to 
-   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
-   * 
-   * @param checksumDir
-   *   An alternative root production directory accessed via a different NFS mount point
-   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
-   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * @param controls
+   *   The runtime controls.
    * 
    * @throws PipelineException 
    *   If unable to properly initialize the server.
@@ -85,14 +60,8 @@ class MasterMgrServer
    MasterApp app, 
    boolean rebuildCache, 
    boolean preserveOfflinedCache, 
-   boolean internalFileMgr, 
-   long avgNodeSize, 
-   long minOverhead, 
-   long maxOverhead, 
-   long nodeGCInterval, 
-   long restoreCleanupInterval, 
-   Path fileStatDir, 
-   Path checksumDir
+   boolean internalFileMgr,
+   MasterControls controls
   )
     throws PipelineException 
   { 
@@ -101,11 +70,9 @@ class MasterMgrServer
     pTimer = new TaskTimer();
 
     pMasterApp = app;
-    pMasterMgr = 
-      new MasterMgr(rebuildCache, preserveOfflinedCache, internalFileMgr,  
-		    avgNodeSize, minOverhead, maxOverhead, nodeGCInterval, 
-		    restoreCleanupInterval, 
-                    fileStatDir, checksumDir);
+
+    pMasterMgr = new MasterMgr(rebuildCache, preserveOfflinedCache, 
+                               internalFileMgr, controls); 
 
     pTasks = new TreeSet<HandlerTask>();
   }
@@ -142,8 +109,8 @@ class MasterMgrServer
 	 "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
       pTimer = new TaskTimer();
 
-      NodeGCTask nodeGC = new NodeGCTask();
-      nodeGC.start();
+      CacheGCTask cacheGC = new CacheGCTask();
+      cacheGC.start();
 
       EventWriterTask ewriter = new EventWriterTask();
       ewriter.start();
@@ -188,11 +155,11 @@ class MasterMgrServer
 	{
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Net, LogMgr.Level.Info,
-	     "Waiting on Node Garbage Collector...");
+	     "Waiting on Cache Garbage Collector...");
 	  LogMgr.getInstance().flush();
           
-          nodeGC.interrupt();
-          nodeGC.join();
+          cacheGC.interrupt();
+          cacheGC.join();
         }
 
 	{
@@ -1938,13 +1905,13 @@ class MasterMgrServer
    * Node cache garbage collector. 
    */
   private 
-  class NodeGCTask
+  class CacheGCTask
     extends Thread
   {
     public 
-    NodeGCTask() 
+    CacheGCTask() 
     {
-      super("MasterMgrServer:NodeGCTask");
+      super("MasterMgrServer:CacheGCTask");
     }
 
     @Override
@@ -1954,23 +1921,23 @@ class MasterMgrServer
       try {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	   "Node Garbage Collector Started.");	
+	   "Cache Garbage Collector Started.");	
 	LogMgr.getInstance().flush();
 
 	while(!pShutdown.get()) {
-	  pMasterMgr.nodeGC();
+	  pMasterMgr.cacheGC();
 	}
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
-           Exceptions.getFullMessage("Node Garbage Collector Failed:", ex)); 
+           Exceptions.getFullMessage("Cache Garbage Collector Failed:", ex)); 
 	LogMgr.getInstance().flush();	
       }
       finally {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	   "Node Garbage Collector Finished.");	
+	   "Cache Garbage Collector Finished.");	
 	LogMgr.getInstance().flush();
       }
     }

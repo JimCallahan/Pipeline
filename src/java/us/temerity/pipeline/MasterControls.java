@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.6 2009/08/28 02:10:46 jim Exp $
+// $Id: MasterControls.java,v 1.7 2009/11/05 00:23:30 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -23,11 +23,39 @@ class MasterControls
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct a with all parameters unset. 
+   * Construct a with all parameters initialized to defaults.
    */ 
   public 
   MasterControls() 
-  {}
+  {
+    this(null, null, null, null, null, null, null, null, null, null, null); 
+  }
+
+  /** 
+   * Construct a with default values for only file system related parameters. <P> 
+   * 
+   * Any parameter can be left unset by suppling <CODE>null</CODE> for its initial 
+   * value.
+   * 
+   * @param fileStatDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for file status query traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param checkSumDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   */ 
+  public 
+  MasterControls
+  (
+   Path fileStatDir, 
+   Path checkSumDir
+  ) 
+  {
+    this(null, null, null, null, null, null, null, null, null, fileStatDir, checkSumDir);
+  }
 
   /** 
    * Construct a with default values for all parameters. <P> 
@@ -35,19 +63,30 @@ class MasterControls
    * Any parameter can be left unset by suppling <CODE>null</CODE> for its initial 
    * value.
    * 
-   * @param avgNodeSize
-   *   The estimated memory size of a node version (in bytes).
+   * @param minFreeMem
+   *   The minimum amount of free Java heap memory available before caches must be reduced. 
    * 
-   * @param minOverhead
-   *   The minimum amount of memory overhead to maintain at all times.
+   * @param gcInterval
+   *   The maximum amount of time between runs of the cache garbage collector 
+   *   (in milliseconds).
    * 
-   * @param maxOverhead
-   *   The maximum amount of memory overhead required to be available after a node garbage
-   *   collection.
+   * @param gcMisses
+   *   The maximum number of cache misses before the cache garbage collector is run.
    * 
-   * @param nodeGCInterval
-   *   The minimum time a cycle of the node cache garbage collector loop should 
-   *   take (in milliseconds).
+   * @param cacheFactor
+   *   The ratio between minimum and maximum number of items maintained in each cache. 
+   * 
+   * @param repoCacheSize
+   *   The minimum number of checked-in versions of nodes to cache.
+   * 
+   * @param workCacheSize
+   *   The minimum number of working versions of nodes to cache.
+   * 
+   * @param checkCacheSize
+   *   The minimum number of working version checksums to cache.
+   * 
+   * @param annotCacheSize
+   *   The minimum number of per-node annotations to cache.
    * 
    * @param restoreCleanupInterval
    *   The maximum age of a resolved (Restored or Denied) restore request before it 
@@ -66,18 +105,27 @@ class MasterControls
   public 
   MasterControls
   (
-   Long avgNodeSize, 
-   Long minOverhead, 
-   Long maxOverhead, 
-   Long nodeGCInterval, 
-   Long restoreCleanupInterval, 
+   Long minFreeMem, 
+   Long gcInterval, 
+   Long gcMisses, 
+   Double cacheFactor, 
+   Long repoCacheSize, 
+   Long workCacheSize, 
+   Long checkCacheSize, 
+   Long annotCacheSize, 
+   Long restoreCleanupInterval,
    Path fileStatDir, 
    Path checkSumDir
   ) 
   {    
-    setAverageNodeSize(avgNodeSize); 
-    setOverhead(minOverhead, maxOverhead);
-    setNodeGCInterval(nodeGCInterval); 
+    setMinFreeMemory(minFreeMem); 
+    setCacheGCInterval(gcInterval); 
+    setCacheGCMisses(gcMisses); 
+    setCacheFactor(cacheFactor); 
+    setRepoCacheSize(repoCacheSize);
+    setWorkCacheSize(workCacheSize); 
+    setCheckCacheSize(checkCacheSize); 
+    setAnnotCacheSize(annotCacheSize);
     setRestoreCleanupInterval(restoreCleanupInterval); 
     setFileStatDir(fileStatDir);
     setCheckSumDir(checkSumDir);
@@ -90,132 +138,324 @@ class MasterControls
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the estimated memory size of a node version (in bytes).
-   * 
+   * Get the minimum amount of free Java heap memory available before caches must be reduced.
+   *
    * @return 
-   *   The node size or <CODE>null</CODE> if unset.
+   *   The amount of memory or <CODE>null</CODE> if unset.
    */ 
   public Long
-  getAverageNodeSize() 
+  getMinFreeMemory() 
   {
-    return pAvgNodeSize; 
+    return pMinFreeMemory;
   }
 
   /**
-   * Set the estimated memory size of a node version (in bytes).
+   * Set the minimum amount of free Java heap memory available before caches must be reduced.
    * 
-   * @param size
-   *   The node size or <CODE>null</CODE> to unset.
+   * @param bytes
+   *   The amount of memory or <CODE>null</CODE> to unset.
    */
   public void 
-  setAverageNodeSize
+  setMinFreeMemory
   (
-   Long size
+   Long bytes
   ) 
   {
-    if((size != null) && ((size < 2048L) || (size > 16384L)))
-      throw new IllegalArgumentException
-	("The average node size (" + size + " bytes) must be in the 2K-16K range!"); 
-    pAvgNodeSize = size;
+    long maxMem = Runtime.getRuntime().maxMemory();
+    if(bytes != null) {
+      if(bytes < (maxMem/5L))
+        throw new IllegalArgumentException
+          ("The minimum free memory (" + bytes + ") must be at least 1/5 of total heap size!");
+      pMinFreeMemory = bytes;
+    }
+    else {
+      pMinFreeMemory = maxMem / 3L;
+    }
   }
+
 
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the minimum amount of memory overhead to maintain at all times.
-   * 
-   * @return 
-   *   The minimum overhead or <CODE>null</CODE> if unset.
-   */ 
-  public Long
-  getMinimumOverhead()
-  {
-    return pMinOverhead; 
-  }
-
-  /**
-   * Get the maximum amount of memory overhead required to be available after a node 
-   * garbage collection.
-   * 
-   * @return 
-   *   The maximum overhead or <CODE>null</CODE> if unset.
-   */ 
-  public Long
-  getMaximumOverhead()
-  {
-    return pMaxOverhead; 
-  }
-
-  /**
-   * Set the minimum amount of memory overhead to maintain at all times and the maximum 
-   * amount of memory overhead required to be available after a node garbage collection.
-   * 
-   * @param min
-   *   The minimum overhead or <CODE>null</CODE> to unset.
-   * 
-   * @param max
-   *   The maximum overhead or <CODE>null</CODE> to unset.
-   */
-  public void 
-  setOverhead
-  (
-   Long min,
-   Long max 
-  ) 
-  {
-    if((min != null) && (min <= 8388608L))
-      throw new IllegalArgumentException 
-	("The minimum memory overhead (" + min + " bytes) must at least 8M!"); 
-    
-    if((max != null) && (max <= 16777216L)) 
-      throw new IllegalArgumentException 
-	("The maximum memory overhead (" + max + " bytes) must at least 16M!"); 
-
-    if((min != null) && (max != null) && (max <= min))
-      throw new IllegalArgumentException 
-	("The maximum memory overhead (" + max + " bytes) must greater-than the " + 
-	 "minimum memory overhead (" + min + " bytes)!"); 
-
-    pMinOverhead = min;
-    pMaxOverhead = max; 
-  }
-  
-
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * Get the minimum time a cycle of the node cache garbage collector loop should 
+   * Get the minimum time a cycle of the cache garbage collector loop should 
    * take (in milliseconds).
    *
    * @return 
    *   The interval or <CODE>null</CODE> if unset.
    */ 
   public Long
-  getNodeGCInterval() 
+  getCacheGCInterval() 
   {
-    return pNodeGCInterval;
+    return pCacheGCInterval;
   }
 
   /**
-   * Set the minimum time a cycle of the node cache garbage collector loop should 
+   * Set the minimum time a cycle of the cache garbage collector loop should 
    * take (in milliseconds).
    * 
    * @param msec
    *   The interval or <CODE>null</CODE> to unset.
    */
   public void 
-  setNodeGCInterval
+  setCacheGCInterval
   (
    Long msec
   ) 
   {
-    if((msec != null) && (msec <= 15000L))
-      throw new IllegalArgumentException
-	("The node garbage collection interval (" + msec + " msec) must be at " +
-	 "least 15 seconds!");
-    pNodeGCInterval = msec;
+    if(msec != null) {
+      if(msec < 15000L)
+        throw new IllegalArgumentException
+          ("The node garbage collection interval (" + msec + " msec) must be at " +
+           "least 15-seconds!");
+      pCacheGCInterval = msec;
+    }
+    else {
+      pCacheGCInterval = 300000L;  /* 5-minutes */ 
+    }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the maximum number of cache misses before the cache garbage collector is run.
+   *
+   * @return 
+   *   The number of misses or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getCacheGCMisses() 
+  {
+    return pCacheGCMisses;
+  }
+
+  /**
+   * Set the maximum number of cache misses before the cache garbage collector is run.
+   * 
+   * @param misses 
+   *   The number of misses or <CODE>null</CODE> to unset.
+   */
+  public void 
+  setCacheGCMisses
+  (
+   Long misses
+  ) 
+  {
+    if(misses != null) {
+      if(misses < 100L)
+        throw new IllegalArgumentException
+          ("The number of cache misses (" + misses + ") must be at least 100!");
+      pCacheGCMisses = misses;
+    }
+    else {
+      pCacheGCMisses = 2500L;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the ratio between minimum and maximum number of items maintained in each cache. 
+   * 
+   * @return 
+   *   The number of misses or <CODE>null</CODE> if unset.
+   */ 
+  public Double
+  getCacheFactor() 
+  {
+    return pCacheFactor;
+  }
+
+  /**
+   * Set the ratio between minimum and maximum number of items maintained in each cache. 
+   * 
+   * @param factor
+   *   The cache factor or <CODE>null</CODE> to unset.
+   */
+  public void 
+  setCacheFactor
+  (
+   Double factor
+  ) 
+  {
+    if(factor != null) {
+      if((factor < 0.25) || (factor > 0.95)) 
+        throw new IllegalArgumentException
+          ("The cache factor (" + factor + ") must be in the range [0.5-0.95]!");
+      pCacheFactor = factor;
+    }
+    else {
+      pCacheFactor = 0.85;
+    }
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the minimum number of checked-in versions of nodes to cache.
+   * 
+   * @return 
+   *   The number of versions or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getRepoCacheSize()
+  {
+    return pRepoCacheSize; 
+  }
+
+  /**
+   * Set the minimum and maximum number of checked-in versions of nodes to cache.
+   * 
+   * @param min
+   *   The minimum or <CODE>null</CODE> to unset.
+   * 
+   * @param max
+   *   The maximum or <CODE>null</CODE> to unset.
+   */
+  public void 
+  setRepoCacheSize
+  (
+   Long size
+  ) 
+  {
+    if(size != null) {
+      if(size < 500L)
+        throw new IllegalArgumentException 
+          ("The minimum checked-in versions cache size (" + size + ") must at least 500!"); 
+      pRepoCacheSize = size;
+    }
+    else {
+      pRepoCacheSize = 500L;
+    }
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the minimum number of working versions of nodes to cache.
+   * 
+   * @return 
+   *   The number of versions or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getWorkCacheSize()
+  {
+    return pWorkCacheSize; 
+  }
+
+  /**
+   * Set the minimum and maximum number of working versions of nodes to cache.
+   * 
+   * @param min
+   *   The minimum or <CODE>null</CODE> to unset.
+   * 
+   * @param max
+   *   The maximum or <CODE>null</CODE> to unset.
+   */
+  public void 
+  setWorkCacheSize
+  (
+   Long size
+  ) 
+  {
+    if(size != null) {
+      if(size < 250L)
+        throw new IllegalArgumentException 
+          ("The minimum working versions cache size (" + size + ") must at least 250!"); 
+      pWorkCacheSize = size;
+    }
+    else {
+      pWorkCacheSize = 500L;
+    }
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the minimum number of working version checksums of nodes to cache.
+   * 
+   * @return 
+   *   The number of versions or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getCheckCacheSize()
+  {
+    return pCheckCacheSize; 
+  }
+
+  /**
+   * Set the minimum and maximum number of working version checksums of nodes to cache.
+   * 
+   * @param min
+   *   The minimum or <CODE>null</CODE> to unset.
+   * 
+   * @param max
+   *   The maximum or <CODE>null</CODE> to unset.
+   */
+  public void 
+  setCheckCacheSize
+  (
+   Long size
+  ) 
+  {
+    if(size != null) {
+      if(size < 250L)
+        throw new IllegalArgumentException 
+          ("The minimum working version checksums cache size (" + size + ") must at " + 
+           "least 250!"); 
+      pCheckCacheSize = size;
+    }
+    else {
+      pCheckCacheSize = 250L;
+    }
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the minimum number of per-version annotations of nodes to cache.
+   * 
+   * @return 
+   *   The number of versions or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getAnnotCacheSize()
+  {
+    return pAnnotCacheSize; 
+  }
+
+  /**
+   * Set the minimum and maximum number of per-version annotations of nodes to cache.
+   * 
+   * @param min
+   *   The minimum or <CODE>null</CODE> to unset.
+   * 
+   * @param max
+   *   The maximum or <CODE>null</CODE> to unset.
+   */
+  public void 
+  setAnnotCacheSize
+  (
+   Long size
+  ) 
+  {
+    if(size != null) {
+      if(size < 100L)
+        throw new IllegalArgumentException 
+          ("The minimum per-version annotations cache size (" + size + ") must at " + 
+           "least 100!"); 
+      pAnnotCacheSize = size;
+    }
+    else {
+      pAnnotCacheSize = 100L;
+    }
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -245,11 +485,16 @@ class MasterControls
    Long interval
   ) 
   {
-    if((interval != null) && (interval < 3600000L)) 
-      throw new IllegalArgumentException
-	("The restore cleanup interval (" + interval + " msec) must be at " + 
-	 "least 1 hour!"); 
-    pRestoreCleanupInterval = interval; 
+    if(interval != null) {
+      if(interval < 3600000L)
+        throw new IllegalArgumentException
+          ("The restore cleanup interval (" + interval + " msec) must be at " + 
+           "least 1 hour!"); 
+      pRestoreCleanupInterval = interval; 
+    }
+    else {
+      pRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
+    }
   }
 
 
@@ -335,22 +580,45 @@ class MasterControls
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The minimum amount of free Java heap memory available before caches must be reduced. 
+   */
+  private Long  pMinFreeMemory;
+
+  /**
    * The minimum time a cycle of the node cache garbage collector loop should 
    * take (in milliseconds).
    */ 
-  private Long  pNodeGCInterval;
+  private Long  pCacheGCInterval;
 
   /**
-   * The minimum amount of memory overhead to maintain at all times.  The maximum amount of 
-   * memory overhead required to be available after a node garbage collection.
-   */ 
-  private Long  pMinOverhead;
-  private Long  pMaxOverhead;
+   * The maximum number of cache misses before the cache garbage collector is run.
+   */
+  private Long  pCacheGCMisses;
 
   /**
-   * The estimated memory size of a node version (in bytes).
+   * The ratio between minimum and maximum number of items maintained in each cache. 
+   */
+  private Double  pCacheFactor;
+
+  /**
+   * The minimum number of checked-in versions of nodes to cache.
    */ 
-  private Long  pAvgNodeSize; 
+  private Long  pRepoCacheSize;
+
+  /**
+   * The minimum number of working versions of nodes to cache.
+   */ 
+  private Long  pWorkCacheSize;
+
+  /**
+   * The minimum number of working version checksums of nodes to cache.
+   */ 
+  private Long  pCheckCacheSize;
+
+  /**
+   * The minimum number of per-node annotations of nodes to cache.
+   */ 
+  private Long  pAnnotCacheSize;
 
   /**
    * The maximum age of a resolved (Restored or Denied) restore request before it 
