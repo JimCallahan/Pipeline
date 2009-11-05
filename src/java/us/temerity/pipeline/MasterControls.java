@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.7 2009/11/05 00:23:30 jim Exp $
+// $Id: MasterControls.java,v 1.8 2009/11/05 20:49:57 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -308,11 +308,8 @@ class MasterControls
   /**
    * Set the minimum and maximum number of checked-in versions of nodes to cache.
    * 
-   * @param min
-   *   The minimum or <CODE>null</CODE> to unset.
-   * 
-   * @param max
-   *   The maximum or <CODE>null</CODE> to unset.
+   * @param size
+   *   The minimum size or <CODE>null</CODE> to unset.
    */
   public void 
   setRepoCacheSize
@@ -349,11 +346,8 @@ class MasterControls
   /**
    * Set the minimum and maximum number of working versions of nodes to cache.
    * 
-   * @param min
-   *   The minimum or <CODE>null</CODE> to unset.
-   * 
-   * @param max
-   *   The maximum or <CODE>null</CODE> to unset.
+   * @param size
+   *   The minimum size or <CODE>null</CODE> to unset.
    */
   public void 
   setWorkCacheSize
@@ -390,11 +384,8 @@ class MasterControls
   /**
    * Set the minimum and maximum number of working version checksums of nodes to cache.
    * 
-   * @param min
-   *   The minimum or <CODE>null</CODE> to unset.
-   * 
-   * @param max
-   *   The maximum or <CODE>null</CODE> to unset.
+   * @param size
+   *   The minimum size or <CODE>null</CODE> to unset.
    */
   public void 
   setCheckCacheSize
@@ -432,11 +423,8 @@ class MasterControls
   /**
    * Set the minimum and maximum number of per-version annotations of nodes to cache.
    * 
-   * @param min
-   *   The minimum or <CODE>null</CODE> to unset.
-   * 
-   * @param max
-   *   The maximum or <CODE>null</CODE> to unset.
+   * @param size
+   *   The minimum size or <CODE>null</CODE> to unset.
    */
   public void 
   setAnnotCacheSize
