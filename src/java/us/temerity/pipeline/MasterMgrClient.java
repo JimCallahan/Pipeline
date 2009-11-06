@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.148 2009/11/02 03:44:10 jim Exp $
+// $Id: MasterMgrClient.java,v 1.149 2009/11/06 18:23:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -5488,7 +5488,7 @@ class MasterMgrClient
  
     NodeStatusReq req = new NodeStatusReq(nodeID, lightweight, dmode);
 
-    Object obj = performTransaction(MasterRequest.Status, req);
+    Object obj = performLongTransaction(MasterRequest.Status, req, 15000, 60000); 
     if(obj instanceof NodeStatusRsp) {
       NodeStatusRsp rsp = (NodeStatusRsp) obj;
       return rsp.getNodeStatus();
@@ -5577,7 +5577,7 @@ class MasterMgrClient
     NodeMultiStatusReq req = 
       new NodeMultiStatusReq(author, view, rootNames, heavyNames, dmode); 
 
-    Object obj = performTransaction(MasterRequest.MultiStatus, req);
+    Object obj = performLongTransaction(MasterRequest.MultiStatus, req, 15000, 60000); 
     if(obj instanceof NodeMultiStatusRsp) {
       NodeMultiStatusRsp rsp = (NodeMultiStatusRsp) obj;
       return rsp.getNodeStatus();
@@ -6487,12 +6487,13 @@ class MasterMgrClient
       if (sourceRange.numFrames() != targetRange.numFrames())
         throw new PipelineException
           ("Cowardly refusing to call cloneFiles() from source (" + sourceID + ") with " +
-           "frame range (" + sourceRange + ") to target (" + targetID + ") with frame range " +
-           "(" + targetRange + ") since the frame ranges are different lengths.");
+           "frame range (" + sourceRange + ") to target (" + targetID + ") with frame " + 
+           "range (" + targetRange + ") since the frame ranges are different lengths.");
     }
     
     NodeCloneFilesReq req = 
-      new NodeCloneFilesReq(sourceID, targetID, secondarySequences, sourceRange, targetRange); 
+      new NodeCloneFilesReq(sourceID, targetID, secondarySequences, 
+                            sourceRange, targetRange); 
     
     Object obj = performTransaction(MasterRequest.CloneFiles, req);
     handleSimpleResponse(obj);
@@ -6728,7 +6729,7 @@ class MasterMgrClient
     
     NodeExtractBundleReq req = new NodeExtractBundleReq(bundlePath); 
 
-    Object obj = performTransaction(MasterRequest.ExtractBundle, req);  
+    Object obj = performLongTransaction(MasterRequest.ExtractBundle, req, 15000, 60000); 
     if(obj instanceof NodeExtractBundleRsp) {
       NodeExtractBundleRsp rsp = (NodeExtractBundleRsp) obj;
       return rsp.getBundle();
@@ -7455,7 +7456,7 @@ class MasterMgrClient
     NodeSubmitJobsReq req = 
       new NodeSubmitJobsReq(nodeID, indices, batchSize, delta);
 
-    Object obj = performTransaction(MasterRequest.SubmitJobs, req);
+    Object obj = performLongTransaction(MasterRequest.SubmitJobs, req, 15000, 60000); 
     if(obj instanceof NodeSubmitJobsRsp) {
       NodeSubmitJobsRsp rsp = (NodeSubmitJobsRsp) obj;
       return rsp.getJobGroups();
@@ -7560,7 +7561,7 @@ class MasterMgrClient
     NodeResubmitJobsReq req = 
       new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, delta);
 
-    Object obj = performTransaction(MasterRequest.ResubmitJobs, req);
+    Object obj = performLongTransaction(MasterRequest.ResubmitJobs, req, 15000, 60000); 
     if(obj instanceof NodeSubmitJobsRsp) {
       NodeSubmitJobsRsp rsp = (NodeSubmitJobsRsp) obj;
       return rsp.getJobGroups();
