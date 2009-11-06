@@ -726,11 +726,13 @@ installdirs:
 install-plugin-sources: $(JAVA_SOURCES)
 	@for p in `find $(srcdir)/plugin -type f -name "*.java"`; do \
           f=`echo $$p | sed -e 's:$(srcdir)/::g'`; \
-          dir=$(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/`dirname $$f`; \
-          echo $(mkinstalldirs) $$dir; \
-          $(mkinstalldirs) $$dir; \
-          echo $(INSTALL) -m 444 $$p $(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/$$f; \
-          $(INSTALL) -m 444 $$p $(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/$$f; \
+          if [[ $$f != plugin/TemplateCollection/* ]]; then  \
+            dir=$(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/`dirname $$f`; \
+            echo $(mkinstalldirs) $$dir; \
+            $(mkinstalldirs) $$dir; \
+            echo $(INSTALL) -m 444 $$p $(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/$$f; \
+            $(INSTALL) -m 444 $$p $(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/$$f; \
+          fi; \
          done
 
 
