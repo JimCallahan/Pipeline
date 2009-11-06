@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.71 2009/11/02 03:27:40 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.72 2009/11/06 21:53:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -84,11 +84,16 @@ class JQueueJobViewerPanel
                           prefs.getShowJobHostHints(), 
                           prefs.getShowJobTimingHints());
 
-      pNewJobGroupIDs = new TreeSet<Long>();
-
       pJobGroups = new TreeMap<Long,QueueJobGroup>(); 
+      pMaxVisibleJobs = 10000L;
+      pCollapsedJobPaths = new ListPathSet<Long>(); 
+      pPreviouslyDisplayedGroups = new TreeSet<Long>();
+
       pJobStatus = new TreeMap<Long,JobStatus>();
-      
+
+      pCollapsedJobPaths = new ListPathSet<Long>(); 
+      pPreviouslyDisplayedGroups = new TreeSet<Long>();
+
       pViewerJobGroups = new TreeMap<Long,ViewerJobGroup>();
       pViewerJobs      = new TreeMap<JobPath,ViewerJob>();
 
@@ -584,14 +589,6 @@ class JQueueJobViewerPanel
     {
       pDetailedJobID = detailedID; 
 
-      pNewJobGroupIDs.clear();
-      if(prefs.getJobAutoExpandNew() && (groups != null)) {
-        for(Long gid : groups.keySet()) {
-          if(!pJobGroups.containsKey(gid))
-            pNewJobGroupIDs.add(gid);
-        }
-      }
-
       pJobGroups.clear();
       if(groups != null) 
 	pJobGroups.putAll(groups);
@@ -894,20 +891,27 @@ class JQueueJobViewerPanel
         forcedCollapseBeep = warn.equals("Beep");
         forcedCollapseWarn = warn.equals("Message");
       }
-    }
+    } 
 
+    /* figure out what is new and remove anything old */ 
+    TreeSet<Long> newGroupIDs = new TreeSet<Long>();
+    for(Long groupID : pJobGroups.keySet()) {
+      if(!pPreviouslyDisplayedGroups.contains(groupID))
+        newGroupIDs.add(groupID); 
+    }
+    pCollapsedJobPaths.removeExceptStartingWith(pJobGroups.keySet());
+
+    /* rebuild the viewer groups and jobs */ 
+    pNumVisibleJobs = 0;
     if(!pJobGroups.isEmpty()) {
       Point2d ganchor = new Point2d();
-      for(QueueJobGroup group : pJobGroups.values()) {
+      for(Long groupID : pJobGroups.keySet()) {
+        QueueJobGroup group = pJobGroups.get(groupID); 
 
         /* auto-expand newly added groups? */
         LayoutPolicy groupPolicy = pLayoutPolicy;
-        if(prefs.getJobAutoExpandNew() && pNewJobGroupIDs.contains(group.getGroupID())) 
+        if(newGroupIDs.contains(group.getGroupID())) 
           groupPolicy = LayoutPolicy.AutomaticExpand;
-
-        /* reset per-group job counters */
-        pMaxVisibleJobs = group.numAllJobs() * 8;
-        pNumVisibleJobs = 0;
 
 	/* layout the jobs */ 
 	int gheight = 0;
@@ -915,10 +919,11 @@ class JQueueJobViewerPanel
 	{
 	  Point2d anchor = Point2d.add(ganchor, new Vector2d(1.0, 0.0));
           TreeSet<Long> seen = new TreeSet<Long>(); 
+          JobPath gpath = new JobPath(groupID);
 	  for(Long jobID : group.getRootIDs()) {
 	    JobStatus status = pJobStatus.get(jobID);
 	    if(status != null) {
-	      JobPath path = new JobPath(jobID);
+	      JobPath path = new JobPath(gpath, jobID);
 	      ViewerJob vjob = layoutJobs(true, status, path, anchor, 
 					  group.getExternalIDs(), created, 
 					  groupPolicy, wasCollapsed, seen); 
@@ -952,26 +957,16 @@ class JQueueJobViewerPanel
 	  else 
 	    ganchor.y(bbox.getMin().y() - 0.45 - prefs.getJobGroupSpace());
 	}
-
-        if(pNumVisibleJobs > pMaxVisibleJobs) {
-          collapseForced = true;
-          if(forcedCollapseWarn) 
-            forcedCollapseMessages.add
-              ("More than (" + pMaxVisibleJobs + ") visible jobs where encountered during " + 
-               "the layout of JobGroup (" + group.getGroupID() + ") which creates the " + 
-               group.getRootSequence() + " target files.  All subsequent jobs were " + 
-               "therefore displayed in a collapsed mode automatically.  Note that there " + 
-               "are only (" + group.numAllJobs() + ") total unique jobs in this " + 
-               "group so the jobs hidden are most likely duplicates of already visible " + 
-               "jobs.\n\n");
-        }
       }
-	
-      /* preserve the current layout */ 
-      pExpandDepth  = null; 
-      pLayoutPolicy = LayoutPolicy.Preserve;
-      pNewJobGroupIDs.clear();
     }
+
+    /* preserve the current layout */ 
+    pExpandDepth  = null; 
+    pLayoutPolicy = LayoutPolicy.Preserve;
+    
+    /* remember what we just displayed */ 
+    pPreviouslyDisplayedGroups.clear(); 
+    pPreviouslyDisplayedGroups.addAll(pJobGroups.keySet());
    
     /* render the changes */ 
     refresh();
@@ -982,37 +977,74 @@ class JQueueJobViewerPanel
     pAutoframeOnUpdate = false;
 
     /* if we had to override the layout policy */ 
-    if(collapseForced) {
+    if(pNumVisibleJobs > pMaxVisibleJobs) {
       if(forcedCollapseBeep) {
 	if(UIFactory.getBeepPreference())
 	  Toolkit.getDefaultToolkit().beep();
       }
       else if(forcedCollapseWarn && !forcedCollapseMessages.isEmpty()) {
-        StringBuilder buf = new StringBuilder();
-        for(String msg : forcedCollapseMessages) 
-          buf.append(msg);
-
-        buf.append
-          ("This situation is most likely caused by a nested series of nodes which each " + 
+        UIMaster.getInstance().showErrorDialog
+          ("Warning:  Layout Policy Overridden",
+           "More than (" + pMaxVisibleJobs + ") visible jobs where encountered during " + 
+           "the layout of the current job groups.  All subsequent jobs were therefore " + 
+           "displayed in a collapsed mode automatically.\n\n" +
+           
+           "This situation is most likely caused by a nested series of nodes which each " + 
            "create large numbers of jobs and have a all-to-all rather than 1:1 type of " + 
-           "link relationship.  Although this is perfectly valid, it presents difficulties " +
-           "in displaying fully expanded job groups since the number of visible jobs due " + 
-           "to shared job dependencies can become extremely large even if the number of " + 
-           "unique jobs is still quite modest.\n\n" +
+           "link relationship.  Although this is perfectly valid, it presents " + 
+           "difficulties in displaying fully expanded job groups since the number of " + 
+           "visible jobs due to shared job dependencies can become extremely large even " + 
+           "if the number of unique jobs is still quite modest.\n\n" +
+           
            "In order to expand currently collapsed jobs, you must first collapse some of " + 
            "the expanded ones to lower the number of visible jobs. Besides manually " + 
            "collapsing some visible jobs, the Automatic Expand, Expand Level (1 or 2) or " + 
            "Collapse All operations are all good ways to lower the number of visible " + 
            "jobs.\n\n" +
+           
            "Tired of seeing this message?  You can supress it using the preference: " + 
            "Panels - Job Viewer - Appearance - Collapse Warnings\n\n");
-
-        UIMaster.getInstance().showErrorDialog
-          ("Warning:  Layout Policy Overridden", buf.toString());
       }
     }
   }
   
+  /**
+   * Save the collapsed state of the given viewer job.
+   * 
+   * @param path
+   *   The unique path to the viewer job.
+   * 
+   * @param wasCollapsed
+   *   Whether the viewer job is currently collapsed.
+   */ 
+  private void 
+  setJobCollapsed
+  (
+   JobPath path,
+   boolean wasCollapsed
+  ) 
+  {
+    if(wasCollapsed) 
+      pCollapsedJobPaths.add(path.getJobIDs());
+    else 
+      pCollapsedJobPaths.remove(path.getJobIDs());
+  }
+
+  /**
+   * Whether the given viewer job was previously collapsed.
+   * 
+   * @param path
+   *   The unique path to the viewer job.
+   */ 
+  private boolean
+  wasJobCollapsed
+  (
+   JobPath path 
+  ) 
+  {
+    return pCollapsedJobPaths.contains(path.getJobIDs()); 
+  }
+
   /**
    * Recursively layout the jobs.
    * 
@@ -3648,13 +3680,6 @@ class JQueueJobViewerPanel
 
   
   /**
-   * The job group IDs of groups newly added during the last update.  Used to determine
-   * what new groups to auto-expand if that preference is active.
-   */ 
-  private TreeSet<Long>  pNewJobGroupIDs; 
-
-
-  /**
    * The currently displayed job groups indexed by unique job group ID.
    */ 
   private TreeMap<Long,ViewerJobGroup>  pViewerJobGroups;
@@ -3676,6 +3701,16 @@ class JQueueJobViewerPanel
    * The counter of ViewerJobs created during the layout of the current job group.
    */ 
   private long pNumVisibleJobs;
+
+  /**
+   * The unique paths to the previously collapsed viewer jobs.
+   */ 
+  private ListPathSet<Long>  pCollapsedJobPaths;
+
+  /**
+   * The names of new root nodes that have not yet been displayed.
+   */ 
+  private TreeSet<Long> pPreviouslyDisplayedGroups;  
 
 
   /**

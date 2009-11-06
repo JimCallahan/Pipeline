@@ -1,4 +1,4 @@
-// $Id: ListPathSet.java,v 1.2 2009/10/27 18:39:42 jim Exp $
+// $Id: ListPathSet.java,v 1.3 2009/11/06 21:53:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -255,6 +255,52 @@ class ListPathSet<E>
       return found;
     }
   }
+
+  /**
+   * Removes all entries which begin with the given key. 
+   * 
+   * @param key
+   *   The first key.
+   * 
+   * @return
+   *   True if this set contained entries which began with the specified key.
+   */ 
+  public boolean 	
+  removeStartingWith
+  (
+   E key
+  )
+  {
+    if(key == null) 
+      throw new IllegalArgumentException("The key cannot be (null)!"); 
+    return (pPaths.remove(key) != null); 
+  }
+
+  /**
+   * Removes all entries which do not begin with one of the given keys. 
+   * 
+   * @param keys
+   *   The list of first keys.
+   */ 
+  public void 
+  removeExceptStartingWith
+  (
+   Set<E> keys
+  )
+  {
+    if(keys == null) 
+      throw new IllegalArgumentException("The key cannot be (null)!"); 
+
+    TreeSet<E> dead = new TreeSet<E>();
+    for(E key : pPaths.keySet()) {
+      if(!keys.contains(key))
+        dead.add(key);
+    }
+
+    for(E key : dead) 
+      pPaths.remove(key);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

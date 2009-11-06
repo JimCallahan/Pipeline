@@ -1,4 +1,4 @@
-// $Id: JobPath.java,v 1.3 2008/06/15 01:59:50 jim Exp $
+// $Id: JobPath.java,v 1.4 2009/11/06 21:53:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -95,10 +95,10 @@ class JobPath
   /** 
    * Get the IDs of the jobs on the path from the root job to the current job.
    */ 
-  public Collection<Long>
+  public List<Long>
   getJobIDs() 
   {
-    return Collections.unmodifiableCollection(pJobIDs);
+    return Collections.unmodifiableList(pJobIDs);
   }
 
   /** 

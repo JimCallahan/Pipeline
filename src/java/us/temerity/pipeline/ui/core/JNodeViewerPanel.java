@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.153 2009/11/02 03:44:11 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.154 2009/11/06 21:53:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,6 +13,7 @@ import javax.swing.event.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;   // DEBUG
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.ui.*;
@@ -91,6 +92,10 @@ class JNodeViewerPanel
                            prefs.getShowEditingHints());                           
 
       pViewerNodes = new TreeMap<NodePath,ViewerNode>();
+      pMaxVisibleNodes = 10000L;                             
+      pCollapsedNodePaths = new ListPathSet<String>(); 
+      pPreviouslyDisplayedRoots = new TreeSet<String>();
+
       pViewerLinks = new ViewerLinks();
 
       pSelected = new TreeMap<NodePath,ViewerNode>();
@@ -1835,7 +1840,6 @@ class JNodeViewerPanel
     /* layout warnings */   
     boolean forcedCollapseBeep = false;
     boolean forcedCollapseWarn = false;
-    boolean collapseForced = false;
     LinkedList<String> forcedCollapseMessages = new LinkedList<String>();
     {
       String warn = prefs.getCollapseWarnings(); 
@@ -1845,25 +1849,16 @@ class JNodeViewerPanel
       }
     }
 
-    /* determine the number of unique nodes reachable from each root node */ 
-    TreeMap<String,Integer> uniqueCounts = new TreeMap<String,Integer>();
-    if(!pRoots.isEmpty()) {
-      for(String name : pRoots.keySet()) {
-        TreeSet<String> seen = new TreeSet<String>();
-
-        NodeStatus status = pRoots.get(name);
-        if(status != null) {
-          getUniqueNodeNames(status, true, seen); 
-          if(pDownstreamMode != DownstreamMode.None)
-            getUniqueNodeNames(status, false, seen); 
-        }
-        
-        uniqueCounts.put(name, seen.size());
-        seen.clear();
-      }
+    /* figure out what is new and remove anything old */ 
+    TreeSet<String> newRoots = new TreeSet<String>();
+    for(String name : pRoots.keySet()) {
+      if(!pPreviouslyDisplayedRoots.contains(name))
+        newRoots.add(name);
     }
+    pCollapsedNodePaths.removeExceptStartingWith(pRoots.keySet());
 
     /* rebuild the viewer nodes and links */ 
+    pNumVisibleNodes = 0L;
     if(!pRoots.isEmpty()) {
       Point2d origin = new Point2d();
       for(String name : pRoots.keySet()) {
@@ -1874,18 +1869,8 @@ class JNodeViewerPanel
 
           /* auto-expand newly added root nodes? */
           LayoutPolicy rootPolicy = pLayoutPolicy;
-          if(prefs.getAutoExpandNew() && !UIMaster.getInstance().anyUpstreamCollapsed(name))
+          if(newRoots.contains(name)) 
             rootPolicy = LayoutPolicy.AutomaticExpand;
-
-          /* reset per-root node counters */
-          long uniqueNodes = 0L;
-          {
-            Integer cnt = uniqueCounts.get(name); 
-            if(cnt != null) 
-              uniqueNodes = cnt; 
-          }
-          pMaxVisibleNodes = uniqueNodes * 8;
-          pNumVisibleNodes = 0;
 
 	  /* layout upstream nodes */ 
           Point2d upos = null;
@@ -1973,18 +1958,6 @@ class JNodeViewerPanel
 
             origin.add(new Vector2d(0.0, -span));
           }
-
-          if(pNumVisibleNodes > pMaxVisibleNodes) {
-            collapseForced = true;
-            forcedCollapseMessages.add
-              ("More than (" + pMaxVisibleNodes + ") visible nodes where encountered " +
-               "during the layout of the node network rooted at (" + name + ").  All " + 
-               "subsequent nodes were therefore displayed in a collapsed mode " + 
-               "automatically.  Note that there are only (" + uniqueNodes + ") total " + 
-               "unique nodes in this node network including both upstream and downstream, " + 
-               "so the nodes hidden are most likely duplicates of already visible " + 
-               "nodes.\n\n");
-          }
         }
       }
 
@@ -2026,11 +1999,15 @@ class JNodeViewerPanel
         pPinnedPos  = null;
         pPinnedPath = null;
       }
-      
-      /* preserve the current layout */ 
-      pExpandDepth  = null; 
-      pLayoutPolicy = LayoutPolicy.Preserve;
     }
+ 
+    /* preserve the current layout */ 
+    pExpandDepth  = null; 
+    pLayoutPolicy = LayoutPolicy.Preserve; 
+    
+    /* remember what we just displayed */ 
+    pPreviouslyDisplayedRoots.clear(); 
+    pPreviouslyDisplayedRoots.addAll(pRoots.keySet());
 
     /* reselect any viewer nodes marked for post-update selection */ 
     if(!pPostUpdateSelected.isEmpty()) {
@@ -2050,18 +2027,19 @@ class JNodeViewerPanel
     pAutoframeOnUpdate = false;
 
     /* if we had to override the layout policy */  
-    if(collapseForced) {
+    if(pNumVisibleNodes > pMaxVisibleNodes) {
       if(forcedCollapseBeep) {
 	if(UIFactory.getBeepPreference())
 	  Toolkit.getDefaultToolkit().beep();
       }       
-      else if(forcedCollapseWarn && !forcedCollapseMessages.isEmpty()) {
-        StringBuilder buf = new StringBuilder();
-        for(String msg : forcedCollapseMessages) 
-          buf.append(msg);
-
-        buf.append
-          ("This situation is most likely caused by an extremely high level of " + 
+      else if(forcedCollapseWarn) {
+        UIMaster.getInstance().showErrorDialog
+          ("Warning:  Layout Policy Overridden",
+           "More than (" + pMaxVisibleNodes + ") visible nodes where encountered " +
+           "during display of the current node networks. All subsequent nodes were " + 
+           "therefore displayed in a collapsed mode automatically.\n\n" +
+           
+           "This situation is most likely caused by an extremely high level of " + 
            "interdependency between the nodes being displayed.  In other words, the " + 
            "same nodes are reachable from a very large number paths from the root node " + 
            "of the node network.  Although this can be perfectly valid in some cases, " + 
@@ -2069,52 +2047,54 @@ class JNodeViewerPanel
            "review your node network structure and see if there are opportunities for " + 
            "moving links to commonly referenced sub-networks further downstream without " + 
            "changing the correctness of the design.\n\n" + 
+
            "In order to expand currently collapsed node, you must first collapse some of " + 
            "the expanded ones to lower the number of visible nodes. Besides manually " + 
            "collapsing some visible nodes, the Automatic Expand, Expand Level (1 or 2) or " + 
            "Collapse All operations are all good ways to lower the number of visible " + 
            "nodes automatically.\n\n" +
+
            "Tired of seeing this message?  You can supress it using the preference: " + 
            "Panels - Node Viewer - Appearance - Collapse Warnings\n\n");
-
-        UIMaster.getInstance().showErrorDialog
-          ("Warning:  Layout Policy Overridden", buf.toString());
       }
     }
   }
 
   /**
-   * Get the set of unique names for all nodes which make up a network.
+   * Save the collapsed state of the given viewer node.
    * 
-   * @param status
-   *   The status of the current node. 
+   * @param path
+   *   The unique path to the viewer node.
    * 
-   * @param upstream
-   *   Whether to traverse the nodes in an upstream direction (or downstream).
-   * 
-   * @param seen
-   *   The fully resolved node names of processed nodes.
+   * @param wasCollapsed
+   *   Whether the viewer node is currently collapsed.
    */ 
   private void 
-  getUniqueNodeNames
+  setNodeCollapsed
   (
-   NodeStatus status, 
-   boolean upstream, 
-   TreeSet<String> seen
+   NodePath path,
+   boolean wasCollapsed
   ) 
   {
-    seen.add(status.getName());
-      
-    Collection<NodeStatus> children = null; 
-    if(upstream && status.hasSources())
-      children = status.getSources();
-    else if(!upstream && status.hasTargets()) 
-      children = status.getTargets(); 
+    if(wasCollapsed) 
+      pCollapsedNodePaths.add(path.getNames());
+    else 
+      pCollapsedNodePaths.remove(path.getNames());
+  }
 
-    if(children != null) {
-      for(NodeStatus cstatus : children) 
-        getUniqueNodeNames(cstatus, upstream, seen); 
-    }
+  /**
+   * Whether the given viewer node was previously collapsed.
+   * 
+   * @param path
+   *   The unique path to the viewer node.
+   */ 
+  private boolean
+  wasNodeCollapsed
+  (
+   NodePath path 
+  ) 
+  {
+    return pCollapsedNodePaths.contains(path.getNames()); 
   }
 
   /**
@@ -2180,7 +2160,6 @@ class JNodeViewerPanel
     
     /* set the collapsed state of the node */ 
     {
-      UIMaster master = UIMaster.getInstance();
       if((upstream && status.hasSources()) || 
          (!upstream && status.hasTargets() && !isRoot)) {
        
@@ -2190,29 +2169,29 @@ class JNodeViewerPanel
         else if(pExpandDepth != null) {
           boolean collapsed = (path.getNumNodes() >= pExpandDepth);
           vnode.setCollapsed(collapsed); 
-          master.setNodeCollapsed(path, collapsed);
+          setNodeCollapsed(path, collapsed);
         }
         else {
           switch(rootPolicy) {
           case Preserve:
-            vnode.setCollapsed(master.wasNodeCollapsed(path));
+            vnode.setCollapsed(wasNodeCollapsed(path));
             break;
             
           case AutomaticExpand:
             {
               boolean collapsed = seen.contains(status.getName());
               vnode.setCollapsed(collapsed);
-              master.setNodeCollapsed(path, collapsed);
+              setNodeCollapsed(path, collapsed);
             }
             break;
             
           case CollapseAll:
             vnode.setCollapsed(true);
-            master.setNodeCollapsed(path, true);
+            setNodeCollapsed(path, true);
             break;
             
           case ExpandAll:
-            master.setNodeCollapsed(path, false);	   
+            setNodeCollapsed(path, false);	   
           }
         }
       }
@@ -2984,8 +2963,7 @@ class JNodeViewerPanel
 	  if((mods & (on1 | off1)) == on1) {
 	    if(vunder.getNodeStatus().hasSources()) {
 	      vunder.toggleCollapsed();
-	      UIMaster master = UIMaster.getInstance();
-	      master.setNodeCollapsed(vunder.getNodePath(), vunder.isCollapsed());
+              setNodeCollapsed(vunder.getNodePath(), vunder.isCollapsed());
 
 	      pPinnedPos  = vunder.getPosition();
 	      pPinnedPath = vunder.getNodePath();
@@ -6511,9 +6489,9 @@ class JNodeViewerPanel
 
 	  NodePath npath = new NodePath(comps);
 
-	  boolean wasCollapsed = master.wasNodeCollapsed(pOldPath);
-	  master.setNodeCollapsed(npath, wasCollapsed); 
-	  master.setNodeCollapsed(pOldPath, false);
+	  boolean wasCollapsed = wasNodeCollapsed(pOldPath);
+	  setNodeCollapsed(npath, wasCollapsed); 
+	  setNodeCollapsed(pOldPath, false);
 
 	  renameRoot(oname, nname);
 	}
@@ -8041,6 +8019,17 @@ class JNodeViewerPanel
    * the current node network root.
    */ 
   private long pNumVisibleNodes;
+
+  /**
+   * The unique paths to the previously collapsed viewer nodes. 
+   */ 
+  private ListPathSet<String>  pCollapsedNodePaths;
+
+  /**
+   * The names of new root nodes that have not yet been displayed.
+   */ 
+  private TreeSet<String> pPreviouslyDisplayedRoots;  
+
 
   /**
    * The currently displayed node links. 

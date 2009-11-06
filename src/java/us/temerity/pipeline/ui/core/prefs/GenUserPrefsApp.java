@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.83 2009/10/06 17:45:54 jlee Exp $
+// $Id: GenUserPrefsApp.java,v 1.84 2009/11/06 21:53:12 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1060,15 +1060,9 @@ class GenUserPrefsApp
 
 	new BasePref(),
 
-        new BooleanPref
-	("Whether to use automatic expand/collapse for nodes in networks associated " + 
-         "with newly added root nodes.", 
-	 "AutoExpandNew", "Automatic Expand New:", true), 
-
         new ChoicePref
 	("The amount of user feedback to give when an excessive number of visible nodes " + 
-         "reachable from a given root node forces all subsequently displayed nodes to be " + 
-         "automaticly collapsed.", 
+         "forces all subsequently displayed nodes to be automaticly collapsed.", 
 	 "CollapseWarnings", "Collapse Warnings:", warn, "Message"), 
 
 	new BasePref(),
@@ -1827,14 +1821,9 @@ class GenUserPrefsApp
 
 	new BasePref(),
 
-        new BooleanPref
-	("Whether to use automatic expand/collapse for jobs in newly added job groups.", 
-	 "JobAutoExpandNew", "Automatic Expand New:", true), 
-
         new ChoicePref
 	("The amount of user feedback to give when an excessive number of visible jobs " + 
-         "within a job group forces all subsequently displayed jobs to be automaticly " +
-         "collapsed.", 
+         "forces all subsequently displayed jobs to be automaticly collapsed.", 
 	 "JobCollapseWarnings", "Collapse Warnings:", warn, "Message"), 
 
 	new BasePref(),
@@ -2836,7 +2825,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.83 2009/10/06 17:45:54 jlee Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.84 2009/11/06 21:53:12 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3091,7 +3080,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.83 2009/10/06 17:45:54 jlee Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.84 2009/11/06 21:53:12 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4469,7 +4458,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.83 2009/10/06 17:45:54 jlee Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.84 2009/11/06 21:53:12 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

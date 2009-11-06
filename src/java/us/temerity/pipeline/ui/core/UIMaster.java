@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.116 2009/11/02 03:27:40 jim Exp $
+// $Id: UIMaster.java,v 1.117 2009/11/06 21:53:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -165,8 +165,6 @@ class UIMaster
     pRestoreLayout      = restoreLayout;
     pRestoreSelections  = restoreSelections; 
     pIsRestoring        = new AtomicBoolean();
-
-    pCollapsedNodePaths = new ListPathSet<String>(); 
 
     pDebugGL = debugGL;
     pTraceGL = traceGL; 
@@ -615,67 +613,6 @@ class UIMaster
     }
 
     pFrame.setTitle(title);    
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * Save the collapsed state of the given viewer node.
-   * 
-   * @param path
-   *   The unique path to the viewer node.
-   * 
-   * @param wasCollapsed
-   *   Whether the viewer node is currently collapsed.
-   */ 
-  public void 
-  setNodeCollapsed
-  (
-   NodePath path,
-   boolean wasCollapsed
-  ) 
-  {
-    synchronized(pCollapsedNodePaths) {
-      if(wasCollapsed) 
-	pCollapsedNodePaths.add(path.getNames());
-      else 
-	pCollapsedNodePaths.remove(path.getNames());
-    }
-  }
-
-  /**
-   * Whether the given viewer node was previously collapsed.
-   * 
-   * @param path
-   *   The unique path to the viewer node.
-   */ 
-  public boolean
-  wasNodeCollapsed
-  (
-   NodePath path 
-  ) 
-  {
-    synchronized(pCollapsedNodePaths) {
-      return pCollapsedNodePaths.contains(path.getNames()); 
-    }    
-  }
-
-  /**
-   * Whether the given root node has any collapsed upstream nodes.
-   * 
-   * @param name
-   *   The unique name of the root viewer node.
-   */ 
-  public boolean
-  anyUpstreamCollapsed
-  (
-   String name
-  ) 
-  {
-    synchronized(pCollapsedNodePaths) {
-      return pCollapsedNodePaths.containsFirstElement(name); 
-    }    
   }
 
 
@@ -4704,26 +4641,6 @@ class UIMaster
 	catch(Exception ex) {}
       }
     }
-
-    /* save the collapsed node paths */ 
-    synchronized(pCollapsedNodePaths) {
-      Path path = new Path(PackageInfo.getSettingsPath(), "collapsed-nodes");
-      File file = path.toFile();
-      if(pCollapsedNodePaths.isEmpty()) {
-	file.delete();
-      }
-      else {
-	try {
-	  LockedGlueFile.save(file, "CollapsedNodePaths", pCollapsedNodePaths); 
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	     "Unable to save (" + file + ")!");
-	  LogMgr.getInstance().flush();
-	}
-      }
-    }
   }
 
   /**
@@ -4857,49 +4774,6 @@ class UIMaster
 	    
 	    /* Set the beep preference */
 	    UIFactory.setBeepPreference(UserPrefs.getInstance().getBeep());
-	}
-
-	/* read the collapsed node paths */ 
-	synchronized(pCollapsedNodePaths) {
-          pCollapsedNodePaths.clear();
-	  Path path = new Path(base, "collapsed-nodes");
-	  File file = path.toFile();
-	  if(file.isFile()) {
-	    try {    
-              Object obj = LockedGlueFile.load(file);
-              if(obj != null) {
-                /* current format */ 
-                if(obj instanceof ListPathSet) {
-                  ListPathSet<String> pset = (ListPathSet<String>) obj;
-                  for(java.util.List<String> ls : pset) 
-                    pCollapsedNodePaths.add(ls);
-                }
-                /* convert from old format */ 
-                else if(obj instanceof TreeSet) {
-                  TreeSet<String> oset = (TreeSet<String>) obj;
-                  for(String str : oset) {                    
-                    LinkedList<String> entry = new LinkedList<String>();
-                    String parts[] = str.split(":"); 
-                    for(String p : parts) { 
-                      if(p.length() > 0) 
-                        entry.add(p);
-                    }
-                    
-                    pCollapsedNodePaths.add(entry); 
-                  }
-                }
-                else {
-                  throw new IOException();
-                }
-              }
-	    }
-	    catch(Exception ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-		 "Unable to load (" + file + ")!");
-	      LogMgr.getInstance().flush();
-	    }
-	  }
 	}
       }
       catch(Exception ex) {	
@@ -7536,13 +7410,6 @@ class UIMaster
   private PanelGroup<JQueueJobDetailsPanel>  pQueueJobDetailsPanels;
 
   
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The unique paths to the previously collapsed viewer nodes.
-   */ 
-  private ListPathSet<String>  pCollapsedNodePaths;
-
 
   /*----------------------------------------------------------------------------------------*/
 
