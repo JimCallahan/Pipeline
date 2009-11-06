@@ -7902,7 +7902,7 @@ LicenseKey() :
   Boolean add = true;
 }
 {
-  <LICENSE_KEY2> EQ() kname=KeyName() (COLON() add=BooleanLiteral())? AE()
+  <LICENSE_KEY2> EQ() kname=KeyToggle() (COLON() add=BooleanLiteral())? AE()
   {
     pLicenseKeys.put(kname, add);
   }
@@ -7915,7 +7915,7 @@ SelectionKey() :
   Boolean add = true;
 }
 {
-  <SELECTION_KEY2> EQ() kname=KeyName() (COLON() add=BooleanLiteral())? AE()
+  <SELECTION_KEY2> EQ() kname=KeyToggle() (COLON() add=BooleanLiteral())? AE()
   {
     pSelectionKeys.put(kname, add);
   }
@@ -7928,7 +7928,7 @@ HardwareKey() :
   Boolean add = true;
 }
 {
-  <HARDWARE_KEY2> EQ() kname=KeyName() (COLON() add=BooleanLiteral())? AE()
+  <HARDWARE_KEY2> EQ() kname=KeyToggle() (COLON() add=BooleanLiteral())? AE()
   {
     pHardwareKeys.put(kname, add);
   }
@@ -8086,6 +8086,18 @@ ToolsetName() :
 
 String
 KeyName() : 
+{
+  Token t;
+}
+{
+  (t=<KEY_NAME1>)
+  {
+    return t.image;
+  }
+}
+
+String
+KeyToggle() : 
 {
   Token t;
 }
