@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.13 2009/08/19 23:42:47 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.14 2009/11/06 00:48:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -168,13 +168,27 @@ class QueueSlotsTableModel
   { 
     UserPrefs prefs = UserPrefs.getInstance();
 
+    IntegerOpMap<String> activeJobs = new IntegerOpMap<String>();
+    for(QueueJobInfo info : jobInfo.values()) {
+      switch(info.getState()) {
+      case Running:
+      case Limbo:
+        activeJobs.apply(info.getHostname(), 1); 
+      }
+    }
+
     pNumRows = 0; 
-    for(QueueHostInfo host : hosts.values()) {
+    for(Map.Entry<String,QueueHostInfo> entry : hosts.entrySet()) {
+      String hname = entry.getKey();
+      QueueHostInfo host = entry.getValue(); 
+
+      activeJobs.apply(hname, host.getJobSlots(), BaseOpMap.Op.Max);
+
       switch(host.getStatus()) {
       case Enabled:
       case Disabled:
       case Limbo:
-	pNumRows += host.getJobSlots();
+	pNumRows += activeJobs.get(hname);
       }
     }
 
@@ -187,18 +201,18 @@ class QueueSlotsTableModel
     long now = TimeStamps.now();
 
     int wk = 0;
-    for(String hostname : hosts.keySet()) {
-      QueueHostInfo host = hosts.get(hostname);
+    for(Map.Entry<String,QueueHostInfo> entry : hosts.entrySet()) {      
+      String hname = entry.getKey();
+      QueueHostInfo host = entry.getValue(); 
+
       switch(host.getStatus()) {
       case Enabled:
       case Disabled:
       case Limbo:
 	{
-	  int slots = host.getJobSlots();
-
 	  ArrayList<QueueJobInfo> hinfo = new ArrayList<QueueJobInfo>();
 	  for(QueueJobInfo info : jobInfo.values()) {
-	    if(hostname.equals(info.getHostname())) 
+	    if(hname.equals(info.getHostname())) 
 	      hinfo.add(info);
 	  }
 	  
@@ -212,13 +226,15 @@ class QueueSlotsTableModel
 	    if(stamp > now)
 	      onHold = stamp - now;
 	  }
-	  
+
+          int slots = activeJobs.get(hname);
+
 	  int sk;
-	  for(sk=0; sk<host.getJobSlots(); sk++) {
+	  for(sk=0; sk<slots; sk++) {
 	    pHostStatus[wk] = host.getStatus(); 
 
             if(prefs.getShowFullHostnames())   
-              pHostnames[wk] = hostname;
+              pHostnames[wk] = hname;
             else
               pHostnames[wk] = host.getShortName(); 
 	    
