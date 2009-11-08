@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.12 2009/10/06 17:45:54 jlee Exp $
+// $Id: NodeTreeEntry.java,v 1.13 2009/11/08 18:44:11 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -122,18 +122,9 @@ class NodeTreeEntry
     FilePattern fpat = primary.getFilePattern();
     String suffix = fpat.getSuffix();
 
-    if(suffix != null)
-      pPrimarySuffix = suffix;
+    pPrimarySuffix = suffix;
   }
 
-  /**
-   * Remove the primary file sequence suffix.
-   */
-  public void
-  removePrimarySuffix()
-  {
-    pPrimarySuffix = null;
-  }
 
 
   /*----------------------------------------------------------------------------------------*/

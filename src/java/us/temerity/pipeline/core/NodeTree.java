@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.18 2009/10/07 20:34:54 jlee Exp $
+// $Id: NodeTree.java,v 1.19 2009/11/08 18:44:11 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -450,7 +450,8 @@ class NodeTree
     for(FileSeq fseq : fseqs)
       entry.addSequence(fseq);
 
-    entry.setPrimarySuffix(primary);
+    if(!entry.isCheckedIn())
+      entry.setPrimarySuffix(primary);
   }
 
   /**
@@ -746,8 +747,13 @@ class NodeTree
     for(FileSeq fseq : fseqs)
       entry.removeSequence(fseq);
 
-    entry.removePrimarySuffix();
-    
+    /* The issue with bug 2237 was that I was calling removePrimarySuffix when ever this 
+       method was called.  So in the case of a node that is checked in and a user/builder 
+       performs a check out, then releases the node, the primary suffix no longer exists 
+       for the node.  The primary suffix should only be removed when there is no checked in 
+       version or no working version.  Since the only time for that to occur is when a node 
+       that is not checked in and then is released from a working area, so calling 
+       removePrimarysuffix is not necessary. */
     if(!entry.hasWorking() && !entry.isCheckedIn()) {
       while(!stack.isEmpty()) {
 	NodeTreeEntry parent = stack.pop();
