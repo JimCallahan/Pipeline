@@ -1,4 +1,4 @@
-// $Id: UserBalanceInfo.java,v 1.6 2009/11/09 21:35:00 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.7 2009/11/09 21:58:05 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15,8 +15,7 @@ import us.temerity.pipeline.LogMgr.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Contains information about user usage of the queue on a per-user balance group basis.
- * <p>
+ * Contains information about user usage of the queue on a per-user balance group basis. <P>
  */
 public 
 class UserBalanceInfo
@@ -33,7 +32,7 @@ class UserBalanceInfo
   public 
   UserBalanceInfo()
   {
-    pInfo = new TreeMap<String, ArrayDeque<UserBalanceSample>>();
+    pSamples = new TreeMap<String, ArrayDeque<UserBalanceSample>>();
     pCurrentUsage = new DoubleMap<String, String, Double>();
     pSliceStart = System.currentTimeMillis();
     
@@ -92,22 +91,22 @@ class UserBalanceInfo
       for (Entry<String, LinkedList<HostChange>> entry : hostChanges.entrySet()) {
         String hostName = entry.getKey();
         LinkedList<HostChange> changes = entry.getValue();
-        HostInfo info = pHostInfos.get(hostName);
-        if (info == null) {
-          info = new HostInfo(false, null, 0);
-          pHostInfos.put(hostName, info);
+        HostInfo hostInfo = pHostInfos.get(hostName);
+        if (hostInfo == null) {
+          hostInfo = new HostInfo(false, null, 0);
+          pHostInfos.put(hostName, hostInfo);
         }
         for (HostChange change : changes) {
           if (change.pIsEnabled != null)
-            info.pIsEnabled = change.pIsEnabled;
+            hostInfo.pIsEnabled = change.pIsEnabled;
           if (change.pUserBalanceName != null) {
             if (change.pUserBalanceName.equals(""))
-              info.pUserBalanceName = null;
+              hostInfo.pUserBalanceName = null;
             else
-              info.pUserBalanceName = change.pUserBalanceName;
+              hostInfo.pUserBalanceName = change.pUserBalanceName;
           }
           if (change.pNumSlots != null)
-            info.pNumSlots = change.pNumSlots;
+            hostInfo.pNumSlots = change.pNumSlots;
         }
       }
       LogMgr.getInstance().logSubStage
@@ -115,12 +114,11 @@ class UserBalanceInfo
          tm, timer);
     }
 
-    // Count of slots indexed by User Balance Name 
-    DoubleOpMap<String> totalSlots = new DoubleOpMap<String>(Op.Add);
+    /* Count of slots indexed by User Balance Name */ 
+    DoubleOpMap<String> slotsPerBalanceGroup = new DoubleOpMap<String>(Op.Add);
     // Count of used slots indexed by User Balance Name and User Name
-    TreeMap<String, DoubleOpMap<String>> userSlots = 
+    TreeMap<String, DoubleOpMap<String>> userSlotsPerBalanceGroup = 
       new TreeMap<String, DoubleOpMap<String>>();
-
     {
       timer.suspend();
       TaskTimer tm = new TaskTimer("User Balance Info [Calculate Current Usage]");
@@ -128,21 +126,20 @@ class UserBalanceInfo
         String hostname = entry.getKey();
         HostInfo info = entry.getValue();
 
-        DoubleOpMap<String> userUse = null; 
+        DoubleOpMap<String> slotsPerUser = null; 
 
         if (info.pUserBalanceName != null) {
           if (info.pIsEnabled) 
-            totalSlots.apply(info.pUserBalanceName, (double) info.pNumSlots);
+            slotsPerBalanceGroup.apply(info.pUserBalanceName, (double) info.pNumSlots);
 
-          userUse = userSlots.get(info.pUserBalanceName);
-          if (userUse == null) {
-            userUse = new DoubleOpMap<String>(Op.Add);
-            userSlots.put(info.pUserBalanceName, userUse);
+          slotsPerUser = userSlotsPerBalanceGroup.get(info.pUserBalanceName);
+          if (slotsPerUser == null) {
+            slotsPerUser = new DoubleOpMap<String>(Op.Add);
+            userSlotsPerBalanceGroup.put(info.pUserBalanceName, slotsPerUser);
           }        
         }
-        
-        TreeMap<Long, Long> started = new TreeMap<Long, Long>();
-        
+
+        TreeMap<Long, Long> startTimeByJob = new TreeMap<Long, Long>();
         LinkedList<JobChange> jchanges = jobChanges.get(hostname);
         if (jchanges != null) {
           for (JobChange jchange : jchanges) {
@@ -154,39 +151,41 @@ class UserBalanceInfo
                 LogMgr.getInstance().log
                 (Kind.Usr, Level.Warning, 
                   "A Start Time was registered for job (" + id + ") which was marked as " +
-                  "already running on the same host.");
+                "already running on the same host.");
               }
-              started.put(id, jchange.pStartTime);
+              startTimeByJob.put(id, jchange.pStartTime);
             }
             // Job Finished
             else {
               String author = info.pJobs.remove(id);
-              if (userUse != null ) {
+              if (slotsPerUser != null ) {
                 Long jobEndTime = jchange.pEndTime;
                 Long jobStartTime = startTime;
                 // Short Duration job
-                if (started.containsKey(id)) 
-                  jobStartTime = started.get(id);
+                if (startTimeByJob.containsKey(id)) 
+                  jobStartTime = startTimeByJob.get(id);
 
                 double used = ((double) jobEndTime - jobStartTime) / interval;
 
-                userUse.apply(author, used);
+                slotsPerUser.apply(author, used);
               }
             }
           }
         } //if (changes != null)
 
-        // Now include all jobs that weren't touched this go-round (only if in balance group).
-        if (userUse != null) {
+        /* 
+         * Now include all jobs that weren't touched this go-round (only if in balance group). 
+         */
+        if (slotsPerUser != null) {
           for (Entry<Long, String> entry2 : info.pJobs.entrySet()) {
             Long jobID = entry2.getKey();
             String author = entry2.getValue();
-            if (started.containsKey(jobID)) {
-              double used = ((double) endTime - started.get(jobID)) / interval;
-              userUse.apply(author, used);
+            if (startTimeByJob.containsKey(jobID)) {
+              double used = ((double) endTime - startTimeByJob.get(jobID)) / interval;
+              slotsPerUser.apply(author, used);
             }
             else
-              userUse.apply(author, 1d);
+              slotsPerUser.apply(author, 1d);
           }
         }
       } // Finished looping through all the hosts.
@@ -195,53 +194,53 @@ class UserBalanceInfo
          tm, timer);
     }
     
-    int samples = pSamplesToKeep.get();
+    int numSamples = pSamplesToKeep.get();
     
-    // Now we update all the slices.
-    for (Entry<String, Double> entry : totalSlots.entrySet()) {
+    /* Now we add the newly created samples to the saved info. */
+    for (Entry<String, Double> entry : slotsPerBalanceGroup.entrySet()) {
       String userBalanceGroup = entry.getKey();
-      Double slots = entry.getValue();
-      if (slots == null)
-        slots = 0d;
-      DoubleOpMap<String> userUse = userSlots.get(userBalanceGroup);
-      if (userUse == null)
-        userUse = new DoubleOpMap<String>();
-      UserBalanceSample slice = new UserBalanceSample(slots, userUse);
-      ArrayDeque<UserBalanceSample> info = pInfo.get(userBalanceGroup);
-      if (info == null) {
-        info = new ArrayDeque<UserBalanceSample>(samples + 1);
-        pInfo.put(userBalanceGroup, info);
+      Double totalSlots = entry.getValue();
+      if (totalSlots == null)
+        totalSlots = 0d;
+      DoubleOpMap<String> slotsPerUser = userSlotsPerBalanceGroup.get(userBalanceGroup);
+      if (slotsPerUser == null)
+        slotsPerUser = new DoubleOpMap<String>();
+      UserBalanceSample sample = new UserBalanceSample(totalSlots, slotsPerUser);
+      
+      ArrayDeque<UserBalanceSample> samples = pSamples.get(userBalanceGroup);
+      if (samples == null) {
+        samples = new ArrayDeque<UserBalanceSample>(numSamples + 1);
+        pSamples.put(userBalanceGroup, samples);
       }
-      info.addLast(slice);
-      while (info.size() > samples)
-        info.removeFirst();
+      samples.addLast(sample);
+      while (samples.size() > numSamples)
+        samples.removeFirst();
     }
     
-    // finally we need to calculate the new values for the dispatcher to read.
+    /* finally we need to calculate the new values for the dispatcher to read. */
     
-    // UserBalance, User, Percent Used
-    DoubleMap<String, String, Double> computed = new DoubleMap<String, String, Double>();
-    
-    for (Entry<String, ArrayDeque<UserBalanceSample>> entry : pInfo.entrySet()) {
+    /* UserBalance, User, Percent Used */
+    DoubleMap<String, String, Double> currentUsage = new DoubleMap<String, String, Double>();
+    for (Entry<String, ArrayDeque<UserBalanceSample>> entry : pSamples.entrySet()) {
       String userBalanceGroup = entry.getKey();
-      DoubleOpMap<String> sums = new DoubleOpMap<String>();
-      double allSlots = 0d;
+      DoubleOpMap<String> slotsPerUser = new DoubleOpMap<String>();
+      double totalSlots = 0d;
       for (UserBalanceSample sample : entry.getValue()) {
-        allSlots += sample.pTotalSlots;
+        totalSlots += sample.pTotalSlots;
         for (Entry<String, Double> entry2 : sample.pUserSlotsUsed.entrySet()) {
-          sums.apply(entry2.getKey(), entry2.getValue());
+          slotsPerUser.apply(entry2.getKey(), entry2.getValue());
         }
       }
-      if (allSlots == 0d)
+      if (totalSlots == 0d)
         continue;
-      for (String user : sums.keySet()) {
-        sums.apply(user, allSlots, Op.Divide);
+      for (String user : slotsPerUser.keySet()) {
+        slotsPerUser.apply(user, totalSlots, Op.Divide);
       }
-      computed.put(userBalanceGroup, sums);
+      currentUsage.put(userBalanceGroup, slotsPerUser);
     }
 
     synchronized (pCurrentUsageLock) {
-     pCurrentUsage = computed; 
+      pCurrentUsage = currentUsage; 
     }
   }
 
@@ -253,8 +252,8 @@ class UserBalanceInfo
 
   /**
    * Get the current usage information generated by the last call to 
-   * {@link #calculateUsage()}.
-   * <p>
+   * {@link #calculateUsage()}.<P>
+   * 
    * This is a live data-structure (it is not copied before returning) so any code that uses
    * this should not modify its contents.
    * 
@@ -272,7 +271,7 @@ class UserBalanceInfo
   }
   
   /**
-   * Add a change to a host
+   * Add a change to a host.
    * 
    * @param hostName
    *   The name of the host.  Required.
@@ -287,8 +286,8 @@ class UserBalanceInfo
    *   should be passed in to indicate the removal of the user balance group. 
    * 
    * @param numSlots
-   *   The number of total job slots the host has or <code>null</code> to not change the number 
-   *   of slots.
+   *   The number of total job slots the host has or <code>null</code> to not change the 
+   *   number of slots.
    */
   public void
   addHostChange
@@ -309,12 +308,12 @@ class UserBalanceInfo
   }
   
   /**
-   * Add a change to a job.
-   * <p>
+   * Add a change to a job. <p>
+   * 
    * All values are required to be not <code>null</code>.  The method is not doing any 
    * <code>null</code> checking, so all code that calls this method should be making sure that 
-   * there are not any bad values being passed in.
-   * <p>
+   * there are not any bad values being passed in.<p>
+   * 
    * A time stamp is generated by this method which is the time stamp associated with this 
    * change.  By generating the time stamp here, it is possible to guarantee that the change 
    * is not happening outside the window of the current cycle.  If a time stamp was being 
@@ -370,8 +369,8 @@ class UserBalanceInfo
   }
   
   /**
-   * Set the number of samples that are being saved for each user balance group.
-   * <p>
+   * Set the number of samples that are being saved for each user balance group. <p>
+   * 
    * If the number of samples is lowered, the excess samples will be eliminated the next time
    * usage is calculated.  If the number of samples is raised, then no samples will be 
    * eliminated until the correct level is reached.
@@ -472,9 +471,13 @@ class UserBalanceInfo
   private
   class JobChange
   {
+    /*--------------------------------------------------------------------------------------*/
+    /*   C O N S T R U C T O R                                                              */
+    /*--------------------------------------------------------------------------------------*/
+
     /**
-     * Constructor.
-     * <p>
+     * Constructor. <P>
+     * 
      * Only one of the startTime and endTime parameters should ever be set.
      * 
      * @param author
@@ -525,16 +528,20 @@ class UserBalanceInfo
   }
 
   /**
-   * A change to a host.
-   * <p>
+   * A change to a host. <p>
+   * 
    * If the host does not exist, then the host will be created.  Any of the values which are 
    * set to <code>null</code> will be ignored when applying the change to an existing host.
    */
   private
   class HostChange
   {
+    /*--------------------------------------------------------------------------------------*/
+    /*   C O N S T R U C T O R                                                              */
+    /*--------------------------------------------------------------------------------------*/
+
     /**
-     * Constructor
+     * Constructor.<P>
      * 
      * @param isEnabled
      *   Is the host enabled?  This should be set to false any time the host has its status 
@@ -596,11 +603,11 @@ class UserBalanceInfo
   private Object pJobChangesLock;
   
   /**
-   * All the current slices.
+   * All the current samples.
    * <p>
    * New information is added to the front of this. 
    */
-  private TreeMap<String, ArrayDeque<UserBalanceSample>> pInfo;
+  private TreeMap<String, ArrayDeque<UserBalanceSample>> pSamples;
   
   /**
    * Cached information about what the hosts were doing last slice.
