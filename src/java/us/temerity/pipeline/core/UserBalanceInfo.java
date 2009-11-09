@@ -1,4 +1,4 @@
-// $Id: UserBalanceInfo.java,v 1.1 2009/11/09 19:48:18 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.2 2009/11/09 19:58:28 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -33,7 +33,7 @@ class UserBalanceInfo
   public 
   UserBalanceInfo()
   {
-    pInfo = new TreeMap<String, ArrayDeque<UserBalanceSlice>>();
+    pInfo = new TreeMap<String, ArrayDeque<UserBalanceSample>>();
     pCurrentUsage = new DoubleMap<String, String, Double>();
     pSliceStart = System.currentTimeMillis();
     
@@ -200,10 +200,10 @@ class UserBalanceInfo
       DoubleOpMap<String> userUse = userSlots.get(userBalanceGroup);
       if (userUse == null)
         userUse = new DoubleOpMap<String>();
-      UserBalanceSlice slice = new UserBalanceSlice(slots, userUse);
-      ArrayDeque<UserBalanceSlice> info = pInfo.get(userBalanceGroup);
+      UserBalanceSample slice = new UserBalanceSample(slots, userUse);
+      ArrayDeque<UserBalanceSample> info = pInfo.get(userBalanceGroup);
       if (info == null) {
-        info = new ArrayDeque<UserBalanceSlice>(samples + 1);
+        info = new ArrayDeque<UserBalanceSample>(samples + 1);
         pInfo.put(userBalanceGroup, info);
       }
       info.add(slice);
@@ -216,12 +216,12 @@ class UserBalanceInfo
     // UserBalance, User, Percent Used
     DoubleMap<String, String, Double> computed = new DoubleMap<String, String, Double>();
     
-    for (Entry<String, ArrayDeque<UserBalanceSlice>> entry : pInfo.entrySet()) {
+    for (Entry<String, ArrayDeque<UserBalanceSample>> entry : pInfo.entrySet()) {
       String userBalanceGroup = entry.getKey();
       DoubleOpMap<String> sums = new DoubleOpMap<String>();
       double allSlices = 0d;
-      for (UserBalanceSlice slice : entry.getValue()) {
-        allSlices += slice.pTotalSlices;
+      for (UserBalanceSample slice : entry.getValue()) {
+        allSlices += slice.pTotalSlots;
         for (Entry<String, Double> entry2 : slice.pUserSlotsUsed.entrySet()) {
           sums.apply(entry2.getKey(), entry2.getValue());
         }
@@ -393,14 +393,14 @@ class UserBalanceInfo
   
   
   /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   B A L A N C E   S L I C E                                                  */
+  /*   S U B - C L A S S E S                                                                */
   /*----------------------------------------------------------------------------------------*/
 
   /**
    *  A slice of user use of the queue in a particular user balance group.  
    */
   private
-  class UserBalanceSlice
+  class UserBalanceSample
   {
     /*--------------------------------------------------------------------------------------*/
     /*   C O N S T R U C T O R                                                              */
@@ -410,23 +410,27 @@ class UserBalanceInfo
      * Constructor.
      */
     private
-    UserBalanceSlice
+    UserBalanceSample
     (
-      Double totalSlices,
+      Double totalSlots,
       DoubleOpMap<String> userSlotsUsed
     )
     {
-      pTotalSlices = totalSlices;
+      pTotalSlots = totalSlots;
       pUserSlotsUsed = userSlotsUsed;
     }
     
-    private Double pTotalSlices;
-    private DoubleOpMap<String> pUserSlotsUsed;
+    public Double pTotalSlots;
+    public DoubleOpMap<String> pUserSlotsUsed;
   }
   
   private
   class HostInfo
   {
+    /*--------------------------------------------------------------------------------------*/
+    /*   C O N S T R U C T O R                                                              */
+    /*--------------------------------------------------------------------------------------*/
+
     private
     HostInfo
     (
@@ -585,7 +589,7 @@ class UserBalanceInfo
    * <p>
    * New information is added to the front of this 
    */
-  private TreeMap<String, ArrayDeque<UserBalanceSlice>> pInfo;
+  private TreeMap<String, ArrayDeque<UserBalanceSample>> pInfo;
   
   /**
    * Cached information about what the hosts were doing last slice.
