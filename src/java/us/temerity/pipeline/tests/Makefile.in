@@ -365,7 +365,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                    VersionID \
 
 
-           TESTS = CheckSum
+           TESTS = SubProcess
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS)) 
 
