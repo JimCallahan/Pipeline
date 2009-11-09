@@ -1,4 +1,4 @@
-// $Id: UserBalanceInfo.java,v 1.5 2009/11/09 21:24:19 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.6 2009/11/09 21:35:00 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -149,7 +149,8 @@ class UserBalanceInfo
             long id = jchange.pJobID;
             // Job Started
             if (jchange.pStartTime != null) {
-              if (info.pJobs.put(id, jchange.pAuthor) != null) {
+              String oldAuthor= info.pJobs.put(id, jchange.pAuthor); 
+              if (oldAuthor != null) {
                 LogMgr.getInstance().log
                 (Kind.Usr, Level.Warning, 
                   "A Start Time was registered for job (" + id + ") which was marked as " +
@@ -211,9 +212,9 @@ class UserBalanceInfo
         info = new ArrayDeque<UserBalanceSample>(samples + 1);
         pInfo.put(userBalanceGroup, info);
       }
-      info.add(slice);
+      info.addLast(slice);
       while (info.size() > samples)
-        info.pop();
+        info.removeFirst();
     }
     
     // finally we need to calculate the new values for the dispatcher to read.
@@ -224,17 +225,17 @@ class UserBalanceInfo
     for (Entry<String, ArrayDeque<UserBalanceSample>> entry : pInfo.entrySet()) {
       String userBalanceGroup = entry.getKey();
       DoubleOpMap<String> sums = new DoubleOpMap<String>();
-      double allSlices = 0d;
-      for (UserBalanceSample slice : entry.getValue()) {
-        allSlices += slice.pTotalSlots;
-        for (Entry<String, Double> entry2 : slice.pUserSlotsUsed.entrySet()) {
+      double allSlots = 0d;
+      for (UserBalanceSample sample : entry.getValue()) {
+        allSlots += sample.pTotalSlots;
+        for (Entry<String, Double> entry2 : sample.pUserSlotsUsed.entrySet()) {
           sums.apply(entry2.getKey(), entry2.getValue());
         }
       }
-      if (allSlices == 0d)
+      if (allSlots == 0d)
         continue;
       for (String user : sums.keySet()) {
-        sums.apply(user, allSlices, Op.Divide);
+        sums.apply(user, allSlots, Op.Divide);
       }
       computed.put(userBalanceGroup, sums);
     }
