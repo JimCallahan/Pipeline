@@ -1,4 +1,4 @@
-// $Id: UserBalanceInfo.java,v 1.3 2009/11/09 20:29:28 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.4 2009/11/09 21:12:09 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -60,7 +60,7 @@ class UserBalanceInfo
   {
     TaskTimer timer = new TaskTimer("User Balance Info");
     
-    MappedLinkedList<String, HostChange> sliceHostChanges;
+    MappedLinkedList<String, HostChange> hostChanges;
     MappedLinkedList<String, JobChange> jobChanges;
     long startTime;
     long endTime;
@@ -78,7 +78,7 @@ class UserBalanceInfo
       timer.aquire();
       synchronized (pHostChangesLock) {
         timer.resume();
-        sliceHostChanges = pHostChanges;
+        hostChanges = pHostChanges;
         pHostChanges = new MappedLinkedList<String, HostChange>();
       }
       
@@ -89,7 +89,7 @@ class UserBalanceInfo
     {
       timer.suspend();
       TaskTimer tm = new TaskTimer("User Balance Info [Apply Host Changes]");
-      for (Entry<String, LinkedList<HostChange>> entry : sliceHostChanges.entrySet()) {
+      for (Entry<String, LinkedList<HostChange>> entry : hostChanges.entrySet()) {
         String hostName = entry.getKey();
         LinkedList<HostChange> changes = entry.getValue();
         HostInfo info = pHostInfos.get(hostName);
@@ -98,13 +98,13 @@ class UserBalanceInfo
           pHostInfos.put(hostName, info);
         }
         for (HostChange change : changes) {
-          if (change.pEnabled != null)
-            info.pEnabled = change.pEnabled;
-          if (change.pUserBalanceGroup != null) {
-            if (change.pUserBalanceGroup.equals(""))
-              info.pUserBalanceGroup = null;
+          if (change.pIsEnabled != null)
+            info.pIsEnabled = change.pIsEnabled;
+          if (change.pUserBalanceName != null) {
+            if (change.pUserBalanceName.equals(""))
+              info.pUserBalanceName = null;
             else
-              info.pUserBalanceGroup = change.pUserBalanceGroup;
+              info.pUserBalanceName = change.pUserBalanceName;
           }
           if (change.pNumSlots != null)
             info.pNumSlots = change.pNumSlots;
@@ -115,9 +115,9 @@ class UserBalanceInfo
          tm, timer);
     }
 
-    // UserBalance, Usage 
+    // Count of slots indexed by User Balance Name 
     DoubleOpMap<String> totalSlots = new DoubleOpMap<String>(Op.Add);
-    // UserBalance, User, Usage
+    // Count of used slots indexed by User Balance Name and User Name
     TreeMap<String, DoubleOpMap<String>> userSlots = 
       new TreeMap<String, DoubleOpMap<String>>();
 
@@ -130,14 +130,14 @@ class UserBalanceInfo
 
         DoubleOpMap<String> userUse = null; 
 
-        if (info.pUserBalanceGroup != null) {
-          if (info.pEnabled) 
-            totalSlots.apply(info.pUserBalanceGroup, (double) info.pNumSlots);
+        if (info.pUserBalanceName != null) {
+          if (info.pIsEnabled) 
+            totalSlots.apply(info.pUserBalanceName, (double) info.pNumSlots);
 
-          userUse = userSlots.get(info.pUserBalanceGroup);
+          userUse = userSlots.get(info.pUserBalanceName);
           if (userUse == null) {
             userUse = new DoubleOpMap<String>(Op.Add);
-            userSlots.put(info.pUserBalanceGroup, userUse);
+            userSlots.put(info.pUserBalanceName, userUse);
           }        
         }
         TreeSet<Long> touchedJobs = new TreeSet<Long>();
@@ -149,12 +149,12 @@ class UserBalanceInfo
             // Job Started
             if (change.pStartTime != null) {
               info.pJobs.put(id, change.pAuthor);
-              touchedJobs.add(id);
               started.put(id, change.pStartTime);
             }
             // Job Finished
             else {
               String author = info.pJobs.remove(id);
+              touchedJobs.add(id);
               if (userUse != null ) {
                 Long jobEndTime = change.pEndTime;
                 Long jobStartTime = startTime;
@@ -176,7 +176,12 @@ class UserBalanceInfo
             Long jobID = entry2.getKey();
             if (!touchedJobs.contains(jobID)) {
               String author = entry2.getValue();
-              userUse.apply(author, 1d);
+              if (started.containsKey(jobID)) {
+                double used = ((double) endTime - started.get(jobID)) / interval;
+                userUse.apply(author, used);
+              }
+              else
+                userUse.apply(author, 1d);
             }
           }
         }
@@ -268,11 +273,11 @@ class UserBalanceInfo
    * @param hostName
    *   The name of the host.  Required.
    * 
-   * @param enabled
+   * @param isEnabled
    *   Whether the host is current enabled or <code>null</code> to not change the status of 
    *   the host.
    * 
-   * @param balanceGroup
+   * @param userBalanceName
    *   The UserBalanceGroup associated with the host or <code>null</code> to not change the 
    *   group.  Since <code>null</code> is being used to indicate no change, the empty string 
    *   should be passed in to indicate the removal of the user balance group. 
@@ -285,12 +290,12 @@ class UserBalanceInfo
   addHostChange
   (
     String hostName,
-    Boolean enabled,
-    String balanceGroup,
+    Boolean isEnabled,
+    String userBalanceName,
     Integer numSlots
   )
   {
-     HostChange change = new HostChange(enabled, balanceGroup, numSlots);
+     HostChange change = new HostChange(isEnabled, userBalanceName, numSlots);
      synchronized (pHostChangesLock) {
        pHostChanges.put(hostName, change);
      }
@@ -436,19 +441,19 @@ class UserBalanceInfo
     private
     HostInfo
     (
-      boolean enabled,
+      boolean isEnabled,
       String userBalanceGroup,
       int numSlots
     )
     {
-      pUserBalanceGroup = userBalanceGroup;
+      pUserBalanceName = userBalanceGroup;
       pNumSlots = numSlots;
       pJobs = new TreeMap<Long, String>();
-      pEnabled = enabled;
+      pIsEnabled = isEnabled;
     }
     
-    public boolean pEnabled;
-    public String pUserBalanceGroup;
+    public boolean pIsEnabled;
+    public String pUserBalanceName;
     public int pNumSlots;
     
     /**
@@ -527,11 +532,11 @@ class UserBalanceInfo
     /**
      * Constructor
      * 
-     * @param enabled
+     * @param isEnabled
      *   Is the host enabled?  This should be set to false any time the host has its status 
      *   changed from Enabled to something else (including Limbo).
      *   
-     * @param userBalanceGroup
+     * @param userBalanceName
      *   The user balance group the host is in.
      *   
      * @param numSlots
@@ -540,13 +545,13 @@ class UserBalanceInfo
     private
     HostChange
     (
-      Boolean enabled,
-      String userBalanceGroup,
+      Boolean isEnabled,
+      String userBalanceName,
       Integer numSlots
     ) 
     {
-      pEnabled = enabled;
-      pUserBalanceGroup = userBalanceGroup;
+      pIsEnabled = isEnabled;
+      pUserBalanceName = userBalanceName;
       pNumSlots = numSlots;
     }
     
@@ -554,12 +559,12 @@ class UserBalanceInfo
     public String 
     toString()
     {
-      return "Enabled: [" + pEnabled +"], UserBalanceGroup: [" + pUserBalanceGroup +"], " +
+      return "IsEnabled: [" + pIsEnabled +"], UserBalanceGroup: [" + pUserBalanceName +"], " +
       	     "NumSlots [" + pNumSlots +"]";
     }
     
-    private Boolean pEnabled;
-    private String pUserBalanceGroup;
+    private Boolean pIsEnabled;
+    private String pUserBalanceName;
     private Integer pNumSlots;
   }
   
@@ -589,7 +594,7 @@ class UserBalanceInfo
   /**
    * All the current slices.
    * <p>
-   * New information is added to the front of this 
+   * New information is added to the front of this. 
    */
   private TreeMap<String, ArrayDeque<UserBalanceSample>> pInfo;
   
@@ -600,6 +605,9 @@ class UserBalanceInfo
   
   private long pSliceStart;
   
+  /**
+   * UserBalanceGroup, User, Percent Usage 
+   */
   private DoubleMap<String, String, Double> pCurrentUsage;
   private Object pCurrentUsageLock;
 }
