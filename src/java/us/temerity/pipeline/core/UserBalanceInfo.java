@@ -1,4 +1,4 @@
-// $Id: UserBalanceInfo.java,v 1.2 2009/11/09 19:58:28 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.3 2009/11/09 20:29:28 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -45,7 +45,6 @@ class UserBalanceInfo
     pHostChangesLock = new Object();
     pJobChangesLock = new Object();
     pCurrentUsageLock = new Object();
-    pTimeLock = new Object();
     
     pSamplesToKeep.set(30);
   }
@@ -68,7 +67,7 @@ class UserBalanceInfo
     double interval;
     
     timer.aquire();
-    synchronized (pTimeLock) {
+    synchronized (pJobChangesLock) {
       timer.resume();
       
       startTime = pSliceStart;
@@ -83,10 +82,8 @@ class UserBalanceInfo
         pHostChanges = new MappedLinkedList<String, HostChange>();
       }
       
-      synchronized (pJobChangesLock) {
-        jobChanges = pJobChanges;
-        pJobChanges = new MappedLinkedList<String, JobChange>();
-      }
+      jobChanges = pJobChanges;
+      pJobChanges = new MappedLinkedList<String, JobChange>();
     }
     
     {
@@ -340,16 +337,14 @@ class UserBalanceInfo
   )
   {
     JobChange change;
-    synchronized (pTimeLock) {
+    synchronized (pJobChangesLock) {
      long time = System.currentTimeMillis();
      if (start)
        change = new JobChange(author, jobID, time, null);
      else
        change = new JobChange(author, jobID, null, time);
      
-     synchronized(pJobChangesLock) {
-       pJobChanges.put(hostName, change);
-     }
+     pJobChanges.put(hostName, change);
     }
     LogMgr.getInstance().log
       (Kind.Usr, Level.Finest, 
@@ -408,6 +403,9 @@ class UserBalanceInfo
 
     /**
      * Constructor.
+     * 
+     * @param totalSlots
+     * 
      */
     private
     UserBalanceSample
@@ -420,8 +418,8 @@ class UserBalanceInfo
       pUserSlotsUsed = userSlotsUsed;
     }
     
-    public Double pTotalSlots;
-    public DoubleOpMap<String> pUserSlotsUsed;
+    private final Double pTotalSlots;
+    private final DoubleOpMap<String> pUserSlotsUsed;
   }
   
   private
@@ -431,6 +429,10 @@ class UserBalanceInfo
     /*   C O N S T R U C T O R                                                              */
     /*--------------------------------------------------------------------------------------*/
 
+    /**
+     * Constructor.
+     * 
+     */
     private
     HostInfo
     (
@@ -445,14 +447,14 @@ class UserBalanceInfo
       pEnabled = enabled;
     }
     
-    private boolean pEnabled;
-    private String pUserBalanceGroup;
-    private int pNumSlots;
+    public boolean pEnabled;
+    public String pUserBalanceGroup;
+    public int pNumSlots;
     
     /**
      * JobID, UserName
      */
-    private TreeMap<Long, String> pJobs;
+    public TreeMap<Long, String> pJobs;
   }
   
   /**
@@ -597,7 +599,6 @@ class UserBalanceInfo
   private TreeMap<String, HostInfo> pHostInfos;
   
   private long pSliceStart;
-  private Object pTimeLock;
   
   private DoubleMap<String, String, Double> pCurrentUsage;
   private Object pCurrentUsageLock;
