@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.51 2009/07/06 10:25:26 jim Exp $
+// $Id: FileMgrServer.java,v 1.52 2009/11/09 01:41:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -289,6 +289,14 @@ class FileMgrServer
                 break;
 
               /*-- REVISION CONTROL --------------------------------------------------------*/
+              case State:
+                {
+                  FileStateReq req = (FileStateReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.states(req));
+                  objOut.flush(); 
+                }
+                break;
+	    
               case CheckIn:
                 {
                   FileCheckInReq req = (FileCheckInReq) objIn.readObject();
@@ -317,14 +325,6 @@ class FileMgrServer
                 {
                   FileCloneReq req = (FileCloneReq) objIn.readObject();
                   objOut.writeObject(pFileMgr.clone(req));
-                  objOut.flush(); 
-                }
-                break;
-	    
-              case State:
-                {
-                  FileStateReq req = (FileStateReq) objIn.readObject();
-                  objOut.writeObject(pFileMgr.states(req));
                   objOut.flush(); 
                 }
                 break;
@@ -365,6 +365,15 @@ class FileMgrServer
                 {
                   FileTouchAllReq req = (FileTouchAllReq) objIn.readObject();
                   objOut.writeObject(pFileMgr.touchAll(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetWorkingTimeStamps:
+                {
+                  FileGetWorkingTimeStampsReq req = 
+                    (FileGetWorkingTimeStampsReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.getWorkingTimeStamps(req)); 
                   objOut.flush(); 
                 }
                 break;
@@ -466,6 +475,15 @@ class FileMgrServer
               case GetOfflined:
                 {
                   objOut.writeObject(pFileMgr.getOfflined());
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetOfflinedNodeVersions:
+                {
+                  FileGetOfflinedNodeVersionsReq req = 
+                    (FileGetOfflinedNodeVersionsReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.getOfflinedNodeVersions(req)); 
                   objOut.flush(); 
                 }
                 break;

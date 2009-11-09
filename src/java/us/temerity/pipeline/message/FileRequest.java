@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.28 2009/10/28 06:06:17 jim Exp $
+// $Id: FileRequest.java,v 1.29 2009/11/09 01:41:14 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -54,6 +54,11 @@ enum FileRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * An instance of {@link FileStateReq} is next.
+   */
+  State, 
+
+  /**
    * An instance of {@link FileCheckInReq} is next.
    */
   CheckIn, 
@@ -73,11 +78,6 @@ enum FileRequest
    */
   Clone, 
   
-  /**
-   * An instance of {@link FileStateReq} is next.
-   */
-  State, 
-
   /**
    * An instance of {@link FileRemoveReq} is next.
    */
@@ -135,6 +135,24 @@ enum FileRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * An instance of {@link FileExtractSiteVersionReq} is next.
+   */
+  ExtractSiteVersion, 
+
+  /**
+   * An instance of {@link FileSiteVersionReq} is next.
+   */
+  LookupSiteVersion, 
+
+  /**
+   * An instance of {@link FileSiteVersionReq} is next.
+   */
+  InsertSiteVersion, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * An instance of {@link FileGetArchiveSizesReq} is next.
    */
   GetArchiveSizes, 
@@ -186,23 +204,6 @@ enum FileRequest
   ExtractCleanup, 
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * An instance of {@link FileExtractSiteVersionReq} is next.
-   */
-  ExtractSiteVersion, 
-
-  /**
-   * An instance of {@link FileSiteVersionReq} is next.
-   */
-  LookupSiteVersion, 
-
-  /**
-   * An instance of {@link FileSiteVersionReq} is next.
-   */
-  InsertSiteVersion, 
-  
 
   /*----------------------------------------------------------------------------------------*/
 
