@@ -1,4 +1,4 @@
-// $Id: UserBalanceInfo.java,v 1.4 2009/11/09 21:12:09 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.5 2009/11/09 21:24:19 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -140,28 +140,33 @@ class UserBalanceInfo
             userSlots.put(info.pUserBalanceName, userUse);
           }        
         }
-        TreeSet<Long> touchedJobs = new TreeSet<Long>();
-        LinkedList<JobChange> changes = jobChanges.get(hostname);
+        
         TreeMap<Long, Long> started = new TreeMap<Long, Long>();
-        if (changes != null) {
-          for (JobChange change : changes) {
-            long id = change.pJobID;
+        
+        LinkedList<JobChange> jchanges = jobChanges.get(hostname);
+        if (jchanges != null) {
+          for (JobChange jchange : jchanges) {
+            long id = jchange.pJobID;
             // Job Started
-            if (change.pStartTime != null) {
-              info.pJobs.put(id, change.pAuthor);
-              started.put(id, change.pStartTime);
+            if (jchange.pStartTime != null) {
+              if (info.pJobs.put(id, jchange.pAuthor) != null) {
+                LogMgr.getInstance().log
+                (Kind.Usr, Level.Warning, 
+                  "A Start Time was registered for job (" + id + ") which was marked as " +
+                  "already running on the same host.");
+              }
+              started.put(id, jchange.pStartTime);
             }
             // Job Finished
             else {
               String author = info.pJobs.remove(id);
-              touchedJobs.add(id);
               if (userUse != null ) {
-                Long jobEndTime = change.pEndTime;
+                Long jobEndTime = jchange.pEndTime;
                 Long jobStartTime = startTime;
                 // Short Duration job
-                if (started.containsKey(id)) {
+                if (started.containsKey(id)) 
                   jobStartTime = started.get(id);
-                }
+
                 double used = ((double) jobEndTime - jobStartTime) / interval;
 
                 userUse.apply(author, used);
@@ -174,15 +179,13 @@ class UserBalanceInfo
         if (userUse != null) {
           for (Entry<Long, String> entry2 : info.pJobs.entrySet()) {
             Long jobID = entry2.getKey();
-            if (!touchedJobs.contains(jobID)) {
-              String author = entry2.getValue();
-              if (started.containsKey(jobID)) {
-                double used = ((double) endTime - started.get(jobID)) / interval;
-                userUse.apply(author, used);
-              }
-              else
-                userUse.apply(author, 1d);
+            String author = entry2.getValue();
+            if (started.containsKey(jobID)) {
+              double used = ((double) endTime - started.get(jobID)) / interval;
+              userUse.apply(author, used);
             }
+            else
+              userUse.apply(author, 1d);
           }
         }
       } // Finished looping through all the hosts.
