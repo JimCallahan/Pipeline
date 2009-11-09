@@ -1,4 +1,4 @@
-// $Id: TestSubProcessApp.java,v 1.9 2006/08/16 18:57:07 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.10 2009/11/09 18:49:45 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -189,14 +189,14 @@ class TestSubProcessApp
 	printAllStats(proc);
       }
     }
-    catch(IOException ex) {
+    catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
 	 ex.getMessage());
     }
 
     /* check resource usage statistics  */ 
-    {
+    try {
       System.out.print("-----------------------------------\n");
 
       ArrayList<String> args = new ArrayList<String>();
@@ -220,9 +220,14 @@ class TestSubProcessApp
       }
       printAllStats(proc);
     }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
+    }
 
     /* killing a running subprocess with child processes */ 
-    {
+    try {
       System.out.print("-----------------------------------\n");
 
       ArrayList<String> args = new ArrayList<String>();
@@ -251,9 +256,14 @@ class TestSubProcessApp
       }
       printAllStats(proc);
     }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
+    }
 
     /* killing a running subprocess */ 
-    {
+    try {
       System.out.print("-----------------------------------\n");
 
       ArrayList<String> args = new ArrayList<String>();
@@ -278,9 +288,14 @@ class TestSubProcessApp
       }
       printAllStats(proc);
     }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
+    }
 
     /* a subprocess who's path is looked up from the environment */ 
-    {
+    try {
       System.out.print("-----------------------------------\n");
 
       ArrayList<String> args = new ArrayList<String>();
@@ -307,9 +322,14 @@ class TestSubProcessApp
       }
       printAllStats(proc);
     }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
+    }
 
     /* a failure due to passing illegal command line arguments */ 
-    {
+    try {
       System.out.print("-----------------------------------\n");
 
       ArrayList<String> args = new ArrayList<String>();
@@ -332,9 +352,14 @@ class TestSubProcessApp
       }
       printAllStats(proc);
     }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
+    }
 
     /* a subprocess who's path is absolute and needs no environment */
-    {
+    try {
       System.out.print("-----------------------------------\n");
 
       ArrayList<String> args = new ArrayList<String>();
@@ -358,6 +383,11 @@ class TestSubProcessApp
 	   ex.getMessage());
       }
       printAllStats(proc);
+    }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
   }
 
