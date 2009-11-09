@@ -488,7 +488,7 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/apps/*.class \
                     us/temerity/pipeline/builder/*.class \
-                    us/temerity/pipeline/builder/execution/*.class; \
+                    us/temerity/pipeline/builder/execution/*.class \
                     us/temerity/pipeline/builder/ui/*.class \
                     us/temerity/pipeline/builder/v2_4_1/*.class \
                     us/temerity/pipeline/builder/v2_4_3/*.class \
