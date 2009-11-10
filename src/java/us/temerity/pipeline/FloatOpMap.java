@@ -1,4 +1,4 @@
-// $Id: FloatOpMap.java,v 1.1 2009/11/06 00:49:36 jim Exp $
+// $Id: FloatOpMap.java,v 1.2 2009/11/10 23:51:53 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -173,8 +173,9 @@ class FloatOpMap<K>
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Add the two values: (second + first)
+   * Add the two values: (first + second)
    */
+  @Override
   protected Float
   add
   (
@@ -186,8 +187,9 @@ class FloatOpMap<K>
   }
    
   /**
-   * Subtract the second value to the first value: (second - first)
+   * Subtract the first value from the second value: (first - second)
    */
+  @Override
   protected Float
   subtract
   (
@@ -195,12 +197,13 @@ class FloatOpMap<K>
     Float second
   )
   {
-    return second - first;
+    return first - second;
   }
 
   /**
-   * Mutiply the two values: (second * first)
+   * Multiply the two values: (first * second)
    */
+  @Override
   protected Float
   multiply
   (
@@ -212,8 +215,9 @@ class FloatOpMap<K>
   }
    
   /**
-   * Divide the second value by the first value: (second / first)
+   * Divide the first value by the second value: (first / second)
    */
+  @Override
   protected Float
   divide
   (
@@ -221,12 +225,13 @@ class FloatOpMap<K>
     Float second
   )
   {
-    return second / first;
+    return first / second;
   }
    
   /**
    * The minimum of the two values. 
    */
+  @Override
   protected Float
   min
   (
@@ -240,6 +245,7 @@ class FloatOpMap<K>
   /**
    * The minimum of the two values. 
    */
+  @Override
   protected Float
   max
   (
