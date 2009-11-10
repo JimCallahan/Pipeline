@@ -5291,6 +5291,8 @@ ViewGet()
   {
     TreeMap table = pMasterMgrClient.getWorkingAreas();
     TreeSet views = (TreeSet) table.get(pAuthor);
+    if(views == null) 
+      throw new PipelineException("No working areas exist for user (" + pAuthor + ")!"); 
     Iterator iter = views.iterator();
     while(iter.hasNext()) {
       String vname = (String) iter.next();
