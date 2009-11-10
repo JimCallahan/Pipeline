@@ -1,4 +1,4 @@
-// $Id: UtilContextUtilityParam.java,v 1.3 2007/06/21 18:17:19 jesse Exp $
+// $Id: UtilContextUtilityParam.java,v 1.4 2009/11/10 23:51:10 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -101,6 +101,11 @@ class UtilContextUtilityParam
       value = UtilContext.getDefaultUtilContext(client);
     
     String author = value.getAuthor();
+
+    if (!pWorkingAreas.containsKey(author) ) {
+      client.createWorkingArea(value.getAuthor(), value.getView());
+      pWorkingAreas = client.getWorkingAreas();
+    }
     {
       pAuthorParam = 
 	new EnumUtilityParam
