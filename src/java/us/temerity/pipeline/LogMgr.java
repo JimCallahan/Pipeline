@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.13 2009/10/30 04:55:39 jesse Exp $
+// $Id: LogMgr.java,v 1.14 2009/11/10 20:47:39 jesse Exp $
   
 package us.temerity.pipeline;
 
@@ -707,7 +707,12 @@ class LogMgr
     /**
      * Activity of the Queue Manager job writer thread.
      */
-    Wri;
+    Wri,
+    
+    /**
+     * Activity of the Queue Manager User Balance Info thread
+     */
+    Usr;
 
     /**
      * Get the list of all possible states.
@@ -806,7 +811,8 @@ class LogMgr
     "EXT", 
     "TIM",
     "BLD",
-    "WRI"
+    "WRI",
+    "USR"
   };
 
 
@@ -852,7 +858,7 @@ class LogMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The text area componet which will display log messages 
+   * The text area component which will display log messages 
    * or <CODE>null</CODE> if not enabled.
    */ 
   private Object     pTextAreaLock; 
