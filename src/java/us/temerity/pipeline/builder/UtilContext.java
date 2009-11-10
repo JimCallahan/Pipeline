@@ -98,18 +98,12 @@ public class UtilContext
   )
     throws PipelineException
   {
-    String author = PackageInfo.sUser;
-    TreeMap<String, TreeSet<String>> areas = client.getWorkingAreas();
-    TreeSet<String> userAreas = areas.get(author);
-    String view = null;
-    if(userAreas.contains("default"))
-      view = "default";
-    else
-      view = userAreas.first();
     String toolset = client.getDefaultToolsetName();
     if (toolset == null)
-      toolset = client.getActiveToolsetNames().first();
-    return new UtilContext(author, view, toolset);
+      throw new PipelineException
+        ("Unable to determine which toolset to use for the default UtilContext since " + 
+         "no default toolset has yet been specified!"); 
+    return new UtilContext(PackageInfo.sUser, "default", toolset);
   }
   
   
