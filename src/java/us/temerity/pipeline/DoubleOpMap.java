@@ -1,4 +1,4 @@
-// $Id: DoubleOpMap.java,v 1.1 2009/11/06 00:49:36 jim Exp $
+// $Id: DoubleOpMap.java,v 1.2 2009/11/10 20:48:25 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -173,8 +173,9 @@ class DoubleOpMap<K>
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Add the two values: (second + first)
+   * Add the two values: (first + second)
    */
+  @Override
   protected Double
   add
   (
@@ -186,8 +187,9 @@ class DoubleOpMap<K>
   }
    
   /**
-   * Subtract the second value to the first value: (second - first)
+   * Subtract the first value from the second value: (first - second)
    */
+  @Override
   protected Double
   subtract
   (
@@ -195,12 +197,13 @@ class DoubleOpMap<K>
     Double second
   )
   {
-    return second - first;
+    return first - second;
   }
 
   /**
-   * Mutiply the two values: (second * first)
+   * Multiply the two values: (first * second)
    */
+  @Override
   protected Double
   multiply
   (
@@ -212,8 +215,9 @@ class DoubleOpMap<K>
   }
    
   /**
-   * Divide the second value by the first value: (second / first)
+   * Divide the first value by the second value: (first / second)
    */
+  @Override
   protected Double
   divide
   (
@@ -221,12 +225,13 @@ class DoubleOpMap<K>
     Double second
   )
   {
-    return second / first;
+    return first / second;
   }
    
   /**
    * The minimum of the two values. 
    */
+  @Override
   protected Double
   min
   (
@@ -238,8 +243,9 @@ class DoubleOpMap<K>
   }
    
   /**
-   * The minimum of the two values. 
+   * The maximum of the two values. 
    */
+  @Override
   protected Double
   max
   (

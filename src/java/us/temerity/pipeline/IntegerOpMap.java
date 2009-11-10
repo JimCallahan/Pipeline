@@ -1,4 +1,4 @@
-// $Id: IntegerOpMap.java,v 1.1 2009/11/06 00:49:36 jim Exp $
+// $Id: IntegerOpMap.java,v 1.2 2009/11/10 20:48:25 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -171,10 +171,11 @@ class IntegerOpMap<K>
   /*----------------------------------------------------------------------------------------*/
   /*   O P E R A T O R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
-   * Add the two values: (second + first)
+   * Add the two values: (first + second)
    */
+  @Override
   protected Integer
   add
   (
@@ -186,8 +187,9 @@ class IntegerOpMap<K>
   }
    
   /**
-   * Subtract the second value to the first value: (second - first)
+   * Subtract the first value from the second value: (first - second)
    */
+  @Override
   protected Integer
   subtract
   (
@@ -195,12 +197,13 @@ class IntegerOpMap<K>
     Integer second
   )
   {
-    return second - first;
+    return first - second;
   }
 
   /**
-   * Mutiply the two values: (second * first)
+   * Multiply the two values: (first * second)
    */
+  @Override
   protected Integer
   multiply
   (
@@ -212,8 +215,9 @@ class IntegerOpMap<K>
   }
    
   /**
-   * Divide the second value by the first value: (second / first)
+   * Divide the first value by the second value: (first / second)
    */
+  @Override
   protected Integer
   divide
   (
@@ -221,12 +225,13 @@ class IntegerOpMap<K>
     Integer second
   )
   {
-    return second / first;
+    return first / second;
   }
    
   /**
    * The minimum of the two values. 
    */
+  @Override
   protected Integer
   min
   (
@@ -240,6 +245,7 @@ class IntegerOpMap<K>
   /**
    * The minimum of the two values. 
    */
+  @Override
   protected Integer
   max
   (

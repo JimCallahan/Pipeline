@@ -1,4 +1,4 @@
-// $Id: BaseOpMap.java,v 1.1 2009/11/06 00:49:36 jim Exp $
+// $Id: BaseOpMap.java,v 1.2 2009/11/10 20:48:25 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -318,7 +318,7 @@ class BaseOpMap<K, V>
   );
    
   /**
-   * Subtract the second value to the first value: (first-second)
+   * Subtract the second value from the second value: (first-second)
    */
   abstract protected V
   subtract
@@ -328,7 +328,7 @@ class BaseOpMap<K, V>
   );
 
   /**
-   * Mutiply the two values: (first+second)
+   * Multiply the two values: (first*second)
    */
   abstract protected V
   multiply
@@ -338,7 +338,7 @@ class BaseOpMap<K, V>
   );
    
   /**
-   * Divide the second value by the first value: (first+second)<P> 
+   * Divide the first value by the second value: (first/second)<P> 
    */
   abstract protected V
   divide
@@ -358,7 +358,7 @@ class BaseOpMap<K, V>
   );
    
   /**
-   * The minimum of the two values. 
+   * The maximum of the two values. 
    */
   abstract protected V
   max

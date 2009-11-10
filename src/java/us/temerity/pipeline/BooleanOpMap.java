@@ -1,4 +1,4 @@
-// $Id: BooleanOpMap.java,v 1.1 2009/11/06 00:49:36 jim Exp $
+// $Id: BooleanOpMap.java,v 1.2 2009/11/10 20:48:25 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -174,6 +174,7 @@ class BooleanOpMap<K>
   /**
    * Add the two values: (second || first)
    */
+  @Override
   protected Boolean
   add
   (
@@ -187,6 +188,7 @@ class BooleanOpMap<K>
   /**
    * Subtract the second value to the first value (not unsupported).
    */
+  @Override
   protected Boolean
   subtract
   (
@@ -198,8 +200,9 @@ class BooleanOpMap<K>
   }
 
   /**
-   * Mutiply the two values: (second && first)
+   * Multiply the two values: (second && first)
    */
+  @Override
   protected Boolean
   multiply
   (
@@ -211,8 +214,9 @@ class BooleanOpMap<K>
   }
    
   /**
-   * Divide the second value by the first value: (second && !first)
+   * Divide the first value by the second value: (not supported)
    */
+  @Override
   protected Boolean
   divide
   (
@@ -226,6 +230,7 @@ class BooleanOpMap<K>
   /**
    * The minimum of the two values (not unsupported).
    */
+  @Override
   protected Boolean
   min
   (
@@ -239,6 +244,7 @@ class BooleanOpMap<K>
   /**
    * The minimum of the two values (not unsupported).
    */
+  @Override
   protected Boolean
   max
   (

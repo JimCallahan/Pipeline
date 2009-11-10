@@ -1,4 +1,4 @@
-// $Id: ShortOpMap.java,v 1.1 2009/11/06 00:49:36 jim Exp $
+// $Id: ShortOpMap.java,v 1.2 2009/11/10 20:48:59 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -173,8 +173,9 @@ class ShortOpMap<K>
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Add the two values: (second + first)
+   * Add the two values: (first + second)
    */
+  @Override
   protected Short
   add
   (
@@ -186,8 +187,9 @@ class ShortOpMap<K>
   }
    
   /**
-   * Subtract the second value to the first value: (second - first)
+   * Subtract the second value to the first value: (first - second)
    */
+  @Override
   protected Short
   subtract
   (
@@ -195,12 +197,13 @@ class ShortOpMap<K>
     Short second
   )
   {
-    return (short) ((int) second - (int) first);
+    return (short) ((int) first - (int) second);
   }
 
   /**
-   * Mutiply the two values: (second * first)
+   * Multiply the two values: (first * second)
    */
+  @Override
   protected Short
   multiply
   (
@@ -208,12 +211,13 @@ class ShortOpMap<K>
     Short second
   )
   {
-    return (short) ((int) second * (int) first);
+    return (short) ((int) first * (int) second);
   }
    
   /**
-   * Divide the second value by the first value: (second / first)
+   * Divide the first value by the second value: (first / second)
    */
+  @Override
   protected Short
   divide
   (
@@ -221,12 +225,13 @@ class ShortOpMap<K>
     Short second
   )
   {
-    return (short) ((int) second / (int) first);
+    return (short) ((int) first / (int) second);
   }
    
   /**
    * The minimum of the two values. 
    */
+  @Override
   protected Short
   min
   (
@@ -234,12 +239,13 @@ class ShortOpMap<K>
     Short second
   )
   {
-    return (short) Math.min((int) second, (int) first);
+    return (short) Math.min(second, first);
   }
    
   /**
    * The minimum of the two values. 
    */
+  @Override
   protected Short
   max
   (
@@ -247,7 +253,7 @@ class ShortOpMap<K>
     Short second
   )
   {
-    return (short) Math.max((int) second, (int) first);    
+    return (short) Math.max(second, first);    
   }
    
   
