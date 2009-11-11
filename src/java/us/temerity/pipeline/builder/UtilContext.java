@@ -1,8 +1,6 @@
 package us.temerity.pipeline.builder;
 
-import java.io.Serializable;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.io.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -44,6 +42,12 @@ public class UtilContext
     String toolset
   )
   {
+    if (author == null)
+      throw new IllegalArgumentException("The author cannot be null");
+    if (view == null)
+      throw new IllegalArgumentException("The view cannot be null");
+    if (toolset == null)
+      throw new IllegalArgumentException("The toolset cannot be null");
     pAuthor = author;
     pView = view;
     pToolset = toolset;
@@ -89,7 +93,7 @@ public class UtilContext
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns a default {@link UtilContext}
+   * Return the default {@link UtilContext}
    */
   public static UtilContext 
   getDefaultUtilContext
