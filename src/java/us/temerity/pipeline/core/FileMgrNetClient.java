@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.25 2009/11/02 03:44:10 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.26 2009/11/12 01:11:57 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1172,7 +1172,7 @@ class FileMgrNetClient
     FileGetOfflinedNodeVersionsReq req = new FileGetOfflinedNodeVersionsReq(name);
 
     Object obj = performLongTransaction(FileRequest.GetOfflinedNodeVersions, 
-                                        null, 15000, 60000); 
+                                        req, 15000, 60000); 
     if(obj instanceof FileGetOfflinedNodeVersionsRsp) {
       FileGetOfflinedNodeVersionsRsp rsp = (FileGetOfflinedNodeVersionsRsp) obj;
       return rsp.getVersions();
