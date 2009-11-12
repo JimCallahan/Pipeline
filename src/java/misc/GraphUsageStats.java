@@ -1,4 +1,4 @@
-// $Id: GraphUsageStats.java,v 1.2 2009/06/26 04:21:29 jim Exp $
+// $Id: GraphUsageStats.java,v 1.3 2009/11/12 04:55:15 jim Exp $
 
 import java.io.*; 
 import java.util.*; 
@@ -94,7 +94,7 @@ class GraphUsageStats
       }
 
       TripleMap<Integer,Integer,Integer,Double> weeklyUsers = 
-        rollingAverage(dailyUsers, 8); 
+        rollingAverage(dailyUsers, 7); 
 
       TripleMap<Integer,Integer,Integer,Double> monthlyUsers = 
         rollingAverage(dailyUsers, 30); 
@@ -177,60 +177,51 @@ class GraphUsageStats
     TripleMap<Integer,Integer,Integer,Double> averageUsers = 
       new TripleMap<Integer,Integer,Integer,Double>();
 
-    ArrayDeque<Integer> fifo = new ArrayDeque<Integer>(window); 
+    ArrayDeque<Integer> fifo = new ArrayDeque<Integer>(); 
 
+    Double avg = null;
     int cnt = 0;
     for(Integer year : dailyUsers.keySet()) {
       for(Integer month : dailyUsers.keySet(year)) {
         for(Integer day : dailyUsers.keySet(year, month)) {
           Integer numUsers = dailyUsers.get(year, month, day); 
-          
-          if(cnt >= window) 
-            fifo.remove(); 
-          fifo.add(numUsers); 
-          
-          Double avg = 0.0;
+
+          fifo.addLast(numUsers); 
+          while(fifo.size() > window) 
+            fifo.removeFirst(); 
+
+          Integer counts[] = fifo.toArray(new Integer[0]);
+          Arrays.sort(counts);
+
+          int nonzero = -1; 
           {
-            int nz = 0;
-            for(Integer n : fifo) {
-              if(n > 0) 
-                nz++;
-              avg += n;
+            int wk; 
+            for(wk=0; wk<counts.length; wk++) {
+              if(counts[wk] > 0) {
+                nonzero = wk;
+                break;
+              }
             }
-            avg /= nz; 
           }
           
-          cal.set(year, month, day); 
-          cal.add(Calendar.DAY_OF_MONTH, -window/2); 
-          
-          averageUsers.put(cal.get(Calendar.YEAR), 
-                           cal.get(Calendar.MONTH), 
-                           cal.get(Calendar.DAY_OF_MONTH), avg); 
-          
+          Integer median = null;
+          if(nonzero == -1) {
+            median = 0;
+          }
+          else {
+            int idx = (nonzero + counts.length - 1) / 2;
+            median = counts[idx];
+          }
+
+          if(avg == null) 
+            avg = (double) median;
+          else
+            avg = 0.75*avg + 0.25*median;
+          averageUsers.put(year, month, day, avg); 
+
           cnt++;
         }
       }
-    }
-    
-    while(fifo.size() > 0) {
-      fifo.remove(); 
-      
-      Double avg = 0.0;
-      {
-        int nz = 0;
-        for(Integer n : fifo) {
-          if(n > 0) 
-            nz++;
-          avg += n;
-        }
-        avg /= nz; 
-      }
-      
-      averageUsers.put(cal.get(Calendar.YEAR), 
-                       cal.get(Calendar.MONTH), 
-                       cal.get(Calendar.DAY_OF_MONTH), avg); 
-      
-      cal.add(Calendar.DAY_OF_MONTH, 1); 
     }
 
     return averageUsers; 
