@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cc,v 1.7 2008/05/08 22:46:42 jim Exp $
+// $Id: NativeProcessLight.cc,v 1.8 2009/11/14 00:43:03 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -639,7 +639,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	delete[] cmdarray;
       }
 
-      sprintf(msg, "unable to fork thread for \"%s\": %s\n", cmdarray[0]);
+      sprintf(msg, "unable to fork thread: %s\n", strerror(errno));
       env->ThrowNew(IOException, msg);
       return -1;
 
