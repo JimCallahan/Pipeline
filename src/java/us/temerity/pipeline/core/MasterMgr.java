@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.313 2009/11/05 18:28:03 jim Exp $
+// $Id: MasterMgr.java,v 1.314 2009/11/16 23:58:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6801,7 +6801,7 @@ class MasterMgr
       {
 	TreeSet<String> matches = pNodeTree.getMatchingWorkingNodes(author, view, null);
         for(String name : matches) 
-          releaseHelper(new NodeID(name, author, view), true, true, true, timer);
+          releaseHelper(new NodeID(author, view, name), true, true, true, timer);
       }
       
       /* determine whether to abort early and/or remove the user as well */ 

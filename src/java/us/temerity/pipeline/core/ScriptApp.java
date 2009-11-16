@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.105 2009/11/05 00:23:31 jim Exp $
+// $Id: ScriptApp.java,v 1.106 2009/11/16 23:58:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -297,8 +297,8 @@ class ScriptApp
        "      --create=view-name\n" + 
        "      --get [--author=user-name]\n" + 
        "      --create=view-name [--author=user-name]\n" + 
-       "      --release=view-name [--author=user-name] [--pattern='node-regex']\n" + 
-       "        [--remove-files] [--remove-area]\n" + 
+       "      --release=view-name [--author=user-name] [--pattern='node-regex'] [--remove-files] \n" + 
+       "      --remove=view-name [--author=user-name]\n" + 
        "\n" + 
        "  Working Node Versions\n" +
        "    working\n" +
@@ -2381,7 +2381,6 @@ class ScriptApp
    String view, 
    String pattern, 
    boolean removeFiles, 
-   boolean removeArea,
    MasterMgrClient mclient
   ) 
     throws PipelineException
@@ -2398,13 +2397,24 @@ class ScriptApp
 
       mclient.release(author, view, names, removeFiles);
     }
-
-    if(removeArea) {
-      mclient.removeWorkingArea(author, view);
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Working Area (" + author + "|" + view + ") Removed.");
-    }
+  }
+  
+  /**
+   * Remove all nodes and associated files in a working area and the area itself.
+   */ 
+  public void
+  removeView
+  (
+   String author, 
+   String view, 
+   MasterMgrClient mclient
+  ) 
+    throws PipelineException
+  {
+    mclient.removeWorkingArea(author, view);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Working Area (" + author + "|" + view + ") Removed.");
   }
   
 

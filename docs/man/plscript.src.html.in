@@ -23,7 +23,7 @@
     <b>plscript</b> [<a href=
     "#Global_Options"><i>global-options</i></a>] <a href=
     "#Commands"><i>command</i></a> [<a href=
-    "#Shared_Options"><i>command-options</i></a>]<i><br></i>
+    "#Shared_Options"><i>command-options</i></a>]<br>
     <b>plscript</b> [<a href=
     "#Global_Options"><i>global-options</i></a>] <a href=
     "#--batch"><span style=
@@ -464,13 +464,12 @@
                 "font-weight: normal;"><a href=
                 "#license-key_--add"><span style=
                 "font-weight: bold;">--add</span></a>=<span style=
-                "font-style: italic;">key-name</span>
-                </span><span style=
+                "font-style: italic;">key-name</span></span>
+                <span style=
                 "font-weight: bold;">--msg</span><span style=
                 "font-weight: normal;">='<span style=
-                "font-style: italic;">key-description</span>'
-                </span><span style=
-                "font-weight: normal;"><span style=
+                "font-style: italic;">key-description</span>'</span>
+                <span style="font-weight: normal;"><span style=
                 "font-weight: bold;">--</span><span style=
                 "font-weight: bold;">per-slot</span> | <span style=
                 "font-weight: bold;">--per-host</span> |
@@ -495,8 +494,8 @@
                 "font-weight: bold;">per-slot</span> | <span style=
                 "font-weight: bold;">--per-host</span> |
                 <span style=
-                "font-weight: bold;">--per-host-slot</span>]</span><span style="font-weight: normal;">
-                [<span style=
+                "font-weight: bold;">--per-host-slot</span>]</span>
+                <span style="font-weight: normal;">[<span style=
                 "font-weight: bold;">--max-slots</span>=<span style="font-style: italic;">integer</span>]
                 [<span style=
                 "font-weight: bold;">--max-hosts</span>=<span style="font-style: italic;">integer</span>]
@@ -952,9 +951,17 @@
               <span style="font-weight: normal;">[<span style=
               "font-weight: bold;">--pattern</span>=</span><span style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'</span><span style="font-weight: normal;">]</span>
               <span style="font-weight: normal;">[<span style=
-              "font-weight: bold;">--remove-files</span>]
-              [<span style=
-              "font-weight: bold;">--remove-area</span>]</span></li>
+              "font-weight: bold;">--remove-files</span>]</li>
+
+
+              <li style="font-weight: bold;"><span style=
+              "font-weight: normal;"><a href=
+              "#view_--remove"><span style=
+              "font-weight: bold;">--remove</span></a>=<span style="font-style: italic;">view-name</span></span>
+              <span style="font-weight: normal;">[</span><a href=
+              "#--author">--author</a><span style=
+              "font-weight: normal;">=<span style=
+              "font-style: italic;">user-name</span>]</span></li>
             </ul>
           </li>
         </ul>
@@ -1111,8 +1118,9 @@
                 "font-weight: bold;">--editor</span></a>=<span style="font-style: italic;">editor-name</span></span><span style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span style="font-style: italic;">minor</span>.<span style="font-style: italic;">micro</span>]</span><span style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span style="font-weight: normal;">]
                 [<a href="#--no-action"></a></span><a href=
                 "#--action"></a><a href="#--no-action"><span style=
-                "font-weight: bold;">--no-action</span></a><span style="font-weight: normal;">
-                |</span> <a href="#--action"></a><span style=
+                "font-weight: bold;">--no-action</span></a>
+                <span style="font-weight: normal;">|</span>
+                <a href="#--action"></a><span style=
                 "font-weight: normal;"><span style=
                 "font-weight: bold;"><a href=
                 "#--action">--action</a></span>=<span style=
@@ -1249,8 +1257,8 @@
                 "font-weight: normal;">=<span style=
                 "font-style: italic;">view-name</span>]</span>
                 <span style="font-weight: normal;"><span style=
-                "font-weight: bold;">--file-pattern</span>=<span style="font-style: italic;">new-node-name</span></span><span style="font-weight: normal;">[.#|@...][.<span style="font-style: italic;">suffix</span>]</span><span style="font-weight: normal;">
-                [<span style=
+                "font-weight: bold;">--file-pattern</span>=<span style="font-style: italic;">new-node-name</span></span><span style="font-weight: normal;">[.#|@...][.<span style="font-style: italic;">suffix</span>]</span>
+                <span style="font-weight: normal;">[<span style=
                 "font-weight: bold;">--rename-files</span>]<span style="font-style: italic;"><br>
                 </span></span></li>
 
@@ -1267,8 +1275,8 @@
                 "font-weight: normal;">=<span style=
                 "font-style: italic;">view-name</span>]</span>
                 <span style="font-weight: normal;"><span style=
-                "font-weight: bold;">--range</span>=</span><span style="font-weight: normal;"><span style="font-style: italic;">start</span>[-<span style="font-style: italic;">end</span>[x<span style="font-style: italic;">by</span>]]</span><span style="font-weight: normal;">
-                [<span style=
+                "font-weight: bold;">--range</span>=</span><span style="font-weight: normal;"><span style="font-style: italic;">start</span>[-<span style="font-style: italic;">end</span>[x<span style="font-style: italic;">by</span>]]</span>
+                <span style="font-weight: normal;">[<span style=
                 "font-weight: bold;">--remove-files</span>]</span></li>
 
                 <li style="font-weight: bold;"><a href=
@@ -1392,8 +1400,9 @@
               "font-weight: normal;">=<span style=
               "font-style: italic;">node-name</span> [<a href=
               "#--version"><span style=
-              "font-weight: bold;">--version</span></a>=<span style="font-style: italic;">major</span>.<span style="font-style: italic;">minor</span>.<span style="font-style: italic;">micro</span></span><span style="font-weight: normal;">
-              | <a href="#--latest"><span style=
+              "font-weight: bold;">--version</span></a>=<span style="font-style: italic;">major</span>.<span style="font-style: italic;">minor</span>.<span style="font-style: italic;">micro</span></span>
+              <span style="font-weight: normal;">| <a href=
+              "#--latest"><span style=
               "font-weight: bold;">--latest</span></a></span><span style="font-weight: normal;">...]</span>
               <span style="font-weight: normal;">[<span style=
               "font-weight: bold;">--show</span>=<span style=
@@ -1416,8 +1425,8 @@
               "font-weight: normal;">=<span style=
               "font-style: italic;">major</span>.<span style=
               "font-style: italic;">minor</span>.<span style=
-              "font-style: italic;">micro</span> |
-              </span><span style="font-weight: normal;"><a href=
+              "font-style: italic;">micro</span> |</span>
+              <span style="font-weight: normal;"><a href=
               "#--latest"><span style=
               "font-weight: bold;">--latest</span></a></span>
               <span style="font-weight: normal;">...]</span></li>
@@ -1741,17 +1750,18 @@
 
     <blockquote>
       Prints the version number of this software and exits.<br>
-    </blockquote><b><a name="--release-date"></a>--release-date</b><br>
+    </blockquote><b><a name=
+    "--release-date"></a>--release-date</b><br>
 
     <blockquote>
       Prints date that this software was released and exits.<br>
     </blockquote><b><a name="--copyright"></a>--copyright</b><br>
 
     <blockquote>
-      Prints the <a href="#Copyright">
-      <span style="font-weight: bold;">copyright notice</span></a> for this
+      Prints the <a href="#Copyright"><span style=
+      "font-weight: bold;">copyright notice</span></a> for this
       software and exits.<br>
-     </blockquote><b><a name="--license"></a>--license</b>
+    </blockquote><b><a name="--license"></a>--license</b>
 
     <blockquote>
       Prints the <a href="#License_Agreement"><span style=
@@ -1803,8 +1813,8 @@
   </div><br>
 
   <div style="margin-left: 40px;">
-    <span style="font-weight: bold;">
-    <a name="--standard-log-dir"></a>--standard-log-dir</span>=
+    <span style="font-weight: bold;"><a name=
+    "--standard-log-dir"></a>--standard-log-dir</span>=
     <span style="font-style: italic;">dirname</span><br>
     <br>
 
@@ -2129,8 +2139,8 @@
       policy, execution method, job batch size and job requirements
       are also removed.
     </div><br>
-    <span style="font-weight: normal;">
-    <span style="font-weight: bold;"><a name=
+    <span style="font-weight: normal;"><span style=
+    "font-weight: bold;"><a name=
     "--action"></a>--action</span>=<span style=
     "font-style: italic;">action-name</span></span><span style=
     "font-weight: normal;">[:<span style=
@@ -2195,7 +2205,8 @@
     "font-weight: bold;"><a name=
     "--no-param"></a>--no-param</span></span><span style=
     "font-weight: normal;">=<span style=
-    "font-style: italic;">source-name</span></span><br><br>
+    "font-style: italic;">source-name</span></span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Specifies that all previously existing per-source action
@@ -2379,10 +2390,9 @@
       selection keys a job server must support in order to be
       eligible to run jobs associated with the target node.
     </div><br>
-
     <span style="font-weight: normal;"><span style=
-    "font-weight: bold;">
-    <a name="--hardware-key"></a>--hardware-key</span>=<span style=
+    "font-weight: bold;"><a name=
+    "--hardware-key"></a>--hardware-key</span>=<span style=
     "font-style: italic;">key-name</span>[:true|false]</span><br>
     <br>
 
@@ -2453,7 +2463,7 @@
     <h4>&nbsp;Versioning Options</h4><span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;"><a name="--version"></a>--version</span>=<span style="font-style: italic;">major</span>.<span style="font-style: italic;">minor</span>.<span style="font-style: italic;">micro<br>
-    </span></span><span style="font-weight: normal;"><span style=
+    </span></span> <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name=
     "--latest"></a>--latest</span></span><br>
     <span style="font-weight: normal;"><br></span>
@@ -2530,15 +2540,15 @@
     </div><span style="font-weight: bold;"><a name="user_--add" id=
     "user_--add"></a>user --add</span><span style=
     "font-weight: normal;">=<span style=
-    "font-style: italic;">user-name</span></span><br><br>
+    "font-style: italic;">user-name</span></span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Register a new user with Pipeline.
     </div><br>
-
-    <span style="font-weight: bold;">
-    <a name="user_--remove" id="user_--remove"></a>user
-    --remove</span><span style="font-weight: normal;">=<span style=
+    <span style="font-weight: bold;"><a name="user_--remove" id=
+    "user_--remove"></a>user --remove</span><span style=
+    "font-weight: normal;">=<span style=
     "font-style: italic;">user-name<br></span></span>
 
     <div style="margin-left: 40px;">
@@ -2558,11 +2568,12 @@
     <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="work-group_--get" id=
     "work-group_--get"></a>work-group</span></span> <span style=
-    "font-weight: bold;">--get</span><br><br>
+    "font-weight: bold;">--get</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Print the names of all Pipeline work groups.<br>
-    </div><span style="font-weight: bold;"></span>
+    </div>
   </div><br>
 
   <div style="margin-left: 40px;">
@@ -2570,18 +2581,20 @@
     "font-weight: bold;"><a name="work-group_--get-info" id=
     "work-group_--get-info"></a>work-group</span></span>
     <span style="font-weight: bold;">--get-info</span><span style=
-    "font-weight: normal;">=<span style="font-style: italic;">group-name</span></span><br><br>
+    "font-weight: normal;">=<span style=
+    "font-style: italic;">group-name</span></span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Print the membership status of the users which make up the
       given work group.
     </div><br>
-
     <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="work-group_--get-info-all" id=
     "work-group_--get-info-all"></a>work-group</span></span>
     <span style="font-weight: normal;"><span style=
-    "font-weight: bold;">--get-info-all</span></span><br><br>
+    "font-weight: bold;">--get-info-all</span></span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Print the membership status of all users in all work
@@ -2651,7 +2664,6 @@
       <br>
       Makes the following users Members of the work group.<br>
     </div><br>
-
     <span style="font-weight: bold;">--not-member</span>
 
     <div style="margin-left: 40px;">
@@ -2911,7 +2923,9 @@
     "admin_--backup"></a>admin --backup</span>=<span style=
     "font-style: italic;">dir</span> <span style=
     "font-weight: normal;">[</span><a href=
-    "#--dry-run"><span style="font-weight: bold;">--dry-run</span></a><span style="font-weight: normal;">]</span><br><br>
+    "#--dry-run"><span style="font-weight: bold;">--dry-run</span></a><span style="font-weight: normal;">]</span><br>
+
+    <br>
 
     <div style="margin-left: 40px;">
       Creates a tarball in the given directory (dir) which contains
@@ -2977,10 +2991,10 @@
       stamp.&nbsp;<br>
       <br>
       The selection of the checked-in versions to be archived is
-      based on the follow options:<br><br>
+      based on the follow options:<br>
+      <br>
       <span style="font-weight: normal;"><span style=
-      "font-weight: bold;">
-      --pattern</span>=</span><span style=
+      "font-weight: bold;">--pattern</span>=</span><span style=
       "font-weight: normal;"><span style=
       "font-style: italic;">'node-regex</span>'<br>
       <br></span>
@@ -3011,7 +3025,8 @@
       </div><br>
       <span style="font-weight: normal;"><span style=
       "font-weight: bold;">--min-size</span>=<span style=
-      "font-style: italic;">bytes</span>[K|M|G]</span><br><br>
+      "font-style: italic;">bytes</span>[K|M|G]</span><br>
+      <br>
 
       <div style="margin-left: 40px;">
         Specifies a minimum archive volume size (in bytes).&nbsp;
@@ -3150,7 +3165,8 @@
         <br>
       </div><span style="font-weight: normal;"><span style=
       "font-weight: bold;">--exclude-latest</span>=<span style=
-      "font-style: italic;">integer</span></span><br><br>
+      "font-style: italic;">integer</span></span><br>
+      <br>
 
       <div style="margin-left: 40px;">
         This opion is used to exclude the latest (integer) number
@@ -3206,9 +3222,7 @@
       "font-weight: bold;">plscript</span>(1).<span style=
       "font-weight: normal;"><br>
       <br>
-
-      <span style="font-weight: bold;">
-      --param</span>=<span style=
+      <span style="font-weight: bold;">--param</span>=<span style=
       "font-style: italic;">name:value</span></span><br>
       <br>
 
@@ -3227,8 +3241,7 @@
 
   <div style="margin-left: 80px;">
     <span style="font-weight: normal;"><span style=
-    "font-weight: bold;">
-    --vsn</span>=<span style=
+    "font-weight: bold;">--vsn</span>=<span style=
     "font-style: italic;">node-name</span></span><span style=
     "font-weight: normal;">:<span style=
     "font-style: italic;">major.minor.micro</span></span>
@@ -3263,22 +3276,46 @@
     "font-weight: normal;">=</span><span style=
     "font-style: italic; font-weight: normal;">logger:level</span><span style="font-weight: normal;">[</span><span style="font-style: italic; font-weight: normal;">,logger:level</span><span style="font-weight: normal;">[...]]]</span><br>
 
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--min-free-memory"><span style="font-weight: bold;">--min-free-memory</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">bytes</span><span style="font-weight: normal;">[K|M|G]]</span>
-
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--gc-interval"><span style="font-weight: bold;">--gc-interval</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">msec</span><span style="font-weight: normal;">]</span>
-
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--gc-misses"><span style="font-weight: bold;">--gc-misses</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">count</span><span style="font-weight: normal;">[K|M|G]]</span>
-
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--cache-factor"><span style="font-weight: bold;">--cache-factor</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">percentage</span><span style="font-weight: normal;">]</span>
-
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--repo-cache-size"><span style="font-weight: bold;">--repo-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
-
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--work-cache-size"><span style="font-weight: bold;">--work-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
-
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--check-cache-size"><span style="font-weight: bold;">--check-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
-
-    <span style="font-weight: normal;">[</span><a href="plmaster.html#--annot-cache-size"><span style="font-weight: bold;">--annot-cache-size</span></a><span style="font-weight: normal;">=</span><span style="font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
-
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--min-free-memory"><span style=
+    "font-weight: bold;">--min-free-memory</span></a><span style=
+    "font-weight: normal;">=</span><span style=
+    "font-style: italic; font-weight: normal;">bytes</span><span style="font-weight: normal;">[K|M|G]]</span>
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--gc-interval"><span style=
+    "font-weight: bold;">--gc-interval</span></a><span style=
+    "font-weight: normal;">=</span><span style=
+    "font-style: italic; font-weight: normal;">msec</span><span style="font-weight: normal;">]</span>
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--gc-misses"><span style=
+    "font-weight: bold;">--gc-misses</span></a><span style=
+    "font-weight: normal;">=</span><span style=
+    "font-style: italic; font-weight: normal;">count</span><span style="font-weight: normal;">[K|M|G]]</span>
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--cache-factor"><span style=
+    "font-weight: bold;">--cache-factor</span></a><span style=
+    "font-weight: normal;">=</span><span style=
+    "font-style: italic; font-weight: normal;">percentage</span><span style="font-weight: normal;">]</span>
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--repo-cache-size"><span style=
+    "font-weight: bold;">--repo-cache-size</span></a><span style=
+    "font-weight: normal;">=</span><span style=
+    "font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--work-cache-size"><span style=
+    "font-weight: bold;">--work-cache-size</span></a><span style=
+    "font-weight: normal;">=</span><span style=
+    "font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--check-cache-size"><span style=
+    "font-weight: bold;">--check-cache-size</span></a><span style=
+    "font-weight: normal;">=</span><span style=
+    "font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--annot-cache-size"><span style=
+    "font-weight: bold;">--annot-cache-size</span></a><span style=
+    "font-weight: normal;">=</span><span style=
+    "font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
     <span style="font-weight: normal;">[</span><a href=
     "plmaster.html#--restore-cleanup-interval"><span style=
     "font-weight: bold;">-</span></a><span class=
@@ -3292,7 +3329,7 @@
     "font-weight: bold;">--checksum-dir</span></a>=<span style=
     "font-style: italic;">dir</span>]</span></span><br>
     <span class="postbody"><span style="font-weight: normal;"><br>
-    </span></span><span style="font-weight: bold;"><a name=
+    </span></span> <span style="font-weight: bold;"><a name=
     "runtime_--set_queue" id="runtime_--set_queue"></a>runtime
     --set-queue</span> <span style=
     "font-weight: normal;">[</span><span style=
@@ -3346,10 +3383,9 @@
       "plqueuemgr.html"><span style=
       "font-weight: bold;">plqueuemgr</span></a>(1).
     </div><br>
-
-    <span style="font-weight: bold;">
-    <a name="archive-volume_--get" id=
-    "archive-volume_--get"></a>archive-volume --get</span><br><br>
+    <span style="font-weight: bold;"><a name="archive-volume_--get"
+    id="archive-volume_--get"></a>archive-volume --get</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints the names of all archive volumes containing copies of
@@ -3435,16 +3471,16 @@
     <span style="font-weight: bold;"><a name=
     "default-toolset_--get" id=
     "default-toolset_--get"></a>default-toolset</span> <span style=
-    "font-weight: bold;">--get</span><br><br>
+    "font-weight: bold;">--get</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints the name of the default toolset environment.&nbsp; The
       default toolset is used as the initial value for the toolset
       property of newly created nodes.<br>
     </div><br>
-
-    <span style="font-weight: bold;">
-    <a name="default-toolset_--set" id=
+    <span style="font-weight: bold;"><a name=
+    "default-toolset_--set" id=
     "default-toolset_--set"></a>default-toolset</span> <span style=
     "font-weight: bold;">--set</span><span style=
     "font-weight: normal;">=<span style=
@@ -3461,12 +3497,9 @@
       <span style="font-weight: normal;"><br>
       <br>
       This command requires Master Admin privileges.</span>
-    </div>
-
-    <span style="font-weight: normal;"><span style=
-    "font-style: italic;">
-    <br></span></span><span style="font-weight: bold;"><a name=
-    "active-toolsets_--get" id=
+    </div><span style="font-weight: normal;"><span style=
+    "font-style: italic;"><br></span></span><span style=
+    "font-weight: bold;"><a name="active-toolsets_--get" id=
     "active-toolsets_--get"></a>active-toolset</span> <span style=
     "font-weight: bold;">--get<br>
     <br></span>
@@ -3484,11 +3517,9 @@
       "font-weight: bold;"><span style=
       "font-weight: bold;">.</span></span><br>
     </div><br>
-
-    <span style=
-    "font-weight: bold;"><a name="active-toolset_--add" id=
-    "active-toolset_--add"></a>active-toolset</span> <span style=
-    "font-weight: bold;">--add</span><span style=
+    <span style="font-weight: bold;"><a name="active-toolset_--add"
+    id="active-toolset_--add"></a>active-toolset</span>
+    <span style="font-weight: bold;">--add</span><span style=
     "font-weight: normal;">=<span style=
     "font-style: italic;">toolset-name</span></span><br>
     <br>
@@ -3537,7 +3568,8 @@
     <span style="font-weight: bold;"><a name="toolset_--get-info"
     id="toolset_--get-info"></a>toolset
     --get-info</span>=<span style=
-    "font-style: italic;">toolset-name</span><br><br>
+    "font-style: italic;">toolset-name</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints a summary of information about the given toolset
@@ -3548,9 +3580,8 @@
       toolset as well as creation date and description of the
       toolset itself.&nbsp;
     </div><br>
-
-    <span style=
-    "font-weight: bold;"><a name="toolset_--get-info-all" id=
+    <span style="font-weight: bold;"><a name=
+    "toolset_--get-info-all" id=
     "toolset_--get-info-all"></a>toolset --get-info-all</span>
 
     <div style="margin-left: 40px;">
@@ -3561,9 +3592,7 @@
       "font-weight: bold;">toolset --get-info</span></a> for each
       existing toolset.
     </div><br>
-
-    <span style=
-    "font-weight: bold;"><a name="toolset_--export" id=
+    <span style="font-weight: bold;"><a name="toolset_--export" id=
     "toolset_--export"></a>toolset --export</span>=<span style=
     "font-style: italic;">toolset-name<br>
     <br></span>
@@ -3584,32 +3613,31 @@
     <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="license-key_--get" id=
     "license-key_--get"></a>license-key</span></span> <span style=
-    "font-weight: bold;">--get</span><br><br>
+    "font-weight: bold;">--get</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints the names of the existing license keys.
     </div><br>
-
-    <span style=
-    "font-weight: normal;"><span style=
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="license-key_--get-info" id=
     "license-key_--get-info"></a>license-key</span></span>
     <span style="font-weight: bold;">--get-info</span><span style=
     "font-weight: normal;">=<span style=
-    "font-style: italic;">key-name</span></span><br><br>
+    "font-style: italic;">key-name</span></span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints a summary of information about the given license key
       (<span style="font-style: italic;">key-name</span>).&nbsp;
       The information includes the total and available number of
-      licenses as well as a short description of the license
-      key.
+      licenses as well as a short description of the license key.
     </div><br>
-
     <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="license-key_--get-info-all" id=
     "license-key_--get-info-all"></a>license-key</span></span>
-    <span style="font-weight: bold;">--get-info-all</span><br><br>
+    <span style="font-weight: bold;">--get-info-all</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints a summary of information for all license keys.&nbsp;
@@ -3618,30 +3646,26 @@
       "font-weight: bold;">license-key --get-info</span></a> for
       each existing license key.
     </div><br>
-
     <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="license-key_--add" id=
     "license-key_--add"></a>license-key</span></span> <span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--add</span>=<span style=
-    "font-style: italic;">key-name</span><span style=
-    "font-weight: bold;"></span></span> <span style=
+    "font-style: italic;">key-name</span></span> <span style=
     "font-weight: bold;">--msg</span><span style=
     "font-weight: normal;">='<span style=
-    "font-style: italic;">key-description</span>'
-    </span><span style="font-weight: normal;"><span style=
+    "font-style: italic;">key-description</span>'</span>
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;">--</span><span style=
     "font-weight: bold;">per-slot</span> | <span style=
     "font-weight: bold;">--per-host</span> | <span style=
-    "font-weight: bold;">--per-host-slot</span>
-    [<span style="font-weight: bold;">--max-slots</span>=<span style=
+    "font-weight: bold;">--per-host-slot</span> [<span style=
+    "font-weight: bold;">--max-slots</span>=<span style=
     "font-style: italic;">integer</span>] [<span style=
     "font-weight: bold;">--max-hosts</span>=<span style=
     "font-style: italic;">integer</span>] [<span style=
     "font-weight: bold;">--max-host-slots</span>=<span style=
-    "font-style: italic;">integer</span>]</span><span style=
-    "font-weight: normal;"><span style=
-    "font-style: italic;"></span></span>
+    "font-style: italic;">integer</span>]</span>
 
     <div style="margin-left: 40px;">
       <br>
@@ -3704,24 +3728,20 @@
         Queue Admin privileges.</span>
       </div>
     </div><br>
-
-    <span style=
-    "font-weight: normal;"><span style=
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="license-key_--set" id=
     "license-key_--set"></a>license-key</span></span> <span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--set</span>=</span><span style=
     "font-weight: normal;"><span style=
     "font-style: italic;">key-name</span></span> <span style=
-    "font-weight: normal;"><span style="font-weight: bold;">
-    </span></span> <span style=
     "font-weight: normal;">[</span><span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--</span><span style=
     "font-weight: bold;">per-slot</span> | <span style=
     "font-weight: bold;">--per-host</span> | <span style=
-    "font-weight: bold;">--per-host-slot</span>]</span><span style=
-    "font-weight: normal;"> [<span style=
+    "font-weight: bold;">--per-host-slot</span>]</span>
+    <span style="font-weight: normal;">[<span style=
     "font-weight: bold;">--max-slots</span>=<span style=
     "font-style: italic;">integer</span>] [<span style=
     "font-weight: bold;">--max-hosts</span>=<span style=
@@ -3742,9 +3762,7 @@
       <span style="font-weight: normal;">This command requires
       Queue Admin privileges.</span>
     </div><br>
-
-    <span style=
-    "font-weight: normal;"><span style=
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="license-key_--remove" id=
     "license-key_--remove"></a>license-key</span></span>
     <span style="font-weight: normal;"><span style=
@@ -3799,18 +3817,16 @@
       "font-weight: bold;">selection-key --get-info</span></a> for
       each existing selection key.
     </div><br>
-
-    <span style=
-    "font-weight: normal;"><span style=
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="selection-key_--add" id=
     "selection-key_--add"></a>selection-key</span></span>
     <span style="font-weight: normal;"><span style=
     "font-weight: bold;">--add</span>=<span style=
-    "font-style: italic;">key-name</span><span style=
-    "font-weight: bold;"></span></span> <span style=
+    "font-style: italic;">key-name</span></span> <span style=
     "font-weight: bold;">--msg</span><span style=
     "font-weight: normal;">='<span style=
-    "font-style: italic;">key-description</span>'</span><br><br>
+    "font-style: italic;">key-description</span>'</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Adds a new selection key (<span style=
@@ -3885,9 +3901,7 @@
       "font-weight: bold;">hardware-key --get-info</span></a> for
       each existing hardware key.
     </div><br>
-
-    <span style=
-    "font-weight: normal;"><span style=
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="hardware-key_--add" id=
     "hardware-key_--add"></a></span></span><span style=
     "font-weight: normal;"><span style=
@@ -3896,13 +3910,11 @@
     "font-weight: bold;">-key</span></span> <span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--add</span>=<span style=
-    "font-style: italic;">key-name</span><span style=
-    "font-weight: bold;">
-    </span></span> <span style=
+    "font-style: italic;">key-name</span></span> <span style=
     "font-weight: bold;">--msg</span><span style=
     "font-weight: normal;">='<span style=
-    "font-style: italic;">key-description</span>'
-    </span><br><br>
+    "font-style: italic;">key-description</span>'</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Adds a new hardware key (<span style=
@@ -3950,9 +3962,7 @@
       "font-weight: bold;">pljobmgr</span></a>(1) job execution
       daemon.
     </div><br>
-
-    <span style=
-    "font-weight: normal;"><span style=
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="job-server_--get-info" id=
     "job-server_--get-info"></a>job-server</span></span>
     <span style="font-weight: bold;">--get-info</span><span style=
@@ -3967,12 +3977,11 @@
       slots, the latest dynamic resource statistics and the biases
       for all supported selection keys.<br>
     </div><br>
-
     <span style="font-weight: normal;"><span style=
-    "font-weight: bold;">
-    <a name="job-server_--get-info-all" id=
+    "font-weight: bold;"><a name="job-server_--get-info-all" id=
     "job-server_--get-info-all"></a>job-server</span></span>
-    <span style="font-weight: bold;">--get-info-all</span><br><br>
+    <span style="font-weight: bold;">--get-info-all</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints a summary of information for all job servers.&nbsp;
@@ -3981,24 +3990,23 @@
       "font-weight: bold;">job-server --get-info</span></a> for
       each existing job server.
     </div><br>
-
-    <span style="font-weight: bold;">
-    <a name="job-server_--get-histograms" id=
+    <span style="font-weight: bold;"><a name=
+    "job-server_--get-histograms" id=
     "job-server_--get-histograms"></a>job-server
-    --get-histograms</span><br><br>
+    --get-histograms</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints frequency distribution data about the key information
       of all job servers.
     </div><br>
-
-    <span style=
-    "font-weight: normal;"><span style=
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="job-server_--add" id=
     "job-server_--add"></a>job-server</span></span> <span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--add</span>=<span style=
-    "font-style: italic;">host-name</span></span><br><br>
+    "font-style: italic;">host-name</span></span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Adds a new server machine (host-name) to the Pipeline
@@ -4010,9 +4018,7 @@
       <br>
       This command requires Queue Admin privileges.</span>
     </div><br>
-
-     <span style=
-    "font-weight: normal;"><span style=
+    <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="job-server_--set" id=
     "job-server_--set"></a>job-server</span></span> <span style=
     "font-weight: normal;"><span style=
@@ -4028,13 +4034,14 @@
     "font-style: italic;">integer</span>] [<span style=
     "font-weight: bold;">--slots</span>=<span style=
     "font-style: italic;">integer</span>]</span> <span style=
-    "font-weight: normal;"> [<span style=
+    "font-weight: normal;">[<span style=
     "font-weight: bold;">--selection-schedule</span>=<span style=
     "font-style: italic;">schedule-name</span>]</span> <span style=
     "font-weight: normal;">[<span style=
     "font-weight: bold;">--no-selection-schedule</span>]</span><span style="font-weight: normal;">[</span><span style="font-weight: bold;">--selection-group</span><span style="font-weight: normal;">=<span style="font-style: italic;">group-name</span>]</span>
     <span style="font-weight: normal;">[<span style=
-    "font-weight: bold;">--no-selection-group</span>]</span><br><br>
+    "font-weight: bold;">--no-selection-group</span>]</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Sets various properties of a job server (host-name) which is
@@ -4067,13 +4074,12 @@
         "font-weight: bold;">pljobmgr</span></a>(1) job execution
         daemon running on the server, the state of the server will
         immediately be reset to shutdown.<br>
-      </div><span style="font-weight: bold;"></span>
+      </div>
     </div><br>
 
     <div style="margin-left: 40px;">
       <span style="font-weight: bold;">--reserve</span>=
       <span style="font-style: italic;">user-name</span><br>
-
       <span style="font-weight: bold;">--open<br>
       <br></span>
 
@@ -4113,9 +4119,10 @@
       </div><span style="font-weight: normal;"><br>
       <span style=
       "font-weight: bold;">--selection-schedule</span>=<span style=
-      "font-style: italic;">schedule-name<br>
-      </span><span style=
-      "font-weight: bold;">--no-selection-schedule</span></span><br><br>
+      "font-style: italic;">schedule-name<br></span> <span style=
+      "font-weight: bold;">--no-selection-schedule</span></span><br>
+
+      <br>
 
       <div style="margin-left: 40px;">
         Sets or clears the selection schedule for the job
@@ -4130,7 +4137,8 @@
       "font-weight: bold;">selection-group</span>=<span style=
       "font-style: italic;">group-name</span><br>
       <span style=
-      "font-weight: bold;">--no-selection-group</span></span><br><br>
+      "font-weight: bold;">--no-selection-group</span></span><br>
+      <br>
 
       <div style="margin-left: 40px;">
         Sets or clears the selection group for the job
@@ -4140,14 +4148,11 @@
         will behave as if it was a member of a selection group with
         no selection keys defined.
       </div><br>
-
-      <span style="font-weight: normal;">
-      This command requires Queue Admin privileges.</span>
+      <span style="font-weight: normal;">This command requires
+      Queue Admin privileges.</span>
     </div><br>
-
-     <span style="font-weight: normal;"><span style=
-    "font-weight: bold;">
-    <a name="job-server_--remove" id=
+    <span style="font-weight: normal;"><span style=
+    "font-weight: bold;"><a name="job-server_--remove" id=
     "job-server_--remove"></a>job-server</span></span> <span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--remove</span>=<span style=
@@ -4373,10 +4378,9 @@
       Equivalent to performing a <a href=
       "#tool_--get-info"><span style="font-weight: bold;">tool
       --get-info</span></a> for each Tool plugin.<br>
-    </div><br><br>
-
-    <span style="font-weight: bold;">
-    Annotation Plugins:<br>
+    </div><br>
+    <br>
+    <span style="font-weight: bold;">Annotation Plugins:<br>
     <br>
     <a name="annotation_--get" id="annotation_--get"></a>annotation
     --get</span><br>
@@ -4710,8 +4714,7 @@
   <div style="margin-left: 40px;">
     <span style="font-weight: bold;"><a name=
     "builder-collection_--get" id=
-    "builder-collection_--get"></a>builder-collection
-    --get</span>
+    "builder-collection_--get"></a>builder-collection --get</span>
   </div><br>
 
   <div style="margin-left: 80px;">
@@ -4774,33 +4777,31 @@
 
   <div style="margin-left: 40px;">
     <span style="font-weight: bold;"><a name="suffix-editor_--get"
-    id="suffix-editor_--get"></a>suffix-editor</span><br><br>
+    id="suffix-editor_--get"></a>suffix-editor</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints the filename suffixes for which a default editor
       exists for the current user.
     </div><br>
-
     <span style="font-weight: bold;"><a name=
     "suffix-editor_--get-info" id=
     "suffix-editor_--get-info"></a>suffix-editor</span>
     <span style="font-weight: bold;">--get-info</span><span style=
     "font-weight: normal;">=</span><span style=
     "font-weight: normal;"><span style=
-    "font-style: italic;">suffix</span></span><br><br>
+    "font-style: italic;">suffix</span></span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Prints a summary of information about the given filename
       suffix (<span style="font-style: italic;">suffix</span>) for
       the current user.&nbsp; The information includes a
       description of the file type using the suffix and the name of
-      the default Editor plugin used to edit files of that
-      type.
+      the default Editor plugin used to edit files of that type.
     </div><br>
-
     <span style="font-weight: normal;"><span style=
-    "font-weight: bold;">
-    <a name="suffix-editor_--get-info-all" id=
+    "font-weight: bold;"><a name="suffix-editor_--get-info-all" id=
     "suffix-editor_--get-info-all"></a>suffix-editor
     --get-info-all<br>
     <br></span></span>
@@ -4812,14 +4813,11 @@
       "font-weight: bold;">suffix-editor --get-info</span></a> for
       each filename suffix.
     </div><br>
-
-    <span style=
-    "font-weight: bold;"><a name="suffix-editor_--set" id=
-    "suffix-editor_--set"></a>suffix-editor</span> <span style=
+    <span style="font-weight: bold;"><a name="suffix-editor_--set"
+    id="suffix-editor_--set"></a>suffix-editor</span> <span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--set</span>=<span style=
-    "font-style: italic;">suffix<span style=
-    "font-weight: bold;"></span></span></span> <span style=
+    "font-style: italic;">suffix</span></span> <span style=
     "font-weight: bold;">--msg</span><span style=
     "font-weight: normal;">='<span style=
     "font-style: italic;">suffix-description</span>'</span>
@@ -4861,12 +4859,10 @@
     <div style="margin-left: 40px;">
       Remove the default Editor plugin used to edit files with the
       given filename suffix (<span style=
-      "font-style: italic;">suffix</span>) for the current
-      user.
+      "font-style: italic;">suffix</span>) for the current user.
     </div><br>
-
-    <span style=
-    "font-weight: bold;"><a name="suffix-editor_--reset" id=
+    <span style="font-weight: bold;"><a name=
+    "suffix-editor_--reset" id=
     "suffix-editor_--reset"></a>suffix-editor</span> <span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--reset</span></span><br>
@@ -4883,18 +4879,17 @@
 
   <div style="margin-left: 40px;">
     <span style="font-weight: bold;"><a name="view_--get" id=
-    "view_--get"></a>view --get</span><span style=
-    "font-weight: normal;"> [</span><a style="font-weight: bold;"
+    "view_--get"></a>view --get</span> <span style=
+    "font-weight: normal;">[</span><a style="font-weight: bold;"
     href="#--author">--author</a><span style=
     "font-weight: normal;">=<span style=
-    "font-style: italic;">user-name</span>]</span><br><br>
+    "font-style: italic;">user-name</span>]</span><br>
+    <br>
 
     <div style="margin-left: 40px;">
       Print the names of the working areas for the given user.
     </div><br>
-
-    <span style=
-    "font-weight: bold;"><a name="view_--create" id=
+    <span style="font-weight: bold;"><a name="view_--create" id=
     "view_--create"></a>view</span> <span style=
     "font-weight: normal;"><span style=
     "font-weight: bold;">--create</span>=<span style=
@@ -4908,14 +4903,12 @@
   <div style="margin-left: 80px;">
     Create a new working area for the given user named
     (<span style="font-style: italic;">view-name</span>).
-  </div>
-
-  <span style="font-weight: normal;"><br></span>
+  </div><span style="font-weight: normal;"><br></span>
 
   <div style="margin-left: 40px;">
     <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="view_--release" id=
-    "view_--release"></a>--release</span>=<span style=
+    "view_--release"></a>view --release</span>=<span style=
     "font-style: italic;">view-name</span></span> <span style=
     "font-weight: normal;">[</span><a style="font-weight: bold;"
     href="#--author">--author</a><span style=
@@ -4926,23 +4919,33 @@
     "font-weight: normal;"><span style=
     "font-style: italic;">'node-regex</span>'</span><span style=
     "font-weight: normal;">]</span> <span style=
-    "font-weight: normal;"> [<span style=
-    "font-weight: bold;">--remove-files</span>] [<span style=
-    "font-weight: bold;">--remove-area</span>]<br></span>
+    "font-weight: normal;">[<span style=
+    "font-weight: bold;">--remove-files</span>]</span>
+      <br>
 
     <div style="margin-left: 40px;">
-      <br>
       Release all of the nodes in the given working area which
       match the given regular expression (node-regex).&nbsp; If no
       <span style="font-weight: bold;">--pattern</span> option is
       given, then all nodes in the working area will be
-      released.&nbsp; If <span style=
+      released. If <span style=
       "font-weight: bold;">--remove-files</span> is given, then
-      also remove the working area file associated with the
-      released nodes.&nbsp; If <span style=
-      "font-weight: bold;">--remove-area</span> if given and no
-      nodes remain in the working area, then remove the entire
-      working area directory and all of its contents.<br>
+      this will also remove the working area files associated with the
+      released nodes.<br>
+    </div><BR>
+
+    
+    <span style="font-weight: normal;"><span style=
+    "font-weight: bold;"><a name="view_--release" id=
+    "view_--remove"></a>view --remove</span>=<span style=
+    "font-style: italic;">view-name</span></span> <span style=
+    "font-weight: normal;">[</span><a style="font-weight: bold;"
+    href="#--author">--author</a><span style=
+    "font-weight: normal;">=<span style=
+    "font-style: italic;">user-name</span>]</span><br>
+
+    <div style="margin-left: 40px;">
+      Releases all nodes and associated files in a working area named (view-name) and then remove the working area itself.  Note that the "default" working area cannot be remove for a user unless it is the only remaining working area.
     </div>
   </div>
 
@@ -4999,7 +5002,6 @@
         Prints the revision number of the checked-in version upon
         which the working version is based.<br>
       </div><br>
-
       <span style="font-weight: bold;">prop</span><br>
       <br>
 
@@ -5033,7 +5035,8 @@
         section will be skipped if there is no Action plugin
         associated with the working version.
       </div><br>
-      <span style="font-weight: bold;">link</span><br><br>
+      <span style="font-weight: bold;">link</span><br>
+      <br>
 
       <div style="margin-left: 40px;">
         Prints the names of the upstream nodes linked to the
@@ -5154,20 +5157,19 @@
       the user (<span style=
       "font-style: italic;">user-name</span>).<br>
     </div><br>
-
     <span style="font-weight: normal;"><span style=
     "font-weight: bold;"><a name="working_--clone" id=
     "working_--clone"></a>--clone</span>=<span style=
     "font-style: italic;">node-name</span></span> <span style=
-    "font-weight: normal;"> [</span><a style="font-weight: bold;" href=
-    "#--author">--author</a><span style=
+    "font-weight: normal;">[</span><a style="font-weight: bold;"
+    href="#--author">--author</a><span style=
     "font-weight: normal;">=<span style=
     "font-style: italic;">user-name</span>]</span> <span style=
     "font-weight: normal;">[</span><a style="font-weight: bold;"
     href="#--view">--view</a><span style=
     "font-weight: normal;">=<span style=
     "font-style: italic;">view-name</span>] <span style=
-    "font-weight: bold;"> <a name=
+    "font-weight: bold;"><a name=
     "--source"></a>--clone-source</span>=node-name<br></span>
 
     <div style="margin-left: 40px;">
@@ -5186,7 +5188,6 @@
     "font-weight: bold;">release</span></span><span style=
     "font-weight: normal;">=<span style=
     "font-style: italic;">node-name</span></span> <span style=
-    "font-weight: normal;"></span> <span style=
     "font-weight: normal;">[</span><a style="font-weight: bold;"
     href="#--author">--author</a><span style=
     "font-weight: normal;">=<span style=
@@ -5194,8 +5195,8 @@
     "font-weight: normal;">[</span><a style="font-weight: bold;"
     href="#--view">--view</a><span style=
     "font-weight: normal;">=<span style=
-    "font-style: italic;">view-name</span>]</span><span style=
-    "font-weight: normal;"> [<span style=
+    "font-style: italic;">view-name</span>]</span> <span style=
+    "font-weight: normal;">[<span style=
     "font-weight: bold;">--remove-files</span>]<br>
     <br></span>
 
@@ -5350,10 +5351,9 @@
       the user (<span style=
       "font-style: italic;">user-name</span>).&nbsp; There are
       three types of links which can be created with the following
-      options:<br><br>
-
-      <span style=
-      "font-weight: normal;"><span style=
+      options:<br>
+      <br>
+      <span style="font-weight: normal;"><span style=
       "font-weight: bold;">--assoc</span>=<span style=
       "font-style: italic;">node-name<br></span></span>
 
@@ -5362,7 +5362,7 @@
         Creates an Association link from the given source node
         (node-name) to the target node. <span style=
         "font-style: italic;"><br>
-        <br></span>This kind of link represents a indirect
+        <br></span> This kind of link represents a indirect
         relationship between nodes which does not affect node
         status. An Association is similar to a Reference, except
         that changes to the source node do not affect the the
@@ -5371,9 +5371,7 @@
         propogation of staleness from the source to targe node is
         not desirable.<br>
       </div><br>
-  
-      <span style="font-weight: normal;">
-      <span style=
+      <span style="font-weight: normal;"><span style=
       "font-weight: bold;">--ref</span>=<span style=
       "font-style: italic;">node-name</span>[,all|<span style=
       "font-style: italic;">offset</span>]<br>
@@ -5554,8 +5552,8 @@
     "font-weight: bold;">--file-pattern</span>=<span style=
     "font-style: italic;">new-node-name</span></span><span style=
     "font-weight: normal;">[.#|@...][.<span style=
-    "font-style: italic;">suffix</span>]</span><span style=
-    "font-weight: normal;"> [<span style=
+    "font-style: italic;">suffix</span>]</span> <span style=
+    "font-weight: normal;">[<span style=
     "font-weight: bold;">--rename-files</span>]<br>
     <br></span>
 
@@ -5591,8 +5589,8 @@
     "font-weight: normal;"><span style=
     "font-style: italic;">start</span>[-<span style=
     "font-style: italic;">end</span>[x<span style=
-    "font-style: italic;">by</span>]]</span><span style=
-    "font-weight: normal;"> [<span style=
+    "font-style: italic;">by</span>]]</span> <span style=
+    "font-weight: normal;">[<span style=
     "font-weight: bold;">--remove-files</span>]</span><br>
     <br>
 
@@ -5692,7 +5690,7 @@
     exiting itself.&nbsp; Otherwise, <span style=
     "font-weight: bold;">plscript</span>(1) will exit immediately
     after launching the Editor(s).
-  </div><span style="font-weight: normal;"></span>
+  </div>
 
   <div style="margin-left: 40px;">
     <span style="font-weight: normal;"><span style=
@@ -5820,9 +5818,8 @@
       working version of the given node (<span style=
       "font-style: italic;">node-name</span>).
     </div><br>
-
-    <span style=
-    "font-weight: bold;"><a name="working_--views-editing" id=
+    <span style="font-weight: bold;"><a name=
+    "working_--views-editing" id=
     "working_--views-editing"></a>working
     --views-editing</span>=<span style=
     "font-style: italic;">node-name<br></span>
@@ -5852,8 +5849,8 @@
     "font-weight: bold;">--version</span></a>=<span style=
     "font-style: italic;">major</span>.<span style=
     "font-style: italic;">minor</span>.<span style=
-    "font-style: italic;">micro</span></span><span style=
-    "font-weight: normal;"> | <a href="#--latest"><span style=
+    "font-style: italic;">micro</span></span> <span style=
+    "font-weight: normal;">| <a href="#--latest"><span style=
     "font-weight: bold;">--latest</span></a></span> <span style=
     "font-weight: normal;">...]</span><span style=
     "font-weight: normal;"><br></span><span style=
@@ -5930,7 +5927,8 @@
         section will be skipped if there is no Action plugin
         associated with the checked-in version.
       </div><br>
-      <span style="font-weight: bold;">link</span><br><br>
+      <span style="font-weight: bold;">link</span><br>
+      <br>
 
       <div style="margin-left: 40px;">
         Prints the names and versions of the upstream nodes linked
@@ -5938,7 +5936,8 @@
         links. This section will be skipped if the checked-in
         version has no upstream links.
       </div><br>
-      <span style="font-weight: bold;">dlink</span><br><br>
+      <span style="font-weight: bold;">dlink</span><br>
+      <br>
 
       <div style="margin-left: 40px;">
         Prints the names and versions of the downstream nodes
@@ -5958,10 +5957,10 @@
     "font-weight: normal;">=<span style=
     "font-style: italic;">major</span>.<span style=
     "font-style: italic;">minor</span>.<span style=
-    "font-style: italic;">micro</span> | </span><span style=
+    "font-style: italic;">micro</span> |</span> <span style=
     "font-weight: normal;"><a href="#--latest"><span style=
-    "font-weight: bold;">--latest</span></a></span><span style=
-    "font-weight: normal;"> ...]<br>
+    "font-weight: bold;">--latest</span></a></span> <span style=
+    "font-weight: normal;">...]<br>
     <br></span>
 
     <div style="margin-left: 40px;">
@@ -6356,7 +6355,8 @@
         Action plugin associated with either the working or
         checked-in version.
       </div><br>
-      <span style="font-weight: bold;">link</span><br><br>
+      <span style="font-weight: bold;">link</span><br>
+      <br>
 
       <div style="margin-left: 40px;">
         Prints the link state, the names and versions of the
@@ -6471,7 +6471,7 @@
       exists a modified working version which is based on the
       version being checked-out or on a version which is newer than
       the version being checked-out.&nbsp;</span> <span style=
-      "font-weight: normal;">If the </span><span style=
+      "font-weight: normal;">If the</span> <span style=
       "font-weight: normal;"><span style=
       "font-weight: bold;">--overwrite-all</span></span>
       <span style="font-weight: normal;">option is specified, all

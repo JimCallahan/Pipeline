@@ -232,7 +232,6 @@ ScriptOptsParser
    * view options
    */ 
   private String   pViewPattern; 
-  private Boolean  pRemoveArea; 
 
   /**
    * working node version command option temporaries
@@ -474,7 +473,6 @@ TOKEN :
 | <FILE_PATTERN:       "--file-pattern">    	: FILE_PAT_SEP  	      
 | <RENAME_FILES:       "--rename-files">    				      
 | <REMOVE_FILES:       "--remove-files">    				      
-| <REMOVE_AREA:        "--remove-area">    				      
 | <RANGE:              "--range">           	: FRAME_RANGE_SEP	      
 | <FRAME:              "--frame">           	: FRAME_NUMBERS_SEP	      
 | <INDEX:              "--index">           	: FRAME_INDICES_SEP	      
@@ -1828,6 +1826,7 @@ TOKEN :
   <VIEW_GET:            "--get">                   : OPTIONS
 | <VIEW_CREATE:         "--create">                : VIEW_NAME_SEP
 | <VIEW_RELEASE:        "--release">               : VIEW_NAME_SEP
+| <VIEW_REMOVE:         "--remove">                : VIEW_NAME_SEP
 | <AE36:                ["\0"]>   
 | <UNKNOWN_OPTION13:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN13:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
@@ -5275,7 +5274,7 @@ ViewCmds()
 {}
 {
   <VIEW1> AE() 
-     (ViewGet() | ViewCreate() | ViewRelease()) 
+     (ViewGet() | ViewCreate() | ViewRelease() | ViewRemove()) 
   {}
 }
 
@@ -5345,13 +5344,11 @@ ViewRelease()
   pAuthor      = PackageInfo.sUser;
   pViewPattern = null;
   pRemoveFiles = false;
-  pRemoveArea  = false; 
 }
 {
   <VIEW_RELEASE> EQ() vname=ViewName() AE() (ViewReleaseOpts())*
   {
-    pApp.releaseView(pAuthor, vname, pViewPattern, pRemoveFiles, pRemoveArea, 
-		     pMasterMgrClient);
+    pApp.releaseView(pAuthor, vname, pViewPattern, pRemoveFiles, pMasterMgrClient);
   }
 }
 
@@ -5359,7 +5356,7 @@ void
 ViewReleaseOpts() :
 {}
 {
-  (Author() | ViewPattern() | RemoveFiles() | RemoveArea())
+  (Author() | ViewPattern() | RemoveFiles())
   {}
 }
 
@@ -5377,6 +5374,29 @@ ViewPattern() :
   }
 }
 
+
+void 
+ViewRemove() 
+  throws PipelineException : 
+{
+  String vname = null;
+
+  pAuthor = PackageInfo.sUser;
+}
+{
+  <VIEW_REMOVE> EQ() vname=ViewName() AE() (ViewRemoveOpts())*
+  {
+    pApp.removeView(pAuthor, vname, pMasterMgrClient);
+  }
+}
+
+void
+ViewRemoveOpts() :
+{}
+{
+  (Author())
+  {}
+}
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -7943,16 +7963,6 @@ RemoveFiles() :
   <REMOVE_FILES> AE() 
   {
     pRemoveFiles = true;
-  }
-}
-
-void 
-RemoveArea() : 
-{}
-{
-  <REMOVE_AREA> AE() 
-  {
-    pRemoveArea = true;
   }
 }
 
