@@ -1,4 +1,4 @@
-// $Id: CleanOldJobGroups.java,v 1.1 2009/11/17 20:42:18 jim Exp $
+// $Id: CleanOldJobGroups.java,v 1.2 2009/11/17 20:56:49 jim Exp $
 
 import java.io.*; 
 import java.util.*; 
@@ -52,26 +52,14 @@ class CleanOldJobGroups
           else if(arg.equals("--dry-run")) {
             dryRun = true;
           }
+          else {
+            usage();
+          }
         }
         break;
 
       default:
-        throw new PipelineException
-          ("usage: CleanOldJobGroups [--interval=hours]  [--dry-run] \n" + 
-           "\n" +
-           "Deletes completed (finished or failed) Jobs Groups from the queue which\n" + 
-           "are older than a given interval.\n" + 
-           "\n" + 
-           "--interval=hours\n" +
-           "\n" + 
-           "  Sets the age at which a completed Job Group should be considered for\n" + 
-           "  deletion. If not specified, the default interval is 24-hours.\n" + 
-           "\n" + 
-           "--dry-run\n" + 
-           "\n" + 
-           "  Prints information about what Job Groups would have been deleted but\n" + 
-           "  does not delete any of them.  Useful for seeing what would have been\n" + 
-           "  done before actually doing it.\n\n");            
+        usage();
       }
 
       {
@@ -130,5 +118,27 @@ class CleanOldJobGroups
     }
 
     System.exit(success ? 0 : 1);
+  }
+
+  private static void 
+  usage()
+    throws PipelineException
+  {
+    throw new PipelineException
+      ("usage: CleanOldJobGroups [--interval=hours] [--dry-run]\n" + 
+       "\n" +
+       "Deletes completed (finished or failed) Jobs Groups from the queue which\n" + 
+       "are older than a given interval.\n" + 
+       "\n" + 
+       "--interval=hours\n" +
+       "\n" + 
+       "  Sets the age at which a completed Job Group should be considered for\n" + 
+       "  deletion. If not specified, the default interval is 24-hours.\n" + 
+       "\n" + 
+       "--dry-run\n" + 
+       "\n" + 
+       "  Prints information about what Job Groups would have been deleted but\n" + 
+       "  does not delete any of them.  Useful for seeing what would have been\n" + 
+       "  done before actually doing it.\n\n");            
   }
 }
