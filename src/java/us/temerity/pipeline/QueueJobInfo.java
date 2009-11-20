@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.24 2009/07/01 16:43:14 jim Exp $
+// $Id: QueueJobInfo.java,v 1.25 2009/11/20 21:54:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -287,11 +287,36 @@ class QueueJobInfo
    *   The previous job state.
    */ 
   public synchronized JobState
-  limbo() 
+  limbo()
   {
     JobState prev = pState;
     pState = JobState.Limbo;
     return prev;
+  }
+
+  /**
+   * Records that contact has been lost with the job server running the job after it 
+   * was started but before it completed.
+   * 
+   * @param hostname
+   *   The full name of the host executing the job.
+   * 
+   * @return
+   *   The previous job state.
+   */ 
+  public synchronized JobState
+  limbo
+  (
+   String hostname
+  ) 
+  {
+    if(hostname == null) 
+      throw new IllegalArgumentException
+	("The hostname cannot be (null)!");
+    if(pHostname == null) 
+      pHostname = hostname; 
+
+    return limbo(); 
   }
 
   /**

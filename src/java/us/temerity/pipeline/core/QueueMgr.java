@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.131 2009/11/02 22:00:58 jim Exp $
+// $Id: QueueMgr.java,v 1.132 2009/11/20 21:54:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -186,7 +186,6 @@ class QueueMgr
 
       /* create the lock file */ 
       createLockFile();
-
 
       /* load and initialize the server extensions */ 
       initQueueExtensions();
@@ -422,9 +421,26 @@ class QueueMgr
 	    case Running:
               info.limbo();
               writeJobInfo(info);
-	    case Limbo:
 	      running.put(jobID, info.getHostname());
-	    }
+              break;
+
+	    case Limbo:
+              {
+                String hname = info.getHostname();
+                if(hname != null) {
+                  running.put(jobID, info.getHostname());
+                }
+                else {
+                  /* This is to catch the case where we find a Limbo job without an assigned 
+                     hostname.  In that case, its best just to Abort the job.  This might not 
+                     strictly be needed since we've added a version of QueueJobInfo.limbo() 
+                     which takes a hostname parameter, but it protects against existing jobs
+                     which might not have the hostname data in them. */ 
+                  info.aborted();
+                  writeJobInfo(info);
+                }
+              }
+            }
 	    
 	    synchronized(pJobs) {
 	      pJobs.put(jobID, job);
@@ -584,26 +600,36 @@ class QueueMgr
             if(info != null) 
               os = info.getOsType();
           }
-          
-          /* attempt to aquire the licenses already being used by the job */ 
-          TreeSet<String> acquiredKeys = new TreeSet<String>();
-          synchronized(pLicenseKeys) {
-            for(String kname : job.getJobRequirements().getLicenseKeys()) {
-              LicenseKey key = pLicenseKeys.get(kname);
-              if(key != null) {
-                if(key.acquire(hostname)) 
-                  acquiredKeys.add(kname);
-                else {
-                  LogMgr.getInstance().log
-                    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-                     "Unable to aquire a (" + key.getName() + ") license key for the " + 
-                     "job (" + jobID + ") already running on (" + hostname + ")!");
-                }
-              }            
-            }
-          }
 
-          monitorJob(new MonitorTask(hostname, os, job, acquiredKeys)); 
+          /* without valid keys, we shouldn't trying to create a MonitorTask */ 
+          if((hostname == null) || (job == null) || (os == null)) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               "Unable to start a Monitor Task for job (" + job + ") running on host " +
+               "(" + hostname + ") with an operating system of (" + os + "), because " +
+               "one or more of these properties are unknown (null)!"); 
+          }
+          else {
+            /* attempt to aquire the licenses already being used by the job */ 
+            TreeSet<String> acquiredKeys = new TreeSet<String>();
+            synchronized(pLicenseKeys) {
+              for(String kname : job.getJobRequirements().getLicenseKeys()) {
+                LicenseKey key = pLicenseKeys.get(kname);
+                if(key != null) {
+                  if(key.acquire(hostname)) 
+                    acquiredKeys.add(kname);
+                  else {
+                    LogMgr.getInstance().log
+                      (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                       "Unable to aquire a (" + key.getName() + ") license key for the " + 
+                       "job (" + jobID + ") already running on (" + hostname + ")!");
+                  }
+                }            
+              }
+            }
+            
+            monitorJob(new MonitorTask(hostname, os, job, acquiredKeys)); 
+          }
         }
       }
     }
@@ -10545,7 +10571,7 @@ class QueueMgr
                       prevState = info.exited(null);
                     }
                     else {
-                      prevState = info.limbo();
+                      prevState = info.limbo(pHostname);
                     }
                   }
                   else {
