@@ -1,4 +1,4 @@
-// $Id: NodeBundle.java,v 1.4 2008/10/30 18:01:17 jim Exp $
+// $Id: NodeBundle.java,v 1.5 2009/11/20 06:16:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -473,11 +473,12 @@ class NodeBundle
         PluginMgrClient client = PluginMgrClient.getInstance();
         for(String nname : annotations.keySet()) {
           for(String aname : annotations.keySet(nname)) {
-            BaseAnnotation annot = annotations.get(nname, aname);
-            pAnnotations.put(nname, aname, 
-                             client.newAnnotation(annot.getName(), 
-                                                  annot.getVersionID(), 
-                                                  annot.getVendor()));
+            BaseAnnotation tannot = annotations.get(nname, aname);
+            BaseAnnotation annot = client.newAnnotation(tannot.getName(), 
+                                                        tannot.getVersionID(), 
+                                                        tannot.getVendor());
+            annot.setParamValues(tannot);
+            pAnnotations.put(nname, aname, annot); 
           }
         }
       }  
