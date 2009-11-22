@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.17 2009/05/11 17:48:55 jlee Exp $
+// $Id: PluginMgrControlClient.java,v 1.18 2009/11/22 04:28:50 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -387,9 +387,9 @@ class PluginMgrControlClient
 
       PluginResourceInstallReq req = 
 	new PluginResourceInstallReq(pluginfile, cname, pkgID, 
-	                     contents, 
-			     resources, checksums, 
-			     external, rename, dryRun);
+                                     contents, 
+                                     resources, checksums, 
+                                     external, rename, dryRun);
 
       Object obj = performTransaction(PluginRequest.ResourceInstall, req);
 
