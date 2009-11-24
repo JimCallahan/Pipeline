@@ -1,4 +1,4 @@
-// $Id: ValidatePluginJar.java,v 1.1 2009/11/24 07:32:03 jim Exp $
+// $Id: ValidatePluginJar.java,v 1.2 2009/11/24 07:44:24 jim Exp $
 
 import java.net.*; 
 import java.io.*; 
@@ -80,7 +80,7 @@ class ValidatePluginJar
        "plugins or if there is an error while trying to validate them, this utility\n" + 
        "will exit with a non-zero exit code.  So it would be suitable to including\n" + 
        "into a build process prior to running plplugin(1) to prevent the installation\n" + 
-       "of invalid plugins during an upgrade."); 
+       "of inconsistent plugins during an upgrade."); 
   }
 
 
