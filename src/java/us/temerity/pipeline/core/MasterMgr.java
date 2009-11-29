@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.314 2009/11/16 23:58:02 jim Exp $
+// $Id: MasterMgr.java,v 1.315 2009/11/29 20:23:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1521,7 +1521,9 @@ class MasterMgr
   }
 
   /** 
-   * Determine the revision numbers (if any) of the offlined versions of the given node.
+   * Determine the revision numbers (if any) of the offlined versions of the given node.<P> 
+   * 
+   * The onlineOffline read-lock at least should be aquired before calling this method.
    * 
    * @param timer
    *   The current operation timer.
@@ -1587,7 +1589,33 @@ class MasterMgr
     }
   }
 
-  
+  /**
+   * Whether the given version of a node is offline.<P> 
+   * 
+   * The onlineOffline read-lock at least should be aquired before calling this method.
+   * 
+   * @param timer
+   *   The current operation timer.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param vid
+   *   The revision number to test.
+   */ 
+  private boolean 
+  isOffline
+  (
+   TaskTimer timer,
+   String name,
+   VersionID vid
+  ) 
+    throws PipelineException 
+  {
+    TreeSet<VersionID> offlined = getOfflinedVersions(timer, name); 
+    return ((offlined != null) && offlined.contains(vid));
+  }
+
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -15707,19 +15735,8 @@ class MasterMgr
 	  /* process the matching checked-in versions */ 
 	  for(VersionID vid : stamps.keySet()) {
 	    
-	    /* check whether the version is currently online */ 
-	    boolean isOnline = true;
-	    {
-	      timer.aquire();
-	      synchronized(pOfflinedLock) {
-		timer.resume();
-		TreeSet<VersionID> offline = pOfflined.get(name);
-		if(offline != null) 
-		  isOnline = !offline.contains(vid);
-	      }
-	    }
-	    
-	    if(isOnline) {
+	    /* check whether the version is currently online */ 	    
+	    if(!isOffline(timer, name, vid)) {
 	      /* get the number of archives which already contain the checked-in version */ 
 	      int numArchives = 0;
 	      String lastArchive = null;
@@ -15962,45 +15979,43 @@ class MasterMgr
 	      TreeMap<VersionID,CheckedInBundle> checkedIn = 
                 getCheckedInBundles(name, false);
 
-	      synchronized(pOfflinedLock) {
-		TreeSet<VersionID> offline = pOfflined.get(name);
-		TreeMap<VersionID,Long> vsizes = sizes.get(name);
-		for(VersionID vid : versions.get(name)) {
-		  if((offline != null) && offline.contains(vid)) 
-		    throw new PipelineException 
-		      ("The checked-in version (" + vid + ") of node (" + name + ") " + 
-		       "cannot be archived because it is currently offline!");
-		  
-		  CheckedInBundle bundle = checkedIn.get(vid);
-		  if(bundle == null) 
-		    throw new PipelineException 
-		      ("No checked-in version (" + vid + ") of node (" + name + ") exists " + 
-		       "to be archived!");
+              TreeSet<VersionID> offline = getOfflinedVersions(timer, name); 
+              TreeMap<VersionID,Long> vsizes = sizes.get(name);
+              for(VersionID vid : versions.get(name)) {
+                if((offline != null) && offline.contains(vid)) 
+                  throw new PipelineException 
+                    ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+                     "cannot be archived because it is currently offline!");
+                
+                CheckedInBundle bundle = checkedIn.get(vid);
+                if(bundle == null) 
+                  throw new PipelineException 
+                    ("No checked-in version (" + vid + ") of node (" + name + ") exists " + 
+                     "to be archived!");
 		
-                  if(bundle.getVersion().isIntermediate()) 
-                    throw new PipelineException
-                      ("The checked-in version (" + vid + ") of node (" + name + ") " + 
-		       "cannot be archived because it is marked as having Intermediate " + 
-                       "Files which are never stored in the repository!"); 
-  
-		  Long size = null;	    
-		  if(vsizes != null) 
-		    size = vsizes.get(vid);
-		  if(size == null) 
-		    throw new PipelineException
-		      ("Unable to determine the size of the files associated with the " + 
-		       "checked-in version (" + vid + ") of node (" + name + ")!");
-		  total += size;
-		  
-		  TreeMap<VersionID,TreeSet<FileSeq>> fvsns = fseqs.get(name);
-		  if(fvsns == null) {
-		    fvsns = new TreeMap<VersionID,TreeSet<FileSeq>>();
-		    fseqs.put(name, fvsns);
-		  }
-	      
-		  fvsns.put(vid, bundle.getVersion().getSequences());
-		}
-	      }
+                if(bundle.getVersion().isIntermediate()) 
+                  throw new PipelineException
+                    ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+                     "cannot be archived because it is marked as having Intermediate " + 
+                     "Files which are never stored in the repository!"); 
+                
+                Long size = null;	    
+                if(vsizes != null) 
+                  size = vsizes.get(vid);
+                if(size == null) 
+                  throw new PipelineException
+                    ("Unable to determine the size of the files associated with the " + 
+                     "checked-in version (" + vid + ") of node (" + name + ")!");
+                total += size;
+                
+                TreeMap<VersionID,TreeSet<FileSeq>> fvsns = fseqs.get(name);
+                if(fvsns == null) {
+                  fvsns = new TreeMap<VersionID,TreeSet<FileSeq>>();
+                  fseqs.put(name, fvsns);
+                }
+                
+                fvsns.put(vid, bundle.getVersion().getSequences());
+              }
 	    }
 	    finally {
 	      lock.readLock().unlock();
@@ -16456,15 +16471,10 @@ class MasterMgr
           timer.resume();	
 
           /* the currently offline revision numbers */ 
-          TreeSet<VersionID> offlined = new TreeSet<VersionID>();
-          timer.aquire();
-          synchronized(pOfflinedLock) {
-            timer.resume();
-              
-            if(pOfflined.get(name) != null)
-              offlined.addAll(pOfflined.get(name));
-          }
-          
+          TreeSet<VersionID> offlined = getOfflinedVersions(timer, name);
+          if(offlined == null) 
+            offlined = new TreeSet<VersionID>();
+
           /* determine which files contribute the to offlined size */ 
           MappedSet<VersionID,File> contribute = new MappedSet<VersionID,File>();
           {
@@ -16655,15 +16665,8 @@ class MasterMgr
 	    TreeSet<VersionID> toBeOfflined = versions.get(name);
 	    for(VersionID vid : toBeOfflined) { 
 
-	      /* whether the version is currently online */
-	      boolean isOnline = false;
-	      synchronized(pOfflinedLock) {
-		TreeSet<VersionID> offlined = pOfflined.get(name);
-		isOnline = ((offlined == null) || !offlined.contains(vid));
-	      }
-
 	      /* only process online versions */
-	      if(isOnline) {
+	      if(!isOffline(timer, name, vid)) {
 		CheckedInBundle bundle = checkedIn.get(vid);
 		if(bundle == null) 
 		  throw new PipelineException 
@@ -16736,16 +16739,13 @@ class MasterMgr
 			int vk;
 			for(vk=vidx-1; vk>=0; vk--) {
 			  VersionID nvid = vids.get(vk);
-			  
-			  synchronized(pOfflinedLock) {
-			    TreeSet<VersionID> offlined = pOfflined.get(name);
-			    if((offlined != null) && offlined.contains(nvid)) {
-			      selected = true;
-			      break;
-			    }
-			    else if(isNovel[vk]) 
-			      break;
-			  }
+                          if(isOffline(timer, name, nvid)) {
+                            selected = true;
+                            break;
+                          }
+                          else if(isNovel[vk]) {
+                            break;
+                          }
 			}
 		      }
 
@@ -16757,18 +16757,13 @@ class MasterMgr
 		      
 			  if((isNovel[vk] == null) || isNovel[vk]) 
 			    break;
-			  else {
-			    synchronized(pOfflinedLock) {
-			      TreeSet<VersionID> offlined = pOfflined.get(name);
-			      if((offlined == null) || !offlined.contains(nvid)) {
-				TreeSet<VersionID> svids = symlinks.get(file);
-				if(svids == null) {
-				  svids = new TreeSet<VersionID>();
-				  symlinks.put(file, svids);
-				}
-				svids.add(nvid);
-			      }
-			    }
+			  else if(!isOffline(timer, name, nvid)) {
+                            TreeSet<VersionID> svids = symlinks.get(file);
+                            if(svids == null) {
+                              svids = new TreeSet<VersionID>();
+                                symlinks.put(file, svids);
+                            }
+                            svids.add(nvid);
 			  }
 			}
 		      }
@@ -16924,19 +16919,20 @@ class MasterMgr
       /* get versions which match the pattern */ 
       TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
       {
+        Pattern pat = null;
+        if(pattern != null) 
+          pat = Pattern.compile(pattern);
+        
 	timer.aquire();
 	synchronized(pOfflinedLock) {
 	  try {
 	    timer.resume();
 	    
-	    Pattern pat = null;
-	    if(pattern != null) 
-	      pat = Pattern.compile(pattern);
-	    
-	    for(String name : pOfflined.keySet()) {
-	      if((pat == null) || pat.matcher(name).matches()) 
-		versions.put(name, new TreeSet<VersionID>(pOfflined.get(name)));
-	    }
+            for(Map.Entry<String,TreeSet<VersionID>> entry : pOfflined.entrySet()) {
+              String name = entry.getKey();
+              if((pat == null) || pat.matcher(name).matches()) 
+                versions.put(name, new TreeSet<VersionID>(entry.getValue()));
+            }
 	  }
 	  catch(PatternSyntaxException ex) {
 	    throw new PipelineException 
@@ -17420,13 +17416,10 @@ class MasterMgr
 		   "(" + archiveName + ")!");
 	      total += vol.getSize(name, vid);
 	      
-	      synchronized(pOfflinedLock) {
-		TreeSet<VersionID> offlined = pOfflined.get(name);
-		if((offlined == null) || !offlined.contains(vid)) 
-		  throw new PipelineException 
-		    ("The checked-in version (" + vid + ") of node (" + name + ") cannot " + 
-		     "be restored because it is currently online!");
-	      }
+              if(!isOffline(timer, name, vid)) 
+                throw new PipelineException 
+                  ("The checked-in version (" + vid + ") of node (" + name + ") cannot " + 
+                   "be restored because it is currently online!");
 	  
 	      CheckedInBundle bundle = checkedIn.get(vid);
 	      if(bundle == null) 
@@ -17571,12 +17564,8 @@ class MasterMgr
 		    int vk;
 		    for(vk=vidx-1; vk>=0; vk--) {
 		      VersionID nvid = vids.get(vk);
-		      
-		      synchronized(pOfflinedLock) {
-			TreeSet<VersionID> offlined = pOfflined.get(name);
-			if((offlined == null) || !offlined.contains(nvid)) 
-			  tvid = nvid;
-		      }
+                      if(!isOffline(timer, name, nvid)) 
+                        tvid = nvid;
 
 		      if(isNovel[vk]) 
 			break;
@@ -17596,13 +17585,8 @@ class MasterMgr
 		      VersionID nvid = vids.get(vk);
 		      if((isNovel[vk] == null) || isNovel[vk]) 
 			break;
-		      else {
-			synchronized(pOfflinedLock) {
-			  TreeSet<VersionID> offlined = pOfflined.get(name);
-			  if((offlined == null) || !offlined.contains(nvid)) 
-			    svids.add(nvid);
-			}
-		      }
+		      else if(!isOffline(timer, name, nvid)) 
+                        svids.add(nvid);
 		    }
 		  }
 
