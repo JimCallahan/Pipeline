@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.315 2009/11/29 20:23:51 jim Exp $
+// $Id: MasterMgr.java,v 1.316 2009/12/01 06:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1997,18 +1997,40 @@ class MasterMgr
   (
    MasterControls controls
   )
+    throws PipelineException
   {
     StringBuilder buf = new StringBuilder();
     buf.append
       ("--- MasterMgr Runtime Controls ---------------------------------------------\n");
     
     {
-      Long minFreeMem = controls.getMinFreeMemory();
-      if(minFreeMem != null) 
-        pMinFreeMemory.set(minFreeMem);
-      minFreeMem = pMinFreeMemory.get();
-      buf.append("   Min Free Memory : " + minFreeMem + " " +
-                 "(" + ByteSize.longToFloatString(minFreeMem) + ")\n");
+      Long bytes = controls.getMinFreeMemory();
+      long maxMem = Runtime.getRuntime().maxMemory();  
+      if(bytes != null) {
+        long lower = (long) (maxMem * 0.1);
+        long upper = (long) (maxMem * 0.4);
+        
+        if(bytes < lower)
+          throw new PipelineException
+            ("The minimum free memory (" + ByteSize.longToFloatString(bytes) + ") must " +
+             "be at least 10% (" + ByteSize.longToFloatString(lower) + ") of " + 
+             "the maximum heap size (" + ByteSize.longToFloatString(maxMem) + ")!");
+
+        if(bytes > upper)
+          throw new PipelineException
+            ("The minimum free memory (" + ByteSize.longToFloatString(bytes) + ") cannot " +
+             "be more than 40% (" + ByteSize.longToFloatString(upper) + ") of " + 
+             "the maximum heap size (" +ByteSize.longToFloatString(maxMem) + ")!");
+        
+        pMinFreeMemory.set(bytes); 
+      }
+      else {
+        pMinFreeMemory.set(maxMem / 5L);
+      }
+
+      bytes = pMinFreeMemory.get();
+      buf.append("   Min Free Memory : " + bytes + " " +
+                 "(" + ByteSize.longToFloatString(bytes) + ")\n");
     }
     
     {

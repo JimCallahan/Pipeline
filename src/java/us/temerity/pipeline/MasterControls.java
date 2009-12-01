@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.8 2009/11/05 20:49:57 jim Exp $
+// $Id: MasterControls.java,v 1.9 2009/12/01 06:50:59 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -153,7 +153,7 @@ class MasterControls
    * Set the minimum amount of free Java heap memory available before caches must be reduced.
    * 
    * @param bytes
-   *   The amount of memory or <CODE>null</CODE> to unset.
+   *   The amount of memory or <CODE>null</CODE> for default.
    */
   public void 
   setMinFreeMemory
@@ -161,16 +161,8 @@ class MasterControls
    Long bytes
   ) 
   {
-    long maxMem = Runtime.getRuntime().maxMemory();
-    if(bytes != null) {
-      if(bytes < (maxMem/5L))
-        throw new IllegalArgumentException
-          ("The minimum free memory (" + bytes + ") must be at least 1/5 of total heap size!");
-      pMinFreeMemory = bytes;
-    }
-    else {
-      pMinFreeMemory = maxMem / 3L;
-    }
+    /* bound checking is done on the server */ 
+    pMinFreeMemory = bytes;
   }
 
 
@@ -194,7 +186,7 @@ class MasterControls
    * take (in milliseconds).
    * 
    * @param msec
-   *   The interval or <CODE>null</CODE> to unset.
+   *   The interval or <CODE>null</CODE> for default.
    */
   public void 
   setCacheGCInterval
@@ -233,7 +225,7 @@ class MasterControls
    * Set the maximum number of cache misses before the cache garbage collector is run.
    * 
    * @param misses 
-   *   The number of misses or <CODE>null</CODE> to unset.
+   *   The number of misses or <CODE>null</CODE> for default.
    */
   public void 
   setCacheGCMisses
@@ -271,7 +263,7 @@ class MasterControls
    * Set the ratio between minimum and maximum number of items maintained in each cache. 
    * 
    * @param factor
-   *   The cache factor or <CODE>null</CODE> to unset.
+   *   The cache factor or <CODE>null</CODE> for default.
    */
   public void 
   setCacheFactor
@@ -309,7 +301,7 @@ class MasterControls
    * Set the minimum and maximum number of checked-in versions of nodes to cache.
    * 
    * @param size
-   *   The minimum size or <CODE>null</CODE> to unset.
+   *   The minimum size or <CODE>null</CODE> for default.
    */
   public void 
   setRepoCacheSize
@@ -347,7 +339,7 @@ class MasterControls
    * Set the minimum and maximum number of working versions of nodes to cache.
    * 
    * @param size
-   *   The minimum size or <CODE>null</CODE> to unset.
+   *   The minimum size or <CODE>null</CODE> for default.
    */
   public void 
   setWorkCacheSize
@@ -385,7 +377,7 @@ class MasterControls
    * Set the minimum and maximum number of working version checksums of nodes to cache.
    * 
    * @param size
-   *   The minimum size or <CODE>null</CODE> to unset.
+   *   The minimum size or <CODE>null</CODE> for default. 
    */
   public void 
   setCheckCacheSize
@@ -424,7 +416,7 @@ class MasterControls
    * Set the minimum and maximum number of per-version annotations of nodes to cache.
    * 
    * @param size
-   *   The minimum size or <CODE>null</CODE> to unset.
+   *   The minimum size or <CODE>null</CODE> for default. 
    */
   public void 
   setAnnotCacheSize
@@ -465,7 +457,7 @@ class MasterControls
    * is deleted (in milliseconds).
    * 
    * @param interval
-   *   The cleanup internval or <CODE>null</CODE> to unset.
+   *   The cleanup internval or <CODE>null</CODE> for default. 
    */
   public void 
   setRestoreCleanupInterval
@@ -507,8 +499,7 @@ class MasterControls
    * to provide an exclusively network for file status query traffic.
    * 
    * @param dir
-   *   The file status root production directory or <CODE>null</CODE> to use the default 
-   *   root production directory.
+   *   The file status root production directory or <CODE>null</CODE> for default. 
    */
   public void 
   setFileStatDir
@@ -541,8 +532,7 @@ class MasterControls
    * to provide an exclusively network for checksum generation traffic.
    * 
    * @param dir
-   *   The checksum root production directory or <CODE>null</CODE> to use the default 
-   *   root production directory.
+   *   The checksum root production directory or <CODE>null</CODE> for default. 
    */
   public void 
   setCheckSumDir
@@ -616,15 +606,13 @@ class MasterControls
 
   /**
    * An alternative root production directory accessed via a different NFS mount point
-   * to provide an exclusively network for file status query traffic.  Setting this to 
-   * <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * to provide an exclusively network for file status query traffic.
    */ 
   private Path pFileStatDir;
 
   /**
    * An alternative root production directory accessed via a different NFS mount point
-   * to provide an exclusively network for checksum generation traffic.  Setting this to 
-   * <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * to provide an exclusively network for checksum generation traffic.
    */ 
   private Path pCheckSumDir;
 

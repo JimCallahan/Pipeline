@@ -3378,43 +3378,48 @@ SetRuntimeMaster()
        (pRestoreCleanupInterval != null) || 
        (pFileStatDir != null) || (pCheckSumDir != null)) {
 
-      MasterControls controls = pMasterMgrClient.getRuntimeControls();
+      try {
+        MasterControls controls = pMasterMgrClient.getRuntimeControls();
 
-      if(pMinFreeMemory != null)
-        controls.setMinFreeMemory(pMinFreeMemory);
+        if(pMinFreeMemory != null)
+          controls.setMinFreeMemory(pMinFreeMemory);
+        
+        if(pCacheGCInterval != null)
+          controls.setCacheGCInterval(pCacheGCInterval);
+        
+        if(pCacheGCMisses != null)
+          controls.setCacheGCMisses(pCacheGCMisses);
+        
+        if(pCacheFactor != null)
+          controls.setCacheFactor(pCacheFactor);
+        
+        if(pRepoCacheSize != null)
+          controls.setRepoCacheSize(pRepoCacheSize); 
+        
+        if(pWorkCacheSize != null)
+          controls.setWorkCacheSize(pWorkCacheSize); 
+        
+        if(pCheckCacheSize != null)
+          controls.setCheckCacheSize(pCheckCacheSize); 
+        
+        if(pAnnotCacheSize != null)
+          controls.setAnnotCacheSize(pAnnotCacheSize); 
+        
+        if(pRestoreCleanupInterval != null)
+          controls.setRestoreCleanupInterval(pRestoreCleanupInterval);
+        
+        if(pFileStatDir != null)
+          controls.setFileStatDir(pFileStatDir);
+        
+        if(pCheckSumDir != null)
+          controls.setCheckSumDir(pCheckSumDir);
 
-      if(pCacheGCInterval != null)
-        controls.setCacheGCInterval(pCacheGCInterval);
-
-      if(pCacheGCMisses != null)
-        controls.setCacheGCMisses(pCacheGCMisses);
-
-      if(pCacheFactor != null)
-        controls.setCacheFactor(pCacheFactor);
-
-      if(pRepoCacheSize != null)
-        controls.setRepoCacheSize(pRepoCacheSize); 
-
-      if(pWorkCacheSize != null)
-        controls.setWorkCacheSize(pWorkCacheSize); 
-
-      if(pCheckCacheSize != null)
-        controls.setCheckCacheSize(pCheckCacheSize); 
-
-      if(pAnnotCacheSize != null)
-        controls.setAnnotCacheSize(pAnnotCacheSize); 
-
-      if(pRestoreCleanupInterval != null)
-        controls.setRestoreCleanupInterval(pRestoreCleanupInterval);
-
-      if(pFileStatDir != null)
-        controls.setFileStatDir(pFileStatDir);
-
-      if(pCheckSumDir != null)
-        controls.setCheckSumDir(pCheckSumDir);
-
-      pMasterMgrClient.setRuntimeControls(controls);
-      noOpts = false;
+        pMasterMgrClient.setRuntimeControls(controls);
+        noOpts = false;
+      }
+      catch(IllegalArgumentException ex) {
+        throw new PipelineException(ex); 
+      }
     }
 
     if(noOpts)

@@ -72,7 +72,7 @@
     <blockquote>
       Prints date that this software was released and exits.<br>
     </blockquote><b><a name=
-    "--copyright"></a>--copyright<br></b><br>
+    "--copyright"></a>--copyright</b><br><br>
 
     <div style="margin-left: 40px;">
       Prints the <a href="#Copyright"><span style=
@@ -492,7 +492,8 @@
       "font-style: italic;">bytes</span>) that should be reserved for
       normal JVM operation and heap garbage collection overhead.  Great care should be taken if you choose to override this parameter. If the free memory is set too high it will lead to poor performance due to excessive file I/O since the caches will have to shrink to accomodate the extra memory reserved for the JVM. On the other hand, setting free memory too low can lead to a crash of the JVM due to an out-of-memory error. If you think your performance can be improved by adjusting this parameter its probably best to consult with someone from Temerity Software before changing it.
       <br><br>
-      The default value is approximately 1/3rd of the total JVM heap size.<br>
+         The default value is approximately 1/5th of the total JVM heap size.
+        <br>
       <br>
     </div>
 
