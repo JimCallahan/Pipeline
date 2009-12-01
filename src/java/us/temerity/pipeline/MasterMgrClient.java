@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.149 2009/11/06 18:23:18 jim Exp $
+// $Id: MasterMgrClient.java,v 1.150 2009/12/01 22:50:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -7814,7 +7814,7 @@ class MasterMgrClient
    * 
    * @param maxArchives
    *   The maximum allowable number of archive volumes which contain the checked-in version
-   *   in order for it to be inclued in the returned list or <CODE>null</CODE> for any number 
+   *   in order for it to be included in the returned list or <CODE>null</CODE> for any number 
    *   of archives.
    * 
    * @return 
