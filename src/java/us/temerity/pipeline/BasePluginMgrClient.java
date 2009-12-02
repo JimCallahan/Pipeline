@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.27 2009/04/16 21:18:37 jesse Exp $
+// $Id: BasePluginMgrClient.java,v 1.28 2009/12/02 20:23:16 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -842,175 +842,7 @@ class BasePluginMgrClient
                                 pluginID.getVendor());
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * Gets the LayoutGroup of builder names for the builder collection. <P> 
-   * 
-   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseBuilderCollection#getName() 
-   * BaseBuilderCollection.getName} for the returned builder collection.
-   *
-   * @param name 
-   *   The name of the builder collection plugin.  
-   * 
-   * @param vid
-   *   The revision number of the builder collection or <CODE>null</CODE> 
-   *   for the latest version.
-   * 
-   * @param vendor
-   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
-   * 
-   * @throws PipelineException
-   *   If no builder collection plugin layout can be found.
-   */
-  public synchronized LayoutGroup
-  getBuilderCollectionLayout
-  (
-   String name, 
-   VersionID vid, 
-   String vendor
-  ) 
-    throws PipelineException
-  {
-    String vend = vendor;
-    if (vend == null)
-      vend = "Temerity";
-
-    TreeMap<String, TreeMap<VersionID, LayoutGroup>> groups1 = 
-      pBuilderCollectionLayouts.get(vend);
-    if (groups1 == null)
-      throw new PipelineException
-      ("No Layout Group for the Builder Collection named (" + name + ") created by the " +
-        "(" + vend + ") vendor exists!");
-    
-    TreeMap<VersionID, LayoutGroup> groups2 = groups1.get(name);
-    if (groups2 == null || groups2.isEmpty())
-      throw new PipelineException
-      ("No Layout Group for the Builder Collection named (" + name + ") created by the " +
-        "(" + vend + ") vendor exists!");
-    
-    VersionID id = vid;
-    if (id == null)
-      id = groups2.lastKey();
-    
-    return groups2.get(id);
-  }
   
-  /**
-   * Gets the User Permissions for the annotation. <P> 
-   * 
-   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseAnnotation#getName() 
-   * Annotation.getName} for the returned annotation.
-   *
-   * @param name 
-   *   The name of the annotation plugin.  
-   * 
-   * @param vid
-   *   The revision number of the annotation or <CODE>null</CODE> 
-   *   for the latest version.
-   * 
-   * @param vendor
-   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
-   * 
-   * @throws PipelineException
-   *   If no annotations permission can be found.
-   */
-  public synchronized AnnotationPermissions
-  getAnnotationPermission
-  (
-   String name, 
-   VersionID vid, 
-   String vendor
-  )
-    throws PipelineException
-  {
-    String vend = vendor;
-    if (vend == null)
-      vend = "Temerity";
-
-    TreeMap<String, TreeMap<VersionID, AnnotationPermissions>> groups1 = 
-      pAnnotationPermissions.get(vend);
-    if (groups1 == null)
-      throw new PipelineException
-        ("No permissions for the Annotation named (" + name + ") created by the " +
-         "(" + vend + ") vendor exists!");
-    
-    TreeMap<VersionID, AnnotationPermissions> groups2 = groups1.get(name);
-    if (groups2 == null || groups2.isEmpty())
-      throw new PipelineException
-        ("No permissions for the Annotation named (" + name + ") created by the " +
-         "(" + vend + ") vendor exists!");
-    
-    VersionID id = vid;
-    if (id == null)
-      id = groups2.lastKey();
-    
-    return groups2.get(id);
-  }
-  
-  /**
-   * Gets the contexts in which the given annotation can be used.<P> 
-   * 
-   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseAnnotation#getName() 
-   * Annotation.getName} for the returned annotation.
-   *
-   * @param name 
-   *   The name of the annotation plugin.  
-   * 
-   * @param vid
-   *   The revision number of the annotation or <CODE>null</CODE> 
-   *   for the latest version.
-   * 
-   * @param vendor
-   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
-   * 
-   * @throws PipelineException
-   *   If no annotations contexts can be found.
-   */
-  public synchronized TreeSet<AnnotationContext>
-  getAnnotationContexts
-  (
-   String name, 
-   VersionID vid, 
-   String vendor
-  )
-    throws PipelineException
-  {
-    String vend = vendor;
-    if (vend == null)
-      vend = "Temerity";
-
-    TreeMap<String, TreeMap<VersionID, TreeSet<AnnotationContext>>> groups1 = 
-      pAnnotationContexts.get(vend);
-    if (groups1 == null)
-      throw new PipelineException
-        ("No contexts for the Annotation named (" + name + ") created by the " +
-         "(" + vend + ") vendor exists!");
-    
-    TreeMap<VersionID, TreeSet<AnnotationContext>> groups2 = groups1.get(name);
-    if (groups2 == null || groups2.isEmpty())
-      throw new PipelineException
-        ("No contexts for the Annotation named (" + name + ") created by the " +
-         "(" + vend + ") vendor exists!");
-    
-    VersionID id = vid;
-    if (id == null)
-      id = groups2.lastKey();
-    
-    TreeSet<AnnotationContext> contexts = groups2.get(id);
-    if(contexts == null) 
-      throw new PipelineException
-        ("Somehow there were no contexts for the (" + id + ") version of the " + 
-         "Annotation named (" + name + ") created by the (" + vend + ") vendor!");
-
-    return new TreeSet<AnnotationContext>(contexts);
-  }
-  
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -1267,20 +1099,20 @@ class BasePluginMgrClient
   private PluginDataCache  pBuilderCollections;
   
   /**
-   * The vender, names, version numbers and layout group of all available Builder 
-   * Collection plugins.
+   * The layout group for all available Builders contained in a BuilderCollection
+   * indexed by vender, plugin name and revision number.
    */ 
   private TripleMap<String,String,VersionID,LayoutGroup> pBuilderCollectionLayouts;
   
   /**
-   * The vender, names, version numbers and permissions of all available 
-   * Annotation plugins. 
+   * The AnnotationPermissions associated with all available Annotations indexed by 
+   * vender, plugin name and revision number.
    */ 
   private TripleMap<String,String,VersionID,AnnotationPermissions> pAnnotationPermissions;
  
   /**
-   * The vender, names, version numbers and contexts of all available 
-   * Annotation plugins.  
+   * The AnnotationContext associated with all available Annotations indexed by 
+   * vender, plugin name and revision number.
    */ 
   private TripleMap<String,String,VersionID,TreeSet<AnnotationContext>> pAnnotationContexts;
 
