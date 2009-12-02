@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.316 2009/12/01 06:50:59 jim Exp $
+// $Id: MasterMgr.java,v 1.317 2009/12/02 01:03:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -20823,18 +20823,6 @@ class MasterMgr
            pAnnotationCounters.getCurrent() + "/" + freed + " (cached/freed)\n  " + tm);
         timer.accum(tm);
       }
-    }
-
-    /* if we freed up a lot of cache entries, trigger a full JVM garbage collection now */ 
-    if(totalFreed > pCacheTrigger.getOpsUntil()) {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("JVM Heap [GC]: " + totalFreed + " (freed)");
-
-      rt.gc();
-
-      LogMgr.getInstance().logSubStage
-        (LogMgr.Kind.Mem, LogMgr.Level.Finer, 
-         tm, timer);
     }
 
     /* if we're ahead of schedule, take a nap */ 

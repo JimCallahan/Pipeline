@@ -1430,29 +1430,30 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Java GC Options:])
 
-server_gc_opts="-Xloggc:$ROOT_INST_DIR/logs"
+server_gc_opts="-XX:+PrintGCDetails -Xloggc:/usr/tmp"
+cms_gc_opts="-XX:+UseConcMarkSweepGC -XX:+DisableExplicitGC"
 
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_GC_OPTS)
 heap_size=$(($PL_MASTER_HEAP_SIZE / (1024*1024) ))
-PLMASTER_GC_OPTS="${server_gc_opts}/plmaster.gc-log -Xms${heap_size}M -Xmx${heap_size}M"
+PLMASTER_GC_OPTS="${server_gc_opts}/plmaster.gc-log ${cms_gc_opts} -Xms${heap_size}M -Xmx${heap_size}M"
 AC_MSG_RESULT([$PLMASTER_GC_OPTS])
 
 AC_MSG_CHECKING([plfilemgr])
 AC_SUBST(PLFILEMGR_GC_OPTS)
 heap_size=$(($PL_FILE_HEAP_SIZE / (1024*1024) ))
-PLFILEMGR_GC_OPTS="${server_gc_opts}/plfilemgr.gc-log -Xms${heap_size}M -Xmx${heap_size}M"
+PLFILEMGR_GC_OPTS="${server_gc_opts}/plfilemgr.gc-log ${cms_gc_opts} -Xms${heap_size}M -Xmx${heap_size}M"
 AC_MSG_RESULT([$PLFILEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([plpluginmgr])
 AC_SUBST(PLPLUGINMGR_GC_OPTS)
-PLPLUGINMGR_GC_OPTS="${server_gc_opts}/plpluginmgr.gc-log -Xms8M -Xmx512M"
+PLPLUGINMGR_GC_OPTS="${server_gc_opts}/plpluginmgr.gc-log -Xms64M -Xmx512M"
 AC_MSG_RESULT([$PLPLUGINMGR_GC_OPTS])
 
 AC_MSG_CHECKING([plqueuemgr])
 AC_SUBST(PLQUEUEMGR_GC_OPTS)
 heap_size=$(($PL_QUEUE_HEAP_SIZE / (1024*1024) ))
-PLQUEUEMGR_GC_OPTS="${server_gc_opts}/plqueuemgr.gc-log -Xms${heap_size}M -Xmx${heap_size}M"
+PLQUEUEMGR_GC_OPTS="${server_gc_opts}/plqueuemgr.gc-log ${cms_gc_opts} -Xms${heap_size}M -Xmx${heap_size}M"
 AC_MSG_RESULT([$PLQUEUEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([pljobmgr])
@@ -1473,7 +1474,7 @@ AC_MSG_RESULT([$PLPLUGIN_GC_OPTS])
 
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_GC_OPTS)
-PLUI_GC_OPTS="-Xms32M -Xmx768M"
+PLUI_GC_OPTS="${cms_gc_opts} -Xms32M -Xmx768M"
 AC_MSG_RESULT([$PLUI_GC_OPTS])
 
 AC_MSG_CHECKING([plscript])
