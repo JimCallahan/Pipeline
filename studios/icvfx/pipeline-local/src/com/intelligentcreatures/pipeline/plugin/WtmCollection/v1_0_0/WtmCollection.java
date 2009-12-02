@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.23 2008/08/01 20:19:15 jim Exp $
+// $Id: WtmCollection.java,v 1.24 2009/12/02 21:54:31 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -57,6 +57,14 @@ class WtmCollection
 	group.addSubGroup(sub);
       }
     
+      {
+	LayoutGroup sub = 
+	  new LayoutGroup("Testing", "Builders used to test Pipeline.", true);
+ 	sub.addEntry("Broken");
+
+	group.addSubGroup(sub);
+      }
+
       setLayout(group);
     }
 
@@ -103,6 +111,8 @@ class WtmCollection
     toReturn.put("QtDeliver",     pkg + "QtDeliverBuilder");
     toReturn.put("DpxDeliver",    pkg + "DpxDeliverBuilder");
     toReturn.put("CineonDeliver", pkg + "CineonDeliverBuilder");
+
+    toReturn.put("Broken", pkg + "BrokenBuilder");
     
     return toReturn;
   } 
