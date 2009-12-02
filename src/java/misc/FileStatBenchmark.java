@@ -1,4 +1,4 @@
-// $Id: FileStatBenchmark.java,v 1.1 2009/12/02 12:19:33 jim Exp $
+// $Id: FileStatBenchmark.java,v 1.2 2009/12/02 21:52:52 jim Exp $
 
 import java.util.*;
 import java.io.*;
@@ -31,7 +31,7 @@ FileStatBenchmark
           for(File f : file.listFiles()) 
             paths.add(new Path(f));
         }
-        else if(file.isFile()) {
+        else {
           paths.add(new Path(file));
         }
       }
