@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.317 2009/12/02 01:03:41 jim Exp $
+// $Id: MasterMgr.java,v 1.318 2009/12/02 20:22:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8858,6 +8858,7 @@ class MasterMgr
                   pCheckSumBundles.remove(id.getName(), id); 
                 }
 
+                decrementCheckSumCounter(id); 
                 removeCheckSumCache(id);
               }
               finally {
@@ -10502,6 +10503,7 @@ class MasterMgr
             pCheckSumBundles.remove(name, nodeID); 
           }
 
+          decrementCheckSumCounter(nodeID); 
           removeCheckSumCache(nodeID); 
         }
         finally {
@@ -10676,8 +10678,7 @@ class MasterMgr
 	pCheckedInBundles.remove(name);
 
 	/* keep track of the change to the node version cache */ 
-	for(VersionID vid : checkedIn.keySet()) 
-	  decrementCheckedInCounter(name, vid);
+        decrementCheckedInCounters(name, checkedIn.keySet());
       }
 
       /* remove the downstream links file and entry */ 
@@ -20618,17 +20619,19 @@ class MasterMgr
     {
       pCheckedInCounters.adjustBounds(reduce);
       pCheckedInCounters.logStats();
-      pCheckedInCounters.reset();
+      pCheckedInCounters.resetHitMiss();
 
-      if(pCheckedInCounters.hasExceededMax()) {
+      if(reduce || pCheckedInCounters.hasExceededMax()) {
         timer.suspend();
         TaskTimer tm = new TaskTimer();
 
         long freed = 0L;
         while(pCheckedInCounters.hasExceededMin()) {
           String name = pCheckedInRead.poll();
-          if(name == null) 
+          if(name == null) {
+            pCheckedInCounters.emptySanityCheck();
             break;
+          }
           
           tm.aquire();
           ReentrantReadWriteLock lock = getCheckedInLock(name);
@@ -20644,10 +20647,8 @@ class MasterMgr
             }
             
             if(checkedIn != null) {
-              for(VersionID vid : checkedIn.keySet()) {
-                decrementCheckedInCounter(name, vid); 
-                freed++;
-              }
+              decrementCheckedInCounters(name, checkedIn.keySet());
+              freed += checkedIn.keySet().size();
             }
           }
           finally {
@@ -20670,17 +20671,19 @@ class MasterMgr
     {
       pWorkingCounters.adjustBounds(reduce);
       pWorkingCounters.logStats();
-      pWorkingCounters.reset();
+      pWorkingCounters.resetHitMiss();
       
-      if(pWorkingCounters.hasExceededMax()) {
+      if(reduce || pWorkingCounters.hasExceededMax()) {
         timer.suspend();
         TaskTimer tm = new TaskTimer();
 
         long freed = 0L;
         while(pWorkingCounters.hasExceededMin()) {
           NodeID nodeID = pWorkingRead.poll();
-          if(nodeID == null) 
+          if(nodeID == null) {
+            pWorkingCounters.emptySanityCheck();
             break;
+          }
           
           tm.aquire();
           ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
@@ -20727,17 +20730,19 @@ class MasterMgr
     {
       pCheckSumCounters.adjustBounds(reduce);
       pCheckSumCounters.logStats();
-      pCheckSumCounters.reset();
+      pCheckSumCounters.resetHitMiss();
 
-      if(pCheckSumCounters.hasExceededMax()) {
+      if(reduce || pCheckSumCounters.hasExceededMax()) {
         timer.suspend();
         TaskTimer tm = new TaskTimer();
 
         long freed = 0L;
         while(pCheckSumCounters.hasExceededMin()) {
           NodeID nodeID = pCheckSumsRead.poll();
-          if(nodeID == null) 
+          if(nodeID == null) {
+            pCheckSumCounters.emptySanityCheck();
             break;
+          }
           
           tm.aquire();
           ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
@@ -20779,17 +20784,19 @@ class MasterMgr
     {
       pAnnotationCounters.adjustBounds(reduce);
       pAnnotationCounters.logStats();
-      pAnnotationCounters.reset();
+      pAnnotationCounters.resetHitMiss();
 
-      if(pAnnotationCounters.hasExceededMax()) {
+      if(reduce || pAnnotationCounters.hasExceededMax()) {
         timer.suspend();
         TaskTimer tm = new TaskTimer();
 
         long freed = 0L;
         while(pAnnotationCounters.hasExceededMin()) {
           String name = pAnnotationsRead.poll();
-          if(name == null) 
+          if(name == null) {
+            pAnnotationCounters.emptySanityCheck();
             break;
+          }
 
           tm.aquire();
           ReentrantReadWriteLock clock = getAnnotationsLock(name);
@@ -20898,19 +20905,20 @@ class MasterMgr
    * Record that a checked-in version has been freed from the cache. 
    */ 
   private void 
-  decrementCheckedInCounter
+  decrementCheckedInCounters
   (
    String name, 
-   VersionID vid
+   Set<VersionID> vids
   ) 
   {
-    long cached = pCheckedInCounters.free(); 
-
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	 "Freed Checked-In Version: " + name + " v" + vid + "\n" + 
-	 "  Total Cached = " + cached); 
+    for(VersionID vid : vids) {
+      long cached = pCheckedInCounters.free(); 
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Mem, LogMgr.Level.Finest,
+           "Freed Checked-In Version: " + name + " v" + vid + "\n" + 
+           "  Total Cached = " + cached); 
+      }
     }
   }
 
@@ -24251,7 +24259,7 @@ class MasterMgr
     {
       double factor = pCacheFactor.get();
       pMinimum = Math.max(min, pThreshold); 
-      pMaximum = (long) (((double) pMinimum) / factor);
+      pMaximum = Math.max(pMinimum+1, (long) (((double) pMinimum) / factor));
     }
     
     /**
@@ -24266,7 +24274,7 @@ class MasterMgr
     {
       double factor = pCacheFactor.get();
       pMinimum = Math.max((long) (((double) max) * factor), pThreshold); 
-      pMaximum = (long) (((double) pMinimum) / factor);
+      pMaximum = Math.max(pMinimum+1, (long) (((double) pMinimum) / factor));
     }
     
     /**
@@ -24312,7 +24320,7 @@ class MasterMgr
     /*-- STATISTICS ------------------------------------------------------------------------*/
 
     public synchronized void
-    reset() 
+    resetHitMiss() 
     {
       pHits   = 0L; 
       pMisses = 0L;
@@ -24354,6 +24362,18 @@ class MasterMgr
         pCurrent = 0L;
       }
       return pCurrent;
+    }
+
+    public synchronized void 
+    emptySanityCheck() 
+    {
+      if(pCurrent > 0L)
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Mem, LogMgr.Level.Warning,
+           "While attempting to reduce the " + pTitle.toLowerCase() + " cache size, the " + 
+           "FIFO of objects to free ran out even though the counter still indicates that " + 
+           "there are (" + pCurrent + ") objects being cached!  Resetting it to zero...");
+      pCurrent = 0L;
     }
 
     public synchronized void 
