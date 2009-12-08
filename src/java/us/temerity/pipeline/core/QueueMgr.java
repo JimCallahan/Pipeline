@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.132 2009/11/20 21:54:41 jim Exp $
+// $Id: QueueMgr.java,v 1.133 2009/12/08 22:20:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6128,7 +6128,7 @@ class QueueMgr
       timer.resume();
       
       pJobGroups.remove(groupID);
-      pJobCounters.removeCounters(timer, group);
+      pJobCounters.removeByGroupCounters(timer, group);
     }
 
     /* post-delete group task */ 
@@ -8265,9 +8265,14 @@ class QueueMgr
 	    dead.add(jobID);
       }
     }
+    
+    /* remove the counters for the given jobs which are no longer referenced by any group */
+    pJobCounters.removeByJobCounters(timer, dead);
 
-    LogMgr.getInstance().log(Kind.Wri, Level.Finest, 
-      "Adding jobs with ids " + dead + " to the delete list");
+    /* schedule the jobs for deletion by the job writer thread... */ 
+    LogMgr.getInstance().log
+      (Kind.Wri, Level.Finest, 
+      "Adding jobs with IDs (" + dead + ") to the delete list");
     pDeleteList.addAll(dead);
     
     /* tell the job servers to cleanup any resources associated with the dead jobs */ 

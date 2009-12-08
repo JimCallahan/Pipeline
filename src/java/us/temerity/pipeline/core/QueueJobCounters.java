@@ -1,4 +1,4 @@
-// $Id: QueueJobCounters.java,v 1.5 2009/07/01 16:43:14 jim Exp $
+// $Id: QueueJobCounters.java,v 1.6 2009/12/08 22:20:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -83,10 +83,10 @@ class QueueJobCounters
   }
 
   /**
-   * Remove all counters for jobs in the given job group.
+   * Remove the counters for the given job group.
    */ 
   public void 
-  removeCounters
+  removeByGroupCounters
   (
    TaskTimer timer, 
    QueueJobGroup group
@@ -97,12 +97,23 @@ class QueueJobCounters
       timer.resume();	
       pCountersByGroup.remove(group.getGroupID());
     }
+  }
 
+  /**
+   * Remove the counters for the given jobs which are no longer referenced by any job group. 
+   */ 
+  public void 
+  removeByJobCounters
+  (
+   TaskTimer timer, 
+   Set<Long> jobIDs
+  ) 
+  {
     timer.aquire();
     synchronized(pCountersByJob) {
       timer.resume();
 
-      for(Long jobID : group.getJobIDs())
+      for(Long jobID : jobIDs) 
 	pCountersByJob.remove(jobID);
     }
   }
