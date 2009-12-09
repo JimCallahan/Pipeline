@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.12 2009/08/28 02:04:47 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.13 2009/12/09 09:14:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -76,7 +76,7 @@ class QueueJobGroupsTableModel
           new Vector3i(180), 
           new Vector3i(180), 
           new Vector3i(180, 360, Integer.MAX_VALUE), 
-          new Vector3i(180)
+          new Vector3i(60, 180, Integer.MAX_VALUE), 
         };
         pColumnWidthRanges = ranges;
       }
