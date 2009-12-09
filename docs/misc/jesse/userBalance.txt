@@ -1,0 +1,48 @@
+Separate thread like collector()?
+
+Some sort of thread
+
+
+TreeMap<String, LinkedList<>>
+
+DataStructure:
+  Users --> Slots Used
+  Total number of slots in the user balance group.
+
+To sum, we take each entry in the list and add up all the user values and then we sum up the total number of slots.
+
+
+Okay.  So, user max share.  Before the dispatcher dispatches, we need to create an easy metric to keep people underneath their shares.
+
+So we want to first add up how many hosts are in each balance group. (loop over hosts, get balance group, build up a IntegerOpMap).
+
+Then, we want to add up how many Jobs, per balance group, each user is currently running.  So we loop over all jobs (ugh!).  Except we don't have to!
+
+So the new solution.
+
+We've already got a loop over which jobs are running on which hosts.
+
+We need to build up a list of the total number of slots in a given balance group (IntegerOpMap<String>)  And then we need to build up a list of jobs per user in each balance group.
+
+So during the running loop, we build up a MappedSet<String, Long> of jobs per balance group and then we lock on pJobs and convert that in to a TreeMap<String, IntegerOpMap<String>>.
+
+So that happens at the beginning of the dispatch cycle.
+
+During the cycle, we update that TreeMap<String, IntegerOpMap<String>> as we dispatch jobs.  And before each dispatch cycle, we update both the shares that each user has (DoubleMap<String, String, Double>) and then max shares that each user is supposed to have MappedSet<String, String>.  And then we're good.
+
+So, data structures.
+
+
+
+Histograms:
+
+Pieces
+
+HistogramRange = low level, defines the range of values the histogram can have.
+HistogramSpec = A group of ranges, each one defining part of the histogram.
+Histogram = Where we call catagorize on items to slot them into a range.
+
+ViewerPie = displays a histogram of data in a pie graph.
+
+QueueHostHistogram = a group of Histograms
+QueueHostHistogramSpecs = a group of histogram specs.  Sent from the server at queue update time.

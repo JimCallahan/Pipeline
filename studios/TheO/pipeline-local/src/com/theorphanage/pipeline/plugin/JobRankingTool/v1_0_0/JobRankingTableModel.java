@@ -1,4 +1,4 @@
-// $Id: JobRankingTableModel.java,v 1.2 2009/08/20 19:44:07 jesse Exp $
+// $Id: JobRankingTableModel.java,v 1.3 2009/12/09 05:06:55 jesse Exp $
 
 package com.theorphanage.pipeline.plugin.JobRankingTool.v1_0_0;
 
@@ -249,7 +249,7 @@ class JobRankingTableModel
               edited = true;
         }
       }
-
+      
       if(edited) 
         fireTableDataChanged();
     }
