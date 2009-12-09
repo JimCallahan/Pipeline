@@ -1,4 +1,4 @@
-// $Id: QueueHostMod.java,v 1.7 2009/09/16 03:54:40 jesse Exp $
+// $Id: QueueHostMod.java,v 1.8 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -697,7 +697,7 @@ class QueueHostMod
     boolean userChanged = false;
     String newUser = null;
     {
-      String current = info.getUserBalanceGroup();
+      String current = info.getBalanceGroup();
       String sch = sched.getScheduledUserBalance(sname);
      
       if (sch != null) {

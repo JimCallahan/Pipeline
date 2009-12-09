@@ -1,4 +1,4 @@
-// $Id: JDoubleTableCellEditor.java,v 1.3 2005/01/03 06:56:23 jim Exp $
+// $Id: JDoubleTableCellEditor.java,v 1.4 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -41,6 +41,24 @@ class JDoubleTableCellEditor
   {
     pField = UIFactory.createDoubleField(null, width, align);
     pField.addActionListener(this);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   O V E R R I D E S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the name of the component to the specified string.
+   */
+  public void 
+  setName
+  (
+   String name
+  )
+  {
+    pField.setName(name);
   }
 
 

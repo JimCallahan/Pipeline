@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.117 2009/11/06 21:53:12 jim Exp $
+// $Id: UIMaster.java,v 1.118 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -17,6 +17,7 @@ import javax.swing.plaf.synth.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.core.*;
+import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.laf.*;
 import us.temerity.pipeline.ui.*;
@@ -3811,6 +3812,13 @@ class UIMaster
     pManageDispatchControlsDialog.updateAll();
     pManageDispatchControlsDialog.setVisible(true);
   }  
+  
+  public void
+  showManageBalanceGroupsDialog()
+  {
+    pManageBalanceGroupsDialog.updateAll();
+    pManageBalanceGroupsDialog.setVisible(true);
+  }
 
   /**
    * Show the manage editors dialog.
@@ -5001,6 +5009,7 @@ class UIMaster
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
 	pManageHardwareKeysDialog  = new JManageHardwareKeysDialog();
 	pManageDispatchControlsDialog = new JManageDispatchControlsDialog();
+	pManageBalanceGroupsDialog = new JManageBalanceGroupsDialog();
 
 	pQueueJobsDialog = new JQueueJobsDialog(pFrame);
 	pChangeJobReqsDialog = new JChangeJobReqsDialog(pFrame);
@@ -5890,6 +5899,7 @@ class UIMaster
 	pManageSelectionKeysDialog.updateUserPrefs();
 	pManageHardwareKeysDialog.updateUserPrefs();
 	pManageDispatchControlsDialog.updateUserPrefs();
+	pManageBalanceGroupsDialog.updateUserPrefs();
 
 	{
 	  ToolTipManager mgr = ToolTipManager.sharedInstance();
@@ -7477,6 +7487,11 @@ class UIMaster
    * The manage dispatch controls dialog.
    */ 
   private JManageDispatchControlsDialog pManageDispatchControlsDialog;
+  
+  /**
+   * The manage balance controls dialog.
+   */
+  private JManageBalanceGroupsDialog pManageBalanceGroupsDialog;
 
   /**
    * The queue job submission dialog.

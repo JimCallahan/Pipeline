@@ -1,4 +1,4 @@
-// $Id: WorkGroups.java,v 1.6 2008/06/26 17:09:09 jim Exp $
+// $Id: WorkGroups.java,v 1.7 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -235,6 +235,39 @@ class WorkGroups
     }
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the name of all the users who are a member or manager of a particular group.
+   * 
+   * @param gname
+   *   The unique name of the group.
+   *   
+   * @return
+   *   A set of the users in the current group or <code>null</code> if there is not a group
+   *   with the given name.
+   */
+  public TreeSet<String>
+  getUsersInGroup
+  (
+    String gname  
+  )
+  {
+    TreeSet<String> toReturn = new TreeSet<String>();
+
+    Integer gid = pGroupIDs.get(gname);
+    if(gid == null) 
+      return null; 
+
+   TreeSet<Integer> uids = pGroupUsers.get(gid);
+   for (Integer uid : uids) {
+     if (uid < 0)
+       uid *= -1;
+     
+     toReturn.add(pUserNames.get(uid));
+   }
+    return toReturn;
+  }
 
   /*----------------------------------------------------------------------------------------*/
 

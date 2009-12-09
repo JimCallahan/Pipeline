@@ -1472,6 +1472,7 @@ TOKEN :
 | <LOG_EXT: 	     "ext">
 | <LOG_BLD: 	     "bld">
 | <LOG_WRI: 	     "wri">
+| <LOG_USR: 	     "usr">
 | <COLON7:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -1522,6 +1523,7 @@ TOKEN :
 | <REMOTE_LOG_EXT: 	     "ext">
 | <REMOTE_LOG_BLD: 	     "bld">
 | <REMOTE_LOG_WRI: 	     "wri">
+| <REMOTE_LOG_USR: 	     "usr">
 | <COLON1:  	             ":">       : REMOTE_LOG_LEVEL  
 | <ILLEGAL_REMOTE_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -2274,7 +2276,7 @@ LogMgr.Kind LogKind() :
 {
   (g=ArgKind() | g=SumKind() | g=GluKind() | g=JobKind() | g=MemKind() | g=NetKind() | 
    g=OpsKind() | g=PlgKind() | g=SubKind() | g=TexKind() | g=DspKind() | g=SelKind() | 
-   g=ColKind() | g=SchKind() | g=ExtKind() | g=BldKind() | g=WriKind())
+   g=ColKind() | g=SchKind() | g=ExtKind() | g=BldKind() | g=WriKind() | g=UsrKind())
   {
     return g;
   }
@@ -2429,7 +2431,16 @@ LogMgr.Kind WriKind() :
 {
   (<LOG_WRI> | <REMOTE_LOG_WRI>)
   {
-    return LogMgr.Kind.Bld;
+    return LogMgr.Kind.Wri;
+  }
+}
+
+LogMgr.Kind UsrKind() : 
+{}
+{
+  (<LOG_USR> | <REMOTE_LOG_USR>)
+  {
+    return LogMgr.Kind.Usr;
   }
 }
 

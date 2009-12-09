@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.24 2009/09/16 03:54:40 jesse Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.25 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -946,8 +946,8 @@ class JManageSelectionKeysDialog
     updateAll();
   }
 
-  /*
-   * Update the table with the current license keys.
+  /**
+   * Update the table with the current selection keys.
    */ 
   private void 
   doUpdate() 
@@ -1679,11 +1679,5 @@ class JManageSelectionKeysDialog
    * The new selection schedule creation dialog.
    */ 
   private JNewSelectionScheduleDialog pSchedulesNewDialog; 
-  
-  /**
-   *  Keep track of which table was the last to be sorted, so the correct sort can be used 
-   *  after an update.  
-   */
-  private LastSort pLastSort;
 }
 

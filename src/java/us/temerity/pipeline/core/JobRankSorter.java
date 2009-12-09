@@ -1,4 +1,4 @@
-// $Id: JobRankSorter.java,v 1.2 2009/09/29 20:44:41 jesse Exp $
+// $Id: JobRankSorter.java,v 1.3 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -34,9 +34,25 @@ class JobRankSorter
       i++;
     }
   }
+
+
   
-  
-  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  public DispatchCriteria[]
+  getCriteria()
+  {
+    DispatchCriteria[] toReturn = new DispatchCriteria[pCriteria.length];
+    
+    int i = 0;
+    for (DispatchCriteria crit : pCriteria)
+      toReturn[i++] = crit;
+    
+    return toReturn;
+  }
+
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A T O R                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -68,8 +84,8 @@ class JobRankSorter
     switch (criteria) {
     case JobGroupPercent:
       {
-        double percent1 = o1.getPercent();
-        double percent2 = o2.getPercent();
+        double percent1 = o1.getFavorGroupPercent();
+        double percent2 = o2.getFavorGroupPercent();
         if((percent1 - percent2) >= sEpsilon) 
           return -1;
         else if((percent2 - percent1) >= sEpsilon) 
@@ -97,6 +113,27 @@ class JobRankSorter
           return -1; 
         else if(score1 < score2) 
           return 1; 
+        return 0;
+      }
+      
+    case BalanceGroups:
+      {
+        double percent1 = o1.getBalanceGroupPercent();
+        double percent2 = o2.getBalanceGroupPercent();
+        
+        if (percent1 < percent2)
+          return -1;
+        else if (percent1 > percent2)
+          return 1;
+        else {
+          int use1 = o1.getBalanceGroupUse();
+          int use2 = o2.getBalanceGroupUse();
+          
+          if (use1 < use2)
+            return -1;
+          else if (use2 > use1)
+            return 1;
+        }
         return 0;
       }
       

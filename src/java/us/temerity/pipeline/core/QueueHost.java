@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.13 2009/09/16 03:54:40 jesse Exp $
+// $Id: QueueHost.java,v 1.14 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -73,7 +73,7 @@ class QueueHost
     pSelectionGroup    = qinfo.getSelectionGroup();
     pHardwareGroup     = qinfo.getHardwareGroup();
     pFavorMethod       = qinfo.getFavorMethod();
-    pUserBalanceGroup  = qinfo.getUserBalanceGroup();
+    pUserBalanceGroup  = qinfo.getBalanceGroup();
     pDispatchControl   = qinfo.getDispatchControl();
     
     pSlotState = qinfo.getSlotsState();

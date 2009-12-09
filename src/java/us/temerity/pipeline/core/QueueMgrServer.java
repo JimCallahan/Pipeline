@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.72 2009/11/02 21:58:38 jim Exp $
+// $Id: QueueMgrServer.java,v 1.73 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -95,9 +95,10 @@ class QueueMgrServer
       DispatcherTask dispatcher = new DispatcherTask();
       SchedulerTask scheduler = new SchedulerTask();
       WriterTask writer = new WriterTask();
+      BalancerTask balancer = new BalancerTask();
 
       MasterConnectTask connector = 
-	new MasterConnectTask(collector, dispatcher, scheduler, writer); 
+	new MasterConnectTask(collector, dispatcher, scheduler, writer, balancer); 
       connector.start();
 
       HeapStatsTask heapStats = new HeapStatsTask();
@@ -120,6 +121,15 @@ class QueueMgrServer
       try {
 	heapStats.interrupt();
 	heapStats.join();
+	
+	{
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Info,
+             "Waiting on Balancer...");
+          LogMgr.getInstance().flush();
+
+          balancer.join();
+        }
 
 	{
 	  LogMgr.getInstance().log
@@ -676,44 +686,60 @@ class QueueMgrServer
                 break;
                 
                 /*-- USER BALANCE GROUPS -----------------------------------------------------*/
-              case GetUserBalanceGroupNames:
+              case GetBalanceGroupNames:
                 {
-                  objOut.writeObject(pQueueMgr.getUserBalanceGroupNames());
+                  objOut.writeObject(pQueueMgr.getBalanceGroupNames());
                   objOut.flush(); 
                 }
                 break;
 
-              case GetUserBalanceGroups:
+              case GetBalanceGroups:
                 {
-                  objOut.writeObject(pQueueMgr.getUserBalanceGroups());
+                  objOut.writeObject(pQueueMgr.getBalanceGroups());
+                  objOut.flush(); 
+                }
+                break;
+                
+              case GetBalanceGroup:
+                {
+                  QueueGetByNameReq req = 
+                    (QueueGetByNameReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.getBalanceGroup(req.getName()));
                   objOut.flush(); 
                 }
                 break;
 
-              case AddUserBalanceGroup:
+              case AddBalanceGroup:
                 {
                   QueueAddByNameReq req = 
                     (QueueAddByNameReq) objIn.readObject();
-                  objOut.writeObject(pQueueMgr.addUserBalanceGroup(req));
+                  objOut.writeObject(pQueueMgr.addBalanceGroup(req));
                   objOut.flush(); 
                 }
                 break;
 
-              case RemoveUserBalanceGroups:
+              case RemoveBalanceGroups:
                 {
                   QueueRemoveByNameReq req = 
                     (QueueRemoveByNameReq) objIn.readObject();
-                  objOut.writeObject(pQueueMgr.removeUserBalanceGroups(req));
+                  objOut.writeObject(pQueueMgr.removeBalanceGroups(req));
                   objOut.flush(); 
                 }
                 break;
 
-              case EditUserBalanceGroups:
+              case EditBalanceGroups:
                 {
                   QueueEditUserBalanceGroupsReq req = 
                     (QueueEditUserBalanceGroupsReq) objIn.readObject();
-                  objOut.writeObject(pQueueMgr.editUserBalanceGroups(req));
+                  objOut.writeObject(pQueueMgr.editBalanceGroups(req));
                   objOut.flush(); 
+                }
+                break;
+                
+              case GetBalanceGroupUsage:
+                {
+                  objOut.writeObject(pQueueMgr.getBalanceGroupUsage());
+                  objOut.flush();
                 }
                 break;
 
@@ -1146,7 +1172,8 @@ class QueueMgrServer
      CollectorTask collector,
      DispatcherTask dispatcher,
      SchedulerTask scheduler,
-     WriterTask writer
+     WriterTask writer,
+     BalancerTask balancer
     ) 
     {
       super("QueueMgrServer:MasterConnectTask"); 
@@ -1154,6 +1181,7 @@ class QueueMgrServer
       pDispatcher = dispatcher;
       pScheduler = scheduler;
       pWriter = writer;
+      pBalancer = balancer;
     }
 
     @Override
@@ -1180,6 +1208,7 @@ class QueueMgrServer
 	pDispatcher.start();
 	pScheduler.start();
 	pWriter.start();
+	pBalancer.start();
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
@@ -1193,6 +1222,7 @@ class QueueMgrServer
     private DispatcherTask pDispatcher;
     private SchedulerTask  pScheduler;
     private WriterTask     pWriter;
+    private BalancerTask   pBalancer;
   }
 
   /**
@@ -1233,6 +1263,48 @@ class QueueMgrServer
 	  (LogMgr.Kind.Col, LogMgr.Level.Fine,
 	   "Collector Finished.");	
 	LogMgr.getInstance().flush();
+      }
+    }
+  }
+  
+  /**
+   * Collect and calculate the shares of the queue that users are using. 
+   */
+  private
+  class BalancerTask
+    extends Thread
+  {
+    public
+    BalancerTask()
+    {
+      super("QueueMgrServer:BalancerTask");
+    }
+    
+    @Override
+    public void 
+    run() 
+    {
+      try {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Usr, LogMgr.Level.Fine,
+           "Balancer Started.");       
+        LogMgr.getInstance().flush();
+
+        while(!pShutdown.get()) {
+          pQueueMgr.balancer();
+        }
+      }
+      catch (Exception ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Usr, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Balancer Failed:", ex)); 
+        LogMgr.getInstance().flush();   
+      }
+      finally {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Usr, LogMgr.Level.Fine,
+           "Balancer Finished.");      
+        LogMgr.getInstance().flush();
       }
     }
   }

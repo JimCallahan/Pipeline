@@ -1,4 +1,4 @@
-// $Id: QueueHostHistograms.java,v 1.3 2009/09/16 23:35:42 jesse Exp $
+// $Id: QueueHostHistograms.java,v 1.4 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -285,7 +285,7 @@ class QueueHostHistograms
     }
     
     {
-      String group = qinfo.getUserBalanceGroup();
+      String group = qinfo.getBalanceGroup();
       if(group == null) 
         group = "-";
       pUserBalanceGroups.catagorize(group); 

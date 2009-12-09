@@ -1,4 +1,4 @@
-// $Id: JobRank.java,v 1.4 2009/09/29 20:44:41 jesse Exp $
+// $Id: JobRank.java,v 1.5 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -57,9 +57,33 @@ class JobRank
    * Get the job group percentage done.
    */
   public final double 
-  getPercent()
+  getFavorGroupPercent()
   {
-    return pPercent;
+    return pFavorGroupPercent;
+  }
+  
+  /**
+   * Get the percentage of the user's allotment that has currently been used. <p>
+   * 
+   * Lower numbers indicate that the user has a great claim to available machines.
+   */
+  public final double
+  getBalanceGroupPercent()
+  {
+    return pBalanceGroupPercent;
+  }
+  
+  /**
+   * Get the number of jobs the user has dispatched in the balance group during the current 
+   * cycle.<p>
+   * 
+   * When users have the same balance group percent, the user with the lower use will win a
+   * tie-breaker for the slot. 
+   */
+  public final int
+  getBalanceGroupUse()
+  {
+    return pBalanceGroupUse;
   }
   
   /**
@@ -89,8 +113,15 @@ class JobRank
    * @param score
    *   The job selection score. 
    * 
-   * @param percent
+   * @param favorGroupPercent
    *   The percentage of jobs engaged/pending within the jobs group.
+   *   
+   * @param balanceGroupPercent
+   *   The percentage of their total share that the owner of this job has used.
+   *   
+   * @param balanceGroupUse
+   *   The number of jobs that this user has dispatched in this balance group during 
+   *   the current cycle.
    * 
    * @param priority
    *   The relative job priority.
@@ -103,16 +134,21 @@ class JobRank
   (
    long jobID, 
    int score, 
-   double percent, 
+   double favorGroupPercent,
+   double balanceGroupPercent,
+   int balanceGroupUse,
    int priority, 
    long stamp
   ) 
   {
     pJobID     = jobID;
     pScore     = score; 
-    pPercent   = percent; 
     pPriority  = priority; 
     pTimeStamp = stamp;
+    
+    pFavorGroupPercent   = favorGroupPercent;
+    pBalanceGroupPercent = balanceGroupPercent;
+    pBalanceGroupUse     = balanceGroupUse;
   }
 
   
@@ -123,12 +159,33 @@ class JobRank
   public String
   selectionLogMsg
   (
-   int rank
+    DispatchCriteria[] crits,
+    int rank
   ) 
   {
-    return (pJobID + "(" + rank + "): " + pScore + " " + 
-            String.format("%1$.4f", pPercent) + " " + pPriority + " " + 
-            TimeStamps.format(pTimeStamp)); 
+    StringBuffer toReturn = new StringBuffer(pJobID + "(" + rank + "): ");
+    
+    for (DispatchCriteria crit: crits) {
+      switch(crit) {
+      case SelectionScore:
+        toReturn.append(pScore + " ");
+        break;
+      case BalanceGroups:
+        toReturn.append(String.format("%1$.2f", pBalanceGroupPercent) + 
+                        "(" + pBalanceGroupUse + ") ");
+        break;
+      case JobGroupPercent:
+        toReturn.append(String.format("%1$.4f", pFavorGroupPercent) + " ");
+        break;
+      case JobPriority:
+        toReturn.append(pPriority + " ");
+        break;
+      case TimeStamp:
+        toReturn.append(TimeStamps.format(pTimeStamp) + " ");
+      }
+    }
+    
+    return toReturn.toString(); 
   }
   
   
@@ -150,7 +207,21 @@ class JobRank
   /**
    * The percentage of jobs engaged/pending within the jobs group.
    */ 
-  private double pPercent; 
+  private double pFavorGroupPercent; 
+  
+  /**
+   * The percentage of the user's balance group allotment that is currently being used.  This
+   * will be {@link Double#MAX_VALUE} if the user does not have an allotment, zero if the none
+   * of the allotment is being used or the percent used (which can be greater than 1, but will
+   * not be negative).
+   */
+  private double pBalanceGroupPercent;
+  
+  /**
+   * The number of jobs that the user has dispatched in this balance group during the current 
+   * time interval.
+   */
+  private int pBalanceGroupUse;
 
   /**
    * The relative job priority.

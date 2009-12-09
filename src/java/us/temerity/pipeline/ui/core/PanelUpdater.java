@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.43 2009/09/16 03:54:40 jesse Exp $
+// $Id: PanelUpdater.java,v 1.44 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -736,7 +736,7 @@ class PanelUpdater
 		pSelectionSchedules = qclient.getSelectionScheduleNames();
 		pHardwareGroups     = qclient.getHardwareGroupNames();
 		pDispatchControls   = qclient.getDispatchControlNames();
-		pUserBalanceGroups  = qclient.getUserBalanceGroupNames();
+		pUserBalanceGroups  = qclient.getBalanceGroupNames();
 		pScheduleMatrix     = qclient.getSelectionScheduleMatrix();
 
 		/* add full intervals for missing hosts */ 

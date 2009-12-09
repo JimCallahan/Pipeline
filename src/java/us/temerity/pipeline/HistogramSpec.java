@@ -1,4 +1,4 @@
-// $Id: HistogramSpec.java,v 1.2 2006/12/14 19:01:31 jim Exp $
+// $Id: HistogramSpec.java,v 1.3 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -12,12 +12,12 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A specification of the catagories into which a histogram sorts a set of values.<P> 
+ * A specification of the categories into which a histogram sorts a set of values.<P> 
  * 
- * Besides catagorizing values, the histogram spcification also maintains a flag for 
- * each catagory which determines whether it is a member of the matching set.  A given 
+ * Besides categorizing values, the histogram specification also maintains a flag for 
+ * each category which determines whether it is a member of the matching set.  A given 
  * value can be tested using the {@link #isIncludedItem} method to test whether it 
- * belongs to one of the catagories which are included in this matching set.
+ * belongs to one of the categories which are included in this matching set.
  */
 public
 class HistogramSpec
@@ -37,13 +37,13 @@ class HistogramSpec
   {}
 
   /**
-   * Construct a new histogram specification with the given set of catagory ranges.
+   * Construct a new histogram specification with the given set of category ranges.
    * 
    * @param name
    *   The name of the histogram.
    * 
    * @param ranges
-   *   The set of histogram catagory ranges.
+   *   The set of histogram category ranges.
    */
   public
   HistogramSpec
@@ -56,7 +56,7 @@ class HistogramSpec
     
     if((ranges == null) || ranges.isEmpty()) 
        throw new IllegalArgumentException
-	 ("A non-empty set of catagory ranges is required!");
+	 ("A non-empty set of category ranges is required!");
     int size = ranges.size();
 
     int wk = 0;
@@ -100,7 +100,7 @@ class HistogramSpec
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Whether any catagories are currently included in the matching set.
+   * Whether any categories are currently included in the matching set.
    */ 
   public boolean 
   anyIncluded() 
@@ -115,7 +115,7 @@ class HistogramSpec
   }
 
   /**
-   * Whether all or none of the catagories are currently included in the matching set.
+   * Whether all or none of the categories are currently included in the matching set.
    */ 
   public boolean 
   allIncluded() 
@@ -131,10 +131,10 @@ class HistogramSpec
   }
 
   /**
-   * Whether the given catagory is included in the matching set.
+   * Whether the given category is included in the matching set.
    * 
    * @param range
-   *   The range of the catagory.
+   *   The range of the category.
    */ 
   public boolean
   isIncluded
@@ -152,10 +152,10 @@ class HistogramSpec
   }
 
   /**
-   * Whether the given catagory is included in the matching set.
+   * Whether the given category is included in the matching set.
    * 
    * @param idx
-   *   The catagory index.
+   *   The category index.
    */ 
   public boolean
   isIncluded
@@ -200,10 +200,10 @@ class HistogramSpec
   }
 
   /**
-   * Get the range of the given catagory.
+   * Get the range of the given category.
    * 
    * @param idx
-   *   The catagory index.
+   *   The category index.
    */ 
   public HistogramRange
   getRange
@@ -232,14 +232,14 @@ class HistogramSpec
   }
 
   /**
-   * Set whether to include the given catagory when matching a value using the 
+   * Set whether to include the given category when matching a value using the 
    * {@link #isIncludedItem} method.
    * 
    * @param range
-   *   The range of the catagory.
+   *   The range of the category.
    * 
    * @param tf
-   *   Whether to include the catagory.
+   *   Whether to include the category.
    */ 
   public void
   setIncluded
@@ -258,14 +258,14 @@ class HistogramSpec
   }
   
   /**
-   * Set whether to include the given catagory when matching a value using the 
+   * Set whether to include the given category when matching a value using the 
    * {@link #isIncludedItem} method.
    * 
    * @param idx
-   *   The catagory index.
+   *   The category index.
    * 
    * @param tf
-   *   Whether to include the catagory.
+   *   Whether to include the category.
    */ 
   public void
   setIncluded
@@ -296,10 +296,10 @@ class HistogramSpec
   }
 
   /**
-   * Toggle the whether the given catagory is included in the matching set.
+   * Toggle the whether the given category is included in the matching set.
    * 
    * @param idx
-   *   The catagory index.
+   *   The category index.
    */ 
   public void 
   toggleIncluded
@@ -357,12 +357,12 @@ class HistogramSpec
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Range of values which defines the bounds of each catagory.
+   * Range of values which defines the bounds of each category.
    */
   private HistogramRange[]  pRanges; 
  
   /** 
-   * Whether each catagory is included in the range of values matched by the pattern
+   * Whether each category is included in the range of values matched by the pattern
    * matcher feature.
    */
   private boolean[]  pIncluded; 

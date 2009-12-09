@@ -1,10 +1,10 @@
-// $Id: UserBalanceGroup.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
+// $Id: UserBalanceGroup.java,v 1.2 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
-import java.util.Map.*;
 
+import us.temerity.pipeline.BaseOpMap.*;
 import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -51,23 +51,51 @@ class UserBalanceGroup
     init();
     
     pDefaultValue = 0;
+    pDefaultMaxShare = 0;
   }
   
   /**
-   * Copy constructor.
-   */
+   * Construct a new balance group with the same user values as the given group.
+   * 
+   * @param name
+   *   The name of the new group.
+   * 
+   * @param group
+   *   Copy user values from this group.
+   */ 
   public 
   UserBalanceGroup
   (
+    String name,
     UserBalanceGroup group
   )
   {
-    super(group.pName);
+    super(name);
     init();
     
     pDefaultValue = group.pDefaultValue;
+    pDefaultMaxShare = group.pDefaultMaxShare;
     pUserValues.putAll(group.getUserValues());
+    pUserMaxShares.putAll(group.getUserMaxShare());
+    pGroupValues.putAll(group.getGroupValues());
+    pGroupMaxShares.putAll(group.getGroupMaxShare());
   }
+  
+  /**
+   * Copy Constructor
+   * 
+   * @param group
+   *   Balance Group to copy.
+   */
+  public
+  UserBalanceGroup
+  (
+    UserBalanceGroup group  
+  )
+  {
+    this(group.getName(), group);
+  }
+  
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -78,6 +106,9 @@ class UserBalanceGroup
   init() 
   {
     pUserValues = new TreeMap<String, Integer>();
+    pGroupValues = new TreeMap<String, Integer>();
+    pGroupMaxShares = new TreeMap<String, Double>();
+    pUserMaxShares = new TreeMap<String, Double>();
   }
   
   
@@ -107,10 +138,76 @@ class UserBalanceGroup
     int defaultValue
   )
   {
-    if (defaultValue < 0)
+    if (!isValidValue(defaultValue))
       throw new IllegalArgumentException
-        ("It is not value to have the groups's default queue share be less than zero.");
+        ("It is not valid to have the groups's default queue share be less than zero.");
     pDefaultValue = defaultValue;
+  }
+  
+  /**
+   * Check if an Integer value is a valid default share value.
+
+   * @return
+   *   <code>False</code> if defaultValue is <code>null</code> or less than zero.  
+   *   Otherwise <code>True</code>. 
+   */
+  public static boolean
+  isValidValue
+  (
+    Integer defaultValue  
+  )
+  {
+    if (defaultValue == null || defaultValue < 0)
+      return false;
+    return true;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default max share value assigned to all users not listed in the map.
+   */
+  public double
+  getDefaultMaxShare()
+  {
+    return pDefaultMaxShare;
+  }
+  
+  /**
+   * Set the default max share value that will be assigned to all users not listed in the map.
+   * 
+   * @throws IllegalArgumentException
+   *   If the max share value is not between zero and one.
+   */
+  public void
+  setDefaultMaxShare
+  (
+    double maxShare
+  )
+  {
+    if (!isValidMaxShare(maxShare))
+      throw new IllegalArgumentException
+        ("It is not valid to have the groups's default max share be less than zero or " +
+         "greater than one.");
+    pDefaultMaxShare = maxShare;
+  }
+  
+  /**
+   * Check if a Double value is a valid default max share.
+
+   * @return
+   *   <code>False</code> if maxShare is <code>null</code> or less than zero or greater than 
+   *   one.  Otherwise <code>True</code>. 
+   */
+  public static boolean
+  isValidMaxShare
+  (
+    Double maxShare  
+  )
+  {
+    if (maxShare == null || (maxShare < 0d || maxShare > 1d))
+      return false;
+    return true;
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -143,48 +240,305 @@ class UserBalanceGroup
     pUserValues.clear();
     if (userValues != null) {
       for (Integer i : userValues.values())
-        if (i < 0)
+        if (!isValidValue(i))
           throw new IllegalArgumentException
-            ("It is not value to have a user's queue share be less than zero.");
+            ("It is not valid to have a user's queue share be less than zero.");
       pUserValues.putAll(userValues);
     }
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
-   * Get a map of the users to the actual percentage of the queue that they are entitled to 
-   * under the current set of user values.
-   * 
-   * @param users
-   *   The list of users that will be used to calculate the normalized values.  This list does 
-   *   not need to coincide with all the users in this group.  Users who are in the group, but 
-   *   not in the list will have their values ignored; users who are in the list but not in 
-   *   the group will have the default value assigned to them.
+   * Get the map of groups to their un-normalized share of the queue.
    */
-  public TreeMap<String, Double>
-  getNormalizedUserValues
+  public Map<String, Integer>
+  getGroupValues()
+  {
+    return Collections.unmodifiableMap(pGroupValues);
+  }
+  
+  /**
+   * Set the map of groups and their un-normalized share of the queue.
+   * 
+   * @param groupValues
+   *   The map which will replace the current mapping of values or <code>null</code> to clear 
+   *   all the existing mappings.
+   *   
+   * @throws IllegalArgumentException
+   *   If a value less than zero is specified for a group's queue share.
+   */
+  public void
+  setGroupValues
   (
-    TreeSet<String> users  
+    Map<String, Integer> groupValues  
   )
   {
-    TreeMap<String, Double> toReturn = new TreeMap<String, Double>();  
-    
-    TreeMap<String, Integer> shares = new TreeMap<String, Integer>();
+    pGroupValues.clear();
+    if (groupValues != null) {
+      for (Integer i : groupValues.values())
+        if (!isValidValue(i))
+          throw new IllegalArgumentException
+            ("It is not valid to have a group's queue share be less than zero.");
+      pGroupValues.putAll(groupValues);
+    }
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Set the map of users and the maximum percentage (represented as a Double between 0 and 1)
+   * of the queue they should have.<p>
+   * 
+   * These values are added to the user values to calculate the final max percentage that a
+   * user can have of the balance group.
+   * 
+   * @param userShares
+   *   The map which will replace the current mapping of maximum or <code>null</code> to clear 
+   *   all the existing mappings.
+   *   
+   * @throws IllegalArgumentException
+   *   If a value less than zero or more than one is specified for a user's queue share.
+   */
+  public void
+  setUserMaxShares
+  (
+    Map<String, Double> userShares  
+  )
+  {
+    pUserMaxShares.clear();
+    if (userShares != null) {
+      for (Double i : userShares.values())
+        if (!isValidMaxShare(i))
+          throw new IllegalArgumentException
+            ("It is not valid for a user's max share of the queue to be greater than 1 or " +
+             "less than 0.");
+      pUserMaxShares.putAll(userShares);
+    }
+  }
+  
+  /**
+   * Get the map of users and the maximum percentage (represented as a Double between 0 and 1)
+   * of the queue they should have.
+   */
+  public Map<String, Double>
+  getUserMaxShare()
+  {
+    return Collections.unmodifiableMap(pUserMaxShares);
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Set the map of group and the maximum percentage (represented as a Double between 0 and 1)
+   * of the balance group they should have. <p>
+   * 
+   * These values are added to the user values to calculate the final max percentage that a
+   * user can have of the balance group.
+   * 
+   * @param groupShares
+   *   The map which will replace the current mapping of maximum or <code>null</code> to clear 
+   *   all the existing mappings.
+   *   
+   * @throws IllegalArgumentException
+   *   If a value less than zero or more than one is specified for a group's queue share.
+   */
+  public void
+  setGroupMaxShares
+  (
+    Map<String, Double> groupShares  
+  )
+  {
+    pGroupMaxShares.clear();
+    if (groupShares != null) {
+      for (Double i : groupShares.values())
+        if (!isValidMaxShare(i))
+          throw new IllegalArgumentException
+            ("It is not valid for a group's max share of the queue to be greater than 1 or " +
+             "less than 0.");
+      pGroupMaxShares.putAll(groupShares);
+    }
+  }
+
+  /**
+   * Get the map of groups and the maximum percentage (represented as a Double between 0 
+   * and 1) of the queue they should have.
+   */
+  public Map<String, Double>
+  getGroupMaxShare()
+  {
+    return Collections.unmodifiableMap(pGroupMaxShares);
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get a map of the users to the actual percentage of the queue that they are entitled to
+   * under the current set of user and group values.
+   * <p>
+   * The list of users and groups in the WorkGroups structure is considered definitive in
+   * terms of calculating shares of queue. Users who are in the user balance group, but not in
+   * the workgroup will have their values ignored; users who are in the workgroup but not in
+   * the user balance group will have the default value assigned to them. Groups which are not
+   * in the user balance group will have a value of zero assigned to them.
+   * 
+   * @param wgroups
+   *   The list of users and groups that will be used to calculate the normalized values.
+   * 
+   * @return 
+   *   A map of users to the share of the queue they should get under the current rules.
+   */
+  public DoubleOpMap<String>
+  getNormalizedUserValues
+  (
+    WorkGroups wgroups
+  )
+  {
+    DoubleOpMap<String> toReturn = new DoubleOpMap<String>();  
     double total = 0d;
-    for (String user : users) {
-      Integer share = pUserValues.get(user);
-      if (share == null)
-        share = pDefaultValue;
-      total+= share;
-      shares.put(user, share);
+    for (String group : wgroups.getGroups()) {
+      if (pGroupValues.containsKey(group)) {
+        TreeSet<String> users = wgroups.getUsersInGroup(group);
+        double value = pGroupValues.get(group);
+        if (value > 0d) {
+          for (String user : users) {
+            toReturn.apply(user, value);
+            total += value;
+          }
+        }
+      }
     }
     
-    for (Entry<String, Integer> entry : shares.entrySet()) {
-      if (total > 0d)
-        toReturn.put(entry.getKey(), entry.getValue() / total);
-      else
-        toReturn.put(entry.getKey(), 0d);
+    for (String user : wgroups.getUsers()) {
+      Integer value = pUserValues.get(user);
+      if (value == null)
+        value = pDefaultValue;
+      
+      total += value;
+      toReturn.apply(user, (double) value);
     }
+    
+    TreeSet<String> users = new TreeSet<String>(toReturn.keySet());
+    if (total > 0d) {
+      for (String user : users)
+        toReturn.apply(user, total, Op.Divide);
+    }
+    else {
+      for (String user : users)
+        toReturn.put(user, 0d);
+    }
+    
     return toReturn;
+  }
+  
+  public DoubleOpMap<String>
+  getFinalMaxShares
+  (
+    WorkGroups wgroups
+  )
+  {
+    DoubleOpMap<String> toReturn = new DoubleOpMap<String>();
+    for (String group : wgroups.getGroups()) {
+      if (pGroupMaxShares.containsKey(group)) {
+        TreeSet<String> users = wgroups.getUsersInGroup(group);
+        double value = pGroupMaxShares.get(group);
+        if (value > 0d) {
+          for (String user : users) {
+            toReturn.apply(user, value);
+          }
+        }
+      }
+    }
+    
+    for (String user : wgroups.getUsers()) {
+      Double value = pUserMaxShares.get(user);
+      if (value == null && toReturn.get(user) == null)
+        value = pDefaultMaxShare;
+      
+      if (value != null)
+        toReturn.apply(user, (double) value);
+      toReturn.apply(user, 1d, Op.Min);
+      toReturn.apply(user, 0d, Op.Max);
+    }
+    
+    return toReturn;
+  }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  @Override
+  public void 
+  toGlue
+  (
+    GlueEncoder encoder
+  ) 
+    throws GlueException 
+  {
+    super.toGlue(encoder);
+    
+    encoder.encode("DefaultValue", pDefaultValue);
+    
+    encoder.encode("DefaultMaxShare", pDefaultMaxShare);
+    
+    if (!pUserValues.isEmpty())
+      encoder.encode("UserValues", pUserValues);
+    
+    if (!pGroupValues.isEmpty())
+      encoder.encode("GroupValues", pGroupValues);
+    
+    if (!pUserMaxShares.isEmpty())
+      encoder.encode("UserMaxShares", pUserMaxShares);
+    
+    if (!pGroupMaxShares.isEmpty())
+      encoder.encode("GroupMaxShares", pGroupMaxShares);
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Override
+  public void 
+  fromGlue
+  (
+    GlueDecoder decoder
+  )
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+    
+    pDefaultValue = (Integer) decoder.decode("DefaultValue");
+    
+    pDefaultMaxShare = (Double) decoder.decode("DefaultMaxShare");
+    
+    {
+      TreeMap<String, Integer> temp = 
+        (TreeMap<String, Integer>) decoder.decode("UserValues");
+      if (temp != null)
+        pUserValues.putAll(temp);
+    }
+    
+    {
+      TreeMap<String, Integer> temp = 
+        (TreeMap<String, Integer>) decoder.decode("GroupValues");
+      if (temp != null)
+        pGroupValues.putAll(temp);
+    }
+    
+    {
+      TreeMap<String, Double> temp = 
+        (TreeMap<String, Double>) decoder.decode("UserMaxShares");
+      if (temp != null)
+        pUserMaxShares.putAll(temp);
+    }
+    
+    {
+      TreeMap<String, Double> temp = 
+        (TreeMap<String, Double>) decoder.decode("GroupMaxShares");
+      if (temp != null)
+        pGroupMaxShares.putAll(temp);
+    }
   }
 
   
@@ -207,7 +561,27 @@ class UserBalanceGroup
   private int pDefaultValue;
   
   /**
+   * Default max share assigned to all the users not listed in the map.
+   */
+  private double pDefaultMaxShare;
+  
+  /**
    * Mapping of user names to their un-normalized queue share.
    */
   private TreeMap<String, Integer> pUserValues;
+  
+  /**
+   * Mapping of group names to their un-normalized queue share.
+   */
+  private TreeMap<String, Integer> pGroupValues;
+  
+  /**
+   * Mapping of user names to the maximum share they should get of the queue.
+   */
+  private TreeMap<String, Double> pUserMaxShares;
+  
+  /**
+   * Mapping of group names to the maximum share they should get of the queue.
+   */
+  private TreeMap<String, Double> pGroupMaxShares;
 }

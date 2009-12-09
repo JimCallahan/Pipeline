@@ -1,4 +1,4 @@
-// $Id: ViewerPie.java,v 1.6 2009/05/12 09:34:47 jim Exp $
+// $Id: ViewerPie.java,v 1.7 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -26,13 +26,13 @@ class ViewerPie
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Constuct a new viewer pie.
+   * Construct a new viewer pie.
    * 
    * @param hist
    *   The histogram to visualize.
    * 
    * @param reverseOrder
-   *   Whether to display the histogram catagories in reverse order.
+   *   Whether to display the histogram categories in reverse order.
    */ 
   public 
   ViewerPie
@@ -111,7 +111,7 @@ class ViewerPie
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set the histogram catagory colors explicitly. 
+   * Set the histogram category colors explicitly. 
    */ 
   public void 
   setColors
@@ -125,13 +125,13 @@ class ViewerPie
     if(pHistogram.getNumCatagories() != colors.length)
       throw new IllegalStateException
 	("The number of colors (" + colors.length + ") must be the equal to the number " +
-	 "of catagories (" + pHistogram.getNumCatagories() + ") in the histogram!"); 
+	 "of categories (" + pHistogram.getNumCatagories() + ") in the histogram!"); 
 
     pColors = colors; 
   }
 
   /**
-   * Set the histogram catagory colors by interpolating between the given colors.
+   * Set the histogram category colors by interpolating between the given colors.
    */ 
   public void 
   setColors
@@ -303,7 +303,7 @@ class ViewerPie
 				     GeometryMgr.TextAlignment.Center, 0.05);
       }
 
-      /* catagory labels */ 
+      /* category labels */ 
       if(pLabelDLs == null) {
 	int size = pHistogram.getNumCatagories(); 
 	pLabelDLs = new int[size];
@@ -318,7 +318,7 @@ class ViewerPie
 	}
       }
 
-      /* the catagory filter rings */ 
+      /* the category filter rings */ 
       if(pIncludedDLs == null) {
 	pIncludedDLs = new Integer[pHistogram.getNumCatagories()];
 	if(!pSlices.isEmpty()) {
@@ -432,7 +432,7 @@ class ViewerPie
 	gl.glEndList();	  
       }
       
-      /* chart title, geometry and catagory labels */ 
+      /* chart title, geometry and category labels */ 
       if(pMasterDL == null) {
 	pMasterDL = gl.glGenLists(1);
 
@@ -584,7 +584,7 @@ class ViewerPie
 	    }
 	  }
 
-	  /* catagory labels */ 
+	  /* category labels */ 
 	  if(!pSlices.isEmpty()) {
 	    double gap = sFilterWidth + sLabelGap; 
 	    double tscale = 0.325;
@@ -643,7 +643,7 @@ class ViewerPie
       if((pAnyIncludedDL != null) && pHistogram.anyIncluded()) 
 	gl.glCallList(pAnyIncludedDL);
 
-      /* the catagory filter graphics */ 
+      /* the category filter graphics */ 
       if(pIncludedDLs != null) {
 	for(Integer idx : pSlices.keySet()) {
 	  if(pHistogram.isIncluded(idx))
@@ -651,7 +651,7 @@ class ViewerPie
 	}
       }
 
-      /* chart title, geometry and catagory labels */ 
+      /* chart title, geometry and category labels */ 
       if(pMasterDL != null) 
 	gl.glCallList(pMasterDL);
     }
@@ -660,7 +660,7 @@ class ViewerPie
   
   
   /**
-   * Perform any modifications of the histogram catagory label required.
+   * Perform any modifications of the histogram category label required.
    */ 
   protected String
   formatLabel
@@ -709,7 +709,7 @@ class ViewerPie
   private Histogram  pHistogram; 
 
   /**
-   * Whether to display the histogram catagories in reverse order.
+   * Whether to display the histogram categories in reverse order.
    */ 
   private boolean  pReverseOrder; 
 
@@ -732,7 +732,7 @@ class ViewerPie
   private int[]    pTitleDLs; 
 
   /**
-   * The OpenGL display list handles and widths for the catagory labels.
+   * The OpenGL display list handles and widths for the category labels.
    */ 
   private int[]     pLabelDLs; 
   private double[]  pLabelWidths;
@@ -743,13 +743,13 @@ class ViewerPie
   private Integer pAnyIncludedDL; 
 
   /**
-   * The OpenGL display list handles for geometry displayed for each catagory when included
+   * The OpenGL display list handles for geometry displayed for each category when included
    * in the matching set for the histogram.
    */ 
   private Integer[]  pIncludedDLs; 
 
   /**
-   * The colors for each histogram catagory.
+   * The colors for each histogram category.
    */ 
   private Color3d[]  pColors;
   

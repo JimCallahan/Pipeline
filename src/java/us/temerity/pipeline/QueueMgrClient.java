@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.51 2009/09/16 03:54:40 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.52 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -1311,12 +1311,12 @@ class QueueMgrClient
    *   If unable to retrieve the information.
    */ 
   public synchronized TreeSet<String> 
-  getUserBalanceGroupNames() 
+  getBalanceGroupNames() 
     throws PipelineException  
   {
     verifyConnection();
 
-    Object obj = performTransaction(QueueRequest.GetUserBalanceGroupNames, null);
+    Object obj = performTransaction(QueueRequest.GetBalanceGroupNames, null);
     if(obj instanceof QueueGetNamesRsp) {
       QueueGetNamesRsp rsp = (QueueGetNamesRsp) obj;
       return rsp.getNames();
@@ -1337,12 +1337,12 @@ class QueueMgrClient
    *   If unable to retrieve the information.
    */ 
   public synchronized TreeMap<String, UserBalanceGroup> 
-  getUserBalanceGroups() 
+  getBalanceGroups() 
     throws PipelineException  
   {
     verifyConnection();
 
-    Object obj = performTransaction(QueueRequest.GetUserBalanceGroups, null);
+    Object obj = performTransaction(QueueRequest.GetBalanceGroups, null);
     if(obj instanceof QueueGetUserBalanceGroupsRsp) {
       QueueGetUserBalanceGroupsRsp rsp = (QueueGetUserBalanceGroupsRsp) obj;
       return rsp.getUserBalanceGroups();
@@ -1351,6 +1351,39 @@ class QueueMgrClient
       handleFailure(obj);
       return null;
     }        
+  }
+
+  /**
+   * Get the current user weighting for a single user balance groups. 
+   * 
+   * @param
+   *   The name of the group.
+   * 
+   * @return
+   *   The user balance group. 
+   * 
+   * @throws PipelineException
+   *   If no group with that name exists.
+   */ 
+  public synchronized UserBalanceGroup
+  getBalanceGroup
+  (
+    String groupName  
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    QueueGetByNameReq req = new QueueGetByNameReq(groupName);
+    Object obj = performTransaction(QueueRequest.GetBalanceGroup, req);
+    if(obj instanceof QueueGetUserBalanceGroupRsp) {
+      QueueGetUserBalanceGroupRsp rsp = (QueueGetUserBalanceGroupRsp) obj;
+      return rsp.getUserBalanceGroup();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   }
   
   /**
@@ -1363,7 +1396,7 @@ class QueueMgrClient
    *   If a group already exists with the given name. 
    */ 
   public synchronized void
-  addUserBalanceGroup
+  addBalanceGroup
   (
     String cname
   ) 
@@ -1372,7 +1405,7 @@ class QueueMgrClient
     verifyConnection();
     
     QueueAddByNameReq req = new QueueAddByNameReq(cname, "user balance group");
-    Object obj = performTransaction(QueueRequest.AddUserBalanceGroup, req);
+    Object obj = performTransaction(QueueRequest.AddBalanceGroup, req);
     handleSimpleResponse(obj);
   }
 
@@ -1386,7 +1419,7 @@ class QueueMgrClient
    *   If unable to remove the user balance group.
    */ 
   public synchronized void
-  removeUserBalanceGroup
+  removeBalanceGroup
   (
     String cname
   ) 
@@ -1417,7 +1450,7 @@ class QueueMgrClient
     verifyConnection();
     
     QueueRemoveByNameReq req = new QueueRemoveByNameReq(cnames, "user balance groups");
-    Object obj = performTransaction(QueueRequest.RemoveUserBalanceGroups, req);
+    Object obj = performTransaction(QueueRequest.RemoveBalanceGroups, req);
     handleSimpleResponse(obj);
   }
   
@@ -1428,7 +1461,7 @@ class QueueMgrClient
    *   The user balance group to modify.
    */ 
   public synchronized void
-  editUserBalanceGroup
+  editBalanceGroup
   (
     UserBalanceGroup group
   ) 
@@ -1437,7 +1470,7 @@ class QueueMgrClient
     ArrayList<UserBalanceGroup> groups = new ArrayList<UserBalanceGroup>();
     groups.add(group);
 
-    editUserBalanceGroups(groups);
+    editBalanceGroups(groups);
   }
   
   /**
@@ -1447,7 +1480,7 @@ class QueueMgrClient
    *   The groups to modify.
    */ 
   public synchronized void
-  editUserBalanceGroups
+  editBalanceGroups
   (
     Collection<UserBalanceGroup> controls
   ) 
@@ -1456,8 +1489,35 @@ class QueueMgrClient
     verifyConnection();
     
     QueueEditUserBalanceGroupsReq req = new QueueEditUserBalanceGroupsReq(controls);
-    Object obj = performTransaction(QueueRequest.EditUserBalanceGroups, req); 
+    Object obj = performTransaction(QueueRequest.EditBalanceGroups, req); 
     handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Get the current user usage for all existing balance groups. 
+   * 
+   * @return
+   *   The percentage of the balance group used, indexed by balance group name and then user
+   *   name. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized DoubleMap<String, String, Double> 
+  getBalanceGroupUsage() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetBalanceGroupUsage, null);
+    if(obj instanceof QueueGetBalanceGroupUsageRsp) {
+      QueueGetBalanceGroupUsageRsp rsp = (QueueGetBalanceGroupUsageRsp) obj;
+      return rsp.getBalanceGroupUsage();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
   }
 
 

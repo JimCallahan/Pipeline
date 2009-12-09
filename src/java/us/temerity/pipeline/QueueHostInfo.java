@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.11 2009/09/16 03:54:40 jesse Exp $
+// $Id: QueueHostInfo.java,v 1.12 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -186,7 +186,7 @@ class QueueHostInfo
     pSelectionGroup = group; 
     pSelectionSchedule = schedule; 
     pHardwareGroup = hardwareGroup;
-    pUserBalanceGroup = userBalanceGroup;
+    pBalanceGroup = userBalanceGroup;
     pDispatchControl = dispatchControl;
     
     pFavorMethod = favorMethod;
@@ -229,7 +229,7 @@ class QueueHostInfo
   {
     return (isStatusPending() || pReservationPending || pOrderPending || pJobSlotsPending ||
 	    pSelectionSchedulePending || pSelectionGroupPending || pHardwareGroupPending ||
-	    pFavorMethodPending || pDispatchControlPending || pUserBalanceGroupPending);
+	    pFavorMethodPending || pDispatchControlPending || pBalanceGroupPending);
   }
    
 
@@ -835,31 +835,31 @@ class QueueHostInfo
    *   The user balance group or <CODE>null</CODE> not a member of any user balance group.
    */ 
   public synchronized String
-  getUserBalanceGroup() 
+  getBalanceGroup() 
   {
-    return pUserBalanceGroup;
+    return pBalanceGroup;
   }
 
   /**
    * Set the name of the current user balance group or <CODE>null</CODE> to clear.
    */ 
   public synchronized void
-  setUserBalanceGroup
+  setBalanceGroup
   (
    String name
   ) 
   {
-    pUserBalanceGroup = name;
-    pUserBalanceGroupPending = true;
+    pBalanceGroup = name;
+    pBalanceGroupPending = true;
   }
 
   /**
    * Whether a change in user balance group is pending.
    */ 
   public synchronized boolean
-  isUserBalanceGroupPending()
+  isBalanceGroupPending()
   {
-    return pUserBalanceGroupPending;
+    return pBalanceGroupPending;
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -925,7 +925,7 @@ class QueueHostInfo
     encoder.encode("HardwareGroup", pHardwareGroup);
     encoder.encode("FavorMethod", pFavorMethod);
     encoder.encode("DispatchControl", pDispatchControl);
-    encoder.encode("UserBalanceGroup", pUserBalanceGroup);
+    encoder.encode("UserBalanceGroup", pBalanceGroup);
   }
 
   @Override
@@ -965,7 +965,7 @@ class QueueHostInfo
     pSelectionGroup    = (String) decoder.decode("SelectionGroup");
     pHardwareGroup     = (String) decoder.decode("HardwareGroup");
     pDispatchControl   = (String) decoder.decode("DispatchControl");
-    pUserBalanceGroup  = (String) decoder.decode("UserBalanceGroup");
+    pBalanceGroup  = (String) decoder.decode("UserBalanceGroup");
   }
   
   
@@ -1089,8 +1089,8 @@ class QueueHostInfo
    * The name of the current user balance group or <CODE>null</CODE> not a member of any 
    * user balance group. 
    */
-  private String  pUserBalanceGroup;
-  private boolean pUserBalanceGroupPending;
+  private String  pBalanceGroup;
+  private boolean pBalanceGroupPending;
   
   /**
    * The favor method of the host.

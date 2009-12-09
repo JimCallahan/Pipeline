@@ -1,4 +1,4 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.11 2009/09/16 23:35:42 jesse Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.12 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -683,7 +683,7 @@ class JQueueJobServerStatsPanel
   }
    
   /** 
-   * Syncronized display list building helper.
+   * Synchronized display list building helper.
    */ 
   private synchronized void
   rebuildAll
@@ -696,7 +696,7 @@ class JQueueJobServerStatsPanel
   }
   
   /** 
-   * Syncronized rendering helper.
+   * Synchronized rendering helper.
    */ 
   private synchronized void
   renderAll

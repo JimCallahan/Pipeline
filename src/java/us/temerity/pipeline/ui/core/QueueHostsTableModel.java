@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.26 2009/09/16 03:54:40 jesse Exp $
+// $Id: QueueHostsTableModel.java,v 1.27 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -454,7 +454,7 @@ class QueueHostsTableModel
 	String userBalance = null;
 	boolean userBalanceModified = false;
 	if (pEditedUserBalanceIndices.contains(idx)) {
-	  userBalance = host.getUserBalanceGroup();
+	  userBalance = host.getBalanceGroup();
 	  userBalanceModified = true;
 	}
 	
@@ -611,7 +611,7 @@ class QueueHostsTableModel
         break;
         
       case USERBALANCE:
-        value = host.getUserBalanceGroup();
+        value = host.getBalanceGroup();
         break;
 
       default:
@@ -891,7 +891,7 @@ class QueueHostsTableModel
       
     case USERBALANCE:
       {
-        String group = host.getUserBalanceGroup();
+        String group = host.getBalanceGroup();
         if(group == null) 
           group = "-";
         return group;
@@ -1085,7 +1085,7 @@ class QueueHostsTableModel
     if((sched && ((state == null) || (state == EditableState.Automatic))) || !sched) {
       if(group.equals("-")) 
         group = null;
-      host.setUserBalanceGroup(group);
+      host.setBalanceGroup(group);
       pEditedUserBalanceIndices.add(srow);
       pParent.unsavedChange("User Balance Group: " + hostname);
     }

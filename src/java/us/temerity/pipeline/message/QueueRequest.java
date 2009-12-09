@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.30 2009/09/16 03:54:40 jesse Exp $
+// $Id: QueueRequest.java,v 1.31 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -254,27 +254,37 @@ enum QueueRequest
   /**
    * Get the names of all existing user balance groups. 
    */ 
-  GetUserBalanceGroupNames, 
+  GetBalanceGroupNames, 
 
   /**
    * Get all the current user balance groups. 
    */ 
-  GetUserBalanceGroups, 
+  GetBalanceGroups, 
+  
+  /**
+   * Get a specific user balance group.
+   */
+  GetBalanceGroup,
 
   /**
    * An instance {@link QueueAddByNameReq} is next.
    */
-  AddUserBalanceGroup, 
+  AddBalanceGroup, 
 
   /**
    * An instance {@link QueueRemoveByNameReq} is next.
    */
-  RemoveUserBalanceGroups, 
+  RemoveBalanceGroups, 
 
   /**
    * An instance {@link QueueEditUserBalanceGroupsReq} is next.
    */
-  EditUserBalanceGroups, 
+  EditBalanceGroups,
+  
+  /**
+   * Get the current user usage of all the balance groups.
+   */
+  GetBalanceGroupUsage,
 
   /*----------------------------------------------------------------------------------------*/
   /**

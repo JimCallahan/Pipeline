@@ -1,4 +1,4 @@
-// $Id: JQHostUserTableCellRenderer.java,v 1.1 2009/09/16 03:54:40 jesse Exp $
+// $Id: JQHostUserTableCellRenderer.java,v 1.2 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -67,7 +67,7 @@ class JQHostUserTableCellRenderer
 
     QueueHostInfo qinfo = pParent.getHostInfo(row);
     
-    if((qinfo != null) && qinfo.isUserBalanceGroupPending()) 
+    if((qinfo != null) && qinfo.isBalanceGroupPending()) 
       setForeground(Color.cyan);
 
     if (qinfo != null) {

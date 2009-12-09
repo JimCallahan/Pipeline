@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.84 2009/11/06 21:53:12 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.85 2009/12/09 05:05:55 jesse Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -129,13 +129,17 @@ class GenUserPrefsApp
 	("Manage the selection keys.", 
 	 "ShowManageSelectionKeys", "Selection Keys:"),
 	 
-	new HotKeyPref
-	("Manage the dispatch controls.", 
-	 "ShowManageDispatchControls", "Dispatch Controls:"),
-
 	 new HotKeyPref
 	 ("Manage the hardware keys.", 
 	  "ShowManageHardwareKeys", "Hardware Keys:"),
+	  
+	  new HotKeyPref
+	  ("Manage the dispatch controls.", 
+	   "ShowManageDispatchControls", "Dispatch Controls:"),
+	         
+	   new HotKeyPref
+	   ("Manage the balance groups.", 
+	    "ShowManageBalanceGroups", "Balance Groups:"),
 
 	new BasePref(),
 
@@ -2266,7 +2270,7 @@ class GenUserPrefsApp
       pPrefs.put("Dialogs|Hardware Keys|Hot Keys", prefs);
     }
     
-    /* The Hardware Keys Dialog*/
+    /* The Dispatch Control Dialog*/
     {
       BasePref prefs[] = {
         new HotKeyPref
@@ -2414,6 +2418,7 @@ class GenUserPrefsApp
 	manager.add("ShowManageSelectionKeys");
 	manager.add("ShowManageHardwareKeys");
 	manager.add("ShowManageDispatchControls");
+	manager.add("ShowManageBalanceGroups");
 	manager.add("ShowManageServerExtensions");
 	manager.add("Quit");
       
@@ -2825,7 +2830,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.84 2009/11/06 21:53:12 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.85 2009/12/09 05:05:55 jesse Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3080,7 +3085,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.84 2009/11/06 21:53:12 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.85 2009/12/09 05:05:55 jesse Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4458,7 +4463,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.84 2009/11/06 21:53:12 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.85 2009/12/09 05:05:55 jesse Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

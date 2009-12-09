@@ -1,4 +1,4 @@
-// $Id: DispatchControl.java,v 1.2 2009/09/29 20:44:41 jesse Exp $
+// $Id: DispatchControl.java,v 1.3 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -172,7 +172,7 @@ class DispatchControl
     if (position >= pCriteria.size())
       throw new IllegalArgumentException
         ("There is no (" + position + ") entry in the Dispatch Control");
-    return pCriteria.toArray(new DispatchCriteria[0])[position];
+    return pCriteria.get(position);
   }
   
   /**
@@ -294,10 +294,10 @@ class DispatchControl
       if (o instanceof LinkedHashSet) {
         LinkedHashSet<DispatchCriteria> crits = 
           (LinkedHashSet<DispatchCriteria>) o;
-        pCriteria.addAll(crits);
+        setCriteria(crits);
       }
       else
-        pCriteria = (LinkedList<DispatchCriteria>) o;
+        setCriteria(new LinkedHashSet<DispatchCriteria>((LinkedList<DispatchCriteria>) o));
     }
   }
   

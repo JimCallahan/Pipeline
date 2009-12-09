@@ -1,11 +1,8 @@
-// $Id: Histogram.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: Histogram.java,v 1.2 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   H I S T O G R A M                                                                      */
@@ -55,10 +52,10 @@ class Histogram
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the number of items in the given catagory.
+   * Get the number of items in the given category.
    * 
    * @param idx
-   *   The catagory index.
+   *   The category index.
    */ 
   public long 
   getCount
@@ -76,7 +73,7 @@ class Histogram
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Clear all catagory counts.
+   * Clear all category counts.
    */ 
   public void 
   clearCounts()
@@ -87,8 +84,9 @@ class Histogram
   }
 
   /**
-   * Increment the item count of the catagory which contains the given item.
+   * Increment the item count of the category which contains the given item.
    */ 
+  @SuppressWarnings("unchecked")
   public void 
   catagorize
   (
@@ -110,6 +108,7 @@ class Histogram
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  @Override
   public void 
   toGlue
   ( 
@@ -122,6 +121,7 @@ class Histogram
     encoder.encode("Counts", pCounts);
   }
 
+  @Override
   public void 
   fromGlue
   (
@@ -149,7 +149,7 @@ class Histogram
   /*----------------------------------------------------------------------------------------*/
  
   /** 
-   * The count of items in each catagory.
+   * The count of items in each category.
    */
   private long[]  pCounts; 
  

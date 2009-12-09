@@ -1,4 +1,4 @@
-// $Id: UserBalanceInfo.java,v 1.7 2009/11/09 21:58:05 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.8 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -34,18 +34,22 @@ class UserBalanceInfo
   {
     pSamples = new TreeMap<String, ArrayDeque<UserBalanceSample>>();
     pCurrentUsage = new DoubleMap<String, String, Double>();
-    pSliceStart = System.currentTimeMillis();
+    pSampleStart = System.currentTimeMillis();
     
     pHostInfos = new TreeMap<String, HostInfo>();
     
     pHostChanges = new MappedLinkedList<String, HostChange>();
     pJobChanges = new MappedLinkedList<String, JobChange>();
+    pGroupChanges = new LinkedList<GroupChange>();
+    
+    pBalanceGroups = new TreeSet<String>();
     
     pHostChangesLock = new Object();
     pJobChangesLock = new Object();
+    pGroupChangesLock = new Object();
     pCurrentUsageLock = new Object();
     
-    pSamplesToKeep.set(30);
+    pSamplesToKeep = new AtomicInteger(30);
   }
 
   
@@ -54,25 +58,38 @@ class UserBalanceInfo
   /*   C A L C U L A T E                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Calculate the actual usage of the queue during the last interval.
+   * 
+   * @param timer
+   *   The timer.
+   */
   public void
-  calculateUsage()
+  calculateUsage
+  (
+    TaskTimer timer  
+  )
   {
-    TaskTimer timer = new TaskTimer("User Balance Info");
-    
     MappedLinkedList<String, HostChange> hostChanges;
     MappedLinkedList<String, JobChange> jobChanges;
+    LinkedList<GroupChange> groupChanges;
     long startTime;
     long endTime;
-    double interval;
+    double sampleDuration;
     
     timer.aquire();
     synchronized (pJobChangesLock) {
       timer.resume();
       
-      startTime = pSliceStart;
+      startTime = pSampleStart;
       endTime = System.currentTimeMillis();
-      pSliceStart = endTime + 1;
-      interval = endTime - startTime;
+      pSampleStart = endTime + 1;
+      sampleDuration = endTime - startTime;
+      
+      LogMgr.getInstance().log
+        (Kind.Usr, Level.Finest, 
+         "SampleStart: [" + startTime + "], SampleEnd: [" + endTime +"], " +
+         "SampleDuration: [" + sampleDuration +"]");
       
       timer.aquire();
       synchronized (pHostChangesLock) {
@@ -81,8 +98,24 @@ class UserBalanceInfo
         pHostChanges = new MappedLinkedList<String, HostChange>();
       }
       
+      timer.aquire();
+      synchronized (pGroupChangesLock) {
+        timer.resume();
+        groupChanges = pGroupChanges;
+        pGroupChanges = new LinkedList<GroupChange>();
+      }
+      
       jobChanges = pJobChanges;
       pJobChanges = new MappedLinkedList<String, JobChange>();
+    }
+    
+    {
+      for (GroupChange change : groupChanges) {
+        if (change.pCreated)
+          pBalanceGroups.add(change.pName);
+        else
+          pBalanceGroups.remove(change.pName);
+      }
     }
     
     {
@@ -93,7 +126,7 @@ class UserBalanceInfo
         LinkedList<HostChange> changes = entry.getValue();
         HostInfo hostInfo = pHostInfos.get(hostName);
         if (hostInfo == null) {
-          hostInfo = new HostInfo(false, null, 0);
+          hostInfo = new HostInfo();
           pHostInfos.put(hostName, hostInfo);
         }
         for (HostChange change : changes) {
@@ -146,7 +179,7 @@ class UserBalanceInfo
             long id = jchange.pJobID;
             // Job Started
             if (jchange.pStartTime != null) {
-              String oldAuthor= info.pJobs.put(id, jchange.pAuthor); 
+              String oldAuthor = info.pJobs.put(id, jchange.pAuthor); 
               if (oldAuthor != null) {
                 LogMgr.getInstance().log
                 (Kind.Usr, Level.Warning, 
@@ -165,7 +198,12 @@ class UserBalanceInfo
                 if (startTimeByJob.containsKey(id)) 
                   jobStartTime = startTimeByJob.get(id);
 
-                double used = ((double) jobEndTime - jobStartTime) / interval;
+                double used = (jobEndTime - jobStartTime) / sampleDuration;
+                
+                LogMgr.getInstance().log
+                (Kind.Usr, Level.Finest,
+                  "Job (" + id +") used (" + (jobEndTime - jobStartTime) +") milliseconds " +
+                   "of queue time during this sample");
 
                 slotsPerUser.apply(author, used);
               }
@@ -181,11 +219,21 @@ class UserBalanceInfo
             Long jobID = entry2.getKey();
             String author = entry2.getValue();
             if (startTimeByJob.containsKey(jobID)) {
-              double used = ((double) endTime - startTimeByJob.get(jobID)) / interval;
+              double time = endTime - startTimeByJob.get(jobID);
+              LogMgr.getInstance().log
+                (Kind.Usr, Level.Finest,
+                 "Job (" + jobID +") used (" + time +") milliseconds " +
+                 "of queue time during this sample");
+              double used = (time) / sampleDuration;
               slotsPerUser.apply(author, used);
             }
-            else
+            else {
+              LogMgr.getInstance().log
+                (Kind.Usr, Level.Finest,
+                 "Job (" + jobID +") used (" + sampleDuration +") milliseconds " +
+                 "of queue time during this sample");
               slotsPerUser.apply(author, 1d);
+            }
           }
         }
       } // Finished looping through all the hosts.
@@ -194,54 +242,92 @@ class UserBalanceInfo
          tm, timer);
     }
     
+    /* Now we want to prune pSamples due to balance group destruction */
+    {
+      TreeSet<String> remove = new TreeSet<String>();
+      for (String groupName : pSamples.keySet())
+        if (!pBalanceGroups.contains(groupName)) {
+          pSamples.remove(groupName);
+          LogMgr.getInstance().log
+            (Kind.Usr, Level.Finest, 
+             "Removing all samples for deleted group (" + groupName+ ")");
+        }
+    }
+    
     int numSamples = pSamplesToKeep.get();
     
     /* Now we add the newly created samples to the saved info. */
-    for (Entry<String, Double> entry : slotsPerBalanceGroup.entrySet()) {
-      String userBalanceGroup = entry.getKey();
-      Double totalSlots = entry.getValue();
-      if (totalSlots == null)
-        totalSlots = 0d;
-      DoubleOpMap<String> slotsPerUser = userSlotsPerBalanceGroup.get(userBalanceGroup);
-      if (slotsPerUser == null)
-        slotsPerUser = new DoubleOpMap<String>();
-      UserBalanceSample sample = new UserBalanceSample(totalSlots, slotsPerUser);
-      
-      ArrayDeque<UserBalanceSample> samples = pSamples.get(userBalanceGroup);
-      if (samples == null) {
-        samples = new ArrayDeque<UserBalanceSample>(numSamples + 1);
-        pSamples.put(userBalanceGroup, samples);
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("User Balance Info [Updating Samples]");
+      for (String groupName : pBalanceGroups) {
+        Double totalSlots = slotsPerBalanceGroup.get(groupName);
+        if (totalSlots == null)
+          totalSlots = 0d;
+        DoubleOpMap<String> slotsPerUser = userSlotsPerBalanceGroup.get(groupName);
+        if (slotsPerUser == null)
+          slotsPerUser = new DoubleOpMap<String>();
+        UserBalanceSample sample = new UserBalanceSample(totalSlots, slotsPerUser);
+        
+        LogMgr.getInstance().log
+          (Kind.Usr, Level.Finest, 
+           "User Balance Sample (" + groupName + "), " + sample);
+
+        ArrayDeque<UserBalanceSample> samples = pSamples.get(groupName);
+        if (samples == null) {
+          samples = new ArrayDeque<UserBalanceSample>(numSamples + 1);
+          pSamples.put(groupName, samples);
+        }
+        samples.addLast(sample);
+        while (samples.size() > numSamples)
+          samples.removeFirst();
       }
-      samples.addLast(sample);
-      while (samples.size() > numSamples)
-        samples.removeFirst();
+      LogMgr.getInstance().logSubStage
+        (Kind.Usr, Level.Finer,
+         tm, timer);
     }
     
     /* finally we need to calculate the new values for the dispatcher to read. */
     
-    /* UserBalance, User, Percent Used */
-    DoubleMap<String, String, Double> currentUsage = new DoubleMap<String, String, Double>();
-    for (Entry<String, ArrayDeque<UserBalanceSample>> entry : pSamples.entrySet()) {
-      String userBalanceGroup = entry.getKey();
-      DoubleOpMap<String> slotsPerUser = new DoubleOpMap<String>();
-      double totalSlots = 0d;
-      for (UserBalanceSample sample : entry.getValue()) {
-        totalSlots += sample.pTotalSlots;
-        for (Entry<String, Double> entry2 : sample.pUserSlotsUsed.entrySet()) {
-          slotsPerUser.apply(entry2.getKey(), entry2.getValue());
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("User Balance Info [Calculating New Usage]");
+      /* UserBalance, User, Percent Used */
+      DoubleMap<String, String, Double> currentUsage = new DoubleMap<String, String, Double>();
+      for (Entry<String, ArrayDeque<UserBalanceSample>> entry : pSamples.entrySet()) {
+        String userBalanceGroup = entry.getKey();
+        DoubleOpMap<String> slotsPerUser = new DoubleOpMap<String>();
+        double totalSlots = 0d;
+        for (UserBalanceSample sample : entry.getValue()) {
+          totalSlots += sample.pTotalSlots;
+          for (Entry<String, Double> entry2 : sample.pUserSlotsUsed.entrySet()) {
+            slotsPerUser.apply(entry2.getKey(), entry2.getValue());
+          }
         }
+        if (totalSlots == 0d)
+          continue;
+        for (String user : slotsPerUser.keySet()) {
+          slotsPerUser.apply(user, totalSlots, Op.Divide);
+        }
+        currentUsage.put(userBalanceGroup, slotsPerUser);
       }
-      if (totalSlots == 0d)
-        continue;
-      for (String user : slotsPerUser.keySet()) {
-        slotsPerUser.apply(user, totalSlots, Op.Divide);
+      
+      tm.aquire();
+      synchronized (pCurrentUsageLock) {
+        tm.resume();
+        pCurrentUsage = currentUsage; 
       }
-      currentUsage.put(userBalanceGroup, slotsPerUser);
+      LogMgr.getInstance().logSubStage
+        (LogMgr.Kind.Usr, LogMgr.Level.Finer,
+         tm, timer);
+      
+      LogMgr.getInstance().log
+      (Kind.Usr, Level.Fine, 
+       "Current Usage: " + currentUsage);
     }
-
-    synchronized (pCurrentUsageLock) {
-      pCurrentUsage = currentUsage; 
-    }
+    LogMgr.getInstance().logStage
+      (LogMgr.Kind.Usr, LogMgr.Level.Fine,
+       timer); 
   }
 
 
@@ -252,7 +338,7 @@ class UserBalanceInfo
 
   /**
    * Get the current usage information generated by the last call to 
-   * {@link #calculateUsage()}.<P>
+   * {@link #calculateUsage(TaskTimer)}.<P>
    * 
    * This is a live data-structure (it is not copied before returning) so any code that uses
    * this should not modify its contents.
@@ -360,6 +446,39 @@ class UserBalanceInfo
   }
   
   /**
+   * Add a change to a group. <p>
+   * 
+   * All values are required to be not null.
+   * 
+   * @param name
+   *   The name of the balance group.
+   *   
+   * @param created
+   *   If <code>true</code>, then the balance group was created.  Otherwise it was removed.
+   */
+  public void
+  addGroupChange
+  (
+    String name,
+    boolean created
+  )
+  {
+    GroupChange change = new GroupChange(name, created);
+    synchronized (pGroupChangesLock) {
+     pGroupChanges.add(change); 
+    }
+
+    if (created)
+      LogMgr.getInstance().log
+        (Kind.Usr, Level.Finest, 
+         "Adding the balance group (" + name + ").");
+    else
+      LogMgr.getInstance().log
+        (Kind.Usr, Level.Finest, 
+         "Removed the balance group (" + name + ").");
+  }
+  
+  /**
    * Get the number of samples that are being saved for each user balance group.
    */
   public int
@@ -400,7 +519,7 @@ class UserBalanceInfo
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   *  A slice of user use of the queue in a particular user balance group.  
+   *  A sample of user use of the queue in a particular user balance group.  
    */
   private
   class UserBalanceSample
@@ -410,10 +529,13 @@ class UserBalanceInfo
     /*--------------------------------------------------------------------------------------*/
 
     /**
-     * Constructor.
+     * Constructor. <P>
      * 
      * @param totalSlots
-     * 
+     *   The total number of slots assigned to this user balance group during the sample.
+     *   
+     * @param userSlotsUsed
+     *   The total number of slots (can be fractional) used by each user during the sample.
      */
     private
     UserBalanceSample
@@ -426,10 +548,20 @@ class UserBalanceInfo
       pUserSlotsUsed = userSlotsUsed;
     }
     
+    @Override
+    public String 
+    toString()
+    {
+      return "TotalSlots: [" + pTotalSlots +"], UserSlotsUsed: " + pUserSlotsUsed;
+    }
+    
     private final Double pTotalSlots;
     private final DoubleOpMap<String> pUserSlotsUsed;
   }
   
+  /**
+   *  Cached information about a host from the last sample. 
+   */
   private
   class HostInfo
   {
@@ -439,20 +571,14 @@ class UserBalanceInfo
 
     /**
      * Constructor.
-     * 
      */
     private
-    HostInfo
-    (
-      boolean isEnabled,
-      String userBalanceGroup,
-      int numSlots
-    )
+    HostInfo()
     {
-      pUserBalanceName = userBalanceGroup;
-      pNumSlots = numSlots;
+      pUserBalanceName = null;
+      pNumSlots = 0;
+      pIsEnabled = false;
       pJobs = new TreeMap<Long, String>();
-      pIsEnabled = isEnabled;
     }
     
     public boolean pIsEnabled;
@@ -481,7 +607,8 @@ class UserBalanceInfo
      * Only one of the startTime and endTime parameters should ever be set.
      * 
      * @param author
-     *   The user that owns the job.
+     *   The user that owns the job.  This must be set when the change is a job start.  It is
+     *   ignored in cases where it is a job end.
      *   
      * @param jobID
      *   The job id of the job.
@@ -521,10 +648,45 @@ class UserBalanceInfo
       return buf.toString();
     }
     
-    private Long pStartTime;
-    private Long pEndTime;
-    private String pAuthor;
-    private long pJobID;
+    public Long pStartTime;
+    public Long pEndTime;
+    public String pAuthor;
+    public long pJobID;
+  }
+  
+  /**
+   * Used to track the creation and deletion of user balance groups.
+   *
+   */
+  private
+  class GroupChange
+  {
+    /*--------------------------------------------------------------------------------------*/
+    /*   C O N S T R U C T O R                                                              */
+    /*--------------------------------------------------------------------------------------*/
+    
+    /**
+     * Constructor.
+     * 
+     * @param name
+     *   The name of the balance group.
+     *   
+     * @param created
+     *   If <code>true</code>, then the balance group was created.  Otherwise it was removed.
+     */
+    private 
+    GroupChange
+    (
+      String name,
+      boolean created
+    )
+    {
+      pName = name;
+      pCreated = created;
+    }
+    
+    public String pName;
+    public boolean pCreated;
   }
 
   /**
@@ -574,9 +736,9 @@ class UserBalanceInfo
       	     "NumSlots [" + pNumSlots +"]";
     }
     
-    private Boolean pIsEnabled;
-    private String pUserBalanceName;
-    private Integer pNumSlots;
+    public Boolean pIsEnabled;
+    public String pUserBalanceName;
+    public Integer pNumSlots;
   }
   
 
@@ -602,6 +764,10 @@ class UserBalanceInfo
   private MappedLinkedList<String, JobChange> pJobChanges;
   private Object pJobChangesLock;
   
+  private LinkedList<GroupChange> pGroupChanges;
+  private Object pGroupChangesLock;
+  
+  
   /**
    * All the current samples.
    * <p>
@@ -614,7 +780,12 @@ class UserBalanceInfo
    */
   private TreeMap<String, HostInfo> pHostInfos;
   
-  private long pSliceStart;
+  /**
+   * List of balance groups that currently exist.
+   */
+  private TreeSet<String> pBalanceGroups;
+  
+  private long pSampleStart;
   
   /**
    * UserBalanceGroup, User, Percent Usage 

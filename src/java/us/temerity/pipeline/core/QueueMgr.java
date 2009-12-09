@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.133 2009/12/08 22:20:03 jim Exp $
+// $Id: QueueMgr.java,v 1.134 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
+import us.temerity.pipeline.core.QueueHost.*;
 import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
@@ -98,6 +99,8 @@ class QueueMgr
 
       pAdminPrivileges = new AdminPrivileges();
       pMasterMgrClient = new MasterMgrClient();
+      
+      pUserBalanceInfo = new UserBalanceInfo();
 
       pLicenseKeys = new TreeMap<String,LicenseKey>();
 
@@ -120,8 +123,15 @@ class QueueMgr
       pDispatchChanged       = new AtomicBoolean(true);
       pDispDispatchControls  = new TreeMap<String, JobRankSorter>();
       
-      pUserBalanceGroups      = new TreeMap<String, UserBalanceGroup>();
-      pUserBalanceChanged     = new AtomicBoolean(true);
+      pUserBalanceGroups       = new TreeMap<String, UserBalanceGroup>();
+      pUserBalanceChanged      = new AtomicBoolean(true);
+      pUserBalanceRecalculated = new AtomicBoolean(false);
+      pDispUserShares          = new DoubleMap<String, String, Double>();
+      pDispUserUse             = new TreeMap<String, IntegerOpMap<String>>();
+      pDispCurrentUserUsage    = new TreeMap<String, IntegerOpMap<String>>();
+      pDispMaxSlots            = new DoubleMap<String, String, Integer>();
+      pDispMaxShare            = new DoubleMap<String, String, Double>();
+      pDispCurrentBalanceGroupSize = new IntegerOpMap<String>();
 
       pQueueExtensions = new TreeMap<String,QueueExtensionConfig>();
 
@@ -203,10 +213,18 @@ class QueueMgr
       /* initialize the job related tables from disk files */ 
       initJobTables();
     }
+    catch (PipelineException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         ex.getMessage());
+
+      System.exit(1);
+    }
     catch(Exception ex) {
+      String message = Exceptions.getFullMessage(ex);
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 ex.getMessage());
+	 message);
 
       System.exit(1);
     }
@@ -244,7 +262,6 @@ class QueueMgr
       file.delete();
   }
 
-
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -262,7 +279,9 @@ class QueueMgr
     dirs.add(new File(pQueueDir, "queue"));
     dirs.add(new File(pQueueDir, "queue/etc"));
     dirs.add(new File(pQueueDir, "queue/jobs"));
+    dirs.add(new File(pQueueDir, "queue/jobs-bak"));
     dirs.add(new File(pQueueDir, "queue/job-info"));
+    dirs.add(new File(pQueueDir, "queue/job-info-bak"));
     dirs.add(new File(pQueueDir, "queue/job-groups"));
     dirs.add(new File(pQueueDir, "queue/job-servers/samples"));
 
@@ -829,6 +848,7 @@ class QueueMgr
       lc.setLevel(LogMgr.Kind.Ext, mgr.getLevel(LogMgr.Kind.Ext));
       lc.setLevel(LogMgr.Kind.Wri, mgr.getLevel(LogMgr.Kind.Wri));
       lc.setLevel(LogMgr.Kind.Sum, mgr.getLevel(LogMgr.Kind.Sum));
+      lc.setLevel(LogMgr.Kind.Usr, mgr.getLevel(LogMgr.Kind.Usr));
     }
 
     return new MiscGetLogControlsRsp(timer, lc);
@@ -942,6 +962,12 @@ class QueueMgr
 	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sum);
 	  if(level != null) 
 	    mgr.setLevel(LogMgr.Kind.Sum, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Usr);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Usr, level);
 	}
       }
       
@@ -2467,7 +2493,7 @@ class QueueMgr
    *   <CODE>QueueGetNamesRsp</CODE> if successful.
    */ 
   public Object
-  getUserBalanceGroupNames() 
+  getBalanceGroupNames() 
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
@@ -2475,7 +2501,7 @@ class QueueMgr
       timer.resume();
 
       TreeSet<String> names = new TreeSet<String>(pUserBalanceGroups.keySet());
-      return new QueueGetNamesRsp(timer, names, "UserBalanceGroup");
+      return new QueueGetNamesRsp(timer, names, "BalanceGroup");
     }
   }
   
@@ -2486,7 +2512,7 @@ class QueueMgr
    *   <CODE>QueueGetUserBalanceGroupsRsp</CODE> if successful.
    */ 
   public Object
-  getUserBalanceGroups() 
+  getBalanceGroups() 
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
@@ -2494,6 +2520,40 @@ class QueueMgr
       timer.resume();
       
       return new QueueGetUserBalanceGroupsRsp(timer, pUserBalanceGroups);
+    }
+  }
+  
+  /**
+   * Get the current user weightings for a single user balance group. 
+   * 
+   * @param groupName
+   *   The name of the balance group.
+   * 
+   * @return
+   *   <CODE>QueueGetUserBalanceGroupsRsp</CODE> if successful.
+   */ 
+  public Object
+  getBalanceGroup
+  (
+    String groupName  
+  )
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pUserBalanceGroups) {
+      timer.resume();
+
+      try {
+        UserBalanceGroup group = pUserBalanceGroups.get(groupName);
+        if (group == null)
+          throw new PipelineException
+          ("No Balance Group with the name (" + groupName + ") exists");
+
+        return new QueueGetUserBalanceGroupRsp(timer, group);
+      } 
+      catch (PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
+      }
     }
   }
   
@@ -2508,7 +2568,7 @@ class QueueMgr
    *   <CODE>FailureRsp</CODE> if unable to add the group.
    */ 
   public Object
-  addUserBalanceGroup
+  addBalanceGroup
   (
     QueueAddByNameReq req
   ) 
@@ -2530,6 +2590,7 @@ class QueueMgr
 
         pUserBalanceChanged.set(true);
         pUserBalanceGroups.put(name, new UserBalanceGroup(name));
+        pUserBalanceInfo.addGroupChange(name, true);
 
         writeUserBalanceGroups();
         
@@ -2540,6 +2601,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     }    
   }
+  
 
   /**
    * Remove the given existing user balance groups. <P> 
@@ -2552,7 +2614,7 @@ class QueueMgr
    *   <CODE>FailureRsp</CODE> if unable to remove the user balance group.
    */ 
   public Object
-  removeUserBalanceGroups
+  removeBalanceGroups
   (
     QueueRemoveByNameReq req
   ) 
@@ -2573,8 +2635,10 @@ class QueueMgr
           pUserBalanceChanged.set(true);
           
           {
-            for(String name : names)
+            for(String name : names) {
               pUserBalanceGroups.remove(name);
+              pUserBalanceInfo.addGroupChange(name, false);
+            }
             
             writeUserBalanceGroups();
           }
@@ -2584,7 +2648,7 @@ class QueueMgr
             for(QueueHost host : pHosts.values()) {
               String gname = host.getUserBalanceGroup();
               if((gname != null) && names.contains(gname)) {
-                host.setUserBalanceGroup(gname);
+                host.setUserBalanceGroup(null);
                 modified = true;
               }
             }
@@ -2613,12 +2677,12 @@ class QueueMgr
    *   <CODE>FailureRsp</CODE> if unable to change the user balance groups.
    */ 
   public Object
-  editUserBalanceGroups
+  editBalanceGroups
   (
     QueueEditUserBalanceGroupsReq req
   ) 
   {
-    TaskTimer timer = new TaskTimer("QueueMgr.editUserBalanceGroups()");
+    TaskTimer timer = new TaskTimer("QueueMgr.editBalanceGroups()");
 
     timer.aquire();
     try {
@@ -2646,6 +2710,20 @@ class QueueMgr
     }    
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the current usage of users for each balance group.
+   */
+  public Object
+  getBalanceGroupUsage()
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.getBalanceGroupUsage()");
+    
+    DoubleMap<String, String, Double> toReturn = pUserBalanceInfo.getCurrentStatistics();
+    
+    return new QueueGetBalanceGroupUsageRsp(timer, toReturn); 
+  }
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -3197,7 +3275,7 @@ class QueueMgr
 	      
 	      case 14:
                 {
-                  String group = qinfo.getUserBalanceGroup();
+                  String group = qinfo.getBalanceGroup();
                   if(group == null) 
                     group = "-";
                   if(!active[wk].isIncludedItem(group))
@@ -3586,7 +3664,7 @@ class QueueMgr
 	      qinfo.setDispatchControl(qmod.getDispatchControl());
 	    
 	    if(qmod.isUserBalanceGroupModified())
-	      qinfo.setUserBalanceGroup(qmod.getUserBalanceGroup());
+	      qinfo.setBalanceGroup(qmod.getUserBalanceGroup());
 	    
 	    if (qinfo.getSelectionSchedule() != null) {
 	      qinfo.setGroupState(qmod.getGroupState());
@@ -3628,6 +3706,7 @@ class QueueMgr
     TreeSet<String> modifiedHosts = null;
     if(hasAnyExtensionTasks(timer, new ModifyHostsExtFactory()))
        modifiedHosts = new TreeSet<String>();
+    TreeSet<String> userBalanceHosts = new TreeSet<String>();
 
     timer.aquire();
     synchronized(pHosts) {
@@ -3651,6 +3730,7 @@ class QueueMgr
 	      setHostStatus(host, QueueHost.Status.Enabled);	      
 	      if(modifiedHosts != null) 
 		modifiedHosts.add(host.getName());
+	      userBalanceHosts.add(host.getName());
 	    }
 	  }
 	}
@@ -3697,6 +3777,7 @@ class QueueMgr
 
                 if(modifiedHosts != null) 
                   modifiedHosts.add(hname);
+                userBalanceHosts.add(hname);
               }
             }
           }
@@ -3738,6 +3819,7 @@ class QueueMgr
 	      if(modifiedHosts != null) 
 	        modifiedHosts.add(hname);
 	      diskModified = true;
+	      userBalanceHosts.add(hname);
 	    }
 
 	    /* selection groups */ 
@@ -3795,6 +3877,7 @@ class QueueMgr
               if(modifiedHosts != null) 
                 modifiedHosts.add(hname);
               diskModified = true;
+              userBalanceHosts.add(hname);
             }
             
             /* favor method */ 
@@ -3830,8 +3913,19 @@ class QueueMgr
 	      host.setSlotsState(qmod.getSlotsState());
 	      host.setStatusState(qmod.getStatusState());
 	      host.setDispatchState(qmod.getDispatchControlState());
+	      host.setUserBalanceState(qmod.getUserBalanceState());
+	      host.setFavorState(qmod.getFavorState());
 	    }
 	  }
+	}
+	
+	for (String hname : userBalanceHosts) {
+	  QueueHost host = pHosts.get(hname);
+	  String userBalance = host.getUserBalanceGroup();
+	  if (userBalance == null)
+	    userBalance = "";
+	  pUserBalanceInfo.addHostChange
+	    (hname, (host.getStatus() == Status.Enabled), userBalance, host.getJobSlots());
 	}
 	    
 
@@ -4024,6 +4118,7 @@ class QueueMgr
           
           /* restart the MonitorTask threads for any jobs still running on the host */ 
           resumeMonitoringJobs(hname); 
+          
         }
         catch(Exception ex) {
           newStatus = QueueHost.Status.Limbo;
@@ -4069,6 +4164,14 @@ class QueueMgr
 
     /* change the status */ 
     host.setStatus(newStatus);
+    switch (newStatus) {
+    case Enabled:
+      pUserBalanceInfo.addHostChange(hname, Boolean.TRUE, null, null);
+      break;
+    default:
+      pUserBalanceInfo.addHostChange(hname, Boolean.FALSE, null, null);
+      break;
+    }
 
     /* if shutting down, make sure all MonitorTask threads are running so that any Limbo 
          jobs will finish with a Failed state */ 
@@ -4705,6 +4808,8 @@ class QueueMgr
   getRunningJobStatus() 
   {
     TaskTimer timer = new TaskTimer();
+    
+    //FIXME this should probably use pRunning to figure out what is running.
 
     TreeMap<Long,JobState> jobStates = new TreeMap<Long,JobState>();
     timer.aquire();  
@@ -4820,6 +4925,7 @@ class QueueMgr
       }   
     }
   }
+  
 
   /**
    * Get information about the currently running jobs. <P> 
@@ -4830,6 +4936,8 @@ class QueueMgr
   public Object
   getRunningJobInfo() 
   {
+    //FIXME this should probably use pRunning to figure out what is running.
+    
     TaskTimer timer = new TaskTimer();
     TreeMap<Long,QueueJobInfo> running = new TreeMap<Long,QueueJobInfo>();
 
@@ -6391,6 +6499,38 @@ class QueueMgr
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   B A L A N C E R                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void
+  balancer()
+  {
+    TaskTimer timer = new TaskTimer("User Balance Info");
+   
+    pUserBalanceInfo.calculateUsage(timer);
+    
+    pUserBalanceRecalculated.set(true);
+    
+    long nap = sUserBalanceSampleInterval - timer.getTotalDuration();
+    if(nap > 0) {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Usr, LogMgr.Level.Finer,
+         "Balancer: Sleeping for (" + nap + ") msec...");
+      try {
+        Thread.sleep(nap);
+      }
+      catch(InterruptedException ex) {
+      }
+    }
+    else {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Usr, LogMgr.Level.Finer,
+         "Balancer: Overbudget by (" + (-nap) + ") msec...");
+    }
+  }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   W R I T E R                                                                          */
@@ -6435,7 +6575,7 @@ class QueueMgr
         if (job == null)
           continue;
         try {
-          deleteJobFile(jobID);
+//          deleteJobFile(jobID);
           writeJob(job);
         }
         catch(PipelineException ex) {
@@ -6659,6 +6799,7 @@ class QueueMgr
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
        tm, timer);
   }
+  
 
   /**
    * Kill/abort the jobs in the hit list.<P> 
@@ -6926,6 +7067,7 @@ class QueueMgr
               JobState prevState = info.paused();
               pJobCounters.update(tm, prevState, info);
               try {
+              //FIXME  Should this use the job writer thread?
                 writeJobInfo(info);
               }
               catch(PipelineException ex) {
@@ -7101,10 +7243,14 @@ class QueueMgr
     timer.suspend();
     TaskTimer dtm = new TaskTimer("Dispatcher [Dispatch Total]");
       
-    
     dsptUpdateDispatchCriteria(dtm);
     
-    /* if there are changes to the selection/hardware keys, we need to make new profiles */
+    dsptUpdateBalanceGroups(dtm);
+    
+    /* 
+     * if there are changes to the selection/hardware keys or balance groups, we need to 
+     * make new profiles 
+     */
     boolean reprofileAllJobs = dsptValidateProfiles(dtm);
 
     /* create any selection, hardware or job profiles needed before ranking jobs */ 
@@ -7115,23 +7261,40 @@ class QueueMgr
 
     int slotCnt = 0; 
     if(readyCnt > 0) {
+      
+      pDispCurrentBalanceGroupSize.clear();
+      
+      MappedSet<String, Long> jobsPerBalanceGroup = new MappedSet<String, Long>();
 
       int enabledCnt = 0;
       dtm.aquire();
       synchronized(pHosts) {
         dtm.resume();
+        
 
         /* set the count of running jobs based on the number of MonitorTasks registered */ 
         synchronized(pRunning) {
           for(Map.Entry<String,QueueHost> entry : pHosts.entrySet()) {
             String hostname = entry.getKey(); 
             QueueHost host = entry.getValue();
+            
+            String balanceGroup = null;
+            
+            if (host.getStatus() == Status.Enabled) {
+              balanceGroup = host.getUserBalanceGroup();
+              if (balanceGroup != null)
+                pDispCurrentBalanceGroupSize.apply(balanceGroup, host.getJobSlots());
+            }
 
             int numRunning = 0;
             {
               Set<Long> jobIDs = pRunning.keySet(hostname); 
-              if(jobIDs != null) 
+              if(jobIDs != null)  {
                 numRunning = jobIDs.size();
+                if (balanceGroup != null)
+                  for (Long jobID : jobIDs)
+                    jobsPerBalanceGroup.put(balanceGroup, jobID);
+              }
             }
 
             host.setRunningJobs(numRunning);
@@ -7144,6 +7307,8 @@ class QueueMgr
         /* sort the enabled host based on their Order property */ 
         enabledCnt = dsptOrderHosts(dtm); 
       }
+      
+      dsptCalculateUserUsage(dtm, jobsPerBalanceGroup);
 
       /* process the hosts */ 
       int hk;
@@ -7201,7 +7366,8 @@ class QueueMgr
        "Processed (" + readyCnt + ") jobs while dispatching (" + slotCnt + ") slots in " +
        "(" + dtm.getTotalDuration() + ") msec.");
   }
-  
+
+
   /**
    * Determine is there are changes to dispatch criteria and recache them if there have been
    * changes.
@@ -7232,6 +7398,169 @@ class QueueMgr
        "Re-cached all Dispatch Criteria.");
     }
   }
+  
+  /**
+   * Determine is there are changes to balance groups and recompute them if there have been
+   * changes.
+   * <p>
+   * This should only be called from the dspDispatchTotal() method!
+   * 
+   * @param dtm
+   *   The core dispatcher timer.
+   */
+  private void
+  dsptUpdateBalanceGroups
+  (
+    TaskTimer dtm  
+  )
+  {
+    boolean changed = pUserBalanceChanged.get();
+    boolean calculated = pUserBalanceRecalculated.get();
+    
+    if (changed || calculated) {
+      WorkGroups wgroups = pAdminPrivileges.getWorkGroups();
+      
+      DoubleMap<String, String, Double> allUserValues = 
+        new DoubleMap<String, String, Double>();
+      
+      if (changed)
+        pDispMaxShare = new DoubleMap<String, String, Double>();
+      
+      dtm.aquire();
+      synchronized (pUserBalanceGroups) {
+        dtm.resume();
+        for (Entry<String, UserBalanceGroup> entry : pUserBalanceGroups.entrySet()) {
+          String groupName = entry.getKey();
+          UserBalanceGroup group = entry.getValue();
+          TreeMap<String, Double> userValues = group.getNormalizedUserValues(wgroups);
+          allUserValues.put(groupName, userValues);
+          if (changed) {
+            TreeMap<String, Double> maxShares = group.getFinalMaxShares(wgroups);
+            pDispMaxShare.put(groupName, maxShares);
+          }
+        }
+      }
+      
+      pUserBalanceChanged.set(false);
+      pUserBalanceRecalculated.set(false);
+      
+      DoubleMap<String, String, Double> currentUsage = 
+        pUserBalanceInfo.getCurrentStatistics();
+      
+      if (calculated)
+        pDispUserUse.clear();
+      
+      pDispUserShares.clear();
+      for (String groupName : allUserValues.keySet()) {
+        TreeMap<String, Double> userShares = new TreeMap<String, Double>();
+        TreeSet<String> usersOverMax = new TreeSet<String>();
+        
+        TreeMap<String, Double> userValues = allUserValues.get(groupName);
+
+        for (String userName : userValues.keySet()) {
+          Double usage = currentUsage.get(groupName, userName);
+          /* This means the user is new than the last update to the Current Statistics. */
+          if (usage == null)
+            usage = 0.0d;
+
+          Double userShare = userValues.get(userName);
+          if (userShare == 0.0)
+            userShares.put(userName, Double.MAX_VALUE);
+          else
+            userShares.put(userName, usage/userShare);
+        }
+        pDispUserShares.put(groupName, userShares);
+      }
+      
+      LogMgr.getInstance().logAndFlush
+        (Kind.Usr, Level.Finest, 
+          "Current balance group user shares: " + pDispUserShares);
+      
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+         "Cleared and rebuilt all Balance Group Profiles.");
+    }    
+  }
+
+  /**
+   * Calculate how many slots each user is using per-balance group and determine the maximum 
+   * number of lost that any user should have per balance group. <p>
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   * 
+   * @param dtm
+   *   The dispatch total timer.
+   * 
+   * @param jobsPerBalanceGroup
+   *   The list of currently runing jobIDs indexed by the balance group that they are running 
+   *   on. 
+   */
+  private void 
+  dsptCalculateUserUsage
+  (
+    TaskTimer dtm,
+    MappedSet<String, Long> jobsPerBalanceGroup
+  )
+  {
+    /* Figure out how many slots each user is using*/
+    
+    pDispCurrentUserUsage.clear();
+    dtm.aquire();
+    synchronized(pJobs) {
+      dtm.resume();
+      for (Entry<String, TreeSet<Long>> entry : jobsPerBalanceGroup.entrySet()) {
+        String balanceGroup = entry.getKey();
+        IntegerOpMap<String> userUse = new IntegerOpMap<String>();
+        for (Long jobID : entry.getValue()) {
+          QueueJob job = pJobs.get(jobID);
+          /* Should be unnecessary, but lets be careful in this code.*/
+          if (job != null) {
+            String author = job.getNodeID().getAuthor();
+            userUse.apply(author, 1);
+          }
+        }
+        pDispCurrentUserUsage.put(balanceGroup, userUse);
+      }
+    }
+    
+    LogMgr.getInstance().logAndFlush
+      (Kind.Usr, Level.Finest, 
+       "The current user use: " + pDispCurrentUserUsage);
+    
+    pDispMaxSlots.clear();
+    for (String balanceGroup : pDispMaxShare.keySet()) {
+      
+      Integer totalSlots = pDispCurrentBalanceGroupSize.get(balanceGroup);
+      if (totalSlots == null || totalSlots == 0) {
+        continue;
+      }
+      
+      for (Entry<String, Double> entry : pDispMaxShare.get(balanceGroup).entrySet()) {
+        String user = entry.getKey();
+        Double share = entry.getValue();
+        int numSlots = (int) Math.ceil(share * (double) totalSlots );
+        
+        /* 
+         * If a user does not have a 100% share, then they should not be able to take the 
+         * entire balance group.  So this limits them to having the total number of slots 
+         * minus 1, in cases where there is more than one slot in the balance group.  If the 
+         * user's share is 1, then they can use all the slots in the group. 
+         */
+        if (numSlots == totalSlots && numSlots > 1 && share != 1d) 
+          numSlots--;
+        pDispMaxSlots.put(balanceGroup, user, numSlots);
+      }
+    }
+    
+    LogMgr.getInstance().logAndFlush
+      (Kind.Usr, Level.Finest, 
+       "The max slots per-balance-group, per-user: " + pDispMaxSlots);
+    
+    LogMgr.getInstance().logAndFlush
+      (Kind.Dsp, Level.Finest, 
+       "Cleared and recalculated current user usage");
+  }
+
 
   /**
    * Determine if there are changes to the selection/hardware keys which will require 
@@ -7614,6 +7943,38 @@ class QueueMgr
       /* cache other per-hosts information */ 
       String reservation = host.getReservation(); 
       OsType os = host.getOsType();
+      
+      String balanceGroupName = host.getUserBalanceGroup();
+      TreeMap<String, Double> userShare = null;
+      TreeSet<String> usersOverMax = null;
+      TreeMap<String, Integer> userUse = null;
+      
+      if (balanceGroupName != null) {
+        userShare = pDispUserShares.get(balanceGroupName);
+        userUse = pDispUserUse.get(balanceGroupName);
+        
+        TreeMap<String, Integer> maxSlots = pDispMaxSlots.get(balanceGroupName);
+        TreeMap<String, Integer> currentUse = pDispCurrentUserUsage.get(balanceGroupName);
+        if (maxSlots != null && currentUse != null ) {
+          usersOverMax = new TreeSet<String>();
+          
+          for (Entry<String, Integer> entry : currentUse.entrySet()) {
+            String user = entry.getKey();
+            Integer use = entry.getValue();
+            Integer max = maxSlots.get(user);
+            if (use != null && max != null && (max != 0d) && (use >= max)) {
+              usersOverMax.add(user);
+            }
+          }
+        }
+      }
+      
+      lmgr.logAndFlush(Kind.Usr, Level.Finest, "Calculated Users Over Max: " + usersOverMax);
+      
+      if (userShare == null)
+        userShare = new TreeMap<String, Double>();
+      if (userUse == null)
+        userUse = new TreeMap<String, Integer>();
 
       /* process all ready jobs */ 
       for(Map.Entry<Long,JobProfile> entry : pReady.entrySet()) {
@@ -7642,7 +8003,8 @@ class QueueMgr
 
                   /* make sure the host provides the type of operating system, reservation and 
                      dynamic resources required by the job */                
-                  if(profile.isEligible(sample, os, reservation, pAdminPrivileges)) {
+                  if(profile.isEligible
+                      (sample, os, reservation, pAdminPrivileges, usersOverMax)) {
                     
                     /* compute the percentage of jobs within the job group
                        which are engaged/pending according to the policy of 
@@ -7668,12 +8030,22 @@ class QueueMgr
                       break;
                     }
                     
+                    String author = profile.getAuthor();
+                    Double balanceGroupShare = userShare.get(author);
+                    if (balanceGroupShare == null)
+                      balanceGroupShare = Double.MAX_VALUE;
+                    
+                    Integer balanceGroupUse = userUse.get(author);
+                    if (balanceGroupUse == null)
+                      balanceGroupUse = 0;
+                    
                     /* create a new rank entry for the job */ 
                     {
                       if(pJobRanks[jobCnt] == null) 
                         pJobRanks[jobCnt] = new JobRank();
                       
                       pJobRanks[jobCnt].update(jobID, score, percent, 
+                                               balanceGroupShare, balanceGroupUse,
                                                profile.getPriority(), 
                                                profile.getTimeStamp()); 
                       jobCnt++; 
@@ -7683,7 +8055,8 @@ class QueueMgr
                   if(selFiner) {
                     lmgr.log(LogMgr.Kind.Sel, LogMgr.Level.Finer, 
                              jobMsg + profile.getEligibilityMsg
-                                        (sample, os, reservation, pAdminPrivileges)); 
+                                        (sample, os, reservation, pAdminPrivileges, 
+                                         usersOverMax)); 
                   }
                 }
                 else if(selFiner) {
@@ -7773,14 +8146,22 @@ class QueueMgr
 
     /* selection logging... */       
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sel, LogMgr.Level.Finest)) {
+      
+      DispatchCriteria crits[] = jobRankSorter.getCriteria();
+      
       StringBuilder buf = new StringBuilder(); 
 
+      
       buf.append("[" + hostname + "]: Ranking Jobs...\n" +
-                 "  JobID(Rank): Score Percent Priority Date Time"); 
+                 "  JobID(Rank): ");
+        
+      for (DispatchCriteria crit : crits) 
+        buf.append(crit.toShortTitle() + " ");
+        
 
       int wk; 
       for(wk=0; wk<jobCnt; wk++) 
-        buf.append("\n  " + pJobRanks[wk].selectionLogMsg(wk)); 
+        buf.append("\n  " + pJobRanks[wk].selectionLogMsg(crits, wk)); 
 
       LogMgr.getInstance().logAndFlush(LogMgr.Kind.Sel, LogMgr.Level.Finest, buf.toString()); 
     }
@@ -7898,6 +8279,30 @@ class QueueMgr
           }
         }
       }
+      
+      if (jobDispatched) {
+        String bgroup = host.getUserBalanceGroup();
+        if (bgroup != null) {
+          String author = job.getNodeID().getAuthor();
+          {
+            IntegerOpMap<String> count = pDispUserUse.get(bgroup);
+            if (count == null) {
+              count = new IntegerOpMap<String>();
+              pDispUserUse.put(bgroup, count);
+            }
+            count.apply(author, 1);
+          }
+          {
+            IntegerOpMap<String> count = pDispCurrentUserUsage.get(bgroup);
+            if (count == null) {
+              count = new IntegerOpMap<String>();
+              pDispCurrentUserUsage.put(bgroup, count);
+            }
+            count.apply(author, 1);
+          }
+        }
+      }
+        
 
       if(selFiner && jobDispatched) 
         lmgr.logAndFlush
@@ -8115,6 +8520,7 @@ class QueueMgr
               JobState prevState = info.paused();
               pJobCounters.update(tm, prevState, info);
               try {
+                //FIXME  Should this use the job writer thread?
                 writeJobInfo(info);
               }
               catch(PipelineException ex) {
@@ -9290,8 +9696,10 @@ class QueueMgr
         if(groups == null) 
           throw new IllegalStateException("The user balance groups cannot be (null)!");
 
-        for(UserBalanceGroup group : groups) 
+        for(UserBalanceGroup group : groups) { 
           pUserBalanceGroups.put(group.getName(), group);
+          pUserBalanceInfo.addGroupChange(group.getName(), true);
+        }
       }
     }
   }
@@ -9435,8 +9843,13 @@ class QueueMgr
 	if(infos == null) 
 	  throw new IllegalStateException("The host info cannot be (null)!");
 	
-	for(QueueHostInfo qinfo : infos.values()) 
-	  pHosts.put(qinfo.getName(), new QueueHost(qinfo));
+	for(QueueHostInfo qinfo : infos.values()) {
+	  QueueHost host = new QueueHost(qinfo);
+	  pHosts.put(qinfo.getName(), host);
+	  pUserBalanceInfo.addHostChange
+	    (host.getName(), Boolean.FALSE, host.getUserBalanceGroup(), host.getJobSlots());
+	  
+	}
       }
     }
   }
@@ -9736,23 +10149,40 @@ class QueueMgr
     throws PipelineException
   {
     long jobID = job.getJobID();
+    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Job: " + jobID);
+
     Object lock = getJobFileLock(jobID);
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/jobs/" + jobID);
-      if(file.exists()) {
-	throw new PipelineException
-	  ("Somehow the job file (" + file + ") already exists!");
-      }
-      
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Job: " + jobID);
+      File backup = new File(pQueueDir, "queue/jobs-bak/" + jobID);
       
       try {
-        GlueEncoderImpl.encodeFile("Job", job, file);
+        if(backup.exists())
+          if(!backup.delete()) 
+            throw new IOException
+            ("Unable to remove the backup working version file (" + backup + ")!");
+        
+        if(file.exists()) 
+          if(!file.renameTo(backup)) 
+            throw new IOException
+              ("Unable to backup the current job file (" + file + ") to the " + 
+               "the file (" + backup + ")!");
+
+        try {
+          GlueEncoderImpl.encodeFile("Job", job, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
-      catch(GlueException ex) {
-        throw new PipelineException(ex);
+      catch(IOException ex) {
+        throw new PipelineException
+          ("I/O ERROR: \n" + 
+           "  While attempting to write job (" + jobID + ") to file...\n" +
+           "    " + ex.getMessage());
       }
     }
   }
@@ -9779,21 +10209,80 @@ class QueueMgr
     Object lock = getJobFileLock(jobID);
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/jobs/" + jobID);
-      if(file.isFile()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading Job: " + jobID);
+      File backup = new File(pQueueDir, "queue/jobs-bak/" + jobID);
+      try {
+        if(file.isFile()) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+             "Reading Job: " + jobID);
 
-        try {
-          return ((QueueJob) GlueDecoderImpl.decodeFile("Job", file));
-        }	
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
+          try {
+            return ((QueueJob) GlueDecoderImpl.decodeFile("Job", file));
+          }	
+          catch(Exception ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+               "The job file (" + file + ") appears to be corrupted:\n" + 
+              "  " + ex.getMessage());
+            LogMgr.getInstance().flush();
+
+            if(backup.isFile()) {
+              LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+                "Reading Working Job (Backup): " + jobID);
+
+              QueueJob job = null;
+              try {
+                job = (QueueJob) GlueDecoderImpl.decodeFile("Job", backup);
+              }
+              catch(Exception ex2) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                   "The backup job file (" + backup + ") appears to be " + 
+                   "corrupted:\n" + "  " + ex.getMessage());
+                LogMgr.getInstance().flush();
+
+                throw ex;
+              }
+
+              LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                "Successfully recovered the job from the backup file " + 
+                "(" + backup + ")\n" + 
+                "Renaming the backup to (" + file + ")!");
+              LogMgr.getInstance().flush();
+
+              if(!file.delete()) 
+                throw new IOException
+                ("Unable to remove the corrupted job file (" + file + ")!");
+
+              if(!backup.renameTo(file)) 
+                throw new IOException
+                ("Unable to replace the corrupted job file (" + file + ") " + 
+                  "with the valid backup file (" + backup + ")!");
+
+              return job;
+            }
+            else {
+              LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                "The backup working version file (" + backup + ") does not exist!");
+              LogMgr.getInstance().flush();
+
+              throw ex;
+            }
+          }
+        }
+        else {
+          throw new PipelineException
+          ("Somehow for job (" + jobID + "), no job file (" + file + ") exists!");
         }
       }
-      else {
-	throw new PipelineException
-	  ("Somehow for job (" + jobID + "), no job file (" + file + ") exists!");
+      catch(Exception ex) {
+        throw new PipelineException
+        ("I/O ERROR: \n" + 
+          "  While attempting to read working version (" + jobID + ") from file...\n" +
+          "    " + ex.getMessage());
       }
     }
   }
@@ -10307,10 +10796,10 @@ class QueueMgr
      String hostname, 
      OsType os, 
      QueueJob job, 
-     TreeSet<String> aquiredKeys
+     TreeSet<String> acquiredKeys
     ) 
     {
-      this(hostname, os, job, aquiredKeys, null);
+      this(hostname, os, job, acquiredKeys, null);
     }
 
     /* start a job on the given server and wait for it to finish */ 
@@ -10485,8 +10974,12 @@ class QueueMgr
         boolean preempted = false;
         if(!balked) {
           timer.suspend();
-          TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Wait]"); 
+          TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Wait]");
 
+          pUserBalanceInfo.addJobChange
+            (pHostname, pJob.getJobID(), 
+             pJob.getActionAgenda().getNodeID().getAuthor(), true);
+          
           /* wait for the job to finish and collect the results */ 
           tm.aquire(); 
           QueueJobResults results = null;
@@ -10504,7 +10997,7 @@ class QueueMgr
                   if(host != null) 
                     setHostStatus(host, QueueHost.Status.Limbo);
                 }
-
+                
                 String header = 
                   ("Lost contact with the Job Manager (" + pHostname + ") while waiting " + 
                    "on the results of executing the job (" + jobID + ")."); 
@@ -10552,7 +11045,10 @@ class QueueMgr
             }
           }
           tm.resume();
-	
+
+          
+          pUserBalanceInfo.addJobChange(pHostname, pJob.getJobID(), null, false);
+          
           /* update job information */
           QueueJobInfo info = getJobInfo(tm, jobID); 
           if(info != null) {
@@ -10602,7 +11098,7 @@ class QueueMgr
                (remonitored ? " become in Limbo" : "completed") + 
                ", but somehow there was no QueueJobInfo entry to update!"); 
           }
-	
+          
           LogMgr.getInstance().logSubStage
             (LogMgr.Kind.Job, LogMgr.Level.Finer, 
              tm, timer);
@@ -11309,6 +11805,16 @@ class QueueMgr
   private static final long  sWriterInterval = 60000L;  /* 1-minute */
 
   /**
+   * How often the User Balance Info class should update its samples.<P>
+   * 
+   * A longer sample interval will result in less responsive user balancing, but will allow 
+   * more samples to be stored (making balancing more fair over longer periods of time). When 
+   * tuning, this variable should be considered along with the the number of samples being 
+   * kept.
+   */
+  private static long sUserBalanceSampleInterval = 120000L; /* 2-minutes */
+  
+  /**
    * The time (in milliseconds) between reports of the JVM heap statistics.
    */ 
   private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
@@ -11369,6 +11875,12 @@ class QueueMgr
    */ 
   private MasterMgrClient  pMasterMgrClient;
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Saves information about user queue usage.
+   */
+  private UserBalanceInfo pUserBalanceInfo;
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -11451,6 +11963,8 @@ class QueueMgr
    */ 
   private TreeMap<String,SelectionSchedule>  pSelectionSchedules; 
   
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Whether there have been any changes to dispatch controls since the last time
    * controls were cached. 
@@ -11475,6 +11989,8 @@ class QueueMgr
    */ 
   private TreeMap<String, JobRankSorter>  pDispDispatchControls; 
   
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * The cached table of user balance groups indexed by control name.
    * 
@@ -11486,8 +12002,79 @@ class QueueMgr
    * Whether there have been any changes to user balance groups since the last time
    * controls were cached. 
    */ 
-  private AtomicBoolean pUserBalanceChanged; 
+  private AtomicBoolean pUserBalanceChanged;
+  
+  /**
+   * Whether the user balance usage has been recalcuated since the last time the controls
+   * were cached.
+   */
+  private AtomicBoolean pUserBalanceRecalculated;
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * A map, keyed by the balance group and then the user name, of the percentage away from a
+   * full share that each user is.
+   */
+  private DoubleMap<String, String, Double> pDispUserShares;
+  
+  /**
+   * A map, keyed by the balance group and then the user name, of the number of jobs that a
+   * particular user has dispatched since the last time the balance groups were 
+   * calculated. <p>
+   * 
+   * This is used to more fairly distribute existing slots to users who have the same 
+   * calculated usage. <p>
+   * 
+   *  No locking is required, since this field is only accessed by the Dispatcher thread.
+   */
+  private TreeMap<String, IntegerOpMap<String>> pDispUserUse;
+  
+  /**
+   * The number of slots currently assigned to each balance group. <p>
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread..
+   */
+  private IntegerOpMap<String> pDispCurrentBalanceGroupSize;
+  
+  /**
+   * A map, keyed by the balance group and then the user name, of the number of jobs the user
+   * currently has running in each balance group, plus the number of jobs they have dispatched 
+   * during this dispatcher cycle. <p>
+   * 
+   * This is  not the same as {@link #pDispUserUse}, which measures the total number of jobs
+   * the user dispatched since the last balancer() cycle.  Instead, this structure is used to
+   * measure how close to their maximum share each user is. <p>
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   */
+  private TreeMap<String, IntegerOpMap<String>> pDispCurrentUserUsage;
+  
+  /**
+   * The total number of jobs, per balance group, that a user can having running at the same
+   * time.  <p>
+   * 
+   * This number is compared against the numbers in {@link #pDispCurrentUserUsage} to figure 
+   * out which users are over their maximum limit and is then used to calculate 
+   * {@link #pDispUsersOverMax}. <p>
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   */
+  private DoubleMap<String, String, Integer> pDispMaxSlots;
+  
+  /**
+   * The percentage of a balance group that a user has the ability to use. <p>
+   * 
+   * This is updated only when balance groups are changed and is then used with 
+   * {@link #pDispCurrentBalanceGroupSize} to calculate {@link #pDispMaxSlots}, which is then
+   * comapred against {@link #pDispCurrentUserUsage} to figure out which users, if any are
+   * currently over budget.
+   * 
+   */
+  private DoubleMap<String, String, Double> pDispMaxShare;
 
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Whether there have been any changes to selection keys or groups since the last time
    * selection profiles where regenerated. 

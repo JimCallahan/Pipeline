@@ -1,4 +1,4 @@
-// $Id: JobProfile.java,v 1.4 2009/09/16 03:48:17 jesse Exp $
+// $Id: JobProfile.java,v 1.5 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -112,8 +112,9 @@ JobProfile
   (
    ResourceSample sample, 
    OsType os, 
-   String reservation, 
-   AdminPrivileges privs
+   String reservation,
+   AdminPrivileges privs,
+   TreeSet<String> usersOverMax
   )
   {
     switch(os) {
@@ -140,6 +141,9 @@ JobProfile
     if((reservation != null) &&
        !(pAuthor.equals(reservation) || privs.isWorkGroupMember(pAuthor, reservation)))
       return false;
+    
+    if (usersOverMax != null && usersOverMax.contains(pAuthor))
+      return false;
 
     return true;
   }
@@ -154,7 +158,8 @@ JobProfile
    ResourceSample sample, 
    OsType os, 
    String reservation, 
-   AdminPrivileges privs
+   AdminPrivileges privs,
+   TreeSet<String> usersOverMax
   )
   {
     boolean badToolset = false;
@@ -202,7 +207,11 @@ JobProfile
      if((reservation != null) &&
         !(pAuthor.equals(reservation) || privs.isWorkGroupMember(pAuthor, reservation))) 
        return ("Reservation (" + reservation + ") did not match job owner " + 
-               "(" + pAuthor + ")."); 
+               "(" + pAuthor + ").");
+    
+     if (usersOverMax != null && usersOverMax.contains(pAuthor))
+       return "The job owner (" + pAuthor + ") is over their Balance Group Max Share " +
+       	      "for this machine.";
 
      return "QUALIFIED!"; 
   }
@@ -256,6 +265,15 @@ JobProfile
   getJobGroupID()
   {
     return pJobGroupID;
+  }
+  
+  /**
+   * Get the name of the user who submitted this job. 
+   */
+  public String
+  getAuthor()
+  {
+    return pAuthor;
   }
 
 

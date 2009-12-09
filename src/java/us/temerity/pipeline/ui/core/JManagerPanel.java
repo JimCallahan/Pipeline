@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.65 2009/09/16 03:54:40 jesse Exp $
+// $Id: JManagerPanel.java,v 1.66 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -430,6 +430,12 @@ class JManagerPanel
 	item = new JMenuItem("Dispatch Controls...");
 	pDispatchControlsItem = item;
         item.setActionCommand("manage-dispatch-controls");
+        item.addActionListener(this);
+        sub.add(item); 
+        
+        item = new JMenuItem("Balance Groups...");
+        pBalanceGroupsItem = item;
+        item.setActionCommand("manage-balance-groups");
         item.addActionListener(this);
         sub.add(item); 
 
@@ -1184,6 +1190,9 @@ class JManagerPanel
     updateMenuToolTip
       (pDispatchControlsItem, prefs.getShowManageDispatchControls(), 
        "Manage the dispatch controls.");
+    updateMenuToolTip
+      (pBalanceGroupsItem, prefs.getShowManageBalanceGroups(), 
+       "Manage the user balance groups.");
     
     updateMenuToolTip
       (pServerExtensionsItem, prefs.getShowManageServerExtensions(), 
@@ -1922,6 +1931,11 @@ class JManagerPanel
         master.showManageSelectionKeysDialog();
         return true;
       }
+      else if((prefs.getShowManageBalanceGroups() != null) &&
+              prefs.getShowManageBalanceGroups().wasPressed(e)) {
+        master.showManageBalanceGroupsDialog();
+        return true;
+      }
       else if((prefs.getShowManageHardwareKeys() != null) &&
         prefs.getShowManageHardwareKeys().wasPressed(e)) {
         master.showManageHardwareKeysDialog();
@@ -2158,6 +2172,8 @@ class JManagerPanel
         master.showManageHardwareKeysDialog();
       else if(cmd.equals("manage-dispatch-controls"))
         master.showManageDispatchControlsDialog();
+      else if(cmd.equals("manage-balance-groups"))
+        master.showManageBalanceGroupsDialog();
 
       else if(cmd.equals("server-extensions"))
         master.showManageServerExtensionsDialog(); 
@@ -4005,6 +4021,7 @@ class JManagerPanel
   private JMenuItem  pSelectionKeysItem;
   private JMenuItem  pHardwareKeysItem;
   private JMenuItem  pDispatchControlsItem;
+  private JMenuItem  pBalanceGroupsItem;
 
   private JMenuItem  pServerExtensionsItem;
   private JMenuItem  pBackupDatabaseItem;

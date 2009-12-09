@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.37 2009/07/13 17:16:23 jlee Exp $
+// $Id: JManageToolsetsDialog.java,v 1.38 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -307,7 +307,7 @@ class JManageToolsetsDialog
 	    pActiveToolsetsList = lst;
 
 	    lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	    lst.setCellRenderer(new JActiveToolsetListCellRenderer(this));
+	    lst.setCellRenderer(new JListCellRenderer());
 	    
 	    lst.addListSelectionListener(this);
 	    lst.addMouseListener(this);

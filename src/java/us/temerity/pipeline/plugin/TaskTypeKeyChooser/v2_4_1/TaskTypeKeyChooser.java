@@ -1,4 +1,4 @@
-// $Id: TaskTypeKeyChooser.java,v 1.2 2009/09/16 15:56:46 jesse Exp $
+// $Id: TaskTypeKeyChooser.java,v 1.3 2009/12/09 05:05:55 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskTypeKeyChooser.v2_4_1;
 
@@ -111,16 +111,17 @@ class TaskTypeKeyChooser
     
     if (taskType == null)
       return false;
-    
-    for (String annotName : annots.keySet()) {
-      if ( (annotName.equals("Task") || annotName.startsWith("AltTask") )) {
-        BaseAnnotation task = annots.get(annotName);
-        String given = (String) task.getParamValue(aTaskType);
-        if (given == null)
-          return false;
-        
-        if (taskType.equals(given))
-          return true;
+    if (annots != null) {
+      for (String annotName : annots.keySet()) {
+        if ( (annotName.equals("Task") || annotName.startsWith("AltTask") )) {
+          BaseAnnotation task = annots.get(annotName);
+          String given = (String) task.getParamValue(aTaskType);
+          if (given == null)
+            return false;
+
+          if (taskType.equals(given))
+            return true;
+        }
       }
     }
     return false;
