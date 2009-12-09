@@ -146,9 +146,12 @@ pipeline-install: clean-rpms rpm-mkdirs
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
 	mkdir -p DEST/plmaster/@NODEDIR@
 	mv DEST/pipeline/@NODEDIR@/* DEST/plmaster/@NODEDIR@
+	mkdir -p DEST/plmaster/@NODEDIR@-backup/plmaster
 	mkdir -p DEST/plpluginmgr/@PL_PLUGIN_DIRECTORY@
+	mkdir -p DEST/plpluginmgr/@PL_PLUGIN_DIRECTORY@-backup/plpluginmgr
 	mv DEST/pipeline/plugins DEST/plpluginmgr/@PL_PLUGIN_DIRECTORY@/
 	mkdir -p DEST/plqueuemgr/@QUEUEDIR@
+	mkdir -p DEST/plqueuemgr/@QUEUEDIR@-backup/plqueuemgr
 	ln -s pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@ \
               DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-latest
 	mkdir -p DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.107 2009/11/05 00:23:31 jim Exp $
+// $Id: MasterMgrServer.java,v 1.108 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -112,6 +112,9 @@ class MasterMgrServer
       CacheGCTask cacheGC = new CacheGCTask();
       cacheGC.start();
 
+      BackupSyncTask backupSync = new BackupSyncTask();
+      backupSync.start();
+
       EventWriterTask ewriter = new EventWriterTask();
       ewriter.start();
 
@@ -135,7 +138,7 @@ class MasterMgrServer
       try {
 	{
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on License Validator...");
 	  LogMgr.getInstance().flush();
           
@@ -145,7 +148,7 @@ class MasterMgrServer
 
 	{
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Event Writer...");
 	  LogMgr.getInstance().flush();
 
@@ -154,7 +157,7 @@ class MasterMgrServer
 
 	{
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Cache Garbage Collector...");
 	  LogMgr.getInstance().flush();
           
@@ -164,7 +167,17 @@ class MasterMgrServer
 
 	{
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     "Waiting on Database Backup Synchronizer...");
+	  LogMgr.getInstance().flush();
+          
+          backupSync.interrupt();
+          backupSync.join();
+        }
+
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Client Handlers...");
 	  LogMgr.getInstance().flush();
 	  
@@ -1938,6 +1951,48 @@ class MasterMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Cache Garbage Collector Finished.");	
+	LogMgr.getInstance().flush();
+      }
+    }
+  }
+
+  /**
+   * Database backup synchronization and archiving.
+   */
+  private 
+  class BackupSyncTask
+    extends Thread
+  {
+    public 
+    BackupSyncTask() 
+    {
+      super("MasterMgrServer:BackupSyncTask");
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      try {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	   "Database Backup Synchronizer Started.");	
+	LogMgr.getInstance().flush();
+
+	while(!pShutdown.get()) {
+	  pMasterMgr.backupSync();
+	}
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Database Backup Synchronizer Failed:", ex)); 
+	LogMgr.getInstance().flush();	
+      }
+      finally {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	   "Database Backup Synchronizer Finished.");	
 	LogMgr.getInstance().flush();
       }
     }

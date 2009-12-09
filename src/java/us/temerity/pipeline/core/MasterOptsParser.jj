@@ -48,7 +48,6 @@ MasterOptsParser
   init()
   {
     pControls = new MasterControls(PackageInfo.sProdPath, PackageInfo.sProdPath); 
-
     pLogBackups = 10;
   }
  
@@ -145,6 +144,7 @@ TOKEN :
 | <ANNOT_CACHE_SIZE:          "--annot-cache-size">          : BYTE_SIZE_SEP  
 
 | <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
+| <BACKUP_SYNC_INTERVAL:      "--backup-sync-interval">      : INTEGER_SEP
 
 | <FILE_STAT_DIR:             "--file-stat-dir">             : PATH_SEP
 | <CHECKSUM_DIR:              "--checksum-dir">              : PATH_SEP
@@ -463,7 +463,7 @@ GlobalOpts()
    Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
    MinFreeMemory() | GCInterval() | GCMisses() | CacheFactor() | 
    RepoCacheSize() | WorkCacheSize() | CheckCacheSize() | AnnotCacheSize() |
-   RestoreCleanupInterval() | FileStatDir() | CheckSumDir())
+   RestoreCleanupInterval() | BackupSyncInterval() | FileStatDir() | CheckSumDir())
   {}
 }
 
@@ -917,6 +917,23 @@ void RestoreCleanupInterval()
   {
     try {
       pControls.setRestoreCleanupInterval(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+}
+
+void BackupSyncInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <BACKUP_SYNC_INTERVAL> EQ() t=<INTEGER>
+  {
+    try {
+      pControls.setBackupSyncInterval(Long.parseLong(t.image));
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex);

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.107 2009/12/09 05:05:55 jesse Exp $
+// $Id: ScriptApp.java,v 1.108 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -153,7 +153,7 @@ class ScriptApp
        "  Administration\n" +
        "    admin\n" + 
        "      --shutdown [--shutdown-jobmgrs] [--shutdown-pluginmgr]\n" + 
-       "      --backup=dir [--dry-run]\n" +
+       "      --backup=dir\n" +
        "      --archive=archive-prefix [--pattern='node-regex'] [--max-archives=integer]\n" +
        "        [--min-size=bytes] --archiver=archiver-name[:major.minor.micro]]\n" + 
        "        [--param=name:value ...] [--auto-start] [--toolset=...] [--dry-run]\n" + 
@@ -167,9 +167,10 @@ class ScriptApp
        "        [--file-stat-dir=...] [--checksum-dir=...]\n" + 
        "        [--node-gc-interval=msec] [--min-overhead=min] [--max-overhead=max]\n" + 
        "        [--avg-node-size=size] [--restore-cleanup-interval=msec]\n" + 
+       "        [--backup-sync-interval]\n" + 
        "      --set-queue [--remote-log=logger:level[,logger:level[...]]]\n" + 
        "        [--collector-batch-size=num] [--dispatcher-interval=msec]\n" +  
-       "        [--nfs-cache-interval=msec]\n" + 
+       "        [--nfs-cache-interval=msec] [--backup-sync-interval]\n" + 
        "      --get-master\n" + 
        "      --get-queue\n" +
        "\n" + 
@@ -663,46 +664,6 @@ class ScriptApp
   /*----------------------------------------------------------------------------------------*/
   /*   A D M I N                                                                            */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Create a 
-   */ 
-  public void 
-  backupDatabase
-  (
-   File file, 
-   boolean dryrun, 
-   MasterMgrClient client
-  ) 
-    throws PipelineException
-  {
-    StringBuilder dryRunResults = null;
-    if(dryrun) {
-      dryRunResults = new StringBuilder(); 
-      dryRunResults.append
-        (tbar(80) + "\n" + 
-         "Database Backup: " + file + "\n" + 
-         bar(80) + "\n" + 
-         "(dry run...)\n\n");
-    }
-
-    client.backupDatabase(file, dryRunResults);
-
-    if(dryrun) {
-      dryRunResults.append(tbar(80)); 
-      LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       dryRunResults.toString()); 
-    }
-    else {
-      LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Database Saved: " + file);
-    }
-
-    LogMgr.getInstance().flush();
-  }
-
 
   /**
    * Create a new archive volume containing the matching checked-in versions.
@@ -1262,20 +1223,28 @@ class ScriptApp
       if(checksumDir == null) 
         checksumDir = PackageInfo.sProdPath;
 
+      Long gcInterval = controls.getCacheGCInterval();
+      Long rsInterval = controls.getRestoreCleanupInterval();
+      Long bsInterval = controls.getBackupSyncInterval();
+
       buf.append
 	(tbar(80) + "\n" +
-	 "    Min Free Memory : " + controls.getMinFreeMemory() + " (msec)\n" + 
-	 "  Cache GC Interval : " + controls.getCacheGCInterval() + " (msec)\n" + 
-	 "    Cache GC Misses : " + controls.getCacheGCMisses() + " (msec)\n" + 
-	 "       Cache Factor : " + controls.getCacheFactor() + " (msec)\n" + 
-         "   Repo Cache Size  : " + controls.getRepoCacheSize() + "\n" + 
-         "   Work Cache Size  : " + controls.getWorkCacheSize() + "\n" + 
-         "  Check Cache Size  : " + controls.getCheckCacheSize() + "\n" + 
-         "  Annot Cache Size  : " + controls.getAnnotCacheSize() + "\n" + 
-	 "   Restore Interval : " + controls.getRestoreCleanupInterval() + " (msec)\n" + 
+	 "       Min Free Memory : " + controls.getMinFreeMemory() + " (msec)\n" + 
+	 "     Cache GC Interval : " + gcInterval + " " + 
+         "(" + TimeStamps.formatInterval(gcInterval) + ")\n" +
+	 "       Cache GC Misses : " + controls.getCacheGCMisses() + " (msec)\n" + 
+	 "          Cache Factor : " + controls.getCacheFactor() + " (msec)\n" + 
+         "      Repo Cache Size  : " + controls.getRepoCacheSize() + "\n" + 
+         "      Work Cache Size  : " + controls.getWorkCacheSize() + "\n" + 
+         "     Check Cache Size  : " + controls.getCheckCacheSize() + "\n" + 
+         "     Annot Cache Size  : " + controls.getAnnotCacheSize() + "\n" + 
+	 "      Restore Interval : " + rsInterval + " " + 
+         "(" + TimeStamps.formatInterval(rsInterval) + ")\n" +
+	 "  Backup Sync Interval : " + bsInterval + " " + 
+         "(" + TimeStamps.formatInterval(bsInterval) + ")\n" +
 	 "\n" + 
-	 "     File Stat Dir : " + statDir + "\n" + 
-	 "      Checksum Dir : " + checksumDir + "\n" + 
+	 "         File Stat Dir : " + statDir + "\n" + 
+	 "          Checksum Dir : " + checksumDir + "\n" + 
 	 "\n" + 
 	 pad("-- Logging Levels ", '-', 80) + "\n");
     }
@@ -1313,10 +1282,20 @@ class ScriptApp
 
     {
       QueueControls controls = client.getRuntimeControls();    
+
+      Long disInterval = controls.getDispatcherInterval();
+      Long nfsInterval = controls.getNfsCacheInterval();
+      Long bsInterval = controls.getBackupSyncInterval();
+
       buf.append
 	(tbar(80) + "\n" +
-	 " Collector Batch Size : " + controls.getCollectorBatchSize() + "\n" + 
-	 "  Dispatcher Interval : " + controls.getDispatcherInterval() + " (msec)\n" +
+	 "  Collector Batch Size : " + controls.getCollectorBatchSize() + "\n" + 
+	 "   Dispatcher Interval : " + disInterval + " " + 
+         "(" + TimeStamps.formatInterval(disInterval) + ")\n" +
+	 "    NFS Cache Interval : " + nfsInterval + " " + 
+         "(" + TimeStamps.formatInterval(nfsInterval) + ")\n" +
+	 "  Backup Sync Interval : " + bsInterval + " " + 
+         "(" + TimeStamps.formatInterval(bsInterval) + ")\n" +
 	 "\n" + 
 	 pad("-- Logging Levels ", '-', 80) + "\n");
     }

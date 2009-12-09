@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.318 2009/12/02 20:22:31 jim Exp $
+// $Id: MasterMgr.java,v 1.319 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -244,8 +244,9 @@ class MasterMgr
       pWorkingCounters    = new CacheCounters("Working Node Versions",    250L, 250L); 
       pCheckSumCounters   = new CacheCounters("Working Node CheckSums",   250L, 250L); 
       
-      pRestoreCleanupInterval = new AtomicLong(); 
-      
+      pRestoreCleanupInterval = new AtomicLong();
+      pBackupSyncInterval     = new AtomicLong();
+
       setRuntimeControlsHelper(controls);
     }
 
@@ -346,6 +347,9 @@ class MasterMgr
       pRestoreReqs        = new TreeMap<String,TreeMap<VersionID,RestoreRequest>>();
       pIntermediateReady  = new AtomicBoolean(false); 
       pIntermediate       = new TreeMap<String,TreeSet<VersionID>>(); 
+
+      pBackupSyncTrigger = new Semaphore(0);
+      pBackupSyncTarget  = new AtomicReference<Path>();
 
       pDefaultToolsetLock = new Object();
       pDefaultToolset     = null;
@@ -2029,7 +2033,7 @@ class MasterMgr
       }
 
       bytes = pMinFreeMemory.get();
-      buf.append("   Min Free Memory : " + bytes + " " +
+      buf.append("       Min Free Memory : " + bytes + " " +
                  "(" + ByteSize.longToFloatString(bytes) + ")\n");
     }
     
@@ -2037,58 +2041,71 @@ class MasterMgr
       Long gcInterval = controls.getCacheGCInterval();
       if(gcInterval != null) 
         pCacheGCInterval.set(gcInterval);
-      buf.append(" Cache GC Interval : " + pCacheGCInterval.get() + " (msec)\n");
+      gcInterval = pCacheGCInterval.get();
+      buf.append("     Cache GC Interval : " + gcInterval + " " + 
+                 "(" + TimeStamps.formatInterval(gcInterval) + ")\n");
     }
     
     {
       Long gcMisses = controls.getCacheGCMisses();     
       if(gcMisses != null) 
-        pCacheTrigger.setOpsUntil(gcMisses); 
-      buf.append("   Cache GC Misses : " + pCacheTrigger.getOpsUntil() + " (msec)\n");
+        pCacheTrigger.setOpsUntil(gcMisses);
+      buf.append("       Cache GC Misses : " + pCacheTrigger.getOpsUntil() + "\n");
     }
 
     {
       Double cacheFactor = controls.getCacheFactor();       
       if(cacheFactor != null) 
         pCacheFactor.set(cacheFactor); 
-      buf.append("      Cache Factor : " + pCacheFactor.get() + "\n"); 
+      buf.append("          Cache Factor : " + pCacheFactor.get() + "\n"); 
     }
 
     {
       Long repoCacheSize = controls.getRepoCacheSize(); 
       if(repoCacheSize != null) 
         pCheckedInCounters.setLowerBounds(repoCacheSize);
-      buf.append("   Repo Cache Size : " + pCheckedInCounters.getMinimum() + "\n"); 
+      buf.append("       Repo Cache Size : " + pCheckedInCounters.getMinimum() + "\n"); 
     }
 
     {
       Long workCacheSize = controls.getWorkCacheSize(); 
       if(workCacheSize != null) 
         pWorkingCounters.setLowerBounds(workCacheSize);
-      buf.append("   Work Cache Size : " + pWorkingCounters.getMinimum() + "\n"); 
+      buf.append("       Work Cache Size : " + pWorkingCounters.getMinimum() + "\n"); 
     }
 
     {
       Long checkCacheSize = controls.getCheckCacheSize(); 
       if(checkCacheSize != null) 
         pCheckSumCounters.setLowerBounds(checkCacheSize);
-      buf.append("  Check Cache Size : " + pCheckSumCounters.getMinimum() + "\n"); 
+      buf.append("      Check Cache Size : " + pCheckSumCounters.getMinimum() + "\n"); 
     }
 
     {
       Long annotCacheSize = controls.getAnnotCacheSize(); 
       if(annotCacheSize != null) 
         pAnnotationCounters.setLowerBounds(annotCacheSize);
-      buf.append("  Annot Cache Size : " + pAnnotationCounters.getMinimum() + "\n"); 
+      buf.append("      Annot Cache Size : " + pAnnotationCounters.getMinimum() + "\n"); 
     }
 
     {
       Long interval = controls.getRestoreCleanupInterval();
       if(interval != null) 
         pRestoreCleanupInterval.set(interval);
-      buf.append("   Restore Cleanup : " + pRestoreCleanupInterval.get() + " (msec)\n");
+      interval = pRestoreCleanupInterval.get();
+      buf.append("       Restore Cleanup : " + interval + " " + 
+                 "(" + TimeStamps.formatInterval(interval) + ")\n");
     }
     
+    {
+      Long interval = controls.getBackupSyncInterval();
+      if(interval != null) 
+        pBackupSyncInterval.set(interval);
+      interval = pBackupSyncInterval.get(); 
+      buf.append("  Backup Sync Interval : " + interval + " " + 
+                 "(" + TimeStamps.formatInterval(interval) + ")\n");
+    }
+
     buf.append
       ("----------------------------------------------------------------------------"); 
     
@@ -15550,16 +15567,18 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a database backup file. <P> 
+   * Create a set of database backup files. <P> 
    * 
    * The backup will not be perfomed until any currently running database operations have 
    * completed.  Once the databsae backup has begun, all new database operations will blocked
    * until the backup is complete.  The this reason, the backup should be performed during 
    * non-peak hours. <P> 
    * 
-   * The database backup file will be named: <P> 
+   * The database backup files will be automatically named: <P> 
    * <DIV style="margin-left: 40px;">
-   *   pipeline-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plmaster-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plpluginmgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
    * </DIV>
    * 
    * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
@@ -15582,13 +15601,16 @@ class MasterMgr
    MiscBackupDatabaseReq req
   )
   {
-    File backupFile = req.getBackupFile();
-    boolean dryrun  = req.isDryRun(); 
+    TaskTimer timer = new TaskTimer("Initiating Backup"); 
 
-    TaskTimer timer = new TaskTimer("MasterMgr.backupDatabase: " + backupFile);
+    Path targetDir = req.getBackupDirectory();
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss");
+    String dateStr = format.format(new Date());
+    Path target = new Path(targetDir, "plmaster-db." + dateStr + ".tgz");
 
     /* pre-op tests */
-    BackupDatabaseExtFactory factory = new BackupDatabaseExtFactory(backupFile);
+    BackupDatabaseExtFactory factory = new BackupDatabaseExtFactory(target.toFile());
     try {
       performExtensionTests(timer, factory);
     }
@@ -15596,59 +15618,26 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
-    pDatabaseLock.writeLock().lock();
     try {
-      timer.resume();	
-
       if(!pAdminPrivileges.isMasterAdmin(req))
-	throw new PipelineException
-	  ("Only a user with Master Admin privileges may backup the database!"); 
+        throw new PipelineException
+          ("Only a user with Master Admin privileges may backup the database!"); 
 
-      /* write cached downstream links */ 
-      writeAllDownstreamLinks();
-      
-      /* create the backup */ 
+      if(!targetDir.toFile().isDirectory()) 
+        throw new PipelineException
+          ("The backup directory (" + targetDir + ") is not valid!");
+
+      pBackupSyncTarget.set(target); 
+      pBackupSyncTrigger.release();
+
       {
-	ArrayList<String> args = new ArrayList<String>();
-	args.add("-zcf");
-	args.add(backupFile.toString());
-	args.add("annotations"); 
-	args.add("archives"); 
-	args.add("checksum"); 
-	args.add("downstream"); 
-	args.add("etc"); 
-	args.add("events"); 
-	args.add("plugins"); 
-	args.add("repository"); 
-	args.add("toolsets"); 
-	args.add("working"); 
-	
-	Map<String,String> env = System.getenv();
+        // Queue Manager backup here... 
 
-	SubProcessLight proc = 
-	  new SubProcessLight("BackupDatabase", "tar", args, env, pNodeDir);
+      }
 
-        /* if this is a dry run, just report what would have happened... */ 
-        if(dryrun) {
-          return new DryRunRsp(timer, proc.getDryRunInfo()); 
-        }
+      {
+        // Plugin Manager backup here... 
 
-        /* backup the database files... */ 
-        else {
-          try {
-            proc.start();
-            proc.join();
-            if(!proc.wasSuccessful()) 
-              throw new PipelineException
-                ("Unable to backing-up Pipeline database:\n\n" + 
-                 "  " + proc.getStdErr());	
-          }
-          catch(InterruptedException ex) {
-            throw new PipelineException
-              ("Interrupted while backing-up Pipeline database!");
-          }
-        }
       }
 
       /* post-op tasks */ 
@@ -15659,9 +15648,6 @@ class MasterMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }  
-    finally {
-      pDatabaseLock.writeLock().unlock();
-    }
   }
 
 
@@ -21052,6 +21038,131 @@ class MasterMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   D A T A B A S E   B A C K U P                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Periodically synchronizes the database with a backup directory and optionally creates
+   * tar archives of this backup directory.
+   */ 
+  public void 
+  backupSync() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    Path backupTarget = pBackupSyncTarget.getAndSet(null);
+    boolean doBackup = (backupTarget != null); 
+
+    /* synchronize the backup directory with the live database */ 
+    try{
+      /* write cached downstream links */ 
+      if(doBackup) 
+        writeAllDownstreamLinks();
+
+      TaskTimer tm = new TaskTimer("Database Backup Synchronization " + 
+                                   "(" + (doBackup ? "locked" : "live") + ")");
+      tm.aquire();
+      if(doBackup) 
+        pDatabaseLock.writeLock().lock();
+      try {
+        tm.resume();	
+        
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("--archive");
+        args.add("--quiet");
+        args.add("--delete");
+        args.add("--delete-excluded");
+        args.add("--exclude=/pipeline/queue");
+        args.add("--exclude=/pipeline/plugins");
+        args.add("pipeline");
+        args.add(PackageInfo.sMasterBackupPath.toOsString() + "/");
+        
+        SubProcessLight proc = 
+          new SubProcessLight("DatabaseBackupSync", "rsync", args, System.getenv(), 
+                              PackageInfo.sNodePath.getParentPath().toFile());
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to perform Database Backup Synchronization:\n\n" + 
+               "  " + proc.getStdErr());	
+        }
+        catch(InterruptedException ex) {
+          throw new PipelineException
+            ("Interrupted while performing Database Backup Synchronization!"); 
+        }
+        
+        LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
+      }
+      finally {
+        if(doBackup) 
+          pDatabaseLock.writeLock().unlock();
+      }
+
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         Exceptions.getFullMessage("Failed to Synchronize Database", ex));
+    }  
+
+    /* if actually doing a backup, then make a tarball out of the backup directory */ 
+    if(doBackup) {
+      try {
+        TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
+
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("-zcf");
+        args.add(backupTarget.toOsString());
+        args.add("pipeline");
+        
+        SubProcessLight proc = 
+          new SubProcessLight("DatabaseBackupArchive", "tar", args, System.getenv(), 
+                              PackageInfo.sMasterBackupPath.toFile());
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to create the Database Backup Archive: " + backupTarget + "\n\n" + 
+               "  " + proc.getStdErr());	
+        }
+        catch(InterruptedException ex) {
+          throw new PipelineException
+            ("Interrupted while performing Database Backup Archive!"); 
+        }
+
+        LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Failed to create Database Backup Archive", ex));
+      }  
+    }
+    
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      long nap = pBackupSyncInterval.get() - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+          pBackupSyncTrigger.tryAcquire(1, nap, TimeUnit.MILLISECONDS);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+      else {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	   "Database Backup Sync: Overbudget by " + 
+           "(" + TimeStamps.formatInterval(-nap) + ")..."); 
+      }
+    }
+  }
+
+    
 
   /*----------------------------------------------------------------------------------------*/
   /*  N O D E   E V E N T   W R I T E R                                                     */
@@ -24694,6 +24805,32 @@ class MasterMgr
    * rebuilding it during a database rebuild.
    */
   private boolean  pPreserveOfflinedCache; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and optionally making a tarball of these 
+   * backup copies.
+   */ 
+  private AtomicLong  pBackupSyncInterval; 
+
+  /**
+   * Used to allow interruptible blocking of the backup synchronzation task.
+   */ 
+  private Semaphore  pBackupSyncTrigger; 
+
+  /**
+   * When set, the path to the tarball in which the backup is archived. <P> 
+   * 
+   * If this is <CODE>null</CODE>, then the backup task just synchronizes the database
+   * with the backup directory without holding locks.  If it has a value, then the 
+   * synchronization is performed while holding the pDatabase.writeLock() and a tarball
+   * is created with this given path.  The backup task will unset the value after
+   * processing it.
+   */ 
+  private AtomicReference<Path>  pBackupSyncTarget; 
 
 
   /*----------------------------------------------------------------------------------------*/

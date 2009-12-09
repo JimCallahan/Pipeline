@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.55 2009/07/22 02:39:40 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.56 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -867,6 +867,15 @@ class PackageInfo
   public static final long sMasterHeapSize = @PL_MASTER_HEAP_SIZE@L;
 
 
+  /** 
+   * The abstract pathname of the directory used to store Master Manager database backups. <P>
+   *
+   * Set by the NodeDirectory customer profile entry.
+   */
+  public static final Path sMasterBackupPath = 
+    new Path(new Path("@NODEDIR@-backup"), "plmaster");
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1017,7 +1026,16 @@ class PackageInfo
    */
   public static final long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
 
-  
+
+  /** 
+   * The abstract pathname of the directory used to store Queue Manager database backups. <P>
+   *
+   * Set by the QueueDirectory customer profile entry.
+   */
+  public static final Path sQueueBackupPath = 
+    new Path(new Path("@QUEUEDIR@-backup"), "plqueuemgr");
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1086,6 +1104,15 @@ class PackageInfo
    */
   @Deprecated
   public static final File sPluginMgrDir = new File("@PL_PLUGIN_DIRECTORY@"); 
+
+
+  /** 
+   * The abstract pathname of the directory used to store Plugin Manager database backups. <P>
+   *
+   * Set by the PluginDirectory customer profile entry.
+   */
+  public static final Path sPluginBackupPath = 
+    new Path(new Path("@PL_PLUGIN_DIRECTORY@-backup"), "plpluginmgr");
 
 
 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.150 2009/12/01 22:50:34 jim Exp $
+// $Id: MasterMgrClient.java,v 1.151 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -7709,16 +7709,18 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a database backup file. <P> 
+   * Create a set of database backup files. <P> 
    * 
    * The backup will not be perfomed until any currently running database operations have 
    * completed.  Once the databsae backup has begun, all new database operations will blocked
    * until the backup is complete.  The this reason, the backup should be performed during 
    * non-peak hours. <P> 
    * 
-   * The database backup file will typically be named: <P> 
+   * The database backup files will be automatically named: <P> 
    * <DIV style="margin-left: 40px;">
-   *   pipeline-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plmaster-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plpluginmgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
    * </DIV>
    * 
    * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
@@ -7728,8 +7730,10 @@ class MasterMgrClient
    * 
    * Only privileged users may create a database backup. <P> 
    * 
-   * @param file
-   *   The name of the backup file.
+   * @param dir
+   *   The full path to the directory to store backup files.  This path is will be 
+   *   interpreted as local to each of the machines running the plmaster, plqueuemgr and
+   *   plpluginmgr daemons.
    * 
    * @throws PipelineException 
    *   If unable to perform the backup.
@@ -7737,49 +7741,7 @@ class MasterMgrClient
   public synchronized void
   backupDatabase
   (
-   File file
-  ) 
-    throws PipelineException
-  {
-    backupDatabase(file, null);
-  }
-
-  /**
-   * Create a database backup file. <P> 
-   * 
-   * The backup will not be perfomed until any currently running database operations have 
-   * completed.  Once the databsae backup has begun, all new database operations will blocked
-   * until the backup is complete.  The this reason, the backup should be performed during 
-   * non-peak hours. <P> 
-   * 
-   * The database backup file will typically be named: <P> 
-   * <DIV style="margin-left: 40px;">
-   *   pipeline-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
-   * </DIV>
-   * 
-   * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
-   * the backup.  The backup file is a <B>gzip</B>(1) compressed <B>tar</B>(1) archive of
-   * the {@link Glueable GLUE} format files which make of the persistent storage of the
-   * Pipeline database. <P> 
-   * 
-   * Only privileged users may create a database backup. <P> 
-   * 
-   * @param file
-   *   The name of the backup file.
-   * 
-   * @param dryRunResults
-   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
-   *   will be filled with a message detailing the steps that would have been performed
-   *   during an actual execution.
-   * 
-   * @throws PipelineException 
-   *   If unable to perform the backup.
-   */ 
-  public synchronized void
-  backupDatabase
-  (
-   File file, 
-   StringBuilder dryRunResults
+   Path dir
   ) 
     throws PipelineException
   {
@@ -7789,16 +7751,10 @@ class MasterMgrClient
 
     verifyConnection();
     
-    MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(file, dryRunResults != null); 
+    MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(dir); 
 
     Object obj = performLongTransaction(MasterRequest.BackupDatabase, req, 15000, 60000);  
-    if(obj instanceof DryRunRsp) {
-      DryRunRsp rsp = (DryRunRsp) obj; 
-      dryRunResults.append(rsp.getMessage());
-    }
-    else if(!(obj instanceof SuccessRsp)) {
-      handleFailure(obj);
-    }
+    handleSimpleResponse(obj);    
   } 
   
 

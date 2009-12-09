@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.73 2009/12/09 05:05:55 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.74 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -37,32 +37,21 @@ class QueueMgrServer
    * @param rebuild
    *   Whether to ignore existing lock files.
    * 
-   * @param collectorBatchSize
-   *   The maximum number of job servers per collection sub-thread.
-   * 
-   * @param dispatcherInterval
-   *   The minimum time a cycle of the dispatcher loop should take (in milliseconds).
-   * 
-   * @param nfsCacheInterval
-   *   The minimum time to wait before attempting a NFS directory attribute lookup operation
-   *   after a file in the directory has been created by another host on the network 
-   *   (in milliseconds).  Should be set to be slightly longer than the the NFS (acdirmax) 
-   *   mount option for the root production directory on the host running the Queue Manager.
+   * @param controls
+   *   The runtime controls.
    */
   public
   QueueMgrServer
   (
    boolean rebuild, 
-   int collectorBatchSize,
-   long dispatcherInterval, 
-   long nfsCacheInterval
+   QueueControls controls
   ) 
+    throws PipelineException 
   { 
     super("QueueMgrServer");
 
     pTimer = new TaskTimer();
-    pQueueMgr = new QueueMgr(this, rebuild, 
-                             collectorBatchSize, dispatcherInterval, nfsCacheInterval);
+    pQueueMgr = new QueueMgr(this, rebuild, controls); 
     pTasks = new TreeSet<HandlerTask>();
   }
  

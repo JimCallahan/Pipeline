@@ -216,9 +216,7 @@
                 "#admin_--backup">--backup</a><span style=
                 "font-weight: normal;">=</span><span style=
                 "font-style: italic; font-weight: normal;">dir</span>
-                <span style="font-weight: normal;">[<a href=
-                "#--dry-run"><span style=
-                "font-weight: bold;">--dry-run</span></a>]</span></li>
+                </li>
               </ul>
 
               <ul>
@@ -302,10 +300,17 @@
                 "font-weight: bold;">--max-overhead</span>=<span style="font-style: italic; font-weight: normal;">max</span><span class="postbody"><span style="font-weight: normal;">]
                 [</span></span><span style=
                 "font-weight: bold;">--avg-node-size</span>=<span style="font-style: italic; font-weight: normal;">size</span><span class="postbody"><span style="font-weight: normal;">]
+
                 [</span></span><span style=
                 "font-weight: bold;">-</span><span class=
                 "postbody"><span style=
-                "font-weight: bold;">-restore-cleanup-interval</span>=<span style="font-style: italic; font-weight: normal;">msec</span></span><span class="postbody"><span style="font-weight: normal;">]
+                "font-weight: bold;">--restore-cleanup-interval</span>=<span style="font-style: italic; font-weight: normal;">msec</span></span><span class="postbody"><span style="font-weight: normal;">]
+
+                [</span></span><span style=
+                "font-weight: bold;">-</span><span class=
+                "postbody"><span style=
+                "font-weight: bold;">--backup-sync-interval</span>=<span style="font-style: italic; font-weight: normal;">msec</span></span><span class="postbody"><span style="font-weight: normal;">]
+
                 [<span style=
                 "font-weight: bold;">--file-stat-dir</span>=<span style="font-style: italic;">dir</span>]&nbsp;
                 [<span style=
@@ -321,7 +326,10 @@
                 "font-weight: bold;">--dispatcher-interval</span>=<span style="font-style: italic; font-weight: normal;">msec</span><span style="font-weight: normal;">]
                 [<span style=
                 "font-weight: bold;">--nfs-cache-interval</span>=<span style="font-style: italic;">msec</span>]<br>
+                [<span style=
+                "font-weight: bold;">--backup-sync-interval</span>=<span style="font-style: italic;">msec</span>]<br>
                 </span></li>
+
 
                 <li style="font-weight: bold;"><a href=
                 "#runtime_--get-master"><span class=
@@ -2921,10 +2929,7 @@
   <div style="margin-left: 40px;">
     <span style="font-weight: bold;"><a name="admin_--backup" id=
     "admin_--backup"></a>admin --backup</span>=<span style=
-    "font-style: italic;">dir</span> <span style=
-    "font-weight: normal;">[</span><a href=
-    "#--dry-run"><span style="font-weight: bold;">--dry-run</span></a><span style="font-weight: normal;">]</span><br>
-
+    "font-style: italic;">dir</span><br>
     <br>
 
     <div style="margin-left: 40px;">
@@ -3274,7 +3279,7 @@
     "font-weight: normal;">[</span><span style=
     "font-weight: bold;">--remote-log</span><span style=
     "font-weight: normal;">=</span><span style=
-    "font-style: italic; font-weight: normal;">logger:level</span><span style="font-weight: normal;">[</span><span style="font-style: italic; font-weight: normal;">,logger:level</span><span style="font-weight: normal;">[...]]]</span><br>
+    "font-style: italic; font-weight: normal;">logger:level</span><span style="font-weight: normal;">[</span><span style="font-style: italic; font-weight: normal;">,logger:level</span><span style="font-weight: normal;">[...]]]</span>
 
     <span style="font-weight: normal;">[</span><a href=
     "plmaster.html#--min-free-memory"><span style=
@@ -3316,10 +3321,17 @@
     "font-weight: bold;">--annot-cache-size</span></a><span style=
     "font-weight: normal;">=</span><span style=
     "font-style: italic; font-weight: normal;">items</span><span style="font-weight: normal;">[K|M|G]]</span>
+    
     <span style="font-weight: normal;">[</span><a href=
     "plmaster.html#--restore-cleanup-interval"><span style=
     "font-weight: bold;">-</span></a><span class=
-    "postbody"><a href="plmaster.html#--restore-cleanup-interval"><span style="font-weight: bold;">-restore-cleanup-interval</span></a>=<span style="font-style: italic; font-weight: normal;">msec</span></span><span class="postbody"><span style="font-weight: normal;">]</span></span>
+    "postbody"><a href="plmaster.html#--restore-cleanup-interval"><span style="font-weight: bold;">--restore-cleanup-interval</span></a>=<span style="font-style: italic; font-weight: normal;">msec</span></span><span class="postbody"><span style="font-weight: normal;">]</span></span>
+
+    <span style="font-weight: normal;">[</span><a href=
+    "plmaster.html#--backup-sync-interval"><span style=
+    "font-weight: bold;">-</span></a><span class=
+    "postbody"><a href="plmaster.html#--backup-sync-interval"><span style="font-weight: bold;">--backup-sync-interval</span></a>=<span style="font-style: italic; font-weight: normal;">msec</span></span><span class="postbody"><span style="font-weight: normal;">]</span></span>
+
     <span class="postbody"><span style=
     "font-weight: normal;">[<a href=
     "plmaster.html#--file-stat-dir"><span style=
@@ -3335,7 +3347,7 @@
     "font-weight: normal;">[</span><span style=
     "font-weight: bold;">--remote-log</span><span style=
     "font-weight: normal;">=</span><span style=
-    "font-style: italic; font-weight: normal;">logger:level</span><span style="font-weight: normal;">[</span><span style="font-style: italic; font-weight: normal;">,logger:level</span><span style="font-weight: normal;">[...]]]<br>
+    "font-style: italic; font-weight: normal;">logger:level</span><span style="font-weight: normal;">[</span><span style="font-style: italic; font-weight: normal;">,logger:level</span><span style="font-weight: normal;">[...]]]
 
     &nbsp; [</span><a href=
     "plqueuemgr.html#--collector-batch-size"><span style=
@@ -3343,9 +3355,14 @@
     [</span><a href=
     "plqueuemgr.html#--dispatcher-interval"><span style=
     "font-weight: bold;">--dispatcher-interval</span></a>=<span style="font-style: italic; font-weight: normal;">msec</span><span style="font-weight: normal;">]</span>
+
     <span style="font-weight: normal;">[<a href=
     "plqueuemgr.html#--nfs-cache-interval"><span style=
     "font-weight: bold;">--nfs-cache-interval</span></a>=<span style="font-style: italic;">msec</span>]</span>
+
+    <span style="font-weight: normal;">[<a href=
+    "plqueuemgr.html#--backup-sync-interval"><span style=
+    "font-weight: bold;">--backup-sync-interval</span></a>=<span style="font-style: italic;">msec</span>]</span>
 
     <div style="margin-left: 40px;">
       <br>

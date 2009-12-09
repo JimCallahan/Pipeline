@@ -26,6 +26,9 @@ The plqueuemgr(1) program is distributed in the main Pipeline RPM:
 %defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @QUEUEDIR@
 
+%dir @QUEUEDIR@-backup
+%dir @QUEUEDIR@-backup/plqueuemgr
+
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>
 Latest build.

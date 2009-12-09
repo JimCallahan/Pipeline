@@ -30,6 +30,9 @@ The plmaster(1) program is distributed in the main Pipeline RPM:
 %dir @NODEDIR@/etc/default-layouts/Unix
 %dir @NODEDIR@/etc/suffix-editors
 
+%dir @NODEDIR@-backup
+%dir @NODEDIR@-backup/plmaster
+
 %defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %config @NODEDIR@/etc/initial-panel-layout
 %config @NODEDIR@/etc/suffix-editors/@PIPELINE_USER@

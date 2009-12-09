@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.118 2009/12/09 05:05:55 jesse Exp $
+// $Id: UIMaster.java,v 1.119 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3922,14 +3922,11 @@ class UIMaster
   public void 
   showBackupDialog()
   {
-    SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss");
-    pBackupDialog.updateTargetName("pipeline-db." + format.format(new Date()) + ".tgz");
-
     pBackupDialog.setVisible(true);
     if(pBackupDialog.wasConfirmed()) {
-      File file = pBackupDialog.getSelectedFile();
-      if(file != null) {
-	BackupTask task = new BackupTask(file);
+      File dir = pBackupDialog.getSelectedFile();
+      if(dir != null) {
+	BackupTask task = new BackupTask(new Path(dir));
 	task.start();	
       }
     }
@@ -5018,9 +5015,8 @@ class UIMaster
 
 	pManageServerExtensionsDialog = new JManageServerExtensionsDialog();
 
-	pBackupDialog = 
-	  new JFileSelectDialog(pFrame, "Backup Database", "Backup Database File:",
-				"Backup As:", 64, "Backup"); 
+	pBackupDialog = new JFileSelectDialog(pFrame, "Backup Database", 
+                                              "Backup Database Directory:", "Backup"); 
 	pBackupDialog.updateTargetFile(PackageInfo.sTempPath.toFile());
 
 	pArchiveDialog        = new JArchiveDialog();
@@ -6890,12 +6886,11 @@ class UIMaster
     public 
     BackupTask
     (
-     File file
+     Path dir
     ) 
     {
       super("UIMaster:BackupTask");
-
-      pBackupFile = file;
+      pBackupDir = dir;
     }
 
     @Override
@@ -6906,7 +6901,7 @@ class UIMaster
       long opID = master.beginDialogOp("Database Backup...");
       MasterMgrClient client = master.acquireMasterMgrClient();
       try {
-        client.backupDatabase(pBackupFile);
+        client.backupDatabase(pBackupDir);
       }
       catch(PipelineException ex) {
         master.showErrorDialog(ex);
@@ -6918,7 +6913,7 @@ class UIMaster
       }
     }
 
-    private File  pBackupFile; 
+    private Path pBackupDir; 
   }
 
 

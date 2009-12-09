@@ -1,4 +1,4 @@
-// $Id: MiscBackupDatabaseReq.java,v 1.3 2007/07/01 23:54:23 jim Exp $
+// $Id: MiscBackupDatabaseReq.java,v 1.4 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -29,27 +29,20 @@ class MiscBackupDatabaseReq
   /** 
    * Constructs a new request.
    * 
-   * @param file
-   *   The name of the backup file.
-   * 
-   * @param dryrun
-   *   Whether to show what files would have been backed up without actually performing
-   *   the backup. 
+   * @param path 
+   *   The name of the backup directory.
    */
   public
   MiscBackupDatabaseReq
   (
-   File file, 
-   boolean dryrun
+   Path path
   )
   {
     super();
 
-    if(file == null) 
+    if(path == null) 
       throw new IllegalArgumentException("The backup file cannot be (null)!");
-    pBackupFile = file;
-
-    pDryRun = dryrun; 
+    pBackupDirectory = path;
   }
 
 
@@ -59,22 +52,12 @@ class MiscBackupDatabaseReq
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the name of the backup file.
+   * Get the name of the backup directory.
    */ 
-  public File
-  getBackupFile() 
+  public Path
+  getBackupDirectory() 
   {
-    return pBackupFile;
-  }
-
-  /**
-   * Whether to show what files would have been backed up without actually performing
-   * the backup. 
-   */ 
-  public boolean
-  isDryRun() 
-  {
-    return pDryRun;
+    return pBackupDirectory;
   }
 
 
@@ -85,21 +68,14 @@ class MiscBackupDatabaseReq
   private static final long serialVersionUID = -8124024748124976739L;
 
   
-
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The name of the backup file.
+   * The name of the backup directory.
    */
-  private File  pBackupFile;
-
-  /**
-   * Whether to show what files would have been backed up without actually performing
-   * the backup. 
-   */ 
-  private boolean  pDryRun; 
+  private Path  pBackupDirectory;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: QueueControls.java,v 1.3 2007/07/20 07:47:11 jim Exp $
+// $Id: QueueControls.java,v 1.4 2009/12/09 14:28:04 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -23,17 +23,18 @@ class QueueControls
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct a with all parameters unset. 
+   * Construct with all parameters initialized to defaults.
    */ 
   public 
   QueueControls() 
-  {}
+  {
+    this(null, null, null, null); 
+  }
 
   /** 
-   * Construct a with default values for all parameters. <P> 
+   * Construct with the given values for all parameters. <P> 
    * 
-   * Any parameter can be left unset by suppling <CODE>null</CODE> for its initial 
-   * value.
+   * Any parameter can be set to its default value by suppling <CODE>null</CODE>. 
    * 
    * @param collectorBatchSize
    *   The maximum number of job servers per collection sub-thread.
@@ -46,18 +47,24 @@ class QueueControls
    *   after a file in the directory has been created by another host on the network 
    *   (in milliseconds).  This should be set to the same value as the NFS (acdirmax) 
    *   mount option for the root production directory on the host running the Queue Manager.
+   * 
+   * @param backupSyncInterval
+   *   The interval (in milliseconds) between the live synchronization of the database 
+   *   files associated with the Master Manager and backup copies of these files.
    */ 
   public 
   QueueControls
   (
    Integer collectorBatchSize,
    Long dispatcherInterval, 
-   Long nfsCacheInterval
+   Long nfsCacheInterval,
+   Long backupSyncInterval
   ) 
   {    
     setCollectorBatchSize(collectorBatchSize); 
     setDispatcherInterval(dispatcherInterval); 
     setNfsCacheInterval(nfsCacheInterval); 
+    setBackupSyncInterval(backupSyncInterval); 
   }
 
 
@@ -82,7 +89,7 @@ class QueueControls
    * Set the maximum number of job servers per collection sub-thread.
    * 
    * @param size
-   *   The batch size or <CODE>null</CODE> to unset.
+   *   The batch size or <CODE>null</CODE> for default.
    */
   public void 
   setCollectorBatchSize
@@ -90,10 +97,15 @@ class QueueControls
    Integer size
   ) 
   {
-    if((size != null) && (size <= 0L)) 
-      throw new IllegalArgumentException
-        ("The collector batch size (" + size + ") must be positive!");
-    pCollectorBatchSize = size;
+    if(size != null) {
+      if(size <= 0L) 
+        throw new IllegalArgumentException
+          ("The collector batch size (" + size + ") must be positive!");
+      pCollectorBatchSize = size;
+    }
+    else {
+      pCollectorBatchSize = 50;
+    }
   }
 
 
@@ -123,10 +135,15 @@ class QueueControls
    Long interval
   ) 
   {
-    if((interval != null) && (interval < 500L)) 
-      throw new IllegalArgumentException
-        ("The dispatcher interval (" + interval + ") must be at least 500ms!");
-    pDispatcherInterval = interval; 
+    if(interval != null) {
+      if(interval < 500L)
+        throw new IllegalArgumentException
+          ("The dispatcher interval (" + interval + ") must be at least 500ms!");
+      pDispatcherInterval = interval; 
+    }
+    else {
+      pDispatcherInterval = 2000L;  /* 2-seconds */ 
+    }
   }
 
 
@@ -160,10 +177,56 @@ class QueueControls
    Long interval
   ) 
   {
-    if((interval != null) && (interval < 0L)) 
-      throw new IllegalArgumentException
-        ("The NFS cache interval (" + interval + ") cannot be negative!");
-    pNfsCacheInterval = interval; 
+    if(interval != null) {
+      if(interval < 0L)
+        throw new IllegalArgumentException
+          ("The NFS cache interval (" + interval + ") cannot be negative!");
+      pNfsCacheInterval = interval; 
+    }
+    else {
+      pNfsCacheInterval = 5000L;  /* 5-seconds */ 
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and backup copies of these files.
+   *
+   * @return 
+   *   The interval or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getBackupSyncInterval() 
+  {
+    return pBackupSyncInterval;
+  }
+
+  /**
+   * Set the interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and backup copies of these files.
+   * 
+   * @param interval
+   *   The interval or <CODE>null</CODE> for default. 
+   */
+  public void 
+  setBackupSyncInterval
+  (
+   Long interval
+  ) 
+  {
+    if(interval != null) {
+      if(interval < 3600000L)
+        throw new IllegalArgumentException
+          ("The backup sync interval (" + interval + " msec) must be at " + 
+           "least 1 hour!"); 
+      pBackupSyncInterval = interval; 
+    }
+    else {
+      pBackupSyncInterval = 21600000L;  /* 6-hours */ 
+    }
   }
 
 
@@ -197,6 +260,12 @@ class QueueControls
    * mount option for the root production directory on the host running the Queue Manager.
    */ 
   private Long  pNfsCacheInterval; 
+
+  /**
+   * The interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and backup copies of these files.
+   */ 
+  private Long  pBackupSyncInterval; 
 
 }
 

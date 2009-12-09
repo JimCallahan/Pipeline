@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.134 2009/12/09 05:05:55 jesse Exp $
+// $Id: QueueMgr.java,v 1.135 2009/12/09 14:28:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.Map.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+import java.util.concurrent.locks.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -40,36 +41,32 @@ class QueueMgr
    * @param rebuild
    *   Whether to ignore existing lock files.
    * 
-   * @param collectorBatchSize
-   *   The maximum number of job servers per collection sub-thread.
-   * 
-   * @param dispatcherInterval
-   *   The minimum time a cycle of the dispatcher loop should take (in milliseconds).
-   * 
-   * @param nfsCacheInterval
-   *   The minimum time to wait before attempting a NFS directory attribute lookup operation
-   *   after a file in the directory has been created by another host on the network 
-   *   (in milliseconds).  This should be set to the same value as the NFS (acdirmax) 
-   *   mount option for the root production directory on the host running the Queue Manager.
+   * @param controls
+   *   The runtime controls.
    */
   public
   QueueMgr
   (
    QueueMgrServer server,
    boolean rebuild, 
-   int collectorBatchSize,
-   long dispatcherInterval, 
-   long nfsCacheInterval
+   QueueControls controls
   ) 
+    throws PipelineException 
   { 
     super(true); 
 
     pServer = server;
     pRebuild = rebuild;
 
-    pCollectorBatchSize = new AtomicInteger(collectorBatchSize);
-    pDispatcherInterval = new AtomicLong(dispatcherInterval);
-    pNfsCacheInterval   = new AtomicLong(nfsCacheInterval);
+    /* init runtime controls */ 
+    {
+      pCollectorBatchSize = new AtomicInteger();
+      pDispatcherInterval = new AtomicLong();
+      pNfsCacheInterval   = new AtomicLong();
+      pBackupSyncInterval = new AtomicLong();
+
+      setRuntimeControlsHelper(controls);
+    }
 
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
@@ -95,6 +92,8 @@ class QueueMgr
   { 
     /* initialize the fields */ 
     {
+      pDatabaseLock = new ReentrantReadWriteLock();
+
       pMakeDirLock = new Object(); 
 
       pAdminPrivileges = new AdminPrivileges();
@@ -997,7 +996,8 @@ class QueueMgr
 
     QueueControls controls = new QueueControls(pCollectorBatchSize.get(), 
                                                pDispatcherInterval.get(), 
-                                               pNfsCacheInterval.get());
+                                               pNfsCacheInterval.get(), 
+                                               pBackupSyncInterval.get());
 
     return new QueueGetQueueControlsRsp(timer, controls);
   }
@@ -1025,24 +1025,7 @@ class QueueMgr
 	  ("Only a user with Master Admin privileges may change the runtime parameters!");
 
       QueueControls controls = req.getControls();
-
-      {
-	Integer size = controls.getCollectorBatchSize();
-	if(size != null) 
-	  pCollectorBatchSize.set(size); 
-      }
-
-      {
-	Long interval = controls.getDispatcherInterval();
-	if(interval != null) 
-	  pDispatcherInterval.set(interval);
-      }
-
-      {
-	Long interval = controls.getNfsCacheInterval();
-	if(interval != null) 
-	  pNfsCacheInterval.set(interval);
-      }
+      setRuntimeControlsHelper(controls);
 
       return new SuccessRsp(timer);
     }
@@ -1051,7 +1034,67 @@ class QueueMgr
     }
   }
   
+  /**
+   * Helper method for setting the controls directly and logging the changes.
+   *
+   * @param controls
+   *   The runtime controls.
+   */ 
+  private void 
+  setRuntimeControlsHelper
+  (
+   QueueControls controls
+  )
+    throws PipelineException
+  {
+    StringBuilder buf = new StringBuilder();
+    buf.append
+      ("--- QueueMgr Runtime Controls ----------------------------------------------\n");
 
+    {
+      Integer size = controls.getCollectorBatchSize();
+      if(size != null) 
+        pCollectorBatchSize.set(size); 
+      size = pCollectorBatchSize.get();
+      buf.append("  Collector Batch Size : " + size + "\n"); 
+    }
+    
+    {
+      Long interval = controls.getDispatcherInterval();
+      if(interval != null) 
+        pDispatcherInterval.set(interval);
+      interval = pDispatcherInterval.get(); 
+      buf.append("   Dispatcher Interval : " + interval + " " + 
+                 "(" + TimeStamps.formatInterval(interval) + ")\n");
+      }
+    
+    {
+      Long interval = controls.getNfsCacheInterval();
+      if(interval != null) 
+        pNfsCacheInterval.set(interval);
+      interval = pNfsCacheInterval.get(); 
+      buf.append("    NFS Cache Interval : " + interval + " " + 
+                   "(" + TimeStamps.formatInterval(interval) + ")\n");
+    }
+
+    {
+      Long interval = controls.getBackupSyncInterval();
+      if(interval != null) 
+        pBackupSyncInterval.set(interval);
+      interval = pBackupSyncInterval.get(); 
+      buf.append("  Backup Sync Interval : " + interval + " " + 
+                 "(" + TimeStamps.formatInterval(interval) + ")\n");
+    }
+    
+    buf.append
+      ("----------------------------------------------------------------------------"); 
+      
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I C E N S E   K E Y S                                                              */
@@ -11841,6 +11884,28 @@ class QueueMgr
    */ 
   private AtomicBoolean  pShutdownJobMgrs; 
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The master database lock. <P> 
+   * 
+   * All operations which will access any data which is backed by the filesystem should 
+   * be protected by this lock in read lock mode.  Any operation which require that the entire
+   * contents of the database remain constant during the operation should aquire the write
+   * mode lock. The scope of this lock should enclose all other locks for an operation. <P> 
+   * 
+   * This lock exists primary to support write-locked database backups. <P> 
+   */ 
+  private ReentrantReadWriteLock  pDatabaseLock;
+  
+  /**
+   * The interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and backup copies of these files.
+   */ 
+  private AtomicLong  pBackupSyncInterval; 
+  
 
   /*----------------------------------------------------------------------------------------*/
 

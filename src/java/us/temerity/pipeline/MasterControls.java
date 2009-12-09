@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.9 2009/12/01 06:50:59 jim Exp $
+// $Id: MasterControls.java,v 1.10 2009/12/09 14:28:04 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -23,12 +23,12 @@ class MasterControls
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct a with all parameters initialized to defaults.
+   * Construct with all parameters initialized to defaults.
    */ 
   public 
   MasterControls() 
   {
-    this(null, null, null, null, null, null, null, null, null, null, null); 
+    this(null, null, null, null, null, null, null, null, null, null, null, null); 
   }
 
   /** 
@@ -54,14 +54,14 @@ class MasterControls
    Path checkSumDir
   ) 
   {
-    this(null, null, null, null, null, null, null, null, null, fileStatDir, checkSumDir);
+    this(null, null, null, null, null, null, null, null, null, null, 
+         fileStatDir, checkSumDir);
   }
 
   /** 
-   * Construct a with default values for all parameters. <P> 
+   * Construct a with the given values for all parameters. <P> 
    * 
-   * Any parameter can be left unset by suppling <CODE>null</CODE> for its initial 
-   * value.
+   * Any parameter can be set to its default value by suppling <CODE>null</CODE>. 
    * 
    * @param minFreeMem
    *   The minimum amount of free Java heap memory available before caches must be reduced. 
@@ -92,6 +92,10 @@ class MasterControls
    *   The maximum age of a resolved (Restored or Denied) restore request before it 
    *   is deleted (in milliseconds).
    * 
+   * @param backupSyncInterval
+   *   The interval (in milliseconds) between the live synchronization of the database 
+   *   files associated with the Master Manager and backup copies of these files.
+   * 
    * @param fileStatDir
    *   An alternative root production directory accessed via a different NFS mount point
    *   to provide an exclusively network for file status query traffic.  Setting this to 
@@ -114,6 +118,7 @@ class MasterControls
    Long checkCacheSize, 
    Long annotCacheSize, 
    Long restoreCleanupInterval,
+   Long backupSyncInterval,
    Path fileStatDir, 
    Path checkSumDir
   ) 
@@ -127,6 +132,7 @@ class MasterControls
     setCheckCacheSize(checkCacheSize); 
     setAnnotCacheSize(annotCacheSize);
     setRestoreCleanupInterval(restoreCleanupInterval); 
+    setBackupSyncInterval(backupSyncInterval); 
     setFileStatDir(fileStatDir);
     setCheckSumDir(checkSumDir);
   }
@@ -457,7 +463,7 @@ class MasterControls
    * is deleted (in milliseconds).
    * 
    * @param interval
-   *   The cleanup internval or <CODE>null</CODE> for default. 
+   *   The interval or <CODE>null</CODE> for default. 
    */
   public void 
   setRestoreCleanupInterval
@@ -474,6 +480,47 @@ class MasterControls
     }
     else {
       pRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and backup copies of these files.
+   *
+   * @return 
+   *   The interval or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getBackupSyncInterval() 
+  {
+    return pBackupSyncInterval;
+  }
+
+  /**
+   * Set the interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and backup copies of these files.
+   * 
+   * @param interval
+   *   The interval or <CODE>null</CODE> for default. 
+   */
+  public void 
+  setBackupSyncInterval
+  (
+   Long interval
+  ) 
+  {
+    if(interval != null) {
+//       if(interval < 3600000L)
+//         throw new IllegalArgumentException
+//           ("The backup sync interval (" + interval + " msec) must be at " + 
+//            "least 1 hour!"); 
+      pBackupSyncInterval = interval; 
+    }
+    else {
+      pBackupSyncInterval = 21600000L;  /* 6-hours */ 
     }
   }
 
@@ -603,6 +650,12 @@ class MasterControls
    * is deleted (in milliseconds).
    */ 
   private Long  pRestoreCleanupInterval; 
+
+  /**
+   * The interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and backup copies of these files.
+   */ 
+  private Long  pBackupSyncInterval; 
 
   /**
    * An alternative root production directory accessed via a different NFS mount point

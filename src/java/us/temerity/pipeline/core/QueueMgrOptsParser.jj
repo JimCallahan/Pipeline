@@ -47,6 +47,7 @@ QueueMgrOptsParser
   private void 
   init()
   {
+    pControls = new QueueControls(); 
     pLogBackups = 10;
   }
  
@@ -70,21 +71,9 @@ QueueMgrOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The maximum number of job servers per collection sub-thread.
+   * Runtime performance tuning parameters for the Queue Manager server daemon.
    */ 
-  private int  pCollectorBatchSize = 50;
-
-  /**
-   * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
-   */ 
-  private long  pDispatcherInterval = 2000L;  /* 2-seconds */ 
-
-  /**
-   * The minimum time to wait before attempting a NFS directory attribute lookup 
-   * operation after a file in the directory has been created by another host on the 
-   * network (in milliseconds). 
-   */ 
-  private long  pNfsCacheInterval = 5000L;  /* 5-seconds */ 
+  private QueueControls  pControls; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -132,6 +121,7 @@ TOKEN :
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">     : INTEGER_SEP
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">      : INTEGER_SEP
 | <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">       : INTEGER_SEP
+| <BACKUP_SYNC_INTERVAL:     "--backup-sync-interval">     : INTEGER_SEP
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -278,8 +268,7 @@ CommandLine()
       }
       
       /* create the server */
-      return new QueueMgrServer(pRebuild, 
-                                pCollectorBatchSize, pDispatcherInterval, pNfsCacheInterval);
+      return new QueueMgrServer(pRebuild, pControls); 
     }
     
     return null;
@@ -384,7 +373,7 @@ GlobalOpts()
 {}
 {
   (Rebuild() | Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
-   CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval())
+   CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval() | BackupSyncInterval())
   {}
 }
 
@@ -733,11 +722,12 @@ void CollectorBatchSize()
 {
   <COLLECTOR_BATCH_SIZE> EQ() t=<INTEGER>
   {
-    Integer num = Integer.parseInt(t.image);
-    if(num <= 0L) 
-      throw new PipelineException
-        ("The collector batch size (" + num + ") must be positive!");
-    pCollectorBatchSize = num;
+    try {
+      pControls.setCollectorBatchSize(Integer.parseInt(t.image)); 
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
   }
 }
 
@@ -749,11 +739,12 @@ void DispatcherInterval()
 {
   <DISPATCHER_INTERVAL> EQ() t=<INTEGER>
   {
-    Long msec = Long.parseLong(t.image);
-    if(msec < 500L) 
-      throw new PipelineException
-        ("The dispatcher interval (" + msec + ") must be at least 500ms!");
-    pDispatcherInterval = msec; 
+    try {
+      pControls.setDispatcherInterval(Long.parseLong(t.image)); 
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
   }
 }
 
@@ -765,14 +756,31 @@ void NfsCacheInterval()
 {
   <NFS_CACHE_INTERVAL> EQ() t=<INTEGER>
   {
-    Long msec = Long.parseLong(t.image);
-    if(msec < 0L) 
-      throw new PipelineException
-        ("The NFS cache interval (" + msec + ") cannot be negative!");
-    pNfsCacheInterval = msec; 
+    try {
+      pControls.setNfsCacheInterval(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
   }
 }
 
+void BackupSyncInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <BACKUP_SYNC_INTERVAL> EQ() t=<INTEGER>
+  {
+    try {
+      pControls.setBackupSyncInterval(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+}
 
 
 

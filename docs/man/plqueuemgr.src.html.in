@@ -294,6 +294,7 @@ The default value is (2000) msec.&nbsp; Which is (2) seconds.<br>
 <br>
 </div>
 </div>
+
 <div style="margin-left: 40px;"><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="--nfs-cache-interval"></a>--nfs-cache-interval</span>=<span
  style="font-style: italic;">msec<br>
@@ -307,8 +308,24 @@ This interval should be set to the same value as the NFS (acdirmax)
 mount option for the root production directory on the host running the
 Queue Manager.<br>
 <br>
-The default is (5000) msec.&nbsp; Which is (5) seconds.<br>
+The default is (5000) msec.&nbsp; Which is (5) seconds.
 </div>
+</div><br>
+
+
+
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="--backup-sync-interval"></a>--backup-sync-interval</span>=<span
+ style="font-style: italic;">msec<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Overrides the interval (msec) between the live synchronization of the database files associated with the Queue Manager and backup copies of these files.&nbsp;In order to minimize the amount of time that database operations need to be locked during a backup to insure data integrity, this live synchronization process occurs a more frequent intervals so that the unique data which needs to be copied between the live and backup database directories can be minimized.&nbsp;In essense, these database synchronization operations are identical to a backup with the exception that the database does not need to be locked and no tarball is created from the files in the backup directory.<br>
+<br>
+The default is (21600000) msec.&nbsp; Which is (6) hours.<br>
+</div>
+
+
+
 </div>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>

@@ -173,6 +173,7 @@ ScriptOptsParser
   private Integer pCollectorBatchSize;
   private Long    pDispatcherInterval;
   private Long    pNfsCacheInterval;
+  private Long    pQueueBackupSyncInterval;
   
   private Long   pMinFreeMemory;
   private Long   pCacheGCInterval;
@@ -185,6 +186,7 @@ ScriptOptsParser
   private Long  pAnnotCacheSize;
 
   private Long  pRestoreCleanupInterval;
+  private Long  pMasterBackupSyncInterval;
 
   private Path    pFileStatDir;
   private Path    pCheckSumDir;
@@ -402,6 +404,7 @@ TOKEN :
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">      : INTEGER_SEP
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">       : INTEGER_SEP
 | <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">        : INTEGER_SEP
+| <BACKUP_SYNC_INTERVAL:     "--backup-sync-interval">      : INTEGER_SEP
 
 | <MIN_FREE_MEMORY:           "--min-free-memory">           : BYTE_SIZE_SEP	 
 | <GC_INTERVAL:               "--gc-interval">               : INTEGER_SEP
@@ -3060,39 +3063,15 @@ AdminBackup()
   throws PipelineException : 
 {
   Token t;
-
-  pDryRun = false; 
 }
 {
-  <BACKUP> EQ() t=<PATH_ARG> AE() (AdminBackupOpts())*
+  <BACKUP> EQ() t=<PATH_ARG> AE() 
   {
-    File dir = new File(t.image);
-    if(!dir.isDirectory()) 
-    throw new PipelineException
-      ("The backup directory (" + t.image + ") is not valid!");
-
-    SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss");
-    File file = new File(dir, "pipeline-db." + format.format(new Date()) + ".tgz");
-
-    pApp.backupDatabase(file, pDryRun, pMasterMgrClient); 
-  }
-}
-
-void 
-AdminBackupOpts() : 
-{}
-{
-  (DryRun())
-  {}
-}
-
-void 
-DryRun() : 
-{}
-{
-  <DRY_RUN> AE()
-  {
-    pDryRun = true; 
+    Path targetDir = new Path(t.image); 
+    pMasterMgrClient.backupDatabase(targetDir);
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Backing up Database to directory: " + targetDir);
   }
 }
 
@@ -3217,6 +3196,15 @@ AutoStart() :
   }
 }
 
+void 
+DryRun() : 
+{}
+{
+  <DRY_RUN> AE()
+  {
+    pDryRun = true; 
+  }
+}
 
 /*------------------------------------------------------------------------------------------*/
 
@@ -3370,6 +3358,7 @@ SetRuntimeMaster()
   pCheckCacheSize = null;  
   pAnnotCacheSize = null;
   pRestoreCleanupInterval = null;
+  pMasterBackupSyncInterval = null;
   pFileStatDir = null; 
   pCheckSumDir = null; 
 }
@@ -3387,6 +3376,7 @@ SetRuntimeMaster()
        (pRepoCacheSize != null) || (pWorkCacheSize != null) ||
        (pCheckCacheSize != null) || (pAnnotCacheSize != null) ||
        (pRestoreCleanupInterval != null) || 
+       (pMasterBackupSyncInterval != null) || 
        (pFileStatDir != null) || (pCheckSumDir != null)) {
 
       try {
@@ -3418,6 +3408,9 @@ SetRuntimeMaster()
         
         if(pRestoreCleanupInterval != null)
           controls.setRestoreCleanupInterval(pRestoreCleanupInterval);
+        
+        if(pMasterBackupSyncInterval != null)
+          controls.setBackupSyncInterval(pMasterBackupSyncInterval);
         
         if(pFileStatDir != null)
           controls.setFileStatDir(pFileStatDir);
@@ -3458,7 +3451,7 @@ RuntimeMasterOpts()
   (RemoteLog() | 
    MinFreeMemory() | GCInterval() | GCMisses() | CacheFactor() | 
    RepoCacheSize() | WorkCacheSize() | CheckCacheSize() | AnnotCacheSize() |
-   RestoreCleanupInterval() | FileStatDir() | CheckSumDir())
+   RestoreCleanupInterval() | MasterBackupSyncInterval() | FileStatDir() | CheckSumDir())
   {}
 }
 
@@ -3567,6 +3560,17 @@ void RestoreCleanupInterval() :
   }
 }
 
+void MasterBackupSyncInterval() :
+{
+  Token t;
+}
+{
+  <BACKUP_SYNC_INTERVAL> EQ() t=<INTEGER> AE()
+  {
+    pMasterBackupSyncInterval = Long.parseLong(t.image);
+  }
+}
+
 void FileStatDir() :
 {
   Token t;
@@ -3601,7 +3605,8 @@ SetRuntimeQueue()
   pLogControls = null;
   pCollectorBatchSize = null;
   pDispatcherInterval = null;
-  pNfsCacheInterval   = null;
+  pNfsCacheInterval = null;
+  pQueueBackupSyncInterval = null;
 }
 {
   <SET_QUEUE_RT> AE() (RuntimeQueueOpts())* 
@@ -3614,10 +3619,23 @@ SetRuntimeQueue()
     
     if((pCollectorBatchSize != null) || 
        (pDispatcherInterval != null) || 
-       (pNfsCacheInterval != null)) {
+       (pNfsCacheInterval != null) || 
+       (pMasterBackupSyncInterval != null)) {
 
-      QueueControls controls = 
-        new QueueControls(pCollectorBatchSize, pDispatcherInterval, pNfsCacheInterval);
+      QueueControls controls = pQueueMgrClient.getRuntimeControls();
+      
+      if(pCollectorBatchSize != null) 
+        controls.setCollectorBatchSize(pCollectorBatchSize);
+
+      if(pDispatcherInterval != null) 
+        controls.setDispatcherInterval(pDispatcherInterval);
+
+      if(pNfsCacheInterval != null) 
+        controls.setNfsCacheInterval(pNfsCacheInterval);
+
+      if(pQueueBackupSyncInterval != null) 
+        controls.setBackupSyncInterval(pQueueBackupSyncInterval);
+
       pQueueMgrClient.setRuntimeControls(controls);
       noOpts = false;
     }
@@ -3644,7 +3662,8 @@ RuntimeQueueOpts()
   throws PipelineException : 
 {}
 {
-  (RemoteLog() | CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval()) 
+  (RemoteLog() | CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval() | 
+   QueueBackupSyncInterval()) 
   {}
 }
 
@@ -3695,6 +3714,18 @@ void NfsCacheInterval()
     pNfsCacheInterval = msec; 
   }
 }
+
+void QueueBackupSyncInterval() :
+{
+  Token t;
+}
+{
+  <BACKUP_SYNC_INTERVAL> EQ() t=<INTEGER> AE()
+  {
+    pQueueBackupSyncInterval = Long.parseLong(t.image);
+  }
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/

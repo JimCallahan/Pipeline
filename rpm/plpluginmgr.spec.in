@@ -28,6 +28,9 @@ The plpluginmgr(1) program is distributed in the main Pipeline RPM:
 %dir @PL_PLUGIN_DIRECTORY@/plugins
 %dir @PL_PLUGIN_DIRECTORY@/plugins/required
 
+%dir @PL_PLUGIN_DIRECTORY@-backup
+%dir @PL_PLUGIN_DIRECTORY@-backup/plpluginmgr
+
 %defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @PL_PLUGIN_DIRECTORY@/plugins/required/Temerity
 
