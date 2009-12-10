@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.319 2009/12/09 14:28:04 jim Exp $
+// $Id: MasterMgr.java,v 1.320 2009/12/10 02:28:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21054,16 +21054,92 @@ class MasterMgr
     Path backupTarget = pBackupSyncTarget.getAndSet(null);
     boolean doBackup = (backupTarget != null); 
 
-    /* synchronize the backup directory with the live database */ 
+    /* synchronize the backup directory with the database without locking, 
+         this reduced the time needed to hold the lock */ 
+    boolean success = backupSyncHelper(false);
+
+    if(success && doBackup) {      
+      /* synchronize the backup directory with the database locked */ 
+      if(backupSyncHelper(true)) {
+
+        /* make a tarball out of the newly synced backup directory */ 
+        try {
+          TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
+          
+          ArrayList<String> args = new ArrayList<String>();
+          args.add("-zcf");
+          args.add(backupTarget.toOsString());
+          args.add("pipeline");
+          
+          SubProcessLight proc = 
+            new SubProcessLight("DatabaseBackupArchive", "tar", args, System.getenv(), 
+                                PackageInfo.sMasterBackupPath.toFile());
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to create the Database Backup Archive: " + backupTarget + "\n\n" + 
+                 "  " + proc.getStdErr());	
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while performing Database Backup Archive!"); 
+          }
+          
+          LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+             Exceptions.getFullMessage("Failed to create Database Backup Archive", ex));
+        }  
+      }
+    }
+    
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      long nap = pBackupSyncInterval.get() - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+          pBackupSyncTrigger.tryAcquire(1, nap, TimeUnit.MILLISECONDS);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+      else {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	   "Database Backup Sync: Overbudget by " + 
+           "(" + TimeStamps.formatInterval(-nap) + ")..."); 
+      }
+    }
+  }
+
+  /**
+   * Synchronize the backup directory with the database. 
+   * 
+   * @param needsLock
+   *   Whether the database-wide lock is required.
+   * 
+   * @return
+   *   Whether the sync was successful.
+   */ 
+  private boolean 
+  backupSyncHelper
+  (
+   boolean needsLock
+  ) 
+  {
     try{
       /* write cached downstream links */ 
-      if(doBackup) 
+      if(needsLock) 
         writeAllDownstreamLinks();
 
       TaskTimer tm = new TaskTimer("Database Backup Synchronization " + 
-                                   "(" + (doBackup ? "locked" : "live") + ")");
+                                   "(" + (needsLock ? "locked" : "live") + ")");
       tm.aquire();
-      if(doBackup) 
+      if(needsLock) 
         pDatabaseLock.writeLock().lock();
       try {
         tm.resume();	
@@ -21097,72 +21173,21 @@ class MasterMgr
         LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
       }
       finally {
-        if(doBackup) 
+        if(needsLock) 
           pDatabaseLock.writeLock().unlock();
       }
 
+      return true;
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          Exceptions.getFullMessage("Failed to Synchronize Database", ex));
+      return false;
     }  
-
-    /* if actually doing a backup, then make a tarball out of the backup directory */ 
-    if(doBackup) {
-      try {
-        TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
-
-        ArrayList<String> args = new ArrayList<String>();
-        args.add("-zcf");
-        args.add(backupTarget.toOsString());
-        args.add("pipeline");
-        
-        SubProcessLight proc = 
-          new SubProcessLight("DatabaseBackupArchive", "tar", args, System.getenv(), 
-                              PackageInfo.sMasterBackupPath.toFile());
-        try {
-          proc.start();
-          proc.join();
-          if(!proc.wasSuccessful()) 
-            throw new PipelineException
-              ("Unable to create the Database Backup Archive: " + backupTarget + "\n\n" + 
-               "  " + proc.getStdErr());	
-        }
-        catch(InterruptedException ex) {
-          throw new PipelineException
-            ("Interrupted while performing Database Backup Archive!"); 
-        }
-
-        LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
-      }
-      catch(PipelineException ex) {
-        LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-           Exceptions.getFullMessage("Failed to create Database Backup Archive", ex));
-      }  
-    }
-    
-    /* if we're ahead of schedule, take a nap */ 
-    {
-      long nap = pBackupSyncInterval.get() - timer.getTotalDuration();
-      if(nap > 0) {
-	try {
-          pBackupSyncTrigger.tryAcquire(1, nap, TimeUnit.MILLISECONDS);
-	}
-	catch(InterruptedException ex) {
-	}
-      }
-      else {
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	   "Database Backup Sync: Overbudget by " + 
-           "(" + TimeStamps.formatInterval(-nap) + ")..."); 
-      }
-    }
   }
 
-    
+
 
   /*----------------------------------------------------------------------------------------*/
   /*  N O D E   E V E N T   W R I T E R                                                     */
