@@ -3067,11 +3067,10 @@ AdminBackup()
 {
   <BACKUP> EQ() t=<PATH_ARG> AE() 
   {
-    Path targetDir = new Path(t.image); 
-    pMasterMgrClient.backupDatabase(targetDir);
+    pMasterMgrClient.backupDatabase(new Path(t.image)); 
     LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Backing up Database to directory: " + targetDir);
+    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+     "Database Backup Started."); 
   }
 }
 
