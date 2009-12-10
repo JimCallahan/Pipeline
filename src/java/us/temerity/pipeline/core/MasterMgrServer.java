@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.108 2009/12/09 14:28:04 jim Exp $
+// $Id: MasterMgrServer.java,v 1.109 2009/12/10 05:50:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1798,6 +1798,7 @@ class MasterMgrServer
                   pMasterMgr.setShutdownOptions
                     (req.shutdownJobMgrs(), req.shutdownPluginMgr());
                 }
+                // fallthrough to Shutdown case is intentional here!
 
               case Shutdown:
                 LogMgr.getInstance().logAndFlush
@@ -1979,8 +1980,10 @@ class MasterMgrServer
 	   "Database Backup Synchronizer Started.");	
 	LogMgr.getInstance().flush();
 
+        boolean first = true;
 	while(!pShutdown.get()) {
-	  pMasterMgr.backupSync();
+	  pMasterMgr.backupSync(first);
+          first = false;
 	}
       }
       catch (Exception ex) {

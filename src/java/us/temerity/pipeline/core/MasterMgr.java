@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.320 2009/12/10 02:28:28 jim Exp $
+// $Id: MasterMgr.java,v 1.321 2009/12/10 05:49:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21047,8 +21047,25 @@ class MasterMgr
    * tar archives of this backup directory.
    */ 
   public void 
-  backupSync() 
+  backupSync
+  (
+   boolean first
+  ) 
   {
+    /* initial delay the first time through */ 
+    if(first) {
+      try {
+        pBackupSyncTrigger.tryAcquire(1, pBackupSyncInterval.get(), TimeUnit.MILLISECONDS);
+      }
+      catch(InterruptedException ex) {
+        return;
+      }
+    }
+
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+       "Starting Database Backup Synchronization...");
+
     TaskTimer timer = new TaskTimer();
 
     Path backupTarget = pBackupSyncTarget.getAndSet(null);
@@ -21056,12 +21073,17 @@ class MasterMgr
 
     /* synchronize the backup directory with the database without locking, 
          this reduced the time needed to hold the lock */ 
-    boolean success = backupSyncHelper(false);
+    Boolean success = backupSyncHelper(false);
+    if(success == null) 
+      return;
 
     if(success && doBackup) {      
       /* synchronize the backup directory with the database locked */ 
-      if(backupSyncHelper(true)) {
+      success = backupSyncHelper(true); 
+      if(success == null) 
+        return;
 
+      if(success) {
         /* make a tarball out of the newly synced backup directory */ 
         try {
           TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
@@ -21083,17 +21105,19 @@ class MasterMgr
                  "  " + proc.getStdErr());	
           }
           catch(InterruptedException ex) {
-            throw new PipelineException
-              ("Interrupted while performing Database Backup Archive!"); 
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+               "Interrupted while performing Database Backup Archive!"); 
+            return;
           }
           
           LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
         }
         catch(PipelineException ex) {
           LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-             Exceptions.getFullMessage("Failed to create Database Backup Archive", ex));
-        }  
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+             ex.getMessage());
+        }
       }
     }
     
@@ -21123,20 +21147,20 @@ class MasterMgr
    *   Whether the database-wide lock is required.
    * 
    * @return
-   *   Whether the sync was successful.
+   *   Whether the sync was successful, null if interrupted.
    */ 
-  private boolean 
+  private Boolean 
   backupSyncHelper
   (
    boolean needsLock
   ) 
   {
-    try{
+    try {
       /* write cached downstream links */ 
       if(needsLock) 
         writeAllDownstreamLinks();
 
-      TaskTimer tm = new TaskTimer("Database Backup Synchronization " + 
+      TaskTimer tm = new TaskTimer("Database Backup Synchronized " + 
                                    "(" + (needsLock ? "locked" : "live") + ")");
       tm.aquire();
       if(needsLock) 
@@ -21166,8 +21190,10 @@ class MasterMgr
                "  " + proc.getStdErr());	
         }
         catch(InterruptedException ex) {
-          throw new PipelineException
-            ("Interrupted while performing Database Backup Synchronization!"); 
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+             "Interrupted while performing Database Backup Synchronization!"); 
+          return null;
         }
         
         LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
@@ -21181,8 +21207,8 @@ class MasterMgr
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-         Exceptions.getFullMessage("Failed to Synchronize Database", ex));
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+         ex.getMessage());
       return false;
     }  
   }
