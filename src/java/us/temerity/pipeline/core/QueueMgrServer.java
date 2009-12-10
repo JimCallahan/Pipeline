@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.74 2009/12/09 14:28:04 jim Exp $
+// $Id: QueueMgrServer.java,v 1.75 2009/12/10 05:51:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -117,6 +117,7 @@ class QueueMgrServer
              "Waiting on Balancer...");
           LogMgr.getInstance().flush();
 
+          balancer.interrupt();
           balancer.join();
         }
 
@@ -144,6 +145,7 @@ class QueueMgrServer
              "Waiting on Writer...");
           LogMgr.getInstance().flush();
 
+          writer.interrupt();
           writer.join();
         }
 
@@ -215,6 +217,7 @@ class QueueMgrServer
         LogMgr.getInstance().flush();
         pQueueMgr.writer(false);
       }
+
       pQueueMgr.shutdown();
 
       pTimer.suspend();
@@ -632,7 +635,7 @@ class QueueMgrServer
                 }
                 break;
 
-                /*-- DISPATCH CONTROLS -------------------------------------------------------*/
+              /*-- DISPATCH CONTROLS -------------------------------------------------------*/
               case GetDispatchControlNames:
                 {
                   objOut.writeObject(pQueueMgr.getDispatchControlNames());
@@ -674,7 +677,7 @@ class QueueMgrServer
                 }
                 break;
                 
-                /*-- USER BALANCE GROUPS -----------------------------------------------------*/
+              /*-- USER BALANCE GROUPS -----------------------------------------------------*/
               case GetBalanceGroupNames:
                 {
                   objOut.writeObject(pQueueMgr.getBalanceGroupNames());
@@ -1026,8 +1029,6 @@ class QueueMgrServer
                   objOut.flush(); 
                 }
                 break;
-	    
-
 
               /*-- NETWORK CONNECTION ------------------------------------------------------*/
               case Disconnect:
@@ -1042,10 +1043,9 @@ class QueueMgrServer
                 // fallthrough to Shutdown case is intentional here!
 
               case Shutdown:
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
-                LogMgr.getInstance().flush();
                 shutdown(); 
                 break;	    
 
