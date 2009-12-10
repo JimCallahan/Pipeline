@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.119 2009/12/09 14:28:04 jim Exp $
+// $Id: UIMaster.java,v 1.120 2009/12/10 02:30:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3922,12 +3922,33 @@ class UIMaster
   public void 
   showBackupDialog()
   {
-    pBackupDialog.setVisible(true);
-    if(pBackupDialog.wasConfirmed()) {
-      File dir = pBackupDialog.getSelectedFile();
-      if(dir != null) {
-	BackupTask task = new BackupTask(new Path(dir));
-	task.start();	
+    while(true) {
+      pBackupDialog.setVisible(true);
+      if(pBackupDialog.wasConfirmed()) {
+        Path dir = pBackupDialog.getDirectory();
+        if((dir != null) && dir.isAbsolute()) {
+          JConfirmDialog diag = 
+            new JConfirmDialog
+            (pFrame, "Are you sure?", 
+             "WARNING: A database backup will temporarily pause all Pipeline operations " + 
+             "until the backup is complete and therefore should not be performed during " +
+             "normal working hours.");
+          
+          diag.setVisible(true);
+          if(diag.wasConfirmed()) {
+            BackupTask task = new BackupTask(dir);
+            task.start();	
+          }
+
+          return;
+        }
+        else {
+          showErrorDialog("Error:", 
+                          "The Backup Directory must be specified as an absolute path.");
+        }
+      }
+      else {
+        return;
       }
     }
   }
@@ -5015,9 +5036,7 @@ class UIMaster
 
 	pManageServerExtensionsDialog = new JManageServerExtensionsDialog();
 
-	pBackupDialog = new JFileSelectDialog(pFrame, "Backup Database", 
-                                              "Backup Database Directory:", "Backup"); 
-	pBackupDialog.updateTargetFile(PackageInfo.sTempPath.toFile());
+	pBackupDialog = new JBackupDialog(pFrame); 
 
 	pArchiveDialog        = new JArchiveDialog();
 	pOfflineDialog        = new JOfflineDialog();
@@ -7511,7 +7530,7 @@ class UIMaster
   /**
    * The database backup dialog.
    */
-  private JFileSelectDialog  pBackupDialog; 
+  private JBackupDialog  pBackupDialog; 
 
   /**
    * The archive dialog.

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.66 2009/12/09 05:05:55 jesse Exp $
+// $Id: JManagerPanel.java,v 1.67 2009/12/10 02:30:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3495,8 +3495,7 @@ class JManagerPanel
 	UICache cache = master.getUICache(channel);
  	try {
  	  PrivilegeDetails privileges = cache.getCachedPrivilegeDetails();
- 	  pBackupDatabaseItem.setEnabled
-	    (privileges.isMasterAdmin() && (PackageInfo.sOsType == OsType.Unix));
+ 	  pBackupDatabaseItem.setEnabled(privileges.isMasterAdmin()); 
  	  pArchiveItem.setEnabled(privileges.isMasterAdmin());
  	  pOfflineItem.setEnabled(privileges.isMasterAdmin());
  	  pRestoreItem.setEnabled(privileges.isMasterAdmin());
