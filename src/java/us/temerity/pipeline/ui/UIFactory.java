@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.36 2009/08/19 22:58:04 jim Exp $
+// $Id: UIFactory.java,v 1.37 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1054,6 +1054,48 @@ class UIFactory
   )
   {
     JDoubleField field = new JDoubleField();
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setValue(value);
+
+    return field;
+  }
+  
+  /**
+   * Create a new editable text field which can only contain percent values. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param value
+   *   The initial value.
+   *   
+   * @param decimalPlaces
+   *   The number of decimal places to limit the percent to or <code>null</code> for no limit.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JPercentField
+  createPercentField
+  (
+   Double value,  
+   Integer decimalPlaces,
+   int width,
+   int align
+  )
+  {
+    JPercentField field = new JPercentField(decimalPlaces);
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);

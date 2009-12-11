@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.108 2009/12/09 14:28:04 jim Exp $
+// $Id: ScriptApp.java,v 1.109 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1286,6 +1286,7 @@ class ScriptApp
       Long disInterval = controls.getDispatcherInterval();
       Long nfsInterval = controls.getNfsCacheInterval();
       Long bsInterval = controls.getBackupSyncInterval();
+      Long balInterval = controls.getBalanceSampleInterval();
 
       buf.append
 	(tbar(80) + "\n" +
@@ -1296,6 +1297,9 @@ class ScriptApp
          "(" + TimeStamps.formatInterval(nfsInterval) + ")\n" +
 	 "  Backup Sync Interval : " + bsInterval + " " + 
          "(" + TimeStamps.formatInterval(bsInterval) + ")\n" +
+         "  Balance Sample Interval : " + balInterval + " " +
+         "(" + TimeStamps.formatInterval(balInterval) + ")\n" +
+         "  Balance Samples To Keep : " + controls.getBalanceSamplesToKeep() + "\n" +
 	 "\n" + 
 	 pad("-- Logging Levels ", '-', 80) + "\n");
     }

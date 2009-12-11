@@ -1,4 +1,4 @@
-// $Id: JManageBalanceGroupsDialog.java,v 1.1 2009/12/09 05:05:55 jesse Exp $
+// $Id: JManageBalanceGroupsDialog.java,v 1.2 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -42,7 +42,7 @@ class JManageBalanceGroupsDialog
     {
       pPrivilegeDetails = new PrivilegeDetails();
       pWorkGroups = new WorkGroups();
-
+      
       pGroupsNewDialog = new JNewIdentifierDialog
         (this, "New Balance Group", "New Group Name:", null, "Add");
       
@@ -185,7 +185,7 @@ class JManageBalanceGroupsDialog
             body.add(header);
             body.add(Box.createHorizontalStrut(8));
             
-            pDefaultMaxField = UIFactory.createDoubleField(0d, sVSize, JTextField.CENTER);
+            pDefaultMaxField = UIFactory.createPercentField(0d, 2, sVSize, JTextField.CENTER);
             pDefaultMaxField.setMaximumSize(pDefaultMaxField.getPreferredSize());
             pDefaultMaxField.addFocusListener(this);
             pDefaultMaxField.setActionCommand("default-max-field");
@@ -306,7 +306,7 @@ class JManageBalanceGroupsDialog
     }
     parent.add(UIFactory.createPanelBreak());
     {
-      Box bottom = Box.createHorizontalBox();
+      JBalanceGroupHistPanel bottom = new JBalanceGroupHistPanel();
       
       Dimension size = new Dimension(600, 200);
       bottom.setMinimumSize(size);
@@ -314,6 +314,8 @@ class JManageBalanceGroupsDialog
       bottom.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
       
       parent.add(bottom);
+      
+      pHistogramPanel = bottom;
     }
     
     
@@ -494,6 +496,8 @@ class JManageBalanceGroupsDialog
         (calcShares, usage, calcMax, maxSlots, pPrivilegeDetails);
       pDefaultShareField.setValue(bgroup.getDefaultValue());
       pDefaultMaxField.setValue(bgroup.getDefaultMaxShare());
+      
+      updateHistograms(calcShares, usage);
     }
   }
   
@@ -525,6 +529,8 @@ class JManageBalanceGroupsDialog
 
     pCalcTableModel.setCalculatedData
       (calcShares, usage, calcMax, maxSlots, pPrivilegeDetails);
+    
+    updateHistograms(calcShares, usage);
   }
   
   private Map<String, Integer> 
@@ -553,6 +559,143 @@ class JManageBalanceGroupsDialog
     }
     return toReturn;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  private void
+  updateHistograms
+  (
+    Map<String, Double> userShares,
+    Map<String, Double> userUse
+  )
+  {
+    int maxSlices = 8;
+    
+    Histogram userShareHist = null;
+    Histogram userUseHist = null;
+    Histogram usersByShareHist = null;
+    
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      
+      MappedSet<Double, String> byValue = new MappedSet<Double, String>(userShares);
+      
+      TreeSet<String> includedUsers = new TreeSet<String>();
+      { 
+        Entry<Double, TreeSet<String>> entry = byValue.lastEntry();
+        while (includedUsers.size() < maxSlices) {
+          if (entry == null)
+            break;
+          TreeSet<String> value = entry.getValue();
+          if (value != null) {
+            for (String v : value) {
+              includedUsers.add(v);
+              if(includedUsers.size() >= maxSlices)
+                break;
+            }
+          }
+          entry = byValue.lowerEntry(entry.getKey());
+        }
+      }
+
+      int otherValue = 0;
+      TreeMap<String, Integer> includedShares = new TreeMap<String, Integer>();
+      for (Entry<String, Double> entry : userShares.entrySet()) {
+        String user = entry.getKey();
+        int share = (int) Math.round(entry.getValue() * 100);
+        if (includedUsers.contains(user)) {
+          ranges.add(new HistogramRange(user));
+          includedShares.put(user, share);
+        }
+        else {
+          otherValue += share;
+        }
+      }
+      ranges.add(new HistogramRange("[[Other]]"));
+      
+      HistogramSpec spec = new HistogramSpec("UserShares", ranges);
+      userShareHist = new Histogram(spec);
+      for (Entry<String, Integer> entry : includedShares.entrySet())
+        userShareHist.catagorize(entry.getKey(), entry.getValue());
+      userShareHist.catagorize("[[Other]]", otherValue);
+    }
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      
+      MappedSet<Double, String> byValue = new MappedSet<Double, String>(userUse);
+      
+      TreeSet<String> includedUsers = new TreeSet<String>();
+      { 
+        Entry<Double, TreeSet<String>> entry = byValue.lastEntry();
+        while (includedUsers.size() < maxSlices) {
+          if (entry == null)
+            break;
+          TreeSet<String> value = entry.getValue();
+          if (value != null) {
+            for (String v : value) {
+              includedUsers.add(v);
+              if(includedUsers.size() >= maxSlices)
+                break;
+            }
+          }
+          entry = byValue.lowerEntry(entry.getKey());
+        }
+      }
+
+      int otherValue = 0;
+      TreeMap<String, Integer> includedShares = new TreeMap<String, Integer>();
+      for (Entry<String, Double> entry : userUse.entrySet()) {
+        String user = entry.getKey();
+        int share = (int) Math.round(entry.getValue() * 100);
+        if (includedUsers.contains(user)) {
+          ranges.add(new HistogramRange(user));
+          includedShares.put(user, share);
+        }
+        else {
+          otherValue += share;
+        }
+      }
+      ranges.add(new HistogramRange("[[Other]]"));
+      
+      HistogramSpec spec = new HistogramSpec("UserUse", ranges);
+      userUseHist = new Histogram(spec);
+      for (Entry<String, Integer> entry : includedShares.entrySet())
+        userUseHist.catagorize(entry.getKey(), entry.getValue());
+      userUseHist.catagorize("[[Other]]", otherValue);
+    }
+    
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      
+      TreeSet<Double> allShares = new TreeSet<Double>(userShares.values());
+      Double low = round2(allShares.first() * 100);
+      Double high = round2(allShares.last() * 100);
+      
+      if (!low.equals(high)) {
+        double lerp = round2((high - low) / maxSlices);
+        double start = low;
+        double end = round2(low + lerp);
+        
+        for (int i = 0; i < maxSlices-1; i++) {
+          ranges.add(new HistogramRange(start, end));
+          start = end;
+          end = round2(lerp + end);
+        }
+        ranges.add(new HistogramRange(start, high + .5));
+      }
+      else
+        ranges.add(new HistogramRange(low));
+        
+      HistogramSpec spec = new HistogramSpec("Users ByShare", ranges);
+      usersByShareHist = new Histogram(spec);
+      for (Entry<String, Double> entry : userShares.entrySet()) {
+        usersByShareHist.catagorize(round2(entry.getValue() * 100));
+      }
+    }
+    pHistogramPanel.updateHistograms(userShareHist, userUseHist, usersByShareHist);
+    pHistogramPanel.frameAll();
+  }
+  
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -1059,8 +1202,8 @@ class JManageBalanceGroupsDialog
         pDefaultMaxField.setValue(current);
       else {
         max = clampDouble(max);
+        pDefaultMaxField.setValue(max);
         if (current != max) {
-          pDefaultMaxField.setValue(max);
           doEdited();
           updateFromTable();
         } 
@@ -1102,6 +1245,18 @@ class JManageBalanceGroupsDialog
     if (i < 0)
       return 0;
     return i;
+  }
+  
+  public static double 
+  round2
+  (
+    double num
+  ) 
+  {
+    double result = num * 100;
+    result = Math.round(result);
+    result = result / 100;
+    return result;
   }
   
   
@@ -1164,11 +1319,6 @@ class JManageBalanceGroupsDialog
    */
   private JList pGroupList;
   
-  /**
-   * Panel containing the group details.
-   */
-  private JPanel pGroupDetailsPanel;
-  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1200,7 +1350,7 @@ class JManageBalanceGroupsDialog
   
   private JIntegerField pDefaultShareField;
   
-  private JDoubleField pDefaultMaxField;
+  private JPercentField pDefaultMaxField;
   
   /*----------------------------------------------------------------------------------------*/
   
@@ -1218,11 +1368,18 @@ class JManageBalanceGroupsDialog
   
   /*----------------------------------------------------------------------------------------*/
   
+  private JBalanceGroupHistPanel pHistogramPanel;
+  
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Dialog for getting the name of the new balance group. 
    */
   private JNewIdentifierDialog pGroupsNewDialog;
   
+  /**
+   * Dialog for adding users and groups to the balance group.
+   */
   private JBooleanListDialog pListDialog;
-
+  
 }

@@ -32,6 +32,20 @@ During the cycle, we update that TreeMap<String, IntegerOpMap<String>> as we dis
 
 So, data structures.
 
+What do we have now:
+
+<User Share>
+private DoubleMap<String, String, Double> pUserShare;
+private TreeMap<String, IntegerOpMap<String>> pDispUserUse; // this goes away
+
+
+
+<Max Slots>
+private IntegerOpMap<String> pDispCurrentBalanceGroupSize;
+private TreeMap<String, IntegerOpMap<String>> pDispCurrentUserUsage;
+private DoubleMap<String, String, Integer> pDispMaxSlots;
+private DoubleMap<String, String, Double> pDispMaxShare;
+private MappedSet<String, String> pDispZeroSlotUsers;
 
 
 Histograms:

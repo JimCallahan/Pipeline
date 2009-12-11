@@ -1,4 +1,4 @@
-// $Id: UserBalanceGroup.java,v 1.2 2009/12/09 05:05:55 jesse Exp $
+// $Id: UserBalanceGroup.java,v 1.3 2009/12/11 04:21:10 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -411,7 +411,7 @@ class UserBalanceGroup
     
     for (String user : wgroups.getUsers()) {
       Integer value = pUserValues.get(user);
-      if (value == null)
+      if (value == null && toReturn.get(user) == null)
         value = pDefaultValue;
       
       total += value;
@@ -442,7 +442,7 @@ class UserBalanceGroup
       if (pGroupMaxShares.containsKey(group)) {
         TreeSet<String> users = wgroups.getUsersInGroup(group);
         double value = pGroupMaxShares.get(group);
-        if (value > 0d) {
+        if (value >= 0d) {
           for (String user : users) {
             toReturn.apply(user, value);
           }

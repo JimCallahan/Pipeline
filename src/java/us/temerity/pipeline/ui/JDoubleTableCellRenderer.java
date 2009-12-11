@@ -1,4 +1,4 @@
-// $Id: JDoubleTableCellRenderer.java,v 1.2 2009/12/09 21:38:32 jim Exp $
+// $Id: JDoubleTableCellRenderer.java,v 1.3 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -143,17 +143,18 @@ class JDoubleTableCellRenderer
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  static final long serialVersionUID = -2612002079793651257L;
+  private static final long serialVersionUID = -2612002079793651257L;
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   private NumberFormat pNumberFormat;
-  
 }

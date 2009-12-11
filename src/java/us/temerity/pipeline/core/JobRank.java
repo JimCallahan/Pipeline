@@ -1,4 +1,4 @@
-// $Id: JobRank.java,v 1.5 2009/12/09 05:05:55 jesse Exp $
+// $Id: JobRank.java,v 1.6 2009/12/11 04:21:10 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -74,19 +74,6 @@ class JobRank
   }
   
   /**
-   * Get the number of jobs the user has dispatched in the balance group during the current 
-   * cycle.<p>
-   * 
-   * When users have the same balance group percent, the user with the lower use will win a
-   * tie-breaker for the slot. 
-   */
-  public final int
-  getBalanceGroupUse()
-  {
-    return pBalanceGroupUse;
-  }
-  
-  /**
    * Get the job's priority.
    */
   public final int 
@@ -136,7 +123,6 @@ class JobRank
    int score, 
    double favorGroupPercent,
    double balanceGroupPercent,
-   int balanceGroupUse,
    int priority, 
    long stamp
   ) 
@@ -148,7 +134,6 @@ class JobRank
     
     pFavorGroupPercent   = favorGroupPercent;
     pBalanceGroupPercent = balanceGroupPercent;
-    pBalanceGroupUse     = balanceGroupUse;
   }
 
   
@@ -171,8 +156,7 @@ class JobRank
         toReturn.append(pScore + " ");
         break;
       case BalanceGroups:
-        toReturn.append(String.format("%1$.2f", pBalanceGroupPercent) + 
-                        "(" + pBalanceGroupUse + ") ");
+        toReturn.append(String.format("%1$.4f", pBalanceGroupPercent) + " ");
         break;
       case JobGroupPercent:
         toReturn.append(String.format("%1$.4f", pFavorGroupPercent) + " ");
@@ -217,12 +201,6 @@ class JobRank
    */
   private double pBalanceGroupPercent;
   
-  /**
-   * The number of jobs that the user has dispatched in this balance group during the current 
-   * time interval.
-   */
-  private int pBalanceGroupUse;
-
   /**
    * The relative job priority.
    */ 

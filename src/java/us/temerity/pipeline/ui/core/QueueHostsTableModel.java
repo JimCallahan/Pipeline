@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.27 2009/12/09 05:05:55 jesse Exp $
+// $Id: QueueHostsTableModel.java,v 1.28 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1387,7 +1387,7 @@ class QueueHostsTableModel
       case FAVORMETHOD:
         return "FavorMethod";
       case USERBALANCE:
-        return "UserBalance";
+        return "BalanceGroup";
       default:
         throw new IllegalStateException("Invalid enum!");
       }

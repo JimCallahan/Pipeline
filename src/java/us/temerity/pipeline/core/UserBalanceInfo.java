@@ -1,4 +1,4 @@
-// $Id: UserBalanceInfo.java,v 1.8 2009/12/09 05:05:55 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.9 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -294,6 +294,7 @@ class UserBalanceInfo
       TaskTimer tm = new TaskTimer("User Balance Info [Calculating New Usage]");
       /* UserBalance, User, Percent Used */
       DoubleMap<String, String, Double> currentUsage = new DoubleMap<String, String, Double>();
+      TreeMap<String, Double> slotWeight = new TreeMap<String, Double>();
       for (Entry<String, ArrayDeque<UserBalanceSample>> entry : pSamples.entrySet()) {
         String userBalanceGroup = entry.getKey();
         DoubleOpMap<String> slotsPerUser = new DoubleOpMap<String>();
@@ -304,18 +305,20 @@ class UserBalanceInfo
             slotsPerUser.apply(entry2.getKey(), entry2.getValue());
           }
         }
-        if (totalSlots == 0d)
+        if (totalSlots == 0d) 
           continue;
         for (String user : slotsPerUser.keySet()) {
           slotsPerUser.apply(user, totalSlots, Op.Divide);
         }
         currentUsage.put(userBalanceGroup, slotsPerUser);
+        slotWeight.put(userBalanceGroup, 1/totalSlots);
       }
       
       tm.aquire();
       synchronized (pCurrentUsageLock) {
         tm.resume();
-        pCurrentUsage = currentUsage; 
+        pCurrentUsage = currentUsage;
+        pSlotWeight = slotWeight;
       }
       LogMgr.getInstance().logSubStage
         (LogMgr.Kind.Usr, LogMgr.Level.Finer,
@@ -349,10 +352,25 @@ class UserBalanceInfo
    *   resources that the user has used.
    */
   public DoubleMap<String, String, Double>
-  getCurrentStatistics()
+  getCurrentUsage()
   {
     synchronized (pCurrentUsageLock) {
       return pCurrentUsage;   
+    }
+  }
+  
+  /**
+   * Get the estimated usage that getting a single slot in the queue will add to a user. <p>
+   * 
+   * This number is used to generate estimates of queue use in between balancer() runs. 
+   * Balance groups that have had no slots assigned to them during the entire sample history 
+   * will have <code>null</code> entries in this table.
+   */
+  public TreeMap<String, Double>
+  getSlotWeight()
+  {
+    synchronized (pCurrentUsageLock) {
+      return pSlotWeight;
     }
   }
   
@@ -791,5 +809,6 @@ class UserBalanceInfo
    * UserBalanceGroup, User, Percent Usage 
    */
   private DoubleMap<String, String, Double> pCurrentUsage;
+  private TreeMap<String, Double> pSlotWeight;
   private Object pCurrentUsageLock;
 }

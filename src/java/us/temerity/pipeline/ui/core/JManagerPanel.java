@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.67 2009/12/10 02:30:12 jim Exp $
+// $Id: JManagerPanel.java,v 1.68 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -427,15 +427,15 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item); 
 	
+	item = new JMenuItem("Balance Groups...");
+        pBalanceGroupsItem = item;
+        item.setActionCommand("manage-balance-groups");
+        item.addActionListener(this);
+        sub.add(item); 
+	
 	item = new JMenuItem("Dispatch Controls...");
 	pDispatchControlsItem = item;
         item.setActionCommand("manage-dispatch-controls");
-        item.addActionListener(this);
-        sub.add(item); 
-        
-        item = new JMenuItem("Balance Groups...");
-        pBalanceGroupsItem = item;
-        item.setActionCommand("manage-balance-groups");
         item.addActionListener(this);
         sub.add(item); 
 

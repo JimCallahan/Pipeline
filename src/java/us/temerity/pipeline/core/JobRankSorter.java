@@ -1,4 +1,4 @@
-// $Id: JobRankSorter.java,v 1.3 2009/12/09 05:05:55 jesse Exp $
+// $Id: JobRankSorter.java,v 1.4 2009/12/11 04:21:10 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -125,15 +125,6 @@ class JobRankSorter
           return -1;
         else if (percent1 > percent2)
           return 1;
-        else {
-          int use1 = o1.getBalanceGroupUse();
-          int use2 = o2.getBalanceGroupUse();
-          
-          if (use1 < use2)
-            return -1;
-          else if (use2 > use1)
-            return 1;
-        }
         return 0;
       }
       

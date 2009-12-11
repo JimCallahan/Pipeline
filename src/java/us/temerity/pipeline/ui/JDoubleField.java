@@ -1,4 +1,4 @@
-// $Id: JDoubleField.java,v 1.4 2005/12/06 09:23:21 jim Exp $
+// $Id: JDoubleField.java,v 1.5 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -88,6 +88,7 @@ class JDoubleField
   /**
    * Checks a speculative result text for validity.
    */ 
+  @Override
   protected boolean 
   isValidResult
   (

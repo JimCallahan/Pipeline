@@ -1,4 +1,4 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.12 2009/12/09 05:05:55 jesse Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.13 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -237,7 +237,7 @@ class JQueueJobServerStatsPanel
    *   Name of the current working area view.
    * 
    * @param hist
-   *   The frequency distribution data for significant catagories of information shared 
+   *   The frequency distribution data for significant categories of information shared 
    *    by all job server hosts.
    * 
    * @param workGroups
@@ -266,7 +266,7 @@ class JQueueJobServerStatsPanel
    * Update the job server histograms.
    * 
    * @param hist
-   *   The frequency distribution data for significant catagories of information shared 
+   *   The frequency distribution data for significant categories of information shared 
    *    by all job server hosts.
    * 
    * @param workGroups
@@ -959,7 +959,7 @@ class JQueueJobServerStatsPanel
   }  
 
   /**
-   * Edit the catagory ranges for the histogram under the mouse.
+   * Edit the category ranges for the histogram under the mouse.
    */ 
   private synchronized void 
   doEditChart() 
@@ -1044,7 +1044,7 @@ class JQueueJobServerStatsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The frequency distribution data for significant catagories of information shared 
+   * The frequency distribution data for significant categories of information shared 
    * by all job server hosts.
    */ 
   private QueueHostHistograms  pHistograms; 

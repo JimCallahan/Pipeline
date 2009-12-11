@@ -1,4 +1,4 @@
-// $Id: BalanceGroupTableModel.java,v 1.1 2009/12/09 05:05:55 jesse Exp $
+// $Id: BalanceGroupTableModel.java,v 1.2 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -60,16 +60,17 @@ class BalanceGroupTableModel
     
     /* all columns are dynamic, just initialize the shared renderers/editors */
     pDataRenderer = new JSimpleTableCellRenderer("Green", JLabel.CENTER);
-    {
-      JDoubleTableCellEditor editor = new JDoubleTableCellEditor(sDataWidth, JLabel.CENTER);
-      editor.setName("GreenEditableTextField");
-      pDoubleEditor = editor;
-    }
-    
+    pPercentRenderer = new JPercentTableCellRenderer("Green", JLabel.CENTER, 2);
     {
       JIntegerTableCellEditor editor = new JIntegerTableCellEditor(sDataWidth, JLabel.CENTER);
       editor.setName("GreenEditableTextField");
       pIntEditor = editor;
+    }
+    
+    {
+      JPercentTableCellEditor editor = new JPercentTableCellEditor(sDataWidth, JLabel.CENTER);
+      editor.setName("GreenEditableTextField");
+      pPercentEditor = editor;
     }
     
     pNameRenderer = new JSimpleTableCellRenderer(JLabel.CENTER);
@@ -244,6 +245,7 @@ class BalanceGroupTableModel
   /*   S O R T I N G                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
+  @SuppressWarnings("unchecked")
   @Override
   public void 
   sort()
@@ -370,8 +372,11 @@ class BalanceGroupTableModel
     case 0:
       return pNameRenderer;
 
+    case 1:
+      return pDataRenderer;
+      
     default:
-      return pDataRenderer; 
+      return pPercentRenderer; 
     }
   }
   
@@ -393,7 +398,7 @@ class BalanceGroupTableModel
       return pIntEditor;
 
     default:
-      return pDoubleEditor; 
+      return pPercentEditor; 
     }
   }
   
@@ -720,9 +725,14 @@ class BalanceGroupTableModel
   private TableCellRenderer pDataRenderer;
   
   /**
-   * The shared editor for all balance group data fields.
-   */ 
-  private TableCellEditor pDoubleEditor;
+   * The shared renderer for all percent balance group data fields.
+   */
+  private TableCellRenderer pPercentRenderer;
+  
+  /**
+   * The shared editor for all balance group percent fields.
+   */
+  private TableCellEditor pPercentEditor;
   
   /**
    * The shared editor for all integer balance group data fields.

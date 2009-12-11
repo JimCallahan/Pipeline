@@ -1,4 +1,4 @@
-// $Id: BalanceGroupCalcTableModel.java,v 1.1 2009/12/09 05:05:55 jesse Exp $
+// $Id: BalanceGroupCalcTableModel.java,v 1.2 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -56,7 +56,7 @@ class BalanceGroupCalcTableModel
     /* all columns are dynamic, just initialize the shared renderers/editors */
     pDataRenderer = new JSimpleTableCellRenderer("Green", JLabel.CENTER);
     pNameRenderer = new JSimpleTableCellRenderer(JLabel.CENTER);
-    pDoubleRender = new JDoubleTableCellRenderer("Green", JLabel.CENTER, false, 4);
+    pPercentRenderer = new JPercentTableCellRenderer("Green", JLabel.CENTER, false, 2);
   }
   
 
@@ -359,8 +359,10 @@ class BalanceGroupCalcTableModel
     case Name:
       return pNameRenderer;
       
+    case MaxValue:
     case CurrentUsage:
-      return pDoubleRender;
+    case CalcValue:
+      return pPercentRenderer;
 
     default:
       return pDataRenderer; 
@@ -581,9 +583,9 @@ class BalanceGroupCalcTableModel
   private TableCellRenderer pDataRenderer;
   
   /**
-   * The shared renderer for all double balance group data fields.
+   * The shared renderer for all percent balance group data fields.
    */
-  private TableCellRenderer pDoubleRender; 
+  private TableCellRenderer pPercentRenderer;
   
   /** 
    * The cell render for balance group names.

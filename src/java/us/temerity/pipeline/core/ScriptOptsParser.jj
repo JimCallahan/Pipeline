@@ -174,6 +174,8 @@ ScriptOptsParser
   private Long    pDispatcherInterval;
   private Long    pNfsCacheInterval;
   private Long    pQueueBackupSyncInterval;
+  private Long    pBalanceSampleInterval;
+  private Integer pBalanceSamplesToKeep;
   
   private Long   pMinFreeMemory;
   private Long   pCacheGCInterval;
@@ -187,6 +189,7 @@ ScriptOptsParser
 
   private Long  pRestoreCleanupInterval;
   private Long  pMasterBackupSyncInterval;
+ 
 
   private Path    pFileStatDir;
   private Path    pCheckSumDir;
@@ -405,6 +408,9 @@ TOKEN :
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">       : INTEGER_SEP
 | <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">        : INTEGER_SEP
 | <BACKUP_SYNC_INTERVAL:     "--backup-sync-interval">      : INTEGER_SEP
+| <BALANCE_SAMPLE_INTERVAL:  "--balance-sample-interval">   : INTEGER_SEP
+| <BALANCE_SAMPLES_TO_KEEP:  "--balance-samples-to-keep">   : INTEGER_SEP
+
 
 | <MIN_FREE_MEMORY:           "--min-free-memory">           : BYTE_SIZE_SEP	 
 | <GC_INTERVAL:               "--gc-interval">               : INTEGER_SEP
@@ -3606,6 +3612,8 @@ SetRuntimeQueue()
   pDispatcherInterval = null;
   pNfsCacheInterval = null;
   pQueueBackupSyncInterval = null;
+  pBalanceSampleInterval = null;
+  pBalanceSamplesToKeep = null;
 }
 {
   <SET_QUEUE_RT> AE() (RuntimeQueueOpts())* 
@@ -3619,7 +3627,9 @@ SetRuntimeQueue()
     if((pCollectorBatchSize != null) || 
        (pDispatcherInterval != null) || 
        (pNfsCacheInterval != null) || 
-       (pMasterBackupSyncInterval != null)) {
+       (pMasterBackupSyncInterval != null) ||
+       (pBalanceSamplesToKeep != null) ||
+       (pBalanceSampleInterval != null)) {
 
       QueueControls controls = pQueueMgrClient.getRuntimeControls();
       
@@ -3634,7 +3644,13 @@ SetRuntimeQueue()
 
       if(pQueueBackupSyncInterval != null) 
         controls.setBackupSyncInterval(pQueueBackupSyncInterval);
+        
+      if(pBalanceSamplesToKeep != null) 
+        controls.setBalanceSamplesToKeep(pBalanceSamplesToKeep);
 
+      if(pBalanceSampleInterval != null) 
+        controls.setBalanceSampleInterval(pBalanceSampleInterval);
+        
       pQueueMgrClient.setRuntimeControls(controls);
       noOpts = false;
     }
@@ -3662,7 +3678,7 @@ RuntimeQueueOpts()
 {}
 {
   (RemoteLog() | CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval() | 
-   QueueBackupSyncInterval()) 
+   QueueBackupSyncInterval() | BalanceSampleInterval() | BalanceSamplesToKeep() ) 
   {}
 }
 
@@ -3695,6 +3711,38 @@ void DispatcherInterval()
       throw new PipelineException
         ("The dispatcher interval (" + msec + ") must be positive!");
     pDispatcherInterval = msec; 
+  }
+}
+
+void BalanceSampleInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <BALANCE_SAMPLE_INTERVAL> EQ() t=<INTEGER> AE()
+    {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The balance sample interval (" + msec + ") must be positive!");
+    pBalanceSampleInterval = msec;
+  }
+}
+
+void BalanceSamplesToKeep()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <BALANCE_SAMPLES_TO_KEEP> EQ() t=<INTEGER> AE()
+    {
+    Integer num = Integer.parseInt(t.image);
+    if(num <= 0) 
+      throw new PipelineException
+        ("The balance samples to keep (" + num + ") must be positive!");
+    pBalanceSamplesToKeep = num;
   }
 }
 

@@ -1,11 +1,8 @@
-// $Id: QueueControls.java,v 1.4 2009/12/09 14:28:04 jim Exp $
+// $Id: QueueControls.java,v 1.5 2009/12/11 04:21:10 jesse Exp $
   
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.*;
-
-import java.io.*; 
-import java.util.*;
+import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   C O N T R O L S                                                            */
@@ -28,7 +25,7 @@ class QueueControls
   public 
   QueueControls() 
   {
-    this(null, null, null, null); 
+    this(null, null, null, null, null, null); 
   }
 
   /** 
@@ -51,6 +48,13 @@ class QueueControls
    * @param backupSyncInterval
    *   The interval (in milliseconds) between the live synchronization of the database 
    *   files associated with the Master Manager and backup copies of these files.
+   *   
+   * @param balanceSampleInterval
+   *   The interval (in milliseconds) between when the User Balance Info class updates its 
+   *   samples.   
+   *   
+   * @param balanceSamplesToKeep
+   *   The number of samples of balance group information that are being kept.
    */ 
   public 
   QueueControls
@@ -58,13 +62,17 @@ class QueueControls
    Integer collectorBatchSize,
    Long dispatcherInterval, 
    Long nfsCacheInterval,
-   Long backupSyncInterval
+   Long backupSyncInterval,
+   Long balanceSampleInterval,
+   Integer balanceSamplesToKeep
   ) 
   {    
     setCollectorBatchSize(collectorBatchSize); 
     setDispatcherInterval(dispatcherInterval); 
     setNfsCacheInterval(nfsCacheInterval); 
-    setBackupSyncInterval(backupSyncInterval); 
+    setBackupSyncInterval(backupSyncInterval);
+    setBalanceSampleInterval(balanceSampleInterval);
+    setBalanceSamplesToKeep(balanceSamplesToKeep);
   }
 
 
@@ -108,7 +116,6 @@ class QueueControls
     }
   }
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -145,7 +152,6 @@ class QueueControls
       pDispatcherInterval = 2000L;  /* 2-seconds */ 
     }
   }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -188,7 +194,6 @@ class QueueControls
     }
   }
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -229,8 +234,86 @@ class QueueControls
     }
   }
 
-
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the interval (in milliseconds) between when the User Balance Info class updates its 
+   * samples.
+   *
+   * @return 
+   *   The interval or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getBalanceSampleInterval() 
+  {
+    return pBalanceSampleInterval;
+  }
+  
+  /**
+   * Set the interval (in milliseconds) between when the User Balance Info class updates its 
+   * samples.
+   * 
+   * @param interval
+   *   The interval or <CODE>null</CODE> for default. 
+   */
+  public void 
+  setBalanceSampleInterval
+  (
+   Long interval
+  ) 
+  {
+    if(interval != null) {
+      if(interval < 15000L)
+        throw new IllegalArgumentException
+          ("The balance sample interval (" + interval + " msec) must be at " + 
+           "least 15 seconds!"); 
+      pBalanceSampleInterval = interval; 
+    }
+    else {
+      pBalanceSampleInterval = 120000L;  /* 6-hours */ 
+    }
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the number of samples of balance group information that are being kept. <p>
+   *
+   * @return 
+   *   The number of samples or <CODE>null</CODE> if unset.
+   */ 
+  public Integer
+  getBalanceSamplesToKeep()
+  {
+    return pBalanceSamplesToKeep;
+  }
+  
+  /**
+   * Set the number of samples of balance group information that are being kept. <p>
+   * 
+   * @param samples
+   *   The number of samples or <CODE>null</CODE> for default. 
+   */
+  public void 
+  setBalanceSamplesToKeep
+  (
+   Integer samples
+  ) 
+  {
+    if(samples != null) {
+      if(samples < 1)
+        throw new IllegalArgumentException
+          ("The number of samples to keep (" + samples + ") must be at " + 
+           "least 1!"); 
+      pBalanceSamplesToKeep = samples; 
+    }
+    else {
+      pBalanceSamplesToKeep = 1; 
+    }
+  }
  
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -266,7 +349,20 @@ class QueueControls
    * files associated with the Master Manager and backup copies of these files.
    */ 
   private Long  pBackupSyncInterval; 
-
+  
+  /**
+   * The interval (in milliseconds) between when the User Balance Info class updates its 
+   * samples.<P>
+   * 
+   * A longer sample interval will result in less responsive user balancing, but will allow 
+   * more samples to be stored (making balancing more fair over longer periods of time). When 
+   * tuning, this variable should be considered along with the the number of samples being 
+   * kept.
+   */
+  private Long pBalanceSampleInterval;
+  
+  /**
+   * The number of samples of balance group information that are being kept. <p>
+   */
+  private Integer pBalanceSamplesToKeep;
 }
-
-

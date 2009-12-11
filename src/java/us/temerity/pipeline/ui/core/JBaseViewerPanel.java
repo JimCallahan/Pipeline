@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.21 2008/10/20 00:26:38 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.22 2009/12/11 04:21:11 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,7 +23,7 @@ import javax.media.opengl.glu.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The commoing base class of all OpenGL based viewer panels.
+ * The common base class of all OpenGL based viewer panels.
  */ 
 public abstract
 class JBaseViewerPanel

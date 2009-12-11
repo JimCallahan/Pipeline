@@ -1,4 +1,4 @@
-// $Id: Histogram.java,v 1.2 2009/12/09 05:05:55 jesse Exp $
+// $Id: Histogram.java,v 1.3 2009/12/11 04:21:10 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -85,6 +85,9 @@ class Histogram
 
   /**
    * Increment the item count of the category which contains the given item.
+   * 
+   * @param item
+   *   The value to match against the histogram ranges
    */ 
   @SuppressWarnings("unchecked")
   public void 
@@ -98,6 +101,32 @@ class Histogram
       if(getRange(wk).isInsideRange(item)) {
 	pCounts[wk]++;
 	return;
+      }
+    }
+  }
+  
+  /**
+   * Increase the item count of the category which contains the given item.
+   * 
+   * @param item
+   *   The value to match against the histogram ranges
+   *   
+   * @param increment
+   *   The amount to increase the item count by.
+   */ 
+  @SuppressWarnings("unchecked")
+  public void 
+  catagorize
+  (
+   Comparable item,
+   int increment
+  ) 
+  {
+    int wk; 
+    for(wk=0; wk<pCounts.length; wk++) {
+      if(getRange(wk).isInsideRange(item)) {
+        pCounts[wk]+= increment;
+        return;
       }
     }
   }
