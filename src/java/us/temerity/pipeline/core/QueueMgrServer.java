@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.75 2009/12/10 05:51:00 jim Exp $
+// $Id: QueueMgrServer.java,v 1.76 2009/12/11 23:27:30 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -36,6 +36,9 @@ class QueueMgrServer
    * 
    * @param rebuild
    *   Whether to ignore existing lock files.
+   *   
+   * @param jobReaderThreads
+   *   The number of job reader threads to spawn.
    * 
    * @param controls
    *   The runtime controls.
@@ -44,6 +47,7 @@ class QueueMgrServer
   QueueMgrServer
   (
    boolean rebuild, 
+   Integer jobReaderThreads,
    QueueControls controls
   ) 
     throws PipelineException 
@@ -51,7 +55,7 @@ class QueueMgrServer
     super("QueueMgrServer");
 
     pTimer = new TaskTimer();
-    pQueueMgr = new QueueMgr(this, rebuild, controls); 
+    pQueueMgr = new QueueMgr(this, rebuild, jobReaderThreads, controls); 
     pTasks = new TreeSet<HandlerTask>();
   }
  

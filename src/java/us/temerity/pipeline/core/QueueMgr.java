@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.137 2009/12/11 18:57:36 jesse Exp $
+// $Id: QueueMgr.java,v 1.138 2009/12/11 23:27:30 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -40,6 +40,9 @@ class QueueMgr
    * 
    * @param rebuild
    *   Whether to ignore existing lock files.
+   *   
+   * @param jobReaderThreads
+   *   The number of threads to spawn to read the jobs.
    * 
    * @param controls
    *   The runtime controls.
@@ -49,6 +52,7 @@ class QueueMgr
   (
    QueueMgrServer server,
    boolean rebuild, 
+   Integer jobReaderThreads,
    QueueControls controls
   ) 
     throws PipelineException 
@@ -81,7 +85,7 @@ class QueueMgr
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Initializing [MasterMgr]...");
 
-    init();
+    init(jobReaderThreads);
   }
 
 
@@ -89,9 +93,15 @@ class QueueMgr
 
   /**
    * Initialize a new instance.
+   * 
+   * @param jobReaderThreads
+   *   The number of threads to spawn to read jobs.
    */ 
   private void 
-  init()
+  init
+  (
+    Integer jobReaderThreads  
+  )
   { 
     /* initialize the fields */ 
     {
@@ -164,7 +174,7 @@ class QueueMgr
       
       pWriteJobList     = new LinkedBlockingQueue<Long>();
       pWriteJobInfoList = new LinkedBlockingQueue<Long>();
-      pDeleteList       = new LinkedBlockingQueue<Long>();
+      pDeleteList       = new LinkedBlockingQueue<DeleteListEntry>();
       pWriterSemaphore  = new Semaphore(0);
       
       pJobFileLocks = new TreeMap<Long,Object>();
@@ -216,7 +226,7 @@ class QueueMgr
 //      doScheduler(timer);
       
       /* initialize the job related tables from disk files */ 
-      initJobTables();
+      initJobTables(jobReaderThreads);
     }
     catch (PipelineException ex) {
       LogMgr.getInstance().log
@@ -389,102 +399,56 @@ class QueueMgr
 
   /**
    * Initialize the job related tables from disk files.
+   * 
+   * @param jobReaderThreads
+   *   The number of threads to spawn to read jobs.
    */ 
   private void 
-  initJobTables() 
+  initJobTables
+  (
+    Integer jobReaderThreads  
+  ) 
     throws PipelineException
   {
     /* read the existing queue jobs files (in oldest to newest order) */ 
-    TreeMap<Long,String> running = new TreeMap<Long,String>();
-    boolean missingGroup = false;
+    
+    Map<Long, String> running = Collections.synchronizedMap(new TreeMap<Long,String>());
+    AtomicBoolean missingGroup = new AtomicBoolean(false);
+
     {
       TaskTimer timer = new TaskTimer();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Loading Jobs...");   
       LogMgr.getInstance().flush();
-
+      
       File dir = new File(pQueueDir, "queue/jobs");
-      File files[] = dir.listFiles(); 
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	if(files[wk].isFile()) {
-	  try {
-	    Long jobID = new Long(files[wk].getName());
-	    QueueJob job = readJob(jobID);
-	    QueueJobInfo info = readJobInfo(jobID);
-	    if (job.getJobGroupID() == -1)
-	      missingGroup = true;
+      File files[] = dir.listFiles();
+      
+      LinkedBlockingQueue<File> fileQueue = 
+        new LinkedBlockingQueue<File>(Arrays.asList(files));
 
-	    /* initialize the table of working area files to the jobs which create them */ 
-	    {
-	      ActionAgenda agenda = job.getActionAgenda();
-	      NodeID nodeID = agenda.getNodeID();
-	      FileSeq fseq = agenda.getPrimaryTarget();
-	      
-	      synchronized(pNodeJobIDs) {
-		TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
-		if(table == null) {
-		  table = new TreeMap<File,Long>();
-		  pNodeJobIDs.put(nodeID, table);
-		}
-		
-		for(File file : fseq.getFiles()) 
-		  table.put(file, jobID);
-	      }
-	    }
-	    
-	    /* determine if the job is still active */ 
-	    switch(info.getState()) {
-	    case Queued:
-	    case Preempted:
-	    case Paused:
-	      pWaiting.add(jobID);
-	      break;
-	      
-	    case Running:
-              info.limbo();
-              writeJobInfo(info);
-	      running.put(jobID, info.getHostname());
-              break;
-
-	    case Limbo:
-              {
-                String hname = info.getHostname();
-                if(hname != null) {
-                  running.put(jobID, info.getHostname());
-                }
-                else {
-                  /* This is to catch the case where we find a Limbo job without an assigned 
-                     hostname.  In that case, its best just to Abort the job.  This might not 
-                     strictly be needed since we've added a version of QueueJobInfo.limbo() 
-                     which takes a hostname parameter, but it protects against existing jobs
-                     which might not have the hostname data in them. */ 
-                  info.aborted();
-                  writeJobInfo(info);
-                }
-              }
-            }
-	    
-	    synchronized(pJobs) {
-	      pJobs.put(jobID, job);
-	    }
-	    
-            synchronized(pJobInfo) {
-              pJobInfo.put(jobID, info); 
-            }
-	  }
-	  catch(NumberFormatException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Illegal job file encountered (" + files[wk] + ")!");
-	  }
-	  catch(PipelineException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	       ex.getMessage());
-	  }
-	}
+      int numThreads = 1;
+      if (jobReaderThreads != null && jobReaderThreads > 0)
+        numThreads = jobReaderThreads;
+      
+      ArrayList<JobReaderThread> threads = new ArrayList<JobReaderThread>();
+      for (int i = 0; i < numThreads; i++) {
+        JobReaderThread readThread = new JobReaderThread(fileQueue, running, missingGroup);
+        readThread.start();
+        threads.add(readThread);
+      }
+      
+      for (JobReaderThread thread : threads) {
+        try {
+          thread.join();
+        }
+        catch(InterruptedException ex) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+            "Interrupted while reading jobs.\n" + ex.getMessage());
+          LogMgr.getInstance().flush();
+        }
       }
 
       timer.suspend();
@@ -532,7 +496,7 @@ class QueueMgr
     } 
     
     /* fix the job group id in all the jobs that are missing the id */
-    if (missingGroup) {
+    if (missingGroup.get()) {
       TaskTimer timer = new TaskTimer();
       LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1109,7 +1073,7 @@ class QueueMgr
       if(samples != null) 
         pUserBalanceInfo.setSamplesToKeep(samples);
       samples = pUserBalanceInfo.getSamplesToKeep(); 
-      buf.append("  Balance Samples to Keep : " + samples + ")\n");
+      buf.append("  Balance Samples to Keep : (" + samples + ")\n");
     }
     
     buf.append
@@ -6630,6 +6594,8 @@ class QueueMgr
       }
     }
     
+    long startTime = System.currentTimeMillis();
+    
     /* Remove all outstanding calls to write that might have crept in. */
     pWriterSemaphore.drainPermits();
     
@@ -6719,13 +6685,16 @@ class QueueMgr
       
       /* delete the dead jobs */ 
       while(true) {
-        Long jobID = pDeleteList.poll();
-        if(jobID == null) 
+        DeleteListEntry entry = pDeleteList.peek();
+        if (entry == null)
           break;
-
-        tm.aquire();
+        if (entry.getTimeStamp() > startTime)
+          break;
+        pDeleteList.poll();
+        Long jobID = entry.getJobID();
 
         QueueJob job = null;
+        tm.aquire();
         synchronized(pJobs) {
           tm.resume();
           job = pJobs.remove(jobID);
@@ -7523,11 +7492,11 @@ class QueueMgr
         for (Entry<String, UserBalanceGroup> entry : pUserBalanceGroups.entrySet()) {
           String groupName = entry.getKey();
           UserBalanceGroup group = entry.getValue();
-          TreeMap<String, Double> userValues = group.getNormalizedUserValues(wgroups);
+          TreeMap<String, Double> userValues = group.getCalculatedFairShares(wgroups);
           for (Entry<String, Double> entry2 : userValues.entrySet()) {
             pDispUserUsage.setUserShare(groupName, entry2.getKey(), entry2.getValue());
           }
-          TreeMap<String, Double> maxShares = group.getFinalMaxShares(wgroups);
+          TreeMap<String, Double> maxShares = group.getCalculatedMaxShares(wgroups);
           pDispMaxShare.put(groupName, maxShares);
         }
       }
@@ -8747,7 +8716,12 @@ class QueueMgr
     LogMgr.getInstance().log
       (Kind.Wri, Level.Finest, 
       "Adding jobs with IDs (" + dead + ") to the delete list");
-    pDeleteList.addAll(dead);
+    for (Long id : dead) {
+      pDeleteList.add(new DeleteListEntry(id, System.currentTimeMillis()));
+    }
+    
+    if (!dead.isEmpty())
+      pWriterSemaphore.release();
     
     /* tell the job servers to cleanup any resources associated with the dead jobs */ 
     {
@@ -10374,7 +10348,7 @@ class QueueMgr
     Object lock = getJobFileLock(jobID);
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/jobs/" + jobID); 
-      File bak = new File(pQueueDir, "queue/jobs-bak/" + jobID);
+      File backup = new File(pQueueDir, "queue/jobs-bak/" + jobID);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -10388,10 +10362,10 @@ class QueueMgr
 	throw new PipelineException
 	  ("Unable to delete the job file (" + file + ")!");
       
-      if (bak.isFile())
-        if(!bak.delete())
+      if (backup.isFile())
+        if(!backup.delete())
           throw new PipelineException
-            ("Unable to delete the backup job file (" + bak + ")!");
+            ("Unable to delete the backup job file (" + backup + ")!");
     }
   }
 
@@ -10585,7 +10559,8 @@ class QueueMgr
   {
     Object lock = getJobInfoFileLock(jobID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/job-info/" + jobID); 
+      File file = new File(pQueueDir, "queue/job-info/" + jobID);
+      File backup = new File(pQueueDir, "queue/job-info-bak/" + jobID);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -10598,6 +10573,11 @@ class QueueMgr
       if(!file.delete()) 
 	throw new PipelineException
 	  ("Unable to delete the job information file (" + file + ")!");
+      
+      if (backup.isFile())
+        if(!backup.delete())
+          throw new PipelineException
+            ("Unable to delete the backup job information file (" + backup + ")!");
     }
   }
 
@@ -10924,13 +10904,13 @@ class QueueMgr
    * Thread to read jobs from disk, allowing for multiple reads to be done in parallel.
    */
   private class
-  JobReader
+  JobReaderThread
     extends Thread
   {
     /*-- CONSTRUCTOR -----------------------------------------------------------------------*/
 
     public 
-    JobReader
+    JobReaderThread
     (
       LinkedBlockingQueue<File> filesToRead,
       Map<Long, String> runningJobs,
@@ -11038,6 +11018,49 @@ class QueueMgr
     private LinkedBlockingQueue<File> pFilesToRead;
     private Map<Long,String> pRunningJobs;
     private AtomicBoolean pMissingGroup;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * An entry in the delete jobs list, containing both the id of the job and the timestamp
+   * that the delete request was submitted at, to prevent jobs from being written after they
+   * have been deleted. 
+   */
+  private
+  class DeleteListEntry
+  {
+    public 
+    DeleteListEntry
+    (
+      long jobID,
+      long timeStamp
+    )
+    {
+      pJobID = jobID;
+      pTimeStamp = timeStamp;
+    }
+    
+    /**
+     * Get the JobID.
+     */
+    public final long 
+    getJobID()
+    {
+      return pJobID;
+    }
+    
+    /**
+     * Get the timestamp.
+     */
+    public final long 
+    getTimeStamp()
+    {
+      return pTimeStamp;
+    }
+
+    private long pJobID;
+    private long pTimeStamp;
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -12241,7 +12264,6 @@ class QueueMgr
   private AtomicBoolean  pShutdownJobMgrs; 
 
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -12792,7 +12814,7 @@ class QueueMgr
    * <p>
    * No locking is required.
    */
-  private LinkedBlockingQueue<Long> pDeleteList;
+  private LinkedBlockingQueue<DeleteListEntry> pDeleteList;
   
   private Semaphore pWriterSemaphore;
 

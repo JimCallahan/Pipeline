@@ -277,7 +277,7 @@ CommandLine()
       }
       
       /* create the server */
-      return new QueueMgrServer(pRebuild, pControls); 
+      return new QueueMgrServer(pRebuild, pJobReaderThreads, pControls); 
     }
     
     return null;
