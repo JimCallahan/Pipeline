@@ -1,4 +1,4 @@
-// $Id: BalanceGroupCalcTableModel.java,v 1.2 2009/12/11 04:21:11 jesse Exp $
+// $Id: BalanceGroupCalcTableModel.java,v 1.3 2009/12/11 23:27:01 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -44,13 +44,11 @@ class BalanceGroupCalcTableModel
     {
       pParent = parent;
 
-      pPrivilegeDetails = new PrivilegeDetails();
-     
       pNames        = new ArrayList<String>();
-      pCalcValues   = new ArrayList<Double>();
-      pMaxValues    = new ArrayList<Double>();
+      pFairShares   = new ArrayList<Double>();
+      pMaxShares    = new ArrayList<Double>();
       pMaxSlots     = new ArrayList<Integer>();
-      pCurrentUsage = new ArrayList<Double>();
+      pActualShares = new ArrayList<Double>();
     }
     
     /* all columns are dynamic, just initialize the shared renderers/editors */
@@ -68,54 +66,42 @@ class BalanceGroupCalcTableModel
   /**
    * Set the table's information from the balance group info.
    * 
-   * @param calcValues
-   *   The calculated share values indexed by name.
-   *   
-   * @param currentUsage
+   * @param fairShares
+   *   The calculated fair share values indexed by name.
+   * @param actualShares
    *   The percent of the balance group each user has utilized.
-   *   
-   * @param maxValues
-   *   The calculated max values indexed by name.
-   *   
+   * @param maxShares
+   *   The calculated max shares indexed by name.
    * @param maxSlots
    *   The total number of slots a user has a right to.
-   *   
-   * @param totalSlots
-   *   The total number of slots in the balance group.
-   *   
-   * @param privileges
-   *   The details of the administrative privileges granted to the current user.
    */
   public void
   setCalculatedData
   (
-    Map<String, Double> calcValues,
-    Map<String, Double> currentUsage,
-    Map<String, Double> maxValues,
-    Map<String, Integer> maxSlots,
-    PrivilegeDetails privileges
+    Map<String, Double> fairShares,
+    Map<String, Double> actualShares,
+    Map<String, Double> maxShares,
+    Map<String, Integer> maxSlots
   )
   {
     TreeSet<String> names = new TreeSet<String>();
-    names.addAll(calcValues.keySet());
-    names.addAll(maxValues.keySet());
+    names.addAll(fairShares.keySet());
+    names.addAll(maxShares.keySet());
     
     pNames = new ArrayList<String>(names);
-    pCalcValues.clear();
-    pMaxValues.clear();
+    pFairShares.clear();
+    pMaxShares.clear();
     pMaxSlots.clear();
-    pCurrentUsage.clear();
+    pActualShares.clear();
     
     for (String name : pNames) {
-      pCalcValues.add(calcValues.get(name));
-      pMaxValues.add(maxValues.get(name));
-      pCurrentUsage.add(currentUsage.get(name));
+      pFairShares.add(fairShares.get(name));
+      pMaxShares.add(maxShares.get(name));
+      pActualShares.add(actualShares.get(name));
       pMaxSlots.add(maxSlots.get(name));
     }
     
     pNumRows = pNames.size();
-    
-    pPrivilegeDetails = privileges;
     
     sort();
   }
@@ -128,89 +114,6 @@ class BalanceGroupCalcTableModel
   {
     return Collections.unmodifiableList(pNames);
   }
-  
-  
-//  /**
-//   * Add new entries to the table model
-//   * 
-//   * @param names
-//   *   The list of names to add.
-//   *   
-//   * @param shareValue
-//   *   The default share value.
-//   *   
-//   * @param maxValue
-//   *   
-//   */
-//  public void
-//  addEntries
-//  (
-//    Set<String> names,
-//    Integer shareValue,
-//    Double maxValue
-//  )
-//  {
-//    boolean modified = false;
-//    for (String name : names) {
-//      if (!pNames.contains(name) ) {
-//        modified = true;
-//        pNames.add(name);
-//        pMaxValues.add(maxValue);
-//        switch(pTableType) {
-//        case CALC:
-//          pCalcValues.add(null);
-//          break;
-//        default:
-//          pShareValues.add(shareValue);
-//        }
-//      }
-//    }
-//    if (modified) {
-//      pNumRows = pNames.size();
-//      pParent.doEdited();
-//      sort();
-//    }
-//  }
-//  
-//  /**
-//   * Remove entries from the table model.
-//   * 
-//   * @param rows
-//   *   The number of the rows to remove.
-//   */
-//  public void
-//  removeEntries
-//  (
-//    int[] rows
-//  )
-//  {
-//    TreeSet<Integer> indexes = new TreeSet<Integer>();
-//    for (int row : rows) {
-//      indexes.add(pRowToIndex[row]);
-//    }
-//    
-//    boolean modified = false;
-//    int removed = 0;
-//    for (int idx : indexes) {
-//      modified = true;
-//      int actualIndex = idx - removed;
-//      pNames.remove(actualIndex);
-//      pMaxValues.remove(actualIndex);
-//      switch(pTableType) {
-//      case CALC:
-//        pCalcValues.remove(actualIndex);
-//        break;
-//      default:
-//        pShareValues.remove(actualIndex);
-//      }
-//      removed++;
-//    }
-//    if (modified) {
-//      pNumRows = pNames.size();
-//      pParent.doEdited();
-//      sort();
-//    }
-//  }
   
 
   
@@ -234,17 +137,17 @@ class BalanceGroupCalcTableModel
       case Name:
         value = pNames.get(idx);
         break;
-      case CalcValue:
-        value = pCalcValues.get(idx);
+      case FairShare:
+        value = pFairShares.get(idx);
         break;
-      case MaxValue:
-        value = pMaxValues.get(idx);
+      case MaxShare:
+        value = pMaxShares.get(idx);
         break;
       case MaxSlots:
         value = pMaxSlots.get(idx);
         break;
-      case CurrentUsage:
-        value = pCurrentUsage.get(idx);
+      case ActualShare:
+        value = pActualShares.get(idx);
       }
       cells[idx] = new IndexValue(idx, value); 
     }
@@ -284,7 +187,7 @@ class BalanceGroupCalcTableModel
     case MaxSlots:
       return new Vector3i(80);
       
-    case CurrentUsage:
+    case ActualShare:
       return new Vector3i(75);
       
     default:
@@ -326,20 +229,20 @@ class BalanceGroupCalcTableModel
     case Name:
       return "The name of the user.";
       
-    case CalcValue:
-      return "The calculated percentage of the queue that the user will receive based on " +
-             "their individual values and any group values that they receive.";
+    case FairShare:
+      return "The calculated percentage of the balance group that the user will receive " +
+      	     "based on their individual bias and any group biases that they receive.";
       
-    case MaxValue:
-      return "The max percentage of the balance group the user can have";
+    case MaxShare:
+      return "The max percentage of the balance group the user can have at any one time.";
       
-    case CurrentUsage:
+    case ActualShare:
       return "The percentage of the balance group that the user has used over the tracked " +
       	     "period.";
       
     case MaxSlots:
-      return "The maximum number of slots that a user can have access to in the " +
-      	     "balance group.";
+      return "The maximum number of slots that a user can have access to at one time in " +
+      	     "the balance group.";
     }
     return null;
   }
@@ -359,9 +262,9 @@ class BalanceGroupCalcTableModel
     case Name:
       return pNameRenderer;
       
-    case MaxValue:
-    case CurrentUsage:
-    case CalcValue:
+    case MaxShare:
+    case ActualShare:
+    case FairShare:
       return pPercentRenderer;
 
     default:
@@ -434,14 +337,14 @@ class BalanceGroupCalcTableModel
     switch(ColumnType.typeFromOrdinal(col)) {
     case Name:
         return "User";
-    case CalcValue:
-      return "Share";
-    case MaxValue:
+    case FairShare:
+      return "Fair";
+    case MaxShare:
       return "Max";
     case MaxSlots:
       return "MaxSlots";
-    case CurrentUsage:
-      return "Usage";
+    case ActualShare:
+      return "Actual";
     default:
       throw new IllegalStateException("Illegal index.");
     }
@@ -482,17 +385,17 @@ class BalanceGroupCalcTableModel
     case Name:
       return pNames.get(vrow);
 
-    case CalcValue:
-      return pCalcValues.get(vrow);
+    case FairShare:
+      return pFairShares.get(vrow);
     
-    case CurrentUsage:
-      return pCurrentUsage.get(vrow);
+    case ActualShare:
+      return pActualShares.get(vrow);
       
     case MaxSlots:
       return pMaxSlots.get(vrow);
       
-    case MaxValue:
-      return pMaxValues.get(vrow);
+    case MaxShare:
+      return pMaxShares.get(vrow);
       
     default:
       throw new IllegalStateException("Illegal index.");
@@ -508,7 +411,7 @@ class BalanceGroupCalcTableModel
   private enum
   ColumnType
   {
-    Name, CalcValue, MaxValue, CurrentUsage, MaxSlots;
+    Name, FairShare, MaxShare, ActualShare, MaxSlots;
     
     public static ColumnType
     typeFromOrdinal
@@ -542,13 +445,6 @@ class BalanceGroupCalcTableModel
   private JManageBalanceGroupsDialog pParent; 
   
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The details of the administrative privileges granted to the current user. 
-   */ 
-  private PrivilegeDetails  pPrivilegeDetails;
-  
-  /*----------------------------------------------------------------------------------------*/
   
   /**
    * The user/group name.
@@ -558,17 +454,17 @@ class BalanceGroupCalcTableModel
   /**
    * The calculated user shares.
    */
-  private ArrayList<Double> pCalcValues;
+  private ArrayList<Double> pFairShares;
   
   /**
    * The max percentages.
    */
-  private ArrayList<Double> pMaxValues;
+  private ArrayList<Double> pMaxShares;
   
   /**
    * The current usage of the farm for each user.
    */
-  private ArrayList<Double> pCurrentUsage;
+  private ArrayList<Double> pActualShares;
   
   /**
    * The maximum number of slots each user can get.

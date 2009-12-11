@@ -1,4 +1,4 @@
-// $Id: JManageBalanceGroupsDialog.java,v 1.2 2009/12/11 04:21:11 jesse Exp $
+// $Id: JManageBalanceGroupsDialog.java,v 1.3 2009/12/11 23:27:01 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -123,8 +123,6 @@ class JManageBalanceGroupsDialog
           
           lst.addListSelectionListener(this);
           lst.addMouseListener(this);
-//          lst.addKeyListener(this);
-//          lst.addMouseMotionListener(this);
           
           JScrollPane scroll = 
             UIFactory.createScrollPane
@@ -147,27 +145,27 @@ class JManageBalanceGroupsDialog
         right.add(Box.createRigidArea(new Dimension(0, 5)));
         {
           Box defaults = Box.createHorizontalBox();
-          defaults.add(Box.createRigidArea(new Dimension(153, 0)));
+          defaults.add(Box.createRigidArea(new Dimension(199, 0)));
           {
             Box body = new Box(BoxLayout.X_AXIS);
 
             String toolTip = 
-              "The share value to be applied to all users without an explicitly specified " +
-              "share value."; 
+              "The bias to be applied to all users without an explicitly specified " +
+              "bias."; 
             
-            Component header = createHeader("Default Share Value:", toolTip, 140);
+            Component header = createHeader("Default Bias:", toolTip, 94);
             body.add(header);
             body.add(Box.createHorizontalStrut(8));
             
-            pDefaultShareField = UIFactory.createIntegerField(0, sVSize, JTextField.CENTER);
-            pDefaultShareField.setToolTipText(toolTip);
-            pDefaultShareField.addFocusListener(this);
-            pDefaultShareField.setActionCommand("default-share-field");
-            pDefaultShareField.addActionListener(this);
+            pDefaultBiasField = UIFactory.createIntegerField(0, sVSize, JTextField.CENTER);
+            pDefaultBiasField.setToolTipText(toolTip);
+            pDefaultBiasField.addFocusListener(this);
+            pDefaultBiasField.setActionCommand("default-share-field");
+            pDefaultBiasField.addActionListener(this);
             
-            pDefaultShareField.setMaximumSize(pDefaultShareField.getPreferredSize());
+            pDefaultBiasField.setMaximumSize(pDefaultBiasField.getPreferredSize());
             
-            body.add(pDefaultShareField);
+            body.add(pDefaultBiasField);
             
             Box tempBox = Box.createVerticalBox();
             tempBox.add(body);
@@ -181,7 +179,7 @@ class JManageBalanceGroupsDialog
               "The default max share usage that will be applied to all users without " +
               "an explicitly specified max share usage."; 
 
-            Component header = createHeader("Default Max Value:", toolTip, 140);
+            Component header = createHeader("Default Max Share:", toolTip, 140);
             body.add(header);
             body.add(Box.createHorizontalStrut(8));
             
@@ -214,7 +212,7 @@ class JManageBalanceGroupsDialog
           {
             Box userBox = Box.createVerticalBox();
             {
-              JPanel headerBox = createHeader("User Shares:", null);
+              JPanel headerBox = createHeader("Users:", null);
               headerBox.add(Box.createHorizontalGlue());
               userBox.add(headerBox);
             }
@@ -226,7 +224,6 @@ class JManageBalanceGroupsDialog
               JScrollPane scroll = pUserTablePanel.getTableScroll();
               scroll.addMouseListener(this); 
               scroll.setFocusable(true);
-//              scroll.addKeyListener(this);
               pUserScroll = scroll;
             }
             
@@ -234,7 +231,6 @@ class JManageBalanceGroupsDialog
               JTable table = pUserTablePanel.getTable();
               table.addMouseListener(this); 
               table.setFocusable(true);
-//              table.addKeyListener(this);
               pUserTable = pUserTablePanel.getTable();
             }
             
@@ -251,7 +247,7 @@ class JManageBalanceGroupsDialog
           {
             Box groupBox = Box.createVerticalBox();
             {
-              JPanel headerBox = createHeader("Group Shares:", null);
+              JPanel headerBox = createHeader("Groups:", null);
               headerBox.add(Box.createHorizontalGlue());
               groupBox.add(headerBox);
             }
@@ -263,7 +259,6 @@ class JManageBalanceGroupsDialog
               JScrollPane scroll = pGroupTablePanel.getTableScroll();
               scroll.addMouseListener(this); 
               scroll.setFocusable(true);
-//              scroll.addKeyListener(this);
               pGroupScroll = scroll;
             }
             
@@ -334,6 +329,7 @@ class JManageBalanceGroupsDialog
     pApplyButton.setToolTipText(UIFactory.formatToolTip("Apply the changes."));
   }
 
+  /*----------------------------------------------------------------------------------------*/
 
   private JPanel
   createHeader
@@ -475,14 +471,14 @@ class JManageBalanceGroupsDialog
         }
       }
 
-      Map<String, Integer> userShares = bgroup.getUserValues();
+      Map<String, Integer> userShares = bgroup.getUserBiases();
       Map<String, Double> userMax = bgroup.getUserMaxShare();
 
-      Map<String, Integer> groupShares = bgroup.getGroupValues();
+      Map<String, Integer> groupShares = bgroup.getGroupBiases();
       Map<String, Double> groupMax = bgroup.getGroupMaxShare();
 
-      Map<String, Double> calcShares = bgroup.getNormalizedUserValues(pWorkGroups);
-      Map<String, Double> calcMax = bgroup.getFinalMaxShares(pWorkGroups);
+      Map<String, Double> calcShares = bgroup.getCalculatedFairShares(pWorkGroups);
+      Map<String, Double> calcMax = bgroup.getCalculatedMaxShares(pWorkGroups);
       
       Map<String, Double> usage = pCurrentUsage.get(groupName);
       if (usage == null)
@@ -493,8 +489,8 @@ class JManageBalanceGroupsDialog
       pUserTableModel.setBalanceGroupData(userShares, userMax, pPrivilegeDetails);
       pGroupTableModel.setBalanceGroupData(groupShares, groupMax, pPrivilegeDetails);
       pCalcTableModel.setCalculatedData
-        (calcShares, usage, calcMax, maxSlots, pPrivilegeDetails);
-      pDefaultShareField.setValue(bgroup.getDefaultValue());
+        (calcShares, usage, calcMax, maxSlots);
+      pDefaultBiasField.setValue(bgroup.getDefaultBias());
       pDefaultMaxField.setValue(bgroup.getDefaultMaxShare());
       
       updateHistograms(calcShares, usage);
@@ -504,23 +500,23 @@ class JManageBalanceGroupsDialog
   public void
   updateFromTable()
   {
-    Map<String, Integer> userShares = pUserTableModel.getShares();
+    Map<String, Integer> userShares = pUserTableModel.getBiases();
     Map<String, Double> userMax = pUserTableModel.getMaxShares();
     
-    Map<String, Integer> groupShares = pGroupTableModel.getShares();
+    Map<String, Integer> groupShares = pGroupTableModel.getBiases();
     Map<String, Double> groupMax = pGroupTableModel.getMaxShares();
     
     UserBalanceGroup group = pBalanceGroups.get(pSelectedGroup); 
     
-    group.setUserValues(userShares);
+    group.setUserBiases(userShares);
     group.setUserMaxShares(userMax);
-    group.setGroupValues(groupShares);
+    group.setGroupBiases(groupShares);
     group.setGroupMaxShares(groupMax);
-    group.setDefaultValue(pDefaultShareField.getValue());
+    group.setDefaultBias(pDefaultBiasField.getValue());
     group.setDefaultMaxShare(pDefaultMaxField.getValue());
 
-    Map<String, Double> calcShares = group.getNormalizedUserValues(pWorkGroups);
-    Map<String, Double> calcMax = group.getFinalMaxShares(pWorkGroups);
+    Map<String, Double> calcShares = group.getCalculatedFairShares(pWorkGroups);
+    Map<String, Double> calcMax = group.getCalculatedMaxShares(pWorkGroups);
     Map<String, Double> usage = pCurrentUsage.get(pSelectedGroup);
     if (usage == null)
       usage = new TreeMap<String, Double>();
@@ -528,7 +524,7 @@ class JManageBalanceGroupsDialog
 
 
     pCalcTableModel.setCalculatedData
-      (calcShares, usage, calcMax, maxSlots, pPrivilegeDetails);
+      (calcShares, usage, calcMax, maxSlots);
     
     updateHistograms(calcShares, usage);
   }
@@ -613,7 +609,7 @@ class JManageBalanceGroupsDialog
       }
       ranges.add(new HistogramRange("[[Other]]"));
       
-      HistogramSpec spec = new HistogramSpec("UserShares", ranges);
+      HistogramSpec spec = new HistogramSpec("FairShares", ranges);
       userShareHist = new Histogram(spec);
       for (Entry<String, Integer> entry : includedShares.entrySet())
         userShareHist.catagorize(entry.getKey(), entry.getValue());
@@ -657,7 +653,7 @@ class JManageBalanceGroupsDialog
       }
       ranges.add(new HistogramRange("[[Other]]"));
       
-      HistogramSpec spec = new HistogramSpec("UserUse", ranges);
+      HistogramSpec spec = new HistogramSpec("ActualShares", ranges);
       userUseHist = new Histogram(spec);
       for (Entry<String, Integer> entry : includedShares.entrySet())
         userUseHist.catagorize(entry.getKey(), entry.getValue());
@@ -696,9 +692,7 @@ class JManageBalanceGroupsDialog
     pHistogramPanel.frameAll();
   }
   
-  
   /*----------------------------------------------------------------------------------------*/
-
   
   /**
    * Update the panel to reflect new user preferences.
@@ -706,7 +700,6 @@ class JManageBalanceGroupsDialog
   public void 
   updateUserPrefs() 
   {
-    updateMenuToolTips();
   }
   
   /**
@@ -745,18 +738,6 @@ class JManageBalanceGroupsDialog
   
   
 
-
-  /**
-   * Update the menu item tool tips.
-   */ 
-  private void 
-  updateMenuToolTips() 
-  {
-    //FIXME need to do these.  aghhh!
-  }
-  
-  
-  
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -845,7 +826,7 @@ class JManageBalanceGroupsDialog
     FocusEvent e
   )
   {
-    if (e.getComponent().equals(pDefaultShareField)) {
+    if (e.getComponent().equals(pDefaultBiasField)) {
       doDefaultShareChanged();
     }
     else if (e.getComponent().equals(pDefaultMaxField)) {
@@ -1110,7 +1091,7 @@ class JManageBalanceGroupsDialog
       pListDialog.setVisible(true);
       if (pListDialog.wasConfirmed()) {
         TreeSet<String> toAdd = pListDialog.getSelected();
-        pGroupTableModel.addEntries(toAdd, pDefaultShareField.getValue(), 
+        pGroupTableModel.addEntries(toAdd, pDefaultBiasField.getValue(), 
                                     pDefaultMaxField.getValue());
         updateFromTable();
       }
@@ -1130,7 +1111,7 @@ class JManageBalanceGroupsDialog
       pListDialog.setVisible(true);
       if (pListDialog.wasConfirmed()) {
         TreeSet<String> toAdd = pListDialog.getSelected();
-        pUserTableModel.addEntries(toAdd, pDefaultShareField.getValue(), 
+        pUserTableModel.addEntries(toAdd, pDefaultBiasField.getValue(), 
                                    pDefaultMaxField.getValue());
         updateFromTable();
       }
@@ -1173,14 +1154,14 @@ class JManageBalanceGroupsDialog
   {
     if (pSelectedGroup != null) {
       UserBalanceGroup bgroup = pBalanceGroups.get(pSelectedGroup);
-      Integer share = pDefaultShareField.getValue();
-      int current = bgroup.getDefaultValue();
+      Integer share = pDefaultBiasField.getValue();
+      int current = bgroup.getDefaultBias();
       if (share == null)
-        pDefaultShareField.setValue(current);
+        pDefaultBiasField.setValue(current);
       else {
         share = clampInt(share);
         if (current != share) {
-          pDefaultShareField.setValue(share);
+          pDefaultBiasField.setValue(share);
           doEdited();
           updateFromTable();
         }
@@ -1348,7 +1329,7 @@ class JManageBalanceGroupsDialog
   
   /*----------------------------------------------------------------------------------------*/
   
-  private JIntegerField pDefaultShareField;
+  private JIntegerField pDefaultBiasField;
   
   private JPercentField pDefaultMaxField;
   

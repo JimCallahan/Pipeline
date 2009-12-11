@@ -1,4 +1,4 @@
-// $Id: UserBalanceGroup.java,v 1.4 2009/12/11 18:56:32 jesse Exp $
+// $Id: UserBalanceGroup.java,v 1.5 2009/12/11 23:27:01 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -50,7 +50,7 @@ class UserBalanceGroup
     super(name);
     init();
     
-    pDefaultValue = 0;
+    pDefaultBias = 0;
     pDefaultMaxShare = 0;
   }
   
@@ -73,11 +73,11 @@ class UserBalanceGroup
     super(name);
     init();
     
-    pDefaultValue = group.pDefaultValue;
+    pDefaultBias = group.pDefaultBias;
     pDefaultMaxShare = group.pDefaultMaxShare;
-    pUserValues.putAll(group.getUserValues());
+    pUserBiases.putAll(group.getUserBiases());
     pUserMaxShares.putAll(group.getUserMaxShare());
-    pGroupValues.putAll(group.getGroupValues());
+    pGroupBiases.putAll(group.getGroupBiases());
     pGroupMaxShares.putAll(group.getGroupMaxShare());
   }
   
@@ -96,7 +96,6 @@ class UserBalanceGroup
     this(group.getName(), group);
   }
   
-  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -105,8 +104,8 @@ class UserBalanceGroup
   private void 
   init() 
   {
-    pUserValues = new TreeMap<String, Integer>();
-    pGroupValues = new TreeMap<String, Integer>();
+    pUserBiases = new TreeMap<String, Integer>();
+    pGroupBiases = new TreeMap<String, Integer>();
     pGroupMaxShares = new TreeMap<String, Double>();
     pUserMaxShares = new TreeMap<String, Double>();
   }
@@ -118,46 +117,47 @@ class UserBalanceGroup
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the default value assigned to all users not listed in the map.
+   * Get the default bias assigned to all users who do not have a user or group override.
    */
   public int
-  getDefaultValue()
+  getDefaultBias()
   {
-    return pDefaultValue;
+    return pDefaultBias;
   }
   
   /**
-   * Set the default value that will be assigned to all users not listed in the map.
+   * Set the default bias that will be assigned to all users who do not have a 
+   * user or group override.
    * 
    * @throws IllegalArgumentException
    *   If the default value is less than zero.
    */
   public void
-  setDefaultValue
+  setDefaultBias
   (
-    int defaultValue
+    int defaultBias
   )
   {
-    if (!isValidValue(defaultValue))
+    if (!isValidBias(defaultBias))
       throw new IllegalArgumentException
-        ("It is not valid to have the groups's default queue share be less than zero.");
-    pDefaultValue = defaultValue;
+        ("It is not valid to have the balance groups's default bias be less than zero.");
+    pDefaultBias = defaultBias;
   }
   
   /**
-   * Check if an Integer value is a valid default share value.
+   * Check if an Integer value is a valid bias.
 
    * @return
-   *   <code>False</code> if defaultValue is <code>null</code> or less than zero.  
+   *   <code>False</code> if defaultBias is <code>null</code> or less than zero.  
    *   Otherwise <code>True</code>. 
    */
   public static boolean
-  isValidValue
+  isValidBias
   (
-    Integer defaultValue  
+    Integer defaultBias
   )
   {
-    if (defaultValue == null || defaultValue < 0)
+    if (defaultBias == null || defaultBias < 0)
       return false;
     return true;
   }
@@ -213,74 +213,74 @@ class UserBalanceGroup
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the map of users to their un-normalized share of the queue.
+   * Get the map of users to their un-normalized biases.
    */
   public Map<String, Integer>
-  getUserValues()
+  getUserBiases()
   {
-    return Collections.unmodifiableMap(pUserValues);
+    return Collections.unmodifiableMap(pUserBiases);
   }
   
   /**
-   * Set the map of users and their un-normalized share of the queue.
+   * Set the map of users and their un-normalized biases.
    * 
-   * @param userValues
-   *   The map which will replace the current mapping of values or <code>null</code> to clear 
+   * @param userBiases
+   *   The map which will replace the current mapping of biases or <code>null</code> to clear 
    *   all the existing mappings.
    *   
    * @throws IllegalArgumentException
-   *   If a value less than zero is specified for a user's queue share.
+   *   If a value less than zero is specified for a user's bias.
    */
   public void
-  setUserValues
+  setUserBiases
   (
-    Map<String, Integer> userValues  
+    Map<String, Integer> userBiases  
   )
   {
-    pUserValues.clear();
-    if (userValues != null) {
-      for (Integer i : userValues.values())
-        if (!isValidValue(i))
+    pUserBiases.clear();
+    if (userBiases != null) {
+      for (Integer i : userBiases.values())
+        if (!isValidBias(i))
           throw new IllegalArgumentException
-            ("It is not valid to have a user's queue share be less than zero.");
-      pUserValues.putAll(userValues);
+            ("It is not valid to have a user's bias be less than zero.");
+      pUserBiases.putAll(userBiases);
     }
   }
   
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the map of groups to their un-normalized share of the queue.
+   * Get the map of groups to their un-normalized bias.
    */
   public Map<String, Integer>
-  getGroupValues()
+  getGroupBiases()
   {
-    return Collections.unmodifiableMap(pGroupValues);
+    return Collections.unmodifiableMap(pGroupBiases);
   }
   
   /**
-   * Set the map of groups and their un-normalized share of the queue.
+   * Set the map of groups and their un-normalized biases.
    * 
-   * @param groupValues
-   *   The map which will replace the current mapping of values or <code>null</code> to clear 
+   * @param groupBiases
+   *   The map which will replace the current mapping of biases or <code>null</code> to clear 
    *   all the existing mappings.
    *   
    * @throws IllegalArgumentException
-   *   If a value less than zero is specified for a group's queue share.
+   *   If a value less than zero is specified for a group's bias.
    */
   public void
-  setGroupValues
+  setGroupBiases
   (
-    Map<String, Integer> groupValues  
+    Map<String, Integer> groupBiases  
   )
   {
-    pGroupValues.clear();
-    if (groupValues != null) {
-      for (Integer i : groupValues.values())
-        if (!isValidValue(i))
+    pGroupBiases.clear();
+    if (groupBiases != null) {
+      for (Integer i : groupBiases.values())
+        if (!isValidBias(i))
           throw new IllegalArgumentException
-            ("It is not valid to have a group's queue share be less than zero.");
-      pGroupValues.putAll(groupValues);
+            ("It is not valid to have a group's bias be less than zero.");
+      pGroupBiases.putAll(groupBiases);
     }
   }
   
@@ -288,38 +288,38 @@ class UserBalanceGroup
   
   /**
    * Set the map of users and the maximum percentage (represented as a Double between 0 and 1)
-   * of the queue they should have.<p>
+   * of the balance group they should have.<p>
    * 
-   * These values are added to the user values to calculate the final max percentage that a
-   * user can have of the balance group.
+   * These values are added to the group max shares to calculate the final max percentage 
+   * that a user can have of the balance group.
    * 
-   * @param userShares
-   *   The map which will replace the current mapping of maximum or <code>null</code> to clear 
-   *   all the existing mappings.
+   * @param userMaxShares
+   *   The map which will replace the current mapping of max shares or <code>null</code> to 
+   *   clear all the existing mappings.
    *   
    * @throws IllegalArgumentException
-   *   If a value less than zero or more than one is specified for a user's queue share.
+   *   If a value less than zero or more than one is specified for a user's max share.
    */
   public void
   setUserMaxShares
   (
-    Map<String, Double> userShares  
+    Map<String, Double> userMaxShares  
   )
   {
     pUserMaxShares.clear();
-    if (userShares != null) {
-      for (Double i : userShares.values())
+    if (userMaxShares != null) {
+      for (Double i : userMaxShares.values())
         if (!isValidMaxShare(i))
           throw new IllegalArgumentException
-            ("It is not valid for a user's max share of the queue to be greater than 1 or " +
-             "less than 0.");
-      pUserMaxShares.putAll(userShares);
+            ("It is not valid for a user's max share of the balance group to be greater " +
+             "than 1 or less than 0.");
+      pUserMaxShares.putAll(userMaxShares);
     }
   }
   
   /**
    * Get the map of users and the maximum percentage (represented as a Double between 0 and 1)
-   * of the queue they should have.
+   * of the balance group they should have.
    */
   public Map<String, Double>
   getUserMaxShare()
@@ -337,11 +337,11 @@ class UserBalanceGroup
    * user can have of the balance group.
    * 
    * @param groupShares
-   *   The map which will replace the current mapping of maximum or <code>null</code> to clear 
-   *   all the existing mappings.
+   *   The map which will replace the current mapping of max group shares or 
+   *   <code>null</code> to clear all the existing mappings.
    *   
    * @throws IllegalArgumentException
-   *   If a value less than zero or more than one is specified for a group's queue share.
+   *   If a value less than zero or more than one is specified for a group's max shares.
    */
   public void
   setGroupMaxShares
@@ -354,15 +354,15 @@ class UserBalanceGroup
       for (Double i : groupShares.values())
         if (!isValidMaxShare(i))
           throw new IllegalArgumentException
-            ("It is not valid for a group's max share of the queue to be greater than 1 or " +
-             "less than 0.");
+            ("It is not valid for a group's max share of the balance group to be greater " +
+             "than 1 or less than 0.");
       pGroupMaxShares.putAll(groupShares);
     }
   }
 
   /**
    * Get the map of groups and the maximum percentage (represented as a Double between 0 
-   * and 1) of the queue they should have.
+   * and 1) of the balance group they should have.
    */
   public Map<String, Double>
   getGroupMaxShare()
@@ -373,8 +373,8 @@ class UserBalanceGroup
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get a map of the users to the actual percentage of the queue that they are entitled to
-   * under the current set of user and group values.
+   * Get a map of the users to the actual percentage of the balance group that they are 
+   * entitled to under the current set of user and group biases.
    * <p>
    * The list of users and groups in the WorkGroups structure is considered definitive in
    * terms of calculating shares of queue. Users who are in the user balance group, but not in
@@ -389,7 +389,7 @@ class UserBalanceGroup
    *   A map of users to the share of the queue they should get under the current rules.
    */
   public DoubleOpMap<String>
-  getNormalizedUserValues
+  getCalculatedFairShares
   (
     WorkGroups wgroups
   )
@@ -397,9 +397,9 @@ class UserBalanceGroup
     DoubleOpMap<String> toReturn = new DoubleOpMap<String>();  
     double total = 0d;
     for (String group : wgroups.getGroups()) {
-      if (pGroupValues.containsKey(group)) {
+      if (pGroupBiases.containsKey(group)) {
         TreeSet<String> users = wgroups.getUsersInGroup(group);
-        double value = pGroupValues.get(group);
+        double value = pGroupBiases.get(group);
         if (value > 0d) {
           for (String user : users) {
             toReturn.apply(user, value);
@@ -410,9 +410,9 @@ class UserBalanceGroup
     }
     
     for (String user : wgroups.getUsers()) {
-      Integer value = pUserValues.get(user);
+      Integer value = pUserBiases.get(user);
       if (value == null && toReturn.get(user) == null)
-        value = pDefaultValue;
+        value = pDefaultBias;
       
       if (value != null) {
         total += value;
@@ -434,7 +434,7 @@ class UserBalanceGroup
   }
   
   public DoubleOpMap<String>
-  getFinalMaxShares
+  getCalculatedMaxShares
   (
     WorkGroups wgroups
   )
@@ -482,15 +482,15 @@ class UserBalanceGroup
   {
     super.toGlue(encoder);
     
-    encoder.encode("DefaultValue", pDefaultValue);
+    encoder.encode("DefaultBias", pDefaultBias);
     
     encoder.encode("DefaultMaxShare", pDefaultMaxShare);
     
-    if (!pUserValues.isEmpty())
-      encoder.encode("UserValues", pUserValues);
+    if (!pUserBiases.isEmpty())
+      encoder.encode("UserBiases", pUserBiases);
     
-    if (!pGroupValues.isEmpty())
-      encoder.encode("GroupValues", pGroupValues);
+    if (!pGroupBiases.isEmpty())
+      encoder.encode("GroupBiases", pGroupBiases);
     
     if (!pUserMaxShares.isEmpty())
       encoder.encode("UserMaxShares", pUserMaxShares);
@@ -510,22 +510,22 @@ class UserBalanceGroup
   {
     super.fromGlue(decoder);
     
-    pDefaultValue = (Integer) decoder.decode("DefaultValue");
+    pDefaultBias = (Integer) decoder.decode("DefaultBias");
     
     pDefaultMaxShare = (Double) decoder.decode("DefaultMaxShare");
     
     {
       TreeMap<String, Integer> temp = 
-        (TreeMap<String, Integer>) decoder.decode("UserValues");
+        (TreeMap<String, Integer>) decoder.decode("UserBiases");
       if (temp != null)
-        pUserValues.putAll(temp);
+        pUserBiases.putAll(temp);
     }
     
     {
       TreeMap<String, Integer> temp = 
-        (TreeMap<String, Integer>) decoder.decode("GroupValues");
+        (TreeMap<String, Integer>) decoder.decode("GroupBiases");
       if (temp != null)
-        pGroupValues.putAll(temp);
+        pGroupBiases.putAll(temp);
     }
     
     {
@@ -560,7 +560,7 @@ class UserBalanceGroup
   /**
    * Default value assigned to all users not listed in the map.
    */
-  private int pDefaultValue;
+  private int pDefaultBias;
   
   /**
    * Default max share assigned to all the users not listed in the map.
@@ -570,12 +570,12 @@ class UserBalanceGroup
   /**
    * Mapping of user names to their un-normalized queue share.
    */
-  private TreeMap<String, Integer> pUserValues;
+  private TreeMap<String, Integer> pUserBiases;
   
   /**
    * Mapping of group names to their un-normalized queue share.
    */
-  private TreeMap<String, Integer> pGroupValues;
+  private TreeMap<String, Integer> pGroupBiases;
   
   /**
    * Mapping of user names to the maximum share they should get of the queue.

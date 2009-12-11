@@ -1,4 +1,4 @@
-// $Id: BalanceGroupTableModel.java,v 1.2 2009/12/11 04:21:11 jesse Exp $
+// $Id: BalanceGroupTableModel.java,v 1.3 2009/12/11 23:27:01 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -53,8 +53,8 @@ class BalanceGroupTableModel
       pPrivilegeDetails = new PrivilegeDetails();
      
       pNames = new ArrayList<String>();
-      pShareValues = new ArrayList<Integer>();
-      pMaxValues = new ArrayList<Double>();
+      pBiases = new ArrayList<Integer>();
+      pMaxShares = new ArrayList<Double>();
       pEditedIndices = new TreeSet<Integer>();
     }
     
@@ -85,11 +85,11 @@ class BalanceGroupTableModel
   /**
    * Set the table's information from the balance group info.
    * 
-   * @param shareValues
-   *   The share values indexed by name.
+   * @param biases
+   *   The bias values indexed by name.
    *   
-   * @param maxValues
-   *   The max values indexed by name.
+   * @param maxShares
+   *   The max shares indexed by name.
    *   
    * @param privileges
    *   The details of the administrative privileges granted to the current user.
@@ -97,22 +97,22 @@ class BalanceGroupTableModel
   public void
   setBalanceGroupData
   (
-    Map<String, Integer> shareValues,
-    Map<String, Double> maxValues,
+    Map<String, Integer> biases,
+    Map<String, Double> maxShares,
     PrivilegeDetails privileges
   )
   {
     TreeSet<String> names = new TreeSet<String>();
-    names.addAll(shareValues.keySet());
-    names.addAll(maxValues.keySet());
+    names.addAll(biases.keySet());
+    names.addAll(maxShares.keySet());
     
     pNames = new ArrayList<String>(names);
-    pShareValues = new ArrayList<Integer>();
-    pMaxValues = new ArrayList<Double>();
+    pBiases = new ArrayList<Integer>();
+    pMaxShares = new ArrayList<Double>();
     
     for (String name : pNames) {
-      pShareValues.add(shareValues.get(name));
-      pMaxValues.add(maxValues.get(name));
+      pBiases.add(biases.get(name));
+      pMaxShares.add(maxShares.get(name));
     }
     
     pPrivilegeDetails = privileges;
@@ -134,16 +134,16 @@ class BalanceGroupTableModel
   }
   
   /**
-   * Get the current share values from the table.
+   * Get the current bias values from the table.
    */
   public TreeMap<String, Integer>
-  getShares()
+  getBiases()
   {
     TreeMap<String, Integer> toReturn = new TreeMap<String, Integer>();
     
     int size = pNames.size();
     for (int i = 0; i < size ; i++ ) {
-      Integer share = pShareValues.get(i);
+      Integer share = pBiases.get(i);
       if (share != null)
         toReturn.put(pNames.get(i), share);
     }
@@ -161,7 +161,7 @@ class BalanceGroupTableModel
     
     int size = pNames.size();
     for (int i = 0; i < size ; i++ ) {
-      Double max = pMaxValues.get(i);
+      Double max = pMaxShares.get(i);
       if (max!= null)
         toReturn.put(pNames.get(i), max);
     }
@@ -194,8 +194,8 @@ class BalanceGroupTableModel
       if (!pNames.contains(name) ) {
         modified = true;
         pNames.add(name);
-        pMaxValues.add(maxValue);
-        pShareValues.add(shareValue);
+        pMaxShares.add(maxValue);
+        pBiases.add(shareValue);
       }
     }
     if (modified) {
@@ -228,8 +228,8 @@ class BalanceGroupTableModel
       modified = true;
       int actualIndex = idx - removed;
       pNames.remove(actualIndex);
-      pMaxValues.remove(actualIndex);
-      pShareValues.remove(actualIndex);
+      pMaxShares.remove(actualIndex);
+      pBiases.remove(actualIndex);
       removed++;
     }
     if (modified) {
@@ -260,10 +260,10 @@ class BalanceGroupTableModel
         value = pNames.get(idx);
         break;
       case 1:
-        value = pShareValues.get(idx);
+        value = pBiases.get(idx);
         break;
       case 2:
-        value = pMaxValues.get(idx);
+        value = pMaxShares.get(idx);
         break;
       }
       cells[idx] = new IndexValue(idx, value); 
@@ -347,10 +347,21 @@ class BalanceGroupTableModel
       
       
     case 1:
-      return "The share value.";
+      switch (pTableType) {
+      case GROUP:
+        return "The group bias.";
+      default:
+        return "The user bias.";
+      }
       
     case 2:
-      return "The max percentage of the group the user/group can have";
+      switch (pTableType) {
+      case GROUP:
+        return "The max share of the balance group the group can have";
+      default:
+        return "The max share of the balance group the user can have";
+      }
+      
       
     default:
       throw new IllegalStateException("Illegal index");
@@ -461,7 +472,7 @@ class BalanceGroupTableModel
       }
        
     case 1:
-      return "Share";
+      return "Bias";
     case 2:
       return "Max";
     default:
@@ -511,10 +522,10 @@ class BalanceGroupTableModel
       return pNames.get(vrow);
     
     case 1:
-      return pShareValues.get(vrow);
+      return pBiases.get(vrow);
       
     case 2:
-      return pMaxValues.get(vrow);
+      return pMaxShares.get(vrow);
       
     default:
       throw new IllegalStateException("Illegal index.");
@@ -568,9 +579,9 @@ class BalanceGroupTableModel
       return false;
       
     case 1:
-      return setIntValue(pShareValues, value, srow);
+      return setIntValue(pBiases, value, srow);
     case 2:
-      return setDoubleValue(pMaxValues, value, srow);
+      return setDoubleValue(pMaxShares, value, srow);
     }
     return false;
   }
@@ -660,6 +671,8 @@ class BalanceGroupTableModel
     USER, GROUP
   }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -696,12 +709,12 @@ class BalanceGroupTableModel
   /**
    * The queue shares.
    */
-  private ArrayList<Integer> pShareValues;
+  private ArrayList<Integer> pBiases;
   
   /**
    * The max percentages.
    */
-  private ArrayList<Double> pMaxValues;
+  private ArrayList<Double> pMaxShares;
   
   /*----------------------------------------------------------------------------------------*/
   
