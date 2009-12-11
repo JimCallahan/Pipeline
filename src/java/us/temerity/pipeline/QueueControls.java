@@ -1,4 +1,4 @@
-// $Id: QueueControls.java,v 1.5 2009/12/11 04:21:10 jesse Exp $
+// $Id: QueueControls.java,v 1.6 2009/12/11 18:57:15 jesse Exp $
   
 package us.temerity.pipeline;
 
@@ -270,7 +270,7 @@ class QueueControls
       pBalanceSampleInterval = interval; 
     }
     else {
-      pBalanceSampleInterval = 120000L;  /* 6-hours */ 
+      pBalanceSampleInterval = 120000L;  /* 2 minutes */ 
     }
   }
   
@@ -308,7 +308,7 @@ class QueueControls
       pBalanceSamplesToKeep = samples; 
     }
     else {
-      pBalanceSamplesToKeep = 1; 
+      pBalanceSamplesToKeep = 30; 
     }
   }
  

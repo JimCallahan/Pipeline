@@ -65,7 +65,12 @@ QueueMgrOptsParser
   /**
    * Whether to ignore existing lock files.
    */ 
-  private boolean  pRebuild; 
+  private boolean  pRebuild;
+  
+  /**
+   * The number of job reader threads to spawn.
+   */
+  private Integer  pJobReaderThreads; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -122,6 +127,10 @@ TOKEN :
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">      : INTEGER_SEP
 | <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">       : INTEGER_SEP
 | <BACKUP_SYNC_INTERVAL:     "--backup-sync-interval">     : INTEGER_SEP
+| <BALANCE_SAMPLE_INTERVAL:  "--balance-sample-interval">  : INTEGER_SEP
+| <BALANCE_SAMPLES_TO_KEEP:  "--balance-samples-to-keep">  : INTEGER_SEP
+| <JOB_READER_THREADS:       "--job-reader-threads">       : INTEGER_SEP
+
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -373,7 +382,8 @@ GlobalOpts()
 {}
 {
   (Rebuild() | Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
-   CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval() | BackupSyncInterval())
+   CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval() | BackupSyncInterval() |
+   BalanceSampleInterval() | BalanceSamplesToKeep() | JobReaderThreads())
   {}
 }
 
@@ -383,6 +393,17 @@ void Rebuild() :
   <REBUILD>
   { 
     pRebuild = true; 
+  }
+}
+
+void JobReaderThreads() : 
+{
+  Token t;
+}
+{
+  <JOB_READER_THREADS> EQ() t=<INTEGER>
+  {
+    pJobReaderThreads = Integer.parseInt(t.image);
   }
 }
 
@@ -782,6 +803,39 @@ void BackupSyncInterval()
   }
 }
 
+void BalanceSampleInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <BALANCE_SAMPLE_INTERVAL> EQ() t=<INTEGER>
+  {
+	try {
+      pControls.setBalanceSampleInterval(Long.parseLong(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }  
+  }
+}
+
+void BalanceSamplesToKeep()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <BALANCE_SAMPLES_TO_KEEP> EQ() t=<INTEGER>
+  {
+	try {
+      pControls.setBalanceSamplesToKeep(Integer.parseInt(t.image));
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex);
+    }  
+  }
+}
 
 
 
