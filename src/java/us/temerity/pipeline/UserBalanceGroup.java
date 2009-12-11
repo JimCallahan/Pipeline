@@ -1,4 +1,4 @@
-// $Id: UserBalanceGroup.java,v 1.3 2009/12/11 04:21:10 jesse Exp $
+// $Id: UserBalanceGroup.java,v 1.4 2009/12/11 18:56:32 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -414,8 +414,10 @@ class UserBalanceGroup
       if (value == null && toReturn.get(user) == null)
         value = pDefaultValue;
       
-      total += value;
-      toReturn.apply(user, (double) value);
+      if (value != null) {
+        total += value;
+        toReturn.apply(user, (double) value);
+      }
     }
     
     TreeSet<String> users = new TreeSet<String>(toReturn.keySet());
