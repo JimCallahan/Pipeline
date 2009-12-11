@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.136 2009/12/11 04:21:10 jesse Exp $
+// $Id: QueueMgr.java,v 1.137 2009/12/11 18:57:36 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -57,6 +57,9 @@ class QueueMgr
 
     pServer = server;
     pRebuild = rebuild;
+    
+    /* Needs to be here so the runtime controls can be set correctly. */
+    pUserBalanceInfo = new UserBalanceInfo();
 
     /* init runtime controls */ 
     {
@@ -99,8 +102,6 @@ class QueueMgr
       pAdminPrivileges = new AdminPrivileges();
       pMasterMgrClient = new MasterMgrClient();
       
-      pUserBalanceInfo = new UserBalanceInfo();
-
       pLicenseKeys = new TreeMap<String,LicenseKey>();
 
       pHardwareKeys         = new TreeMap<String, HardwareKey>();
@@ -161,8 +162,11 @@ class QueueMgr
       pJobRanks = new JobRank[1024]; 
       pRunning  = new DoubleMap<String,Long,MonitorTask>(); 
       
-      pWriteJobList    = new LinkedBlockingQueue<Long>();
-      pDeleteList   = new LinkedBlockingQueue<Long>();
+      pWriteJobList     = new LinkedBlockingQueue<Long>();
+      pWriteJobInfoList = new LinkedBlockingQueue<Long>();
+      pDeleteList       = new LinkedBlockingQueue<Long>();
+      pWriterSemaphore  = new Semaphore(0);
+      
       pJobFileLocks = new TreeMap<Long,Object>();
       pJobs         = new TreeMap<Long,QueueJob>();
       
@@ -488,7 +492,7 @@ class QueueMgr
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
-    }
+    } // End job reading.  This is the part that should be multi-threaded.
 
     /* initialize the job groups */ 
     {
@@ -525,7 +529,7 @@ class QueueMgr
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
-    }
+    } 
     
     /* fix the job group id in all the jobs that are missing the id */
     if (missingGroup) {
@@ -541,7 +545,6 @@ class QueueMgr
           QueueJob job = pJobs.get(jobID);
           if (job.getJobGroupID() == -1) {
             job.setJobGroupID(id);
-            deleteJobFile(jobID);
             writeJob(job);
           }
         }
@@ -5066,16 +5069,16 @@ class QueueMgr
 	timer.aquire();
 	synchronized(pJobs) {
 	  timer.resume();
-	  writeJob(job);
 	  pJobs.put(jobID, job);
+	  pWriteJobList.add(jobID);
 	}
 	
 	timer.aquire();
 	synchronized(pJobInfo) {
 	  timer.resume();
-	  writeJobInfo(info);
 	  pJobInfo.put(jobID, info);
 	  pJobCounters.update(timer, null, info);
+	  pWriteJobInfoList.add(jobID);
 	} 
 	
 	{
@@ -5099,6 +5102,8 @@ class QueueMgr
 	
 	pWaiting.add(jobID);
       }
+      
+      pWriterSemaphore.release();
 
       /* post-submit tasks */ 
       startExtensionTasks(timer, new SubmitJobsExtFactory(group, taskJobs));
@@ -6607,15 +6612,31 @@ class QueueMgr
   /**
    * Write all the jobs currently in the update jobs queue to disk.
    * 
-   * @param sleep
-   *   Whether to sleep for the remaining time instead of returning immediately.
+   * @param wait
+   *   Whether to wait on the semaphore or just blow through the caches..
    */
   public void
   writer
   (
-   boolean sleep
+    boolean wait  
   )
   {
+    if (wait) {
+      try {
+        pWriterSemaphore.acquire();
+      }
+      catch (InterruptedException ex1) {
+        return;
+      }
+    }
+    
+    /* Remove all outstanding calls to write that might have crept in. */
+    pWriterSemaphore.drainPermits();
+    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Wri, LogMgr.Level.Fine,
+       "Writer [Semaphore Acquired, Starting Writer]");
+    
     TaskTimer timer = new TaskTimer("Writer");
    
     {
@@ -6623,39 +6644,71 @@ class QueueMgr
       TaskTimer tm = new TaskTimer("Writer [Writing Modified Jobs]");
       
       while(true) {
-        Long jobID = pWriteJobList.poll();
-        if(jobID == null) 
+        Long jobID = pWriteJobList.peek();
+        Long jobInfoID = pWriteJobInfoList.peek();
+        
+        if (jobInfoID != null) {
+          /* Burn the one we already checked. */
+          pWriteJobInfoList.poll();
+          QueueJobInfo info = null;
+          tm.aquire();
+          synchronized(pJobInfo) {
+            tm.resume();
+            QueueJobInfo temp = pJobInfo.get(jobInfoID);
+            if (temp != null)
+              info = new QueueJobInfo(temp);
+          }
+
+          /* 
+           * Could be possible if the job ran, finished, and was cleaned-up before we got around 
+           * to writing the changes to disk.
+           */
+          if (info == null)
+            continue;
+          try {
+            writeJobInfo(info);
+          }
+          catch(PipelineException ex) {
+            LogMgr.getInstance().log
+            (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+              "An error occurred when the writer thread tried to write job info " +
+              "(" + jobID + ") to disk.\n" + ex.getMessage()); 
+          }
+        }
+        else if (jobID != null) {
+          /* Burn the one we already checked. */
+          pWriteJobList.poll();
+          QueueJob job = null;
+          tm.aquire();
+          synchronized(pJobs) {
+            tm.resume();
+            QueueJob temp = pJobs.get(jobID);
+            if (temp != null)
+              job = new QueueJob(temp);
+          }
+
+          /* 
+           * Could be possible if the job ran, finished, and was cleaned-up before we got around 
+           * to writing the changes to disk.
+           */
+          if (job == null)
+            continue;
+          try {
+            writeJob(job);
+          }
+          catch(PipelineException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+               "An error occurred when the writer thread tried to write job " +
+               "(" + jobID + ") to disk.\n" + ex.getMessage()); 
+          }
+        }
+        else
           break;
-
-        QueueJob job = null;
-        tm.aquire();
-        synchronized(pJobs) {
-          tm.resume();
-          QueueJob temp = pJobs.get(jobID);
-          if (temp != null)
-            job = new QueueJob(temp);
-        }
-
-        /* 
-         * Could be possible if the job ran, finished, and was cleaned-up before we got around 
-         * to writing the changes to disk.
-         */
-        if (job == null)
-          continue;
-        try {
-//          deleteJobFile(jobID);
-          writeJob(job);
-        }
-        catch(PipelineException ex) {
-          LogMgr.getInstance().log
-          (LogMgr.Kind.Wri, LogMgr.Level.Severe,
-            "An error occurred when the writer thread tried to write job (" + jobID + ") " +
-            "to disk.\n" + ex.getMessage()); 
-        }
       }
       LogMgr.getInstance().logSubStage
-      (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-       tm, timer);
+        (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+         tm, timer);
     }
     
     TreeMap<Long,QueueJob> deadJobs = new TreeMap<Long,QueueJob>();
@@ -6685,8 +6738,8 @@ class QueueMgr
         }
         catch(PipelineException ex) {
           LogMgr.getInstance().log
-          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-            ex.getMessage());
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+             ex.getMessage());
         }
 
         tm.aquire();
@@ -6703,44 +6756,24 @@ class QueueMgr
         }
         catch(PipelineException ex) {
           LogMgr.getInstance().log
-          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-            ex.getMessage());
+            (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+             ex.getMessage());
         }
       }
       LogMgr.getInstance().logSubStage
-      (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-       tm, timer);
+        (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+         tm, timer);
     }
 
     /* post-cleanup task */ 
     if(!deadJobs.isEmpty() && !deadInfos.isEmpty())  
       startExtensionTasks(timer, new CleanupJobsExtFactory(deadJobs, deadInfos));
     
-    /* if we're ahead of schedule, take a nap */ 
+    /* sleep on the semaphore till we get woken up again. */ 
     {
       LogMgr.getInstance().logStage
         (LogMgr.Kind.Wri, LogMgr.Level.Fine,
          timer); 
-
-      if(sleep) {
-        long nap = sWriterInterval - timer.getTotalDuration();
-        if(nap > 0) {
-          LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-             "Writer: Sleeping for (" + nap + ") msec...");
-          
-          try {
-            Thread.sleep(nap);
-          }
-          catch(InterruptedException ex) {
-          }
-        }
-        else {
-          LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-             "Writer: Overbudget by (" + (-nap) + ") msec...");
-        }
-      }
     }
   }
   
@@ -6885,6 +6918,7 @@ class QueueMgr
   {
     timer.suspend();
     TaskTimer tm = new TaskTimer("Dispatcher [Kill/Abort]");
+    boolean trigger = false;
     while(true) {
       Long jobID = pHitList.poll();
       if(jobID == null) 
@@ -6907,14 +6941,8 @@ class QueueMgr
           {
             JobState prevState = info.aborted();
             pJobCounters.update(tm, prevState, info);
-            try {
-              writeJobInfo(info);
-            }
-            catch(PipelineException ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
-                 ex.getMessage()); 
-            }
+            pWriteJobInfoList.add(jobID);
+            trigger = true;
             aborted = true;
           }
           break; 
@@ -6933,6 +6961,8 @@ class QueueMgr
           startExtensionTasks(tm, new JobAbortedExtFactory(job));
       }
     }
+    if (trigger)
+      pWriterSemaphore.release();
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
        tm, timer);
@@ -6954,6 +6984,7 @@ class QueueMgr
   {
     timer.suspend();
     TaskTimer tm = new TaskTimer("Dispatcher [Preempt]");
+    boolean trigger = false;
     while(true) {
       Long jobID = pPreemptList.poll();
       if(jobID == null) 
@@ -6978,15 +7009,8 @@ class QueueMgr
               
               JobState prevState = info.preempted();
               pJobCounters.update(tm, prevState, info);
-              try {
-                writeJobInfo(info);
-              }
-              catch(PipelineException ex) {
-                LogMgr.getInstance().log
-		  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
-		   ex.getMessage()); 
-              }
-              
+              pWriteJobInfoList.add(jobID);
+              trigger = true;
               KillTask task = new KillTask(hostname, jobID);
               task.start();
             }
@@ -6997,6 +7021,9 @@ class QueueMgr
         }
       }
     }
+    
+    if (trigger)
+      pWriterSemaphore.release();
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
        tm, timer);
@@ -7023,6 +7050,7 @@ class QueueMgr
     timer.suspend();
     TaskTimer tm = new TaskTimer("Dispatcher [Change Job Requirements]");
     
+    boolean trigger = false;
     while (true) {
       long jobID;
       JobReqs reqs;
@@ -7050,17 +7078,23 @@ class QueueMgr
               job.setJobRequirements(reqs);
               changedIDs.add(jobID);
               pWriteJobList.add(jobID);
+              trigger = true;
             }
           }
           break;
         }
       }
     }
+    
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
        tm, timer);
-    LogMgr.getInstance().log(Kind.Wri, Level.Finest, 
-      "Adding jobs with ids " + changedIDs + " to the write list");
+    if (!changedIDs.isEmpty())
+      LogMgr.getInstance().log
+        (Kind.Wri, Level.Finest, 
+         "Adding jobs with ids " + changedIDs + " to the write list");
+    if (trigger)
+      pWriterSemaphore.release();
   }
 
   /** 
@@ -7090,6 +7124,7 @@ class QueueMgr
 
     /* process the waiting jobs */ 
     LinkedList<Long> stillWaiting = new LinkedList<Long>();
+    boolean trigger = false;
     while(true) {
       Long jobID = pWaiting.poll();
       if(jobID == null) 
@@ -7109,14 +7144,8 @@ class QueueMgr
             if(resumeJob) {
               JobState prevState = info.resumed();
               pJobCounters.update(tm, prevState, info);
-              try {
-                writeJobInfo(info);
-              }
-              catch(PipelineException ex) {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
-                   ex.getMessage()); 
-              }
+              pWriteJobInfoList.add(jobID);
+              trigger = true;
             }
           }
         }
@@ -7134,15 +7163,8 @@ class QueueMgr
             if(pauseJob) {
               JobState prevState = info.paused();
               pJobCounters.update(tm, prevState, info);
-              try {
-              //FIXME  Should this use the job writer thread?
-                writeJobInfo(info);
-              }
-              catch(PipelineException ex) {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
-                   ex.getMessage()); 
-              }
+              pWriteJobInfoList.add(jobID);
+              trigger = true;
             }
           }
         }
@@ -7230,6 +7252,9 @@ class QueueMgr
         }
       }
     }
+    if (trigger)
+      pWriterSemaphore.release();
+    
     pWaiting.addAll(stillWaiting);      
 
     LogMgr.getInstance().logSubStage
@@ -7424,6 +7449,8 @@ class QueueMgr
           (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
            stm, dtm); 
       }
+      if (slotCnt > 0)
+        pWriterSemaphore.release();
     }
     LogMgr.getInstance().logSubStage
       (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
@@ -8502,14 +8529,7 @@ class QueueMgr
 
         JobState prevState = info.started(host.getName(), host.getOsType());
 	pJobCounters.update(timer, prevState, info);
-	try {
-	  writeJobInfo(info);
-	}
-	catch (PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	     ex.getMessage()); 
-	}
+	pWriteJobInfoList.add(info.getJobID());
       }
 
       host.setHold(job.getJobID(), jreqs.getRampUp());
@@ -8546,6 +8566,8 @@ class QueueMgr
 
     /* process the ready jobs */ 
     TreeSet<Long> notReady = new TreeSet<Long>();
+    
+    boolean trigger = false;
     for(Long jobID : pReady.keySet()) {
 
       QueueJobInfo info = getJobInfo(tm, jobID); 
@@ -8570,16 +8592,8 @@ class QueueMgr
             if(pauseJob) {
               JobState prevState = info.paused();
               pJobCounters.update(tm, prevState, info);
-              try {
-                //FIXME  Should this use the job writer thread?
-                writeJobInfo(info);
-              }
-              catch(PipelineException ex) {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
-                   ex.getMessage()); 
-              }		
-              
+              pWriteJobInfoList.add(jobID);
+              trigger = true;
               pWaiting.add(jobID);
               notReady.add(jobID);
             }
@@ -8602,6 +8616,9 @@ class QueueMgr
         }
       }
     }
+    
+    if (trigger)
+      pWriterSemaphore.release();
 
     /* clean up all unready jobs found */ 
     for(Long jobID : notReady) 
@@ -10357,6 +10374,7 @@ class QueueMgr
     Object lock = getJobFileLock(jobID);
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/jobs/" + jobID); 
+      File bak = new File(pQueueDir, "queue/jobs-bak/" + jobID);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -10369,6 +10387,11 @@ class QueueMgr
       if(!file.delete()) 
 	throw new PipelineException
 	  ("Unable to delete the job file (" + file + ")!");
+      
+      if (bak.isFile())
+        if(!bak.delete())
+          throw new PipelineException
+            ("Unable to delete the backup job file (" + bak + ")!");
     }
   }
 
@@ -10470,21 +10493,79 @@ class QueueMgr
     Object lock = getJobInfoFileLock(jobID);
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-info/" + jobID);
-      if(file.isFile()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading Job Information: " + jobID);
+      File backup = new File(pQueueDir, "queue/job-info-bak/" + jobID);
+      try {
+        if(file.isFile()) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+             "Reading Job Information: " + jobID);
 
-        try {
-          return((QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", file));
-        }	
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
+          try {
+            return((QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", file));
+          }	
+          catch(Exception ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+               "The job info file (" + file + ") appears to be corrupted:\n" + 
+               "  " + ex.getMessage());
+            LogMgr.getInstance().flush();
+            if(backup.isFile()) {
+              LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+                "Reading Working Job Info (Backup): " + jobID);
+
+              QueueJobInfo info = null;
+              try {
+                info = (QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", backup);
+              }
+              catch(Exception ex2) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                   "The backup job info file (" + backup + ") appears to be " + 
+                   "corrupted:\n" + "  " + ex.getMessage());
+                LogMgr.getInstance().flush();
+
+                throw ex;
+              }
+
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                 "Successfully recovered the job info from the backup file " + 
+                 "(" + backup + ")\n" + 
+                 "Renaming the backup to (" + file + ")!");
+              LogMgr.getInstance().flush();
+
+              if(!file.delete()) 
+                throw new IOException
+                  ("Unable to remove the corrupted job info file (" + file + ")!");
+
+              if(!backup.renameTo(file)) 
+                throw new IOException
+                  ("Unable to replace the corrupted job info file (" + file + ") " + 
+                   "with the valid backup file (" + backup + ")!");
+
+              return info;
+            }
+            else {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                 "The backup job info file (" + backup + ") does not exist!");
+              LogMgr.getInstance().flush();
+
+              throw ex;
+            }
+          }
+        }
+        else {
+          throw new PipelineException
+            ("Somehow for job (" + jobID + "), no job info file (" + file + ") exists!");
         }
       }
-      else {
-	throw new PipelineException
-	  ("Somehow for job (" + jobID + "), no job info file (" + file + ") exists!");
+      catch(Exception ex) {
+        throw new PipelineException
+          ("I/O ERROR: \n" + 
+           "  While attempting to read job info (" + jobID + ") from file...\n" +
+           "    " + ex.getMessage());
       }
     }
   }
@@ -10839,6 +10920,127 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /**
+   * Thread to read jobs from disk, allowing for multiple reads to be done in parallel.
+   */
+  private class
+  JobReader
+    extends Thread
+  {
+    /*-- CONSTRUCTOR -----------------------------------------------------------------------*/
+
+    public 
+    JobReader
+    (
+      LinkedBlockingQueue<File> filesToRead,
+      Map<Long, String> runningJobs,
+      AtomicBoolean missingGroup
+    )
+    {
+      pFilesToRead = filesToRead;
+      pRunningJobs = runningJobs;
+      pMissingGroup = missingGroup;
+    }
+    
+    /*-- THREAD RUN ------------------------------------------------------------------------*/
+    
+    @Override
+    public void 
+    run()
+    {
+      while (true) {
+        File file = pFilesToRead.poll();
+        if (file == null)
+          break;
+        if (file.isFile()) {
+          try {
+            Long jobID = new Long(file.getName());
+            QueueJob job = readJob(jobID);
+            QueueJobInfo info = readJobInfo(jobID);
+            if (job.getJobGroupID() == -1)
+              pMissingGroup.set(true);
+
+            /* initialize the table of working area files to the jobs which create them */ 
+            {
+              ActionAgenda agenda = job.getActionAgenda();
+              NodeID nodeID = agenda.getNodeID();
+              FileSeq fseq = agenda.getPrimaryTarget();
+              
+              synchronized(pNodeJobIDs) {
+                TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+                if(table == null) {
+                  table = new TreeMap<File,Long>();
+                  pNodeJobIDs.put(nodeID, table);
+                }
+                
+                for(File f : fseq.getFiles()) 
+                  table.put(f, jobID);
+              }
+            }
+            
+            /* determine if the job is still active */ 
+            switch(info.getState()) {
+            case Queued:
+            case Preempted:
+            case Paused:
+              pWaiting.add(jobID);
+              break;
+              
+            case Running:
+              info.limbo();
+              writeJobInfo(info);
+              pRunningJobs.put(jobID, info.getHostname());
+              break;
+
+            case Limbo:
+              {
+                String hname = info.getHostname();
+                if(hname != null) {
+                  pRunningJobs.put(jobID, info.getHostname());
+                }
+                else {
+                  /* This is to catch the case where we find a Limbo job without an assigned 
+                     hostname.  In that case, its best just to Abort the job.  This might not 
+                     strictly be needed since we've added a version of QueueJobInfo.limbo() 
+                     which takes a hostname parameter, but it protects against existing jobs
+                     which might not have the hostname data in them. */ 
+                  info.aborted();
+                  writeJobInfo(info);
+                }
+              }
+            }
+            
+            synchronized(pJobs) {
+              pJobs.put(jobID, job);
+            }
+            
+            synchronized(pJobInfo) {
+              pJobInfo.put(jobID, info); 
+            }
+          }
+          catch(NumberFormatException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+               "Illegal job file encountered (" + file + ")!");
+          }
+          catch(PipelineException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+               ex.getMessage());
+          } 
+        }
+      }
+    }
+    
+    /*-- INTERNALS -------------------------------------------------------------------------*/
+    
+    
+    private LinkedBlockingQueue<File> pFilesToRead;
+    private Map<Long,String> pRunningJobs;
+    private AtomicBoolean pMissingGroup;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Runs the scheduler after selection schedules have been modified
@@ -11141,14 +11343,8 @@ class QueueMgr
               QueueJobInfo info = pJobInfo.get(jobID);
               JobState prevState = info.preempted();
               pJobCounters.update(tm, prevState, info);
-              try {
-                writeJobInfo(info);
-              }
-              catch(PipelineException ex2) {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Job, LogMgr.Level.Severe, 
-                   ex2.getMessage()); 
-              }
+              pWriteJobInfoList.add(info.getJobID());
+              pWriterSemaphore.release();
             }
 
             balked = true;
@@ -11175,14 +11371,8 @@ class QueueMgr
             QueueJobInfo info = pJobInfo.get(jobID);
             JobState prevState = info.restarted();
             pJobCounters.update(tm, prevState, info);
-            try {
-              writeJobInfo(info);
-            }
-            catch(PipelineException ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Job, LogMgr.Level.Severe, 
-                 ex.getMessage()); 
-            }
+            pWriteJobInfoList.add(info.getJobID());
+            pWriterSemaphore.release();
           }
 
           LogMgr.getInstance().logSubStage
@@ -11277,44 +11467,38 @@ class QueueMgr
           /* update job information */
           QueueJobInfo info = getJobInfo(tm, jobID); 
           if(info != null) {
-            try {            
-              switch(info.getState()) {
-              case Preempted: 
-                preempted = true;
-                break;
-              
-              default:
-                {
-                  JobState prevState = null;
-                  if(isTerminal != null) {
-                    if(isTerminal) {
-                      LogMgr.getInstance().log
-                        (LogMgr.Kind.Net, LogMgr.Level.Warning, 
-                         "Treating job (" + jobID + ") as Failed because the Job Manager " + 
-                         "(" + pHostname + ") was manually Shutdown before establishing " + 
-                         "whether the job had completed."); 
-                      
-                      prevState = info.exited(null);
-                    }
-                    else {
-                      prevState = info.limbo(pHostname);
-                    }
+            switch(info.getState()) {
+            case Preempted: 
+              preempted = true;
+              break;
+            
+            default:
+              {
+                JobState prevState = null;
+                if(isTerminal != null) {
+                  if(isTerminal) {
+                    LogMgr.getInstance().log
+                      (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+                       "Treating job (" + jobID + ") as Failed because the Job Manager " + 
+                       "(" + pHostname + ") was manually Shutdown before establishing " + 
+                       "whether the job had completed."); 
+                    
+                    prevState = info.exited(null);
                   }
                   else {
-                    prevState = info.exited(results);
+                    prevState = info.limbo(pHostname);
                   }
-                  pJobCounters.update(tm, prevState, info);
-                  if(!remonitored) 
-                    finishedInfo = new QueueJobInfo(info);
                 }
+                else {
+                  prevState = info.exited(results);
+                }
+                pJobCounters.update(tm, prevState, info);
+                if(!remonitored) 
+                  finishedInfo = new QueueJobInfo(info);
               }
-              writeJobInfo(info);
             }
-            catch (PipelineException ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Job, LogMgr.Level.Severe,
-                 ex.getMessage()); 
-            }	
+            pWriteJobInfoList.add(info.getJobID());
+            pWriterSemaphore.release();
           }
           else {
             LogMgr.getInstance().log
@@ -12609,6 +12793,8 @@ class QueueMgr
    * No locking is required.
    */
   private LinkedBlockingQueue<Long> pDeleteList;
+  
+  private Semaphore pWriterSemaphore;
 
   /*----------------------------------------------------------------------------------------*/
 
