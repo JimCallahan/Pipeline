@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.44 2009/07/18 02:17:20 jim Exp $
+// $Id: PluginMgr.java,v 1.45 2009/12/12 01:17:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -745,6 +745,104 @@ class PluginMgr
     timer.aquire();
     pAdminPrivileges.updateAdminPrivileges(timer, req);
     return new SuccessRsp(timer);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a set of database backup files. <P> 
+   * 
+   * The backup will not be perfomed until any currently running database operations have 
+   * completed.  Once the databsae backup has begun, all new database operations will blocked
+   * until the backup is complete.  The this reason, the backup should be performed during 
+   * non-peak hours. <P> 
+   * 
+   * The database backup files will be automatically named: <P> 
+   * <DIV style="margin-left: 40px;">
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   * </DIV>
+   * 
+   * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
+   * the backup.  The backup file is a <B>gzip</B>(1) compressed <B>tar</B>(1) archive of
+   * the {@link Glueable GLUE} format files which make of the persistent storage of the
+   * Pipeline database. <P> 
+   * 
+   * Only privileged users may create a database backup. <P> 
+   * 
+   * @param req 
+   *   The backup request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to perform the backup.
+   */ 
+  public Object
+  backupDatabase
+  ( 
+   PluginBackupDatabaseReq req
+  )
+  {
+    Path targetDir = req.getBackupDirectory();
+
+    String dateStr = req.getDateString();
+    Path backupTarget = new Path(targetDir, "plpluginmgr-db." + dateStr + ".tgz");
+
+    TaskTimer timer = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
+
+    try {
+      if(!pAdminPrivileges.isMasterAdmin(req))
+        throw new PipelineException
+          ("Only a user with Master Admin privileges may backup the database!"); 
+
+      if(!targetDir.toFile().isDirectory()) 
+        throw new PipelineException
+          ("The backup directory (" + targetDir + ") is not valid!");
+
+      /* make the backup tarball */ 
+      timer.aquire();
+      pPluginLock.writeLock().lock();
+      try {
+        timer.resume();
+        
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("-zcf");
+        args.add(backupTarget.toOsString());
+        args.add("pipeline/plugins");
+        
+        SubProcessLight proc = 
+          new SubProcessLight("DatabaseBackupArchive", "tar", args, System.getenv(), 
+                              PackageInfo.sPluginMgrPath.getParentPath().toFile());
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to create the Database Backup Archive: " + backupTarget + "\n\n" + 
+               "  " + proc.getStdErr());	
+        }
+        catch(InterruptedException ex) {
+          proc.kill();
+          
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+             "Interrupted while performing Database Backup Archive!"); 
+        }
+        
+        LogMgr.getInstance().logStage(LogMgr.Kind.Bak, LogMgr.Level.Info, timer); 
+        
+        return new SuccessRsp(timer);
+      }
+      finally {
+        pPluginLock.writeLock().unlock();
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
   }
 
 
@@ -3445,7 +3543,8 @@ class PluginMgr
    * The file system directory creation lock.
    */
   private Object  pMakeDirLock;
-  
+
+
   /*----------------------------------------------------------------------------------------*/
  
   /**

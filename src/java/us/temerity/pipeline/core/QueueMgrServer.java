@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.76 2009/12/11 23:27:30 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.77 2009/12/12 01:17:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -89,9 +89,10 @@ class QueueMgrServer
       SchedulerTask scheduler = new SchedulerTask();
       WriterTask writer = new WriterTask();
       BalancerTask balancer = new BalancerTask();
+      BackupSyncTask backupSync = new BackupSyncTask();
 
       MasterConnectTask connector = 
-	new MasterConnectTask(collector, dispatcher, scheduler, writer, balancer); 
+	new MasterConnectTask(collector, dispatcher, scheduler, writer, balancer, backupSync); 
       connector.start();
 
       HeapStatsTask heapStats = new HeapStatsTask();
@@ -155,6 +156,16 @@ class QueueMgrServer
 
 	scheduler.interrupt();
 	scheduler.join();
+
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     "Waiting on Database Backup Synchronizer...");
+	  LogMgr.getInstance().flush();
+          
+          backupSync.interrupt();
+          backupSync.join();
+        }
 
 	{
 	  LogMgr.getInstance().log
@@ -739,6 +750,14 @@ class QueueMgrServer
                 }
                 break;
 
+              /*-- ADMIN -----------------------------------------------------------------*/
+              case BackupDatabase: 
+                {
+                  QueueBackupDatabaseReq req = (QueueBackupDatabaseReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.backupDatabase(req));
+                  objOut.flush(); 
+                }
+                break;  
 
               /*-- SERVER EXTENSIONS -------------------------------------------------------*/
               case GetQueueExtension:
@@ -1166,7 +1185,8 @@ class QueueMgrServer
      DispatcherTask dispatcher,
      SchedulerTask scheduler,
      WriterTask writer,
-     BalancerTask balancer
+     BalancerTask balancer, 
+     BackupSyncTask backupSync
     ) 
     {
       super("QueueMgrServer:MasterConnectTask"); 
@@ -1175,6 +1195,7 @@ class QueueMgrServer
       pScheduler = scheduler;
       pWriter = writer;
       pBalancer = balancer;
+      pBackupSync = backupSync;
     }
 
     @Override
@@ -1202,6 +1223,7 @@ class QueueMgrServer
 	pScheduler.start();
 	pWriter.start();
 	pBalancer.start();
+	pBackupSync.start();
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
@@ -1216,6 +1238,7 @@ class QueueMgrServer
     private SchedulerTask  pScheduler;
     private WriterTask     pWriter;
     private BalancerTask   pBalancer;
+    private BackupSyncTask pBackupSync;
   }
 
   /**
@@ -1472,6 +1495,49 @@ class QueueMgrServer
     }
   }
 
+  /**
+   * Database backup synchronization and archiving.
+   */
+  private 
+  class BackupSyncTask
+    extends Thread
+  {
+    public 
+    BackupSyncTask() 
+    {
+      super("MasterMgrServer:BackupSyncTask");
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      try {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	   "Database Backup Synchronizer Started.");	
+	LogMgr.getInstance().flush();
+
+        boolean first = true;
+	while(!pShutdown.get()) {
+	  pQueueMgr.backupSync(first);
+          first = false;
+	}
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Database Backup Synchronizer Failed:", ex)); 
+	LogMgr.getInstance().flush();	
+      }
+      finally {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	   "Database Backup Synchronizer Finished.");	
+	LogMgr.getInstance().flush();
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

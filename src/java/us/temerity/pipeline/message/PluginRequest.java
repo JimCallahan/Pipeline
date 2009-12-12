@@ -1,4 +1,4 @@
-// $Id: PluginRequest.java,v 1.7 2009/08/26 22:31:29 jim Exp $
+// $Id: PluginRequest.java,v 1.8 2009/12/12 01:17:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -28,6 +28,14 @@ enum PluginRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * An instance of {@link PluginBackupDatabaseReq} is next.
+   */
+  BackupDatabase, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * An instance of {@link PluginUpdateReq} is next.
    */
   Update, 
@@ -51,7 +59,8 @@ enum PluginRequest
    *
    */
   ResourceChunkInstall, 
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

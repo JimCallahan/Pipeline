@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.25 2009/07/06 10:25:26 jim Exp $
+// $Id: PluginMgrServer.java,v 1.26 2009/12/12 01:17:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -280,6 +280,15 @@ class PluginMgrServer
                   objOut.flush(); 
                 }
                 break;
+
+              /*-- ADMIN -----------------------------------------------------------------*/
+              case BackupDatabase: 
+                {
+                  PluginBackupDatabaseReq req = (PluginBackupDatabaseReq) objIn.readObject();
+                  objOut.writeObject(pPluginMgr.backupDatabase(req));
+                  objOut.flush(); 
+                }
+                break;  
 
               /*-- PLUGINS -----------------------------------------------------------------*/
               case Update:

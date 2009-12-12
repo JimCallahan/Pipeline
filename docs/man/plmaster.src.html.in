@@ -350,14 +350,23 @@
       <div style="margin-left: 40px;">
         <br>
         <span style="font-weight: bold;">arg</span><br>
+
+        <div style="margin-left: 40px;">
+          Logs errors related to parsing the command-line options.
+        </div>
       </div>
 
       <div style="margin-left: 40px;">
-        <div style="margin-left: 40px;">
-          Logs errors related to parsing the command-line options.
-        </div><br>
-        <span style="font-weight: bold;">ext<br></span>
+        <br>
+        <span style="font-weight: bold;">bak</span><br>
 
+        <div style="margin-left: 40px;">
+          Logs the activity of database backup and synchronization tasks.
+        </div>
+      </div><br>
+
+      <div style="margin-left: 40px;">
+        <span style="font-weight: bold;">ext<br></span>
         <div style="margin-left: 40px;">
           Logs the activity of server extension plugin tasks.
         </div><br>

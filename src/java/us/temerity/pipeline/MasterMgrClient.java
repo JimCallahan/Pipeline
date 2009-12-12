@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.151 2009/12/09 14:28:04 jim Exp $
+// $Id: MasterMgrClient.java,v 1.152 2009/12/12 01:17:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -7745,10 +7745,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(PackageInfo.sOsType != OsType.Unix)
-      throw new PipelineException
-	("The backup database operation can only be initiated from a Unix client!");
-
     verifyConnection();
     
     MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(dir); 

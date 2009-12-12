@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.31 2009/12/09 05:05:55 jesse Exp $
+// $Id: QueueRequest.java,v 1.32 2009/12/12 01:17:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -286,7 +286,17 @@ enum QueueRequest
    */
   GetBalanceGroupUsage,
 
+
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link QueueBackupDatabaseReq} is next.
+   */
+  BackupDatabase, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the current queue extension configurations.
    */

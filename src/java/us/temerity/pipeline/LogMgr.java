@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.14 2009/11/10 20:47:39 jesse Exp $
+// $Id: LogMgr.java,v 1.15 2009/12/12 01:17:26 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -712,7 +712,12 @@ class LogMgr
     /**
      * Activity of the Queue Manager User Balance Info thread
      */
-    Usr;
+    Usr,
+
+    /**
+     * Activity of database synchronization and backup threads.
+     */
+    Bak;
 
     /**
      * Get the list of all possible states.
@@ -812,7 +817,8 @@ class LogMgr
     "TIM",
     "BLD",
     "WRI",
-    "USR"
+    "USR",
+    "BAK"
   };
 
 

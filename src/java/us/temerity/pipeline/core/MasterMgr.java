@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.322 2009/12/12 00:22:43 jesse Exp $
+// $Id: MasterMgr.java,v 1.323 2009/12/12 01:17:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15630,14 +15630,20 @@ class MasterMgr
       pBackupSyncTarget.set(target); 
       pBackupSyncTrigger.release();
 
-      {
-        // Queue Manager backup here... 
-
+      QueueMgrControlClient qclient = acquireQueueMgrClient();
+      try {
+        qclient.backupDatabase(targetDir, dateStr);
+      }
+      finally {
+        releaseQueueMgrClient(qclient);
       }
 
-      {
-        // Plugin Manager backup here... 
-
+      PluginMgrControlClient pclient = new PluginMgrControlClient();
+      try {
+        pclient.backupDatabase(targetDir, dateStr);
+      }
+      finally {
+        pclient.disconnect();
       }
 
       /* post-op tasks */ 
@@ -21062,14 +21068,21 @@ class MasterMgr
       }
     }
 
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-       "Starting Database Backup Synchronization...");
-
     TaskTimer timer = new TaskTimer();
 
     Path backupTarget = pBackupSyncTarget.getAndSet(null);
     boolean doBackup = (backupTarget != null); 
+
+    if(doBackup) {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Bak, LogMgr.Level.Info, 
+         "Starting Database Backup..."); 
+    }
+    else {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Bak, LogMgr.Level.Fine, 
+         "Starting Database Backup Synchronization...");
+    }
 
     /* synchronize the backup directory with the database without locking, 
          this reduced the time needed to hold the lock */ 
@@ -21105,17 +21118,19 @@ class MasterMgr
                  "  " + proc.getStdErr());	
           }
           catch(InterruptedException ex) {
+            proc.kill();
+
             LogMgr.getInstance().logAndFlush
               (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
                "Interrupted while performing Database Backup Archive!"); 
             return;
           }
           
-          LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
+          LogMgr.getInstance().logStage(LogMgr.Kind.Bak, LogMgr.Level.Info, tm); 
         }
         catch(PipelineException ex) {
           LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+            (LogMgr.Kind.Bak, LogMgr.Level.Severe, 
              ex.getMessage());
         }
       }
@@ -21133,7 +21148,7 @@ class MasterMgr
       }
       else {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	  (LogMgr.Kind.Bak, LogMgr.Level.Finest,
 	   "Database Backup Sync: Overbudget by " + 
            "(" + TimeStamps.formatInterval(-nap) + ")..."); 
       }
@@ -21173,8 +21188,9 @@ class MasterMgr
         args.add("--quiet");
         args.add("--delete");
         args.add("--delete-excluded");
-        args.add("--exclude=/pipeline/queue");
+        args.add("--exclude=/pipeline/lock");
         args.add("--exclude=/pipeline/plugins");
+        args.add("--exclude=/pipeline/queue");
         args.add("pipeline");
         args.add(PackageInfo.sMasterBackupPath.toOsString() + "/");
         
@@ -21190,13 +21206,17 @@ class MasterMgr
                "  " + proc.getStdErr());	
         }
         catch(InterruptedException ex) {
+          proc.kill();
+
           LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+            (LogMgr.Kind.Bak, LogMgr.Level.Warning,
              "Interrupted while performing Database Backup Synchronization!"); 
           return null;
         }
         
-        LogMgr.getInstance().logStage(LogMgr.Kind.Ops, LogMgr.Level.Info, tm); 
+        LogMgr.getInstance().logStage
+          (LogMgr.Kind.Bak, needsLock ? LogMgr.Level.Info : LogMgr.Level.Fine, 
+           tm); 
       }
       finally {
         if(needsLock) 
@@ -21207,7 +21227,7 @@ class MasterMgr
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+        (LogMgr.Kind.Bak, LogMgr.Level.Severe, 
          ex.getMessage());
       return false;
     }  

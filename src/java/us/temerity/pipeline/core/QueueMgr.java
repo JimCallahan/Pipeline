@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.138 2009/12/11 23:27:30 jesse Exp $
+// $Id: QueueMgr.java,v 1.139 2009/12/12 01:17:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -40,7 +40,7 @@ class QueueMgr
    * 
    * @param rebuild
    *   Whether to ignore existing lock files.
-   *   
+   * 
    * @param jobReaderThreads
    *   The number of threads to spawn to read the jobs.
    * 
@@ -62,6 +62,9 @@ class QueueMgr
     pServer = server;
     pRebuild = rebuild;
     
+    /* Needs to be here so the runtime controls can be set correctly. */
+    pUserBalanceInfo = new UserBalanceInfo();
+
     /* Needs to be here so the runtime controls can be set correctly. */
     pUserBalanceInfo = new UserBalanceInfo();
 
@@ -108,6 +111,9 @@ class QueueMgr
       pDatabaseLock = new ReentrantReadWriteLock();
 
       pMakeDirLock = new Object(); 
+
+      pBackupSyncTrigger = new Semaphore(0);
+      pBackupSyncTarget  = new AtomicReference<Path>();
 
       pAdminPrivileges = new AdminPrivileges();
       pMasterMgrClient = new MasterMgrClient();
@@ -421,34 +427,34 @@ class QueueMgr
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Loading Jobs...");   
       LogMgr.getInstance().flush();
-      
+
       File dir = new File(pQueueDir, "queue/jobs");
-      File files[] = dir.listFiles();
-      
+      File files[] = dir.listFiles(); 
+	      
       LinkedBlockingQueue<File> fileQueue = 
         new LinkedBlockingQueue<File>(Arrays.asList(files));
 
       int numThreads = 1;
       if (jobReaderThreads != null && jobReaderThreads > 0)
         numThreads = jobReaderThreads;
-      
+	    
       ArrayList<JobReaderThread> threads = new ArrayList<JobReaderThread>();
       for (int i = 0; i < numThreads; i++) {
         JobReaderThread readThread = new JobReaderThread(fileQueue, running, missingGroup);
         readThread.start();
         threads.add(readThread);
-      }
-      
+	    }
+	    
       for (JobReaderThread thread : threads) {
         try {
           thread.join();
-        }
+	  }
         catch(InterruptedException ex) {
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
             "Interrupted while reading jobs.\n" + ex.getMessage());
           LogMgr.getInstance().flush();
-        }
+	}
       }
 
       timer.suspend();
@@ -493,7 +499,7 @@ class QueueMgr
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
-    } 
+    }
     
     /* fix the job group id in all the jobs that are missing the id */
     if (missingGroup.get()) {
@@ -1108,20 +1114,26 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pLicenseKeys) {
-      timer.resume();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pLicenseKeys) {
+        timer.resume();
+        
+        TreeSet<String> names = null;
+        if (!userSettableOnly)
+          names = new TreeSet<String>(pLicenseKeys.keySet());
+        else {
+          names = new TreeSet<String>();
+          for (String name : pLicenseKeys.keySet())
+            if (!pLicenseKeys.get(name).hasKeyChooser())
+              names.add(name);
+        }
       
-      TreeSet<String> names = null;
-      if (!userSettableOnly)
-        names = new TreeSet<String>(pLicenseKeys.keySet());
-      else {
-        names = new TreeSet<String>();
-        for (String name : pLicenseKeys.keySet())
-          if (!pLicenseKeys.get(name).hasKeyChooser())
-            names.add(name);
-      }
-      
-      return new QueueGetNamesRsp(timer, names, "LicenseKey");
+        return new QueueGetNamesRsp(timer, names, "LicenseKey");
+      } 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1143,17 +1155,23 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pLicenseKeys) {
-      timer.resume();
-      
-      TreeMap<String,String> results = new TreeMap<String,String>();
-      for (String name : pLicenseKeys.keySet()) {
-        LicenseKey key = pLicenseKeys.get(name); 
-        if(!userSettableOnly || !key.hasKeyChooser())
-          results.put(name, key.getDescription());
-      }
-      
-      return new QueueGetKeyDescriptionsRsp(timer, results);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pLicenseKeys) {
+        timer.resume();
+        
+        TreeMap<String,String> results = new TreeMap<String,String>();
+        for (String name : pLicenseKeys.keySet()) {
+          LicenseKey key = pLicenseKeys.get(name); 
+          if(!userSettableOnly || !key.hasKeyChooser())
+            results.put(name, key.getDescription());
+        }
+        
+        return new QueueGetKeyDescriptionsRsp(timer, results);
+      } 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1169,12 +1187,18 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pLicenseKeys) {
-      timer.resume();
-      
-      ArrayList<LicenseKey> keys = new ArrayList<LicenseKey>(pLicenseKeys.values());
-      
-      return new QueueGetLicenseKeysRsp(timer, keys);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pLicenseKeys) {
+        timer.resume();
+        
+        ArrayList<LicenseKey> keys = new ArrayList<LicenseKey>(pLicenseKeys.values());
+        
+        return new QueueGetLicenseKeysRsp(timer, keys);
+      } 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1201,6 +1225,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.addLicenseKey(): " + key.getName());
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1217,6 +1242,9 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1240,6 +1268,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeLicenseKey(): " + kname); 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1256,6 +1285,9 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }  
   
@@ -1299,6 +1331,7 @@ class QueueMgr
     TaskTimer timer = 
       new TaskTimer("QueueMgr.setMaxLicenses(): " + kname + "[" + scheme + ": " + msg + "]");
     timer.aquire();
+    pDatabaseLock.readLock().lock();  
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1330,7 +1363,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }   
+    } 
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
 
@@ -1357,20 +1393,26 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pSelectionKeys) {
-      timer.resume();
-      
-      TreeSet<String> names = null;
-      if (!userSettableOnly)
-        names = new TreeSet<String>(pSelectionKeys.keySet());
-      else {
-        names = new TreeSet<String>();
-        for (String name : pSelectionKeys.keySet())
-          if (!pSelectionKeys.get(name).hasKeyChooser())
-            names.add(name);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSelectionKeys) {
+        timer.resume();
+        
+        TreeSet<String> names = null;
+        if (!userSettableOnly)
+          names = new TreeSet<String>(pSelectionKeys.keySet());
+        else {
+          names = new TreeSet<String>();
+          for (String name : pSelectionKeys.keySet())
+            if (!pSelectionKeys.get(name).hasKeyChooser())
+              names.add(name);
+        }
+        
+        return new QueueGetNamesRsp(timer, names, "SelectionKey");
       }
-      
-      return new QueueGetNamesRsp(timer, names, "SelectionKey");
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1392,17 +1434,23 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pSelectionKeys) {
-      timer.resume();
-      
-      TreeMap<String,String> results = new TreeMap<String,String>();
-      for (String name : pSelectionKeys.keySet()) {
-        SelectionKey key = pSelectionKeys.get(name); 
-        if(!userSettableOnly || !key.hasKeyChooser())
-          results.put(name, key.getDescription());
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSelectionKeys) {
+        timer.resume();
+        
+        TreeMap<String,String> results = new TreeMap<String,String>();
+        for (String name : pSelectionKeys.keySet()) {
+          SelectionKey key = pSelectionKeys.get(name); 
+          if(!userSettableOnly || !key.hasKeyChooser())
+            results.put(name, key.getDescription());
+        }
+        
+        return new QueueGetKeyDescriptionsRsp(timer, results);
       }
-      
-      return new QueueGetKeyDescriptionsRsp(timer, results);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1418,12 +1466,18 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pSelectionKeys) {
-      timer.resume();
-      
-      ArrayList<SelectionKey> keys = new ArrayList<SelectionKey>(pSelectionKeys.values());
-      
-      return new QueueGetSelectionKeysRsp(timer, keys);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSelectionKeys) {
+        timer.resume();
+        
+        ArrayList<SelectionKey> keys = new ArrayList<SelectionKey>(pSelectionKeys.values());
+        
+        return new QueueGetSelectionKeysRsp(timer, keys);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -1450,6 +1504,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionKey(): " + key.getName());
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1467,6 +1522,9 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1490,6 +1548,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionKey(): " + kname); 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1524,6 +1583,9 @@ class QueueMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }  
 
 
@@ -1540,11 +1602,17 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pSelectionGroups) {
-      timer.resume();
-
-      TreeSet<String> names = new TreeSet<String>(pSelectionGroups.keySet());
-      return new QueueGetNamesRsp(timer, names, "SelectionGroup");
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSelectionGroups) {
+        timer.resume();
+        
+        TreeSet<String> names = new TreeSet<String>(pSelectionGroups.keySet());
+        return new QueueGetNamesRsp(timer, names, "SelectionGroup");
+      } 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -1559,10 +1627,16 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pSelectionGroups) {
-      timer.resume();
-      
-      return new QueueGetSelectionGroupsRsp(timer, pSelectionGroups);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSelectionGroups) {
+        timer.resume();
+        
+        return new QueueGetSelectionGroupsRsp(timer, pSelectionGroups);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -1585,6 +1659,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionGroup(): " + name);
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1612,7 +1687,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
 
   /**
@@ -1635,6 +1713,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionGroups():");
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1684,7 +1763,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
   }
 
   /**
@@ -1709,6 +1791,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editSelectionGroups()");
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1742,6 +1825,9 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    } 
+    finally {
+      pDatabaseLock.readLock().unlock();
     }    
   }
 
@@ -1759,11 +1845,17 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pSelectionSchedules) {
-      timer.resume();
-
-      TreeSet<String> names = new TreeSet<String>(pSelectionSchedules.keySet());
-      return new QueueGetNamesRsp(timer, names, "SelectionSchedule");
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSelectionSchedules) {
+        timer.resume();
+        
+        TreeSet<String> names = new TreeSet<String>(pSelectionSchedules.keySet());
+        return new QueueGetNamesRsp(timer, names, "SelectionSchedule");
+      } 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -1778,10 +1870,16 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pSelectionSchedules) {
-      timer.resume();
-      
-      return new QueueGetSelectionSchedulesRsp(timer, pSelectionSchedules);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSelectionSchedules) {
+        timer.resume();
+        
+        return new QueueGetSelectionSchedulesRsp(timer, pSelectionSchedules);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -1804,6 +1902,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionSchedule(): " + name);
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1824,7 +1923,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   /**
@@ -1847,6 +1949,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionSchedules():");
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1881,7 +1984,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
 
   /**
@@ -1903,6 +2009,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editSelectionSchedules()");
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1927,7 +2034,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    }     
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
 
@@ -1954,20 +2064,26 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pHardwareKeys) {
-      timer.resume();
-      
-      TreeSet<String> names = null;
-      if (!userSettableOnly)
-        names = new TreeSet<String>(pHardwareKeys.keySet());
-      else {
-        names = new TreeSet<String>();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pHardwareKeys) {
+        timer.resume();
+        
+        TreeSet<String> names = null;
+        if(!userSettableOnly)
+          names = new TreeSet<String>(pHardwareKeys.keySet());
+        else {
+          names = new TreeSet<String>();
         for (String name : pHardwareKeys.keySet())
-          if (!pHardwareKeys.get(name).hasKeyChooser())
-            names.add(name);
-      }
-      
-      return new QueueGetNamesRsp(timer, names, "HardwareKey");
+            if(!pHardwareKeys.get(name).hasKeyChooser())
+              names.add(name);
+          }
+        
+        return new QueueGetNamesRsp(timer, names, "HardwareKey");
+      } 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1989,17 +2105,23 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pHardwareKeys) {
-      timer.resume();
-      
-      TreeMap<String,String> results = new TreeMap<String,String>();
-      for (String name : pHardwareKeys.keySet()) {
-        HardwareKey key = pHardwareKeys.get(name); 
-        if(!userSettableOnly || !key.hasKeyChooser())
-          results.put(name, key.getDescription());
-      }
-      
-      return new QueueGetKeyDescriptionsRsp(timer, results);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pHardwareKeys) {
+        timer.resume();
+        
+        TreeMap<String,String> results = new TreeMap<String,String>();
+        for (String name : pHardwareKeys.keySet()) {
+          HardwareKey key = pHardwareKeys.get(name); 
+          if(!userSettableOnly || !key.hasKeyChooser())
+            results.put(name, key.getDescription());
+        }
+        
+        return new QueueGetKeyDescriptionsRsp(timer, results);
+      } 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -2014,12 +2136,18 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pHardwareKeys) {
-      timer.resume();
-      
-      ArrayList<HardwareKey> keys = new ArrayList<HardwareKey>(pHardwareKeys.values());
-      
-      return new QueueGetHardwareKeysRsp(timer, keys);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pHardwareKeys) {
+        timer.resume();
+        
+        ArrayList<HardwareKey> keys = new ArrayList<HardwareKey>(pHardwareKeys.values());
+        
+        return new QueueGetHardwareKeysRsp(timer, keys);
+      } 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2046,6 +2174,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.addHardwareKey(): " + key.getName());
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2063,6 +2192,9 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2086,6 +2218,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeHardwareKey(): " + kname); 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2120,6 +2253,9 @@ class QueueMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }  
 
 
@@ -2136,11 +2272,17 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pHardwareGroups) {
-      timer.resume();
-
-      TreeSet<String> names = new TreeSet<String>(pHardwareGroups.keySet());
-      return new QueueGetNamesRsp(timer, names, "HardwareGroup");
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pHardwareGroups) {
+        timer.resume();
+        
+        TreeSet<String> names = new TreeSet<String>(pHardwareGroups.keySet());
+        return new QueueGetNamesRsp(timer, names, "HardwareGroup");
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2155,10 +2297,16 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pHardwareGroups) {
-      timer.resume();
-      
-      return new QueueGetHardwareGroupsRsp(timer, pHardwareGroups);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pHardwareGroups) {
+        timer.resume();
+        
+        return new QueueGetHardwareGroupsRsp(timer, pHardwareGroups);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2181,6 +2329,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addHardwareGroup(): " + name);
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2203,7 +2352,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    } 
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
   }
 
   /**
@@ -2226,6 +2378,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeHardwareGroups():");
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2264,7 +2417,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   /**
@@ -2289,6 +2445,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editHardwareGroups()");
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2322,7 +2479,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -2338,11 +2498,17 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pDispatchControls) {
-      timer.resume();
-
-      TreeSet<String> names = new TreeSet<String>(pDispatchControls.keySet());
-      return new QueueGetNamesRsp(timer, names, "DispatchControl");
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pDispatchControls) {
+        timer.resume();
+        
+        TreeSet<String> names = new TreeSet<String>(pDispatchControls.keySet());
+        return new QueueGetNamesRsp(timer, names, "DispatchControl");
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2357,10 +2523,16 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pDispatchControls) {
-      timer.resume();
-      
-      return new QueueGetDispatchControlsRsp(timer, pDispatchControls);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pDispatchControls) {
+        timer.resume();
+        
+        return new QueueGetDispatchControlsRsp(timer, pDispatchControls);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2383,6 +2555,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addDispatchControl(): " + name);
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2405,7 +2578,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());      
-    }    
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
 
   /**
@@ -2428,6 +2604,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeDispatchControls():");
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2466,7 +2643,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());      
-    }    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   /**
@@ -2491,6 +2671,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editDispatchControls()");
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2514,7 +2695,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());      
-    }    
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -2530,11 +2714,17 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pUserBalanceGroups) {
-      timer.resume();
-
-      TreeSet<String> names = new TreeSet<String>(pUserBalanceGroups.keySet());
-      return new QueueGetNamesRsp(timer, names, "BalanceGroup");
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pUserBalanceGroups) {
+        timer.resume();
+        
+        TreeSet<String> names = new TreeSet<String>(pUserBalanceGroups.keySet());
+        return new QueueGetNamesRsp(timer, names, "BalanceGroup");
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2549,10 +2739,16 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pUserBalanceGroups) {
-      timer.resume();
-      
-      return new QueueGetUserBalanceGroupsRsp(timer, pUserBalanceGroups);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pUserBalanceGroups) {
+        timer.resume();
+        
+        return new QueueGetUserBalanceGroupsRsp(timer, pUserBalanceGroups);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2573,20 +2769,26 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pUserBalanceGroups) {
-      timer.resume();
-
-      try {
-        UserBalanceGroup group = pUserBalanceGroups.get(groupName);
-        if (group == null)
-          throw new PipelineException
-          ("No Balance Group with the name (" + groupName + ") exists");
-
-        return new QueueGetUserBalanceGroupRsp(timer, group);
-      } 
-      catch (PipelineException ex) {
-        return new FailureRsp(timer, ex.getMessage());
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pUserBalanceGroups) {
+        timer.resume();
+        
+        try {
+          UserBalanceGroup group = pUserBalanceGroups.get(groupName);
+          if (group == null)
+            throw new PipelineException
+              ("No Balance Group with the name (" + groupName + ") exists");
+          
+          return new QueueGetUserBalanceGroupRsp(timer, group);
+        } 
+        catch (PipelineException ex) {
+          return new FailureRsp(timer, ex.getMessage());
+        }
       }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2609,6 +2811,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addUserBalanceGroup(): " + name);
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2632,7 +2835,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());      
-    }    
+    } 
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
   }
   
 
@@ -2656,6 +2862,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeUserBalanceGroups():");
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2696,7 +2903,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());      
-    }    
+    } 
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
   }
 
   /**
@@ -2718,6 +2928,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editBalanceGroups()");
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2740,7 +2951,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());      
-    }    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -2753,12 +2967,85 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.getBalanceGroupUsage()");
     
-    DoubleMap<String, String, Double> toReturn = pUserBalanceInfo.getCurrentUsage();
-    
-    return new QueueGetBalanceGroupUsageRsp(timer, toReturn); 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      DoubleMap<String, String, Double> toReturn = pUserBalanceInfo.getCurrentUsage();
+      return new QueueGetBalanceGroupUsageRsp(timer, toReturn);    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a set of database backup files. <P> 
+   * 
+   * The backup will not be perfomed until any currently running database operations have 
+   * completed.  Once the databsae backup has begun, all new database operations will blocked
+   * until the backup is complete.  The this reason, the backup should be performed during 
+   * non-peak hours. <P> 
+   * 
+   * The database backup files will be automatically named: <P> 
+   * <DIV style="margin-left: 40px;">
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   * </DIV>
+   * 
+   * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
+   * the backup.  The backup file is a <B>gzip</B>(1) compressed <B>tar</B>(1) archive of
+   * the {@link Glueable GLUE} format files which make of the persistent storage of the
+   * Pipeline database. <P> 
+   * 
+   * Only privileged users may create a database backup. <P> 
+   * 
+   * @param req 
+   *   The backup request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to perform the backup.
+   */ 
+  public Object
+  backupDatabase
+  ( 
+   QueueBackupDatabaseReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("Initiating Backup"); 
+
+    Path targetDir = req.getBackupDirectory();
+
+    String dateStr = req.getDateString();
+    Path target = new Path(targetDir, "plqueue-db." + dateStr + ".tgz");
+
+    try {
+      if(!pAdminPrivileges.isMasterAdmin(req))
+        throw new PipelineException
+          ("Only a user with Master Admin privileges may backup the database!"); 
+
+      if(!targetDir.toFile().isDirectory()) 
+        throw new PipelineException
+          ("The backup directory (" + targetDir + ") is not valid!");
+
+      pBackupSyncTarget.set(target); 
+      pBackupSyncTrigger.release();
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   S E R V E R   E X T E N S I O N S                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -2776,10 +3063,16 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    synchronized(pQueueExtensions) {
-      timer.resume();
-
-      return new QueueGetQueueExtensionsRsp(timer, pQueueExtensions);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pQueueExtensions) {
+        timer.resume();
+        
+        return new QueueGetQueueExtensionsRsp(timer, pQueueExtensions);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -2803,6 +3096,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeQueueExtension(): " + name); 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2822,6 +3116,9 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }  
   
@@ -2846,6 +3143,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.setQueueExtension(): " + name); 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2867,6 +3165,9 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }  
 
@@ -2892,48 +3193,54 @@ class QueueMgr
 
     /* instantiate the plugins */ 
     timer.aquire();
-    synchronized(pQueueExtensions) {
-      timer.resume();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pQueueExtensions) {
+        timer.resume();
 	
-      for(String cname : pQueueExtensions.keySet()) {
-	QueueExtensionConfig config = pQueueExtensions.get(cname);
-	if(config.isEnabled()) {
-	  table.put(cname, config.getQueueExt());
-	  toolsetNames.put(cname, config.getToolset());
-	}
+        for(String cname : pQueueExtensions.keySet()) {
+          QueueExtensionConfig config = pQueueExtensions.get(cname);
+          if(config.isEnabled()) {
+            table.put(cname, config.getQueueExt());
+            toolsetNames.put(cname, config.getToolset());
+          }
+        }
       }
-    }
-
-    if(!table.isEmpty()) {
-      /* fetch any toolsets not already cached */ 
-      {
-	TreeSet<String> tnames = new TreeSet<String>();
-	for(String cname : table.keySet()) {
-	  BaseQueueExt ext = table.get(cname);
-	  if(ext.needsEnvironment()) 
-	    tnames.add(toolsetNames.get(cname));
-	}
       
-	fetchToolsets(tnames, timer);
+      if(!table.isEmpty()) {
+        /* fetch any toolsets not already cached */ 
+        {
+          TreeSet<String> tnames = new TreeSet<String>();
+          for(String cname : table.keySet()) {
+            BaseQueueExt ext = table.get(cname);
+            if(ext.needsEnvironment()) 
+              tnames.add(toolsetNames.get(cname));
+          }
+          
+          fetchToolsets(tnames, timer);
+        }
+        
+        /* cook the toolset environments (if needed by plugins) */ 
+        timer.aquire();
+        synchronized(pToolsets) {
+          timer.resume();
+          
+          for(String cname : table.keySet()) {
+            BaseQueueExt ext = table.get(cname); 
+            if(ext.needsEnvironment()) {
+              String tname = toolsetNames.get(cname);
+              Toolset tset = pToolsets.get(tname).get(OsType.Unix);
+              ext.setEnvironment(tset.getEnvironment());
+            }
+          }
+        }
       }
-
-      /* cook the toolset environments (if needed by plugins) */ 
-      timer.aquire();
-      synchronized(pToolsets) {
-	timer.resume();
-
-	for(String cname : table.keySet()) {
-	  BaseQueueExt ext = table.get(cname); 
-	  if(ext.needsEnvironment()) {
-	    String tname = toolsetNames.get(cname);
-	    Toolset tset = pToolsets.get(tname).get(OsType.Unix);
-	    ext.setEnvironment(tset.getEnvironment());
-	  }
-	}
-      }
+      
+      return table;
     }
-
-    return table;
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
 
@@ -3188,150 +3495,156 @@ class QueueMgr
 
     /* process the hosts */ 
     timer.aquire();
-    synchronized(pHostsInfo) {
-      timer.resume();
-
-      TreeMap<String,QueueHostInfo> hosts = new TreeMap<String,QueueHostInfo>(); 
-      if(active == null) {
-	hosts.putAll(pHostsInfo);
-      }
-      else {
-	for(String hname : pHostsInfo.keySet()) {
-	  QueueHostInfo qinfo = pHostsInfo.get(hname);
-	  ResourceSample sample = qinfo.getLatestSample(); 
-
-	  boolean included = true;
-	  int wk;
-	  for(wk=0; wk<active.length; wk++) {
-	    if(active[wk] != null) {
-	      switch(wk) {
-	      case 0:
-		if(!active[wk].isIncludedItem(qinfo.getStatus()))
-		  included = false;
-		break;
-		
-	      case 1:
-		{
-		  OsType os = qinfo.getOsType(); 
-		  if((os == null) || !active[wk].isIncludedItem(os))
-		    included = false;
-		}
-		break;
-		
-	      case 2:
-		if((sample == null) || !active[wk].isIncludedItem(sample.getLoad()))
-		  included = false;
-		break;
-		
-	      case 3:
-		if((sample == null) || !active[wk].isIncludedItem(sample.getMemory()))
-		  included = false;
-		break;
-		
-	      case 4:
-		if((sample == null) || !active[wk].isIncludedItem(sample.getDisk()))
-		  included = false;
-		break;
-		
-	      case 5:
-		if((sample == null) || !active[wk].isIncludedItem(sample.getNumJobs()))
-		  included = false;
-		break;
-		
-	      case 6:
-		if(!active[wk].isIncludedItem(qinfo.getJobSlots()))
-		  included = false;
-		break;
-		
-	      case 7:
-		{
-		  String res = qinfo.getReservation();
-		  if(res == null) 
-		    res = "-";
-		  if(!active[wk].isIncludedItem(res))
-		    included = false;
-		}
-		break;
-		
-	      case 8:
-		if(!active[wk].isIncludedItem(qinfo.getOrder()))
-		  included = false;
-		break;
-		
-	      case 9:
-		{
-		  String group = qinfo.getSelectionGroup();
-		  if(group == null) 
-		    group = "-";
-		  if(!active[wk].isIncludedItem(group))
-		    included = false;
-		}
-		break;
-		
-	      case 10:
-		{
-		  String sched = qinfo.getSelectionSchedule();
-		  if(sched == null) 
-		    sched = "-";
-		  if(!active[wk].isIncludedItem(sched))
-		    included = false;
-		}
-                break; 
-
-	      case 11:
-		{
-		  String group = qinfo.getHardwareGroup();
-		  if(group == null) 
-		    group = "-";
-		  if(!active[wk].isIncludedItem(group))
-		    included = false;
-		}
-		break;
-		
-	      case 12:
-                {
-                  String control = qinfo.getDispatchControl();
-                  if(control == null) 
-                    control = "-";
-                  if(!active[wk].isIncludedItem(control))
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pHostsInfo) {
+        timer.resume();
+        
+        TreeMap<String,QueueHostInfo> hosts = new TreeMap<String,QueueHostInfo>(); 
+        if(active == null) {
+          hosts.putAll(pHostsInfo);
+        }
+        else {
+          for(String hname : pHostsInfo.keySet()) {
+            QueueHostInfo qinfo = pHostsInfo.get(hname);
+            ResourceSample sample = qinfo.getLatestSample(); 
+            
+            boolean included = true;
+            int wk;
+            for(wk=0; wk<active.length; wk++) {
+              if(active[wk] != null) {
+                switch(wk) {
+                case 0:
+                  if(!active[wk].isIncludedItem(qinfo.getStatus()))
                     included = false;
-                }
-                break;
-
-	      case 13:
-                {
-                  JobGroupFavorMethod favor = qinfo.getFavorMethod();
-                  if(!active[wk].isIncludedItem(favor))
+                  break;
+		
+                case 1:
+                  {
+                    OsType os = qinfo.getOsType(); 
+                    if((os == null) || !active[wk].isIncludedItem(os))
+                      included = false;
+                  }
+                  break;
+		
+                case 2:
+                  if((sample == null) || !active[wk].isIncludedItem(sample.getLoad()))
                     included = false;
-                }
-                break;
+                  break;
+		
+                case 3:
+                  if((sample == null) || !active[wk].isIncludedItem(sample.getMemory()))
+                    included = false;
+                  break;
+		
+                case 4:
+                  if((sample == null) || !active[wk].isIncludedItem(sample.getDisk()))
+                    included = false;
+                  break;
+		
+                case 5:
+                  if((sample == null) || !active[wk].isIncludedItem(sample.getNumJobs()))
+                    included = false;
+                  break;
+		
+                case 6:
+                  if(!active[wk].isIncludedItem(qinfo.getJobSlots()))
+                    included = false;
+                  break;
+		
+                case 7:
+                  {
+                    String res = qinfo.getReservation();
+                    if(res == null) 
+                      res = "-";
+                    if(!active[wk].isIncludedItem(res))
+                      included = false;
+                  }
+                  break;
+		
+                case 8:
+                  if(!active[wk].isIncludedItem(qinfo.getOrder()))
+                    included = false;
+                  break;
+		
+                case 9:
+                  {
+                    String group = qinfo.getSelectionGroup();
+                    if(group == null) 
+                      group = "-";
+                    if(!active[wk].isIncludedItem(group))
+                      included = false;
+                  }
+                  break;
+		
+                case 10:
+                  {
+                    String sched = qinfo.getSelectionSchedule();
+                    if(sched == null) 
+                      sched = "-";
+                    if(!active[wk].isIncludedItem(sched))
+                      included = false;
+                  }
+                  break; 
+
+                case 11:
+                  {
+                    String group = qinfo.getHardwareGroup();
+                    if(group == null) 
+                      group = "-";
+                    if(!active[wk].isIncludedItem(group))
+                      included = false;
+                  }
+                  break;
+		
+                case 12:
+                  {
+                    String control = qinfo.getDispatchControl();
+                    if(control == null) 
+                      control = "-";
+                    if(!active[wk].isIncludedItem(control))
+                      included = false;
+                  }
+                  break;
+
+                case 13:
+                  {
+                    JobGroupFavorMethod favor = qinfo.getFavorMethod();
+                    if(!active[wk].isIncludedItem(favor))
+                      included = false;
+                  }
+                  break;
 	      
-	      case 14:
-                {
-                  String group = qinfo.getBalanceGroup();
-                  if(group == null) 
-                    group = "-";
-                  if(!active[wk].isIncludedItem(group))
-                    included = false;
-                }
+                case 14:
+                  {
+                    String group = qinfo.getBalanceGroup();
+                    if(group == null) 
+                      group = "-";
+                    if(!active[wk].isIncludedItem(group))
+                      included = false;
+                  }
+                  break;
+                } //switch(wk) 
+
+              } //if(active[wk] != null)
+
+              if(!included) 
                 break;
-	      } //switch(wk) 
-
-	    } //if(active[wk] != null)
-
-	    if(!included) 
-	      break;
-	  }
+            }
 	
-	  if(included) 
-	    hosts.put(hname, qinfo);
-	}	
-      }
+            if(included) 
+              hosts.put(hname, qinfo);
+          }	
+        }
 
-      return  new QueueGetHostsRsp(timer, hosts);
+        return  new QueueGetHostsRsp(timer, hosts);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
-  
+
   /**
    * Add a new execution host to the Pipeline queue. <P> 
    * 
@@ -3364,6 +3677,7 @@ class QueueMgr
     }
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -3399,6 +3713,9 @@ class QueueMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -3422,11 +3739,12 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeHosts():");
 
     TreeSet<String> deadHosts = new TreeSet<String>();
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       /* filter out non-existent hosts */ 
       TreeSet<String> hostnames = new TreeSet<String>();
       {
-	timer.aquire();
 	synchronized(pHosts) {
 	  timer.resume();
 	  for(String hname : req.getNames()) {
@@ -3493,7 +3811,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   
@@ -3538,7 +3859,11 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.editHosts()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
       TreeMap<String,QueueHostMod> changes = req.getChanges();
 
       if(!pAdminPrivileges.isQueueAdmin(req)) {
@@ -3607,12 +3932,15 @@ class QueueMgr
       }
 
       updatePendingHostChanges(timer);
+
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }    
-    
-    return new SuccessRsp(timer);
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   /**
@@ -4248,45 +4576,51 @@ class QueueMgr
     TreeMap<String,ResourceSampleCache> samples = new TreeMap<String,ResourceSampleCache>();
 
     timer.aquire();
-    synchronized(pSamples) {
-      timer.resume();
-      
-      TreeMap<String,TimeInterval> intervals = req.getIntervals(); 
-      for(String hname : intervals.keySet()) {
-	TimeInterval interval = intervals.get(hname);
-	if(interval != null) {
-	  ResourceSampleCache cache = pSamples.get(hname);
-
-	  /* see if any of the samples are in the runtime cache */ 
-	  int liveSamples = 0;
-	  Long first = null;
-	  if(cache != null) {
-	    liveSamples = cache.getNumSamplesDuring(interval);
-	    first = cache.getFirstTimeStamp();
-	  }
-		  
-	  /* load earlier sampls from disk? */ 
-	  ResourceSampleCache tcache = null;
-	  if(!req.runtimeOnly() && 
-	     ((first == null) || (interval.getStartStamp() < first)))
-	    tcache = readSamples(timer, hname, interval, liveSamples);
-
-	  /* combine runtime and newly read disk samples */ 
-	  if(tcache != null) {
-	    if(liveSamples > 0) 
-	      tcache.addAllSamplesDuring(cache, interval);
-	    samples.put(hname, tcache);
-	  }
-	  else if((cache != null) && (liveSamples > 0)) {
-	    ResourceSampleCache ncache = cache.cloneDuring(interval);
-	    if(ncache != null) 
-	      samples.put(hname, ncache); 
-	  }
-	}
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSamples) {
+        timer.resume();
+        
+        TreeMap<String,TimeInterval> intervals = req.getIntervals(); 
+        for(String hname : intervals.keySet()) {
+          TimeInterval interval = intervals.get(hname);
+          if(interval != null) {
+            ResourceSampleCache cache = pSamples.get(hname);
+            
+            /* see if any of the samples are in the runtime cache */ 
+            int liveSamples = 0;
+            Long first = null;
+            if(cache != null) {
+              liveSamples = cache.getNumSamplesDuring(interval);
+              first = cache.getFirstTimeStamp();
+            }
+            
+            /* load earlier sampls from disk? */ 
+            ResourceSampleCache tcache = null;
+            if(!req.runtimeOnly() && 
+               ((first == null) || (interval.getStartStamp() < first)))
+              tcache = readSamples(timer, hname, interval, liveSamples);
+            
+            /* combine runtime and newly read disk samples */ 
+            if(tcache != null) {
+              if(liveSamples > 0) 
+                tcache.addAllSamplesDuring(cache, interval);
+              samples.put(hname, tcache);
+            }
+            else if((cache != null) && (liveSamples > 0)) {
+              ResourceSampleCache ncache = cache.cloneDuring(interval);
+              if(ncache != null) 
+                samples.put(hname, ncache); 
+            }
+          }
+        }
       }
-    }
       
-    return new QueueGetHostResourceSamplesRsp(timer, samples);
+      return new QueueGetHostResourceSamplesRsp(timer, samples);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
 
@@ -4318,13 +4652,19 @@ class QueueMgr
 
     /* sort the host information into histogram catagories */ 
     timer.aquire();
-    synchronized(pHostsInfo) {
-      timer.resume();
-      
-      for(QueueHostInfo qinfo : pHostsInfo.values()) 
-	hists.catagorize(qinfo);
-
-      return new QueueGetHostHistogramsRsp(timer, hists);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pHostsInfo) {
+        timer.resume();
+        
+        for(QueueHostInfo qinfo : pHostsInfo.values()) 
+          hists.catagorize(qinfo);
+        
+        return new QueueGetHostHistogramsRsp(timer, hists);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -4501,57 +4841,63 @@ class QueueMgr
     long stamp = req.getTimeStamp();
     TreeMap<String,Long> latestUpdates = req.getLatestUpdates(); 
 
-    TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
     timer.aquire();
-    synchronized(pNodeJobIDs) {
-      timer.resume();
-      TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
-      if(table != null) 
-	nodeJobIDs.putAll(table);
-    }
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
+      synchronized(pNodeJobIDs) {
+        timer.resume();
+        TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+        if(table != null) 
+          nodeJobIDs.putAll(table);
+      }
 	  
-    CheckSumCache cache = new CheckSumCache(nodeID); 
-    cache.resetModified(); 
-
-    timer.aquire();  
-    synchronized(pJobInfo) {
-      timer.resume();
-
-      FileSeq fseq = req.getFileSeq();
-      int frames = fseq.numFrames();
+      CheckSumCache cache = new CheckSumCache(nodeID); 
+      cache.resetModified(); 
       
-      ArrayList<Long>     jobIDs = new ArrayList<Long>(frames);
-      ArrayList<JobState> states = new ArrayList<JobState>(frames);
-      
-      for(File file : fseq.getFiles()) {
-	Long jobID = nodeJobIDs.get(file);	  
-	JobState jstate = null;
-	{
-	  QueueJobInfo info = null;
-	  if(jobID != null) 
-	    info = pJobInfo.get(jobID);	   
-	  
-	  if((info != null) && (info.getSubmittedStamp() > stamp)) {
-	    jstate = info.getState();
-
-            QueueJobResults results = info.getResults();
-            if(results != null) {
-              CheckSumCache jcache = results.getCheckSumCache();
-              if(jcache != null) {
-                CheckSumCache ncache = new CheckSumCache(latestUpdates, jcache);
-                cache.addAll(ncache); 
+      timer.aquire();  
+      synchronized(pJobInfo) {
+        timer.resume();
+        
+        FileSeq fseq = req.getFileSeq();
+        int frames = fseq.numFrames();
+        
+        ArrayList<Long>     jobIDs = new ArrayList<Long>(frames);
+        ArrayList<JobState> states = new ArrayList<JobState>(frames);
+        
+        for(File file : fseq.getFiles()) {
+          Long jobID = nodeJobIDs.get(file);	  
+          JobState jstate = null;
+          {
+            QueueJobInfo info = null;
+            if(jobID != null) 
+              info = pJobInfo.get(jobID);	   
+            
+            if((info != null) && (info.getSubmittedStamp() > stamp)) {
+              jstate = info.getState();
+              
+              QueueJobResults results = info.getResults();
+              if(results != null) {
+                CheckSumCache jcache = results.getCheckSumCache();
+                if(jcache != null) {
+                  CheckSumCache ncache = new CheckSumCache(latestUpdates, jcache);
+                  cache.addAll(ncache); 
+                }
               }
             }
+            else {
+              jobID = null;
+            }
           }
-	  else {
-	    jobID = null;
-          }
-	}
-	jobIDs.add(jobID);
-	states.add(jstate);
+          jobIDs.add(jobID);
+          states.add(jstate);
+        }
+        
+        return new QueueGetJobStatesAndCheckSumsRsp(timer, nodeID, jobIDs, states, cache);
       }
-      
-      return new QueueGetJobStatesAndCheckSumsRsp(timer, nodeID, jobIDs, states, cache);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -4580,43 +4926,49 @@ class QueueMgr
     NodeID nodeID = req.getNodeID();
     long stamp = req.getTimeStamp();
 
-    TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
     timer.aquire();
-    synchronized(pNodeJobIDs) {
-      timer.resume();
-      TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
-      if(table != null) 
-	nodeJobIDs.putAll(table);
-    }
-	  
-    timer.aquire();  
-    synchronized(pJobInfo) {
-      timer.resume();
-
-      FileSeq fseq = req.getFileSeq();
-      int frames = fseq.numFrames();
-      
-      ArrayList<Long>     jobIDs = new ArrayList<Long>(frames);
-      ArrayList<JobState> states = new ArrayList<JobState>(frames);
-      
-      for(File file : fseq.getFiles()) {
-	Long jobID = nodeJobIDs.get(file);	  
-	JobState jstate = null;
-	{
-	  QueueJobInfo info = null;
-	  if(jobID != null) 
-	    info = pJobInfo.get(jobID);	   
-	  
-	  if((info != null) && (info.getSubmittedStamp() > stamp))
-	    jstate = info.getState();
-	  else 
-	    jobID = null;
-	}
-	jobIDs.add(jobID);
-	states.add(jstate);
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
+      synchronized(pNodeJobIDs) {
+        timer.resume();
+        TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+        if(table != null) 
+          nodeJobIDs.putAll(table);
       }
       
-      return new QueueGetJobStatesRsp(timer, nodeID, jobIDs, states);
+      timer.aquire();  
+      synchronized(pJobInfo) {
+        timer.resume();
+        
+        FileSeq fseq = req.getFileSeq();
+        int frames = fseq.numFrames();
+        
+        ArrayList<Long>     jobIDs = new ArrayList<Long>(frames);
+        ArrayList<JobState> states = new ArrayList<JobState>(frames);
+        
+        for(File file : fseq.getFiles()) {
+          Long jobID = nodeJobIDs.get(file);	  
+          JobState jstate = null;
+          {
+            QueueJobInfo info = null;
+            if(jobID != null) 
+              info = pJobInfo.get(jobID);	   
+            
+            if((info != null) && (info.getSubmittedStamp() > stamp))
+              jstate = info.getState();
+            else 
+              jobID = null;
+          }
+          jobIDs.add(jobID);
+          states.add(jstate);
+        }
+        
+        return new QueueGetJobStatesRsp(timer, nodeID, jobIDs, states);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -4643,52 +4995,58 @@ class QueueMgr
 
     TreeMap<String,FileSeq> fseqs = req.getFileSeqs();
 
-    TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
     timer.aquire();
-    synchronized(pNodeJobIDs) {
-      timer.resume();
-      for(String name : fseqs.keySet()) {
-	TreeMap<File,Long> table = pNodeJobIDs.get(new NodeID(author, view, name));
-	if(table != null) 
-	  nodeJobIDs.putAll(table);
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
+      synchronized(pNodeJobIDs) {
+        timer.resume();
+        for(String name : fseqs.keySet()) {
+          TreeMap<File,Long> table = pNodeJobIDs.get(new NodeID(author, view, name));
+          if(table != null) 
+            nodeJobIDs.putAll(table);
+        }
       }
-    }
-	  
-    TreeMap<String,TreeSet<Long>> jobIDs = new TreeMap<String,TreeSet<Long>>();
-
-    timer.aquire();  
-    synchronized(pJobInfo) {
-      timer.resume();
-
-      for(String name : fseqs.keySet()) {
-	for(File file : fseqs.get(name).getFiles()) {
-	  Long jobID = nodeJobIDs.get(file);
-	  if(jobID != null) {
-	    QueueJobInfo info = pJobInfo.get(jobID);	   
-	    if(info != null) {
-	      switch(info.getState()) {
-	      case Queued:
-	      case Preempted:
-	      case Paused:
-	      case Running:
-	      case Limbo:
-		{
-		  TreeSet<Long> ids = jobIDs.get(name);
-		  if(ids == null) {
-		    ids = new TreeSet<Long>();
-		    jobIDs.put(name, ids);
-		  }
-
-		  ids.add(jobID);
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
       
-    return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+      TreeMap<String,TreeSet<Long>> jobIDs = new TreeMap<String,TreeSet<Long>>();
+      
+      timer.aquire();  
+      synchronized(pJobInfo) {
+        timer.resume();
+        
+        for(String name : fseqs.keySet()) {
+          for(File file : fseqs.get(name).getFiles()) {
+            Long jobID = nodeJobIDs.get(file);
+            if(jobID != null) {
+              QueueJobInfo info = pJobInfo.get(jobID);	   
+              if(info != null) {
+                switch(info.getState()) {
+                case Queued:
+                case Preempted:
+                case Paused:
+                case Running:
+                case Limbo:
+                  {
+                    TreeSet<Long> ids = jobIDs.get(name);
+                    if(ids == null) {
+                      ids = new TreeSet<Long>();
+                      jobIDs.put(name, ids);
+                    }
+                    
+                    ids.add(jobID);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -4710,40 +5068,46 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.getUnfinishedJobsForNodeFiles()");
 
-    TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
     timer.aquire();
-    synchronized(pNodeJobIDs) {
-      timer.resume();
-      TreeMap<File,Long> table = pNodeJobIDs.get(req.getNodeID());
-      if(table != null) 
-	nodeJobIDs.putAll(table);
-    }
-    
-    TreeSet<Long> jobIDs = new TreeSet<Long>();
-
-    timer.aquire();  
-    synchronized(pJobInfo) {
-      timer.resume();
-
-      for(File file : req.getFiles()) {
-	Long jobID = nodeJobIDs.get(file);
-	if(jobID != null) {
-	  QueueJobInfo info = pJobInfo.get(jobID);	   
-	  if(info != null) {
-	    switch(info.getState()) {
-	    case Queued:
-	    case Preempted:
-	    case Paused:
-	    case Running:
-	    case Limbo:
-	      jobIDs.add(jobID);
-	    }
-	  }
-	}
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
+      synchronized(pNodeJobIDs) {
+        timer.resume();
+        TreeMap<File,Long> table = pNodeJobIDs.get(req.getNodeID());
+        if(table != null) 
+          nodeJobIDs.putAll(table);
       }
-    }
       
-    return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      
+      timer.aquire();  
+      synchronized(pJobInfo) {
+        timer.resume();
+        
+        for(File file : req.getFiles()) {
+          Long jobID = nodeJobIDs.get(file);
+          if(jobID != null) {
+            QueueJobInfo info = pJobInfo.get(jobID);	   
+            if(info != null) {
+              switch(info.getState()) {
+              case Queued:
+              case Preempted:
+              case Paused:
+              case Running:
+              case Limbo:
+                jobIDs.add(jobID);
+              }
+            }
+          }
+        }
+      }
+      
+      return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -4765,11 +5129,20 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     
-    TreeMap<Long,double[]> dist = new TreeMap<Long,double[]>();
-    for(Long groupID : req.getGroupIDs()) 
-      dist.put(groupID, pJobCounters.getDistribution(timer, groupID));
-    
-    return new QueueGetJobStateDistributionRsp(timer, dist);
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      TreeMap<Long,double[]> dist = new TreeMap<Long,double[]>();
+      for(Long groupID : req.getGroupIDs()) 
+        dist.put(groupID, pJobCounters.getDistribution(timer, groupID));
+      
+      return new QueueGetJobStateDistributionRsp(timer, dist);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -4790,45 +5163,51 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    TreeSet<Long> jobIDs = new TreeSet<Long>();
     timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      for(Long groupID : req.getGroupIDs()) {
-	QueueJobGroup group = pJobGroups.get(groupID);
-	if(group != null) 
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      synchronized(pJobGroups) {
+        timer.resume();
+        for(Long groupID : req.getGroupIDs()) {
+          QueueJobGroup group = pJobGroups.get(groupID);
+          if(group != null) 
 	  jobIDs.addAll(group.getAllJobIDs());
-      }
-    }
-
-    TreeMap<Long,JobState> states = new TreeMap<Long,JobState>();
-    timer.aquire();  
-    synchronized(pJobInfo) {
-      timer.resume();
-      for(Long jobID : jobIDs) {
-	QueueJobInfo info = pJobInfo.get(jobID);
-	if(info != null) 
-	  states.put(jobID, info.getState());
-      }
-    }
-	
-    timer.aquire();  
-    synchronized(pJobs) {
-      timer.resume();
-      TreeMap<Long,JobStatus> status = new TreeMap<Long,JobStatus>();
-      for(Long jobID : jobIDs) {
-	QueueJob job = pJobs.get(jobID);	
-	JobState state = states.get(jobID);
-	if((job != null) && (state != null)) {
-	  ActionAgenda agenda = job.getActionAgenda();
-	  JobStatus js = 
-	    new JobStatus(jobID, job.getNodeID(), state, agenda.getToolset(), 
-			  agenda.getPrimaryTarget(), job.getSourceJobIDs());
-	  status.put(jobID, js);
-	}
+        }
       }
       
-      return new QueueGetJobStatusRsp(timer, status);
+      TreeMap<Long,JobState> states = new TreeMap<Long,JobState>();
+      timer.aquire();  
+      synchronized(pJobInfo) {
+        timer.resume();
+        for(Long jobID : jobIDs) {
+          QueueJobInfo info = pJobInfo.get(jobID);
+          if(info != null) 
+            states.put(jobID, info.getState());
+        }
+      }
+      
+      timer.aquire();  
+      synchronized(pJobs) {
+        timer.resume();
+        TreeMap<Long,JobStatus> status = new TreeMap<Long,JobStatus>();
+        for(Long jobID : jobIDs) {
+          QueueJob job = pJobs.get(jobID);	
+          JobState state = states.get(jobID);
+          if((job != null) && (state != null)) {
+            ActionAgenda agenda = job.getActionAgenda();
+            JobStatus js = 
+              new JobStatus(jobID, job.getNodeID(), state, agenda.getToolset(), 
+                            agenda.getPrimaryTarget(), job.getSourceJobIDs());
+            status.put(jobID, js);
+          }
+        }
+        
+        return new QueueGetJobStatusRsp(timer, status);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -4845,38 +5224,44 @@ class QueueMgr
     
     //FIXME this should probably use pRunning to figure out what is running.
 
-    TreeMap<Long,JobState> jobStates = new TreeMap<Long,JobState>();
-    timer.aquire();  
-    synchronized(pJobInfo) {
-      timer.resume();
-      for(Map.Entry<Long,QueueJobInfo> entry : pJobInfo.entrySet()) {
-        Long jobID = entry.getKey();
-        QueueJobInfo info = entry.getValue(); 
-	switch(info.getState()) {
-	case Running:
-        case Limbo:
-	  jobStates.put(jobID, info.getState()); 
-	}
-      }
-    }
-	
-    timer.aquire();  
-    synchronized(pJobs) {
-      timer.resume();
-      TreeMap<Long,JobStatus> running = new TreeMap<Long,JobStatus>();
-      for(Map.Entry<Long,JobState> entry : jobStates.entrySet()) {
-        Long jobID = entry.getKey();
-	QueueJob job = pJobs.get(jobID);	
-	if(job != null) {
-	  ActionAgenda agenda = job.getActionAgenda();
-	  JobStatus status = 
-	    new JobStatus(jobID, job.getNodeID(), entry.getValue(), agenda.getToolset(), 
-			  agenda.getPrimaryTarget(), job.getSourceJobIDs());
-	  running.put(jobID, status);
-	}
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<Long,JobState> jobStates = new TreeMap<Long,JobState>();
+      synchronized(pJobInfo) {
+        timer.resume();
+        for(Map.Entry<Long,QueueJobInfo> entry : pJobInfo.entrySet()) {
+          Long jobID = entry.getKey();
+          QueueJobInfo info = entry.getValue(); 
+          switch(info.getState()) {
+          case Running:
+          case Limbo:
+            jobStates.put(jobID, info.getState()); 
+          }
+        }
       }
       
-      return new QueueGetJobStatusRsp(timer, running);
+      timer.aquire();  
+      synchronized(pJobs) {
+        timer.resume();
+        TreeMap<Long,JobStatus> running = new TreeMap<Long,JobStatus>();
+        for(Map.Entry<Long,JobState> entry : jobStates.entrySet()) {
+          Long jobID = entry.getKey();
+          QueueJob job = pJobs.get(jobID);	
+          if(job != null) {
+            ActionAgenda agenda = job.getActionAgenda();
+            JobStatus status = 
+              new JobStatus(jobID, job.getNodeID(), entry.getValue(), agenda.getToolset(), 
+                            agenda.getPrimaryTarget(), job.getSourceJobIDs());
+            running.put(jobID, status);
+          }
+        }
+        
+        return new QueueGetJobStatusRsp(timer, running);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -4898,25 +5283,31 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pJobs) {
-      timer.resume();
-      try {
-        Set<Long> jobIDs = req.getJobIDs();
-        TreeMap<Long, QueueJob> toReturn = new TreeMap<Long, QueueJob>();
-        for (Long jobID : jobIDs) {
-          QueueJob job = pJobs.get(jobID);
-          if(job == null) 
-            throw new PipelineException
-              ("No job (" + jobID + ") exists!");
-          toReturn.put(jobID, job);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pJobs) {
+        timer.resume();
+        try {
+          Set<Long> jobIDs = req.getJobIDs();
+          TreeMap<Long, QueueJob> toReturn = new TreeMap<Long, QueueJob>();
+          for (Long jobID : jobIDs) {
+            QueueJob job = pJobs.get(jobID);
+            if(job == null) 
+              throw new PipelineException
+                ("No job (" + jobID + ") exists!");
+            toReturn.put(jobID, job);
+          }
+          if (toReturn.size() == 1)
+            return new QueueGetJobRsp(timer, toReturn.get(toReturn.firstKey()));
+          return new QueueGetJobRsp(timer, toReturn);
         }
-	if (toReturn.size() == 1)
-	  return new QueueGetJobRsp(timer, toReturn.get(toReturn.firstKey()));
-	return new QueueGetJobRsp(timer, toReturn);
+        catch(PipelineException ex) {
+          return new FailureRsp(timer, ex.getMessage());	  
+        }   
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }   
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -4938,25 +5329,31 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pJobInfo) {
-      timer.resume();
-      try {
-        Set<Long> jobIDs = req.getJobIDs();
-        TreeMap<Long, QueueJobInfo> toReturn = new TreeMap<Long, QueueJobInfo>();
-        for (Long jobID : jobIDs) {  
-          QueueJobInfo info = pJobInfo.get(jobID);
-          if(info == null) 
-            throw new PipelineException
-              ("No information is available for job (" + jobID + ") exists!");
-          toReturn.put(jobID, info);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pJobInfo) {
+        timer.resume();
+        try {
+          Set<Long> jobIDs = req.getJobIDs();
+          TreeMap<Long, QueueJobInfo> toReturn = new TreeMap<Long, QueueJobInfo>();
+          for (Long jobID : jobIDs) {  
+            QueueJobInfo info = pJobInfo.get(jobID);
+            if(info == null) 
+              throw new PipelineException
+                ("No information is available for job (" + jobID + ") exists!");
+            toReturn.put(jobID, info);
+          }
+          if (toReturn.size() == 1)
+            return new QueueGetJobInfoRsp(timer, toReturn.get(toReturn.firstKey()));
+          return new QueueGetJobInfoRsp(timer, toReturn);
         }
-        if (toReturn.size() == 1)
-          return new QueueGetJobInfoRsp(timer, toReturn.get(toReturn.firstKey()));
-        return new QueueGetJobInfoRsp(timer, toReturn);
+        catch(PipelineException ex) {
+          return new FailureRsp(timer, ex.getMessage());	  
+        }   
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }   
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -4976,20 +5373,26 @@ class QueueMgr
     TreeMap<Long,QueueJobInfo> running = new TreeMap<Long,QueueJobInfo>();
 
     timer.aquire();  
-    synchronized(pJobInfo) {
-      timer.resume(); 
-      for(Map.Entry<Long,QueueJobInfo> entry : pJobInfo.entrySet()) {
-        Long jobID = entry.getKey();
-        QueueJobInfo info = entry.getValue(); 
-        switch(info.getState()) {
-        case Running:
-        case Limbo:
-          running.put(jobID, info);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pJobInfo) {
+        timer.resume(); 
+        for(Map.Entry<Long,QueueJobInfo> entry : pJobInfo.entrySet()) {
+          Long jobID = entry.getKey();
+          QueueJobInfo info = entry.getValue(); 
+          switch(info.getState()) {
+          case Running:
+          case Limbo:
+            running.put(jobID, info);
+          }
         }
       }
+      
+      return new QueueGetRunningJobInfoRsp(timer, running);
     }
-
-    return new QueueGetRunningJobInfoRsp(timer, running);
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
 
@@ -5013,9 +5416,10 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.submitJobs():");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       QueueJobGroup group = req.getJobGroup();
-      timer.aquire();
       synchronized(pJobGroups) {
 	timer.resume();
 	writeJobGroup(group);
@@ -5066,7 +5470,7 @@ class QueueMgr
 	
 	pWaiting.add(jobID);
       }
-      
+
       pWriterSemaphore.release();
 
       /* post-submit tasks */ 
@@ -5076,7 +5480,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -5099,10 +5506,10 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.preemptJobs()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       boolean unprivileged = false; 
-
-      timer.aquire();
       synchronized(pJobs) {
 	timer.resume();
       
@@ -5127,7 +5534,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
 
   /**
@@ -5148,10 +5558,10 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.killJobs()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       boolean unprivileged = false; 
-
-      timer.aquire();
       synchronized(pJobs) {
 	timer.resume();
       
@@ -5176,6 +5586,9 @@ class QueueMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }     
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -5196,10 +5609,10 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.pauseJobs()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       boolean unprivileged = false; 
-
-      timer.aquire();
       synchronized(pJobs) {
         timer.resume();
       
@@ -5244,7 +5657,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
   }
 
   /**
@@ -5265,10 +5681,10 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.resumeJobs()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
       boolean unprivileged = false; 
-
-      timer.aquire();
       synchronized(pJobs) {
 	timer.resume();
       
@@ -5312,7 +5728,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
   
   /**
@@ -5341,107 +5760,119 @@ class QueueMgr
     LinkedList<JobReqsDelta> changes = req.getJobReqsChanges();
     
     timer.aquire();
-    synchronized(pJobs) {
-      timer.resume();
-      for(JobReqsDelta delta : changes) {
-        long id = delta.getJobID();
-        QueueJob job = pJobs.get(id);
-        if (job != null) {
-          QueueJob copy = job.queryOnlyCopy(); 
-          jobs.put(id, copy);
-          NodeID nodeID = copy.getNodeID();
-          nodeIDs.add(nodeID);
-          String author = nodeID.getAuthor();
-          if (!privileges.containsKey(author))
-            privileges.put(author, pAdminPrivileges.isQueueManaged(req, author));
-        }
-      }
-    }
-    
-    TreeMap<String, BaseKeyChooser> selectionKeys = 
-      new TreeMap<String, BaseKeyChooser>();
-    TreeMap<String, BaseKeyChooser> licenseKeys = 
-      new TreeMap<String, BaseKeyChooser>();
-    TreeMap<String, BaseKeyChooser> hardwareKeys = 
-      new TreeMap<String, BaseKeyChooser>();
-    
-    synchronized(pSelectionKeys) {
-      for (Entry<String, SelectionKey> entry : pSelectionKeys.entrySet()) {
-        selectionKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
-      }
-    }
-    
-    synchronized(pLicenseKeys) {
-      for (Entry<String, LicenseKey> entry : pLicenseKeys.entrySet()) {
-        licenseKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
-      }
-    }
-    
-    synchronized(pHardwareKeys) {
-      for (Entry<String, HardwareKey> entry : pHardwareKeys.entrySet()) {
-        hardwareKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
-      }
-    }
-    
+    pDatabaseLock.readLock().lock();
     try {
-      DoubleMap<NodeID, String, BaseAnnotation> annots = 
-        pMasterMgrClient.getAnnotations(nodeIDs);
-
-      boolean unprivileged = false; 
-
-      for(JobReqsDelta delta : changes ) {
-        long jobID = delta.getJobID();
-        QueueJob job = jobs.get(jobID);
-        if(job != null) {
-          String author = job.getNodeID().getAuthor();
-          if(privileges.get(author)) {
-            JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
-            try {
-              TreeMap<String, BaseAnnotation> annot = annots.get(job.getNodeID());
-              TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
-              timer.suspend();
-              ArrayList<String> msgs = 
-                adjustJobRequirements(subTimer, job, reqs, annot, 
-                                      selectionKeys, hardwareKeys, licenseKeys);
-              exceptions.addAll(msgs);
-              timer.accum(subTimer);
-            }
-            catch (PipelineException ex) {
-              exceptions.add(ex.getMessage());
-            }
-
-            timer.aquire();
-            synchronized (pJobReqsChanges) {
-              timer.resume();
-              pJobReqsChanges.put(jobID, reqs);
-            }
+      synchronized(pJobs) {
+        timer.resume();
+        for(JobReqsDelta delta : changes) {
+          long id = delta.getJobID();
+          QueueJob job = pJobs.get(id);
+          if (job != null) {
+            QueueJob copy = job.queryOnlyCopy(); 
+            jobs.put(id, copy);
+            NodeID nodeID = copy.getNodeID();
+            nodeIDs.add(nodeID);
+            String author = nodeID.getAuthor();
+            if (!privileges.containsKey(author))
+              privileges.put(author, pAdminPrivileges.isQueueManaged(req, author));
           }
-          else 
-            unprivileged = true;
         }
       }
-
-      if(unprivileged)
-	 exceptions.add
-	  ("Some jobs did not have their requirements changed due to lack of Queue Admin " + 
-           "or Queue Manager privileges!");
-      
-      if (exceptions.size() > 0) {
-        String msg = "";
-        for (String each : exceptions)
-          msg += each + "\n\n";
-        
-        throw new PipelineException
-          ("While changing job requirements was successful, the following errors occured " +
-           "during KeyChooser execution.  These errors may effect the ability of the jobs " +
-           "on the queue to run.\n\n" + msg);
+    
+      TreeMap<String, BaseKeyChooser> selectionKeys = 
+        new TreeMap<String, BaseKeyChooser>();
+      TreeMap<String, BaseKeyChooser> licenseKeys = 
+        new TreeMap<String, BaseKeyChooser>();
+      TreeMap<String, BaseKeyChooser> hardwareKeys = 
+        new TreeMap<String, BaseKeyChooser>();
+    
+      timer.aquire();
+      synchronized(pSelectionKeys) {
+        timer.resume();
+        for (Entry<String, SelectionKey> entry : pSelectionKeys.entrySet()) {
+          selectionKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+        }
       }
+    
+      timer.aquire();
+      synchronized(pLicenseKeys) {
+        timer.resume();
+        for (Entry<String, LicenseKey> entry : pLicenseKeys.entrySet()) {
+          licenseKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+        }
+      }
+    
+      timer.aquire();
+      synchronized(pHardwareKeys) {
+        timer.resume();
+        for (Entry<String, HardwareKey> entry : pHardwareKeys.entrySet()) {
+          hardwareKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+        }
+      }
+    
+      try {
+        DoubleMap<NodeID, String, BaseAnnotation> annots = 
+          pMasterMgrClient.getAnnotations(nodeIDs);
 
-      return new SuccessRsp(timer);
+        boolean unprivileged = false; 
+
+        for(JobReqsDelta delta : changes ) {
+          long jobID = delta.getJobID();
+          QueueJob job = jobs.get(jobID);
+          if(job != null) {
+            String author = job.getNodeID().getAuthor();
+            if(privileges.get(author)) {
+              JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
+              try {
+                TreeMap<String, BaseAnnotation> annot = annots.get(job.getNodeID());
+                TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
+                timer.suspend();
+                ArrayList<String> msgs = 
+                  adjustJobRequirements(subTimer, job, reqs, annot, 
+                                        selectionKeys, hardwareKeys, licenseKeys);
+                exceptions.addAll(msgs);
+                timer.accum(subTimer);
+              }
+              catch (PipelineException ex) {
+                exceptions.add(ex.getMessage());
+              }
+
+              timer.aquire();
+              synchronized (pJobReqsChanges) {
+                timer.resume();
+                pJobReqsChanges.put(jobID, reqs);
+              }
+            }
+            else 
+              unprivileged = true;
+          }
+        }
+
+        if(unprivileged)
+          exceptions.add
+            ("Some jobs did not have their requirements changed due to lack of Queue Admin " + 
+             "or Queue Manager privileges!");
+      
+        if (exceptions.size() > 0) {
+          String msg = "";
+          for (String each : exceptions)
+            msg += each + "\n\n";
+        
+          throw new PipelineException
+            ("While changing job requirements was successful, the following errors occured " +
+             "during KeyChooser execution.  These errors may effect the ability of the jobs " +
+             "on the queue to run.\n\n" + msg);
+        }
+
+        return new SuccessRsp(timer);
+      }
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());	  
+      }     
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
   
   /**
@@ -5470,102 +5901,115 @@ class QueueMgr
     TreeMap<String, Boolean> privileges = new TreeMap<String, Boolean>();
     
     timer.aquire();
-    synchronized(pJobs) {
-      timer.resume();
-      for (Long id : ids) {
-        QueueJob job = pJobs.get(id);
-        if (job != null) {
-          QueueJob copy = job.queryOnlyCopy(); 
-          jobs.put(id, copy);
-          NodeID nodeID = copy.getNodeID();
-          nodeIDs.add(nodeID);
-          String author = nodeID.getAuthor();
-          if (!privileges.containsKey(author))
-            privileges.put(author, pAdminPrivileges.isQueueManaged(req, author));
-        }
-      }
-    }
-    
-    TreeMap<String, BaseKeyChooser> selectionKeys = 
-      new TreeMap<String, BaseKeyChooser>();
-    TreeMap<String, BaseKeyChooser> licenseKeys = 
-      new TreeMap<String, BaseKeyChooser>();
-    TreeMap<String, BaseKeyChooser> hardwareKeys = 
-      new TreeMap<String, BaseKeyChooser>();
-    
-    synchronized(pSelectionKeys) {
-      for (Entry<String, SelectionKey> entry : pSelectionKeys.entrySet()) {
-        selectionKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
-      }
-    }
-    
-    synchronized(pLicenseKeys) {
-      for (Entry<String, LicenseKey> entry : pLicenseKeys.entrySet()) {
-        licenseKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
-      }
-    }
-    
-    synchronized(pHardwareKeys) {
-      for (Entry<String, HardwareKey> entry : pHardwareKeys.entrySet()) {
-        hardwareKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
-      }
-    }
-    
+    pDatabaseLock.readLock().lock();
     try {
-      DoubleMap<NodeID, String, BaseAnnotation> annots = 
-        pMasterMgrClient.getAnnotations(nodeIDs);
-      
-      boolean unprivileged = false; 
-      for(Entry<Long, QueueJob> entry : jobs.entrySet()) {
-        QueueJob job = entry.getValue();
-        String author = job.getNodeID().getAuthor();
-        if(privileges.get(author)) {
-          JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
-          try {
-            TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
-            timer.suspend();
-            TreeMap<String, BaseAnnotation> annot = annots.get(job.getNodeID());
-            ArrayList<String> msgs = 
-              adjustJobRequirements(subTimer, job, reqs, annot, 
-                                    selectionKeys, hardwareKeys, licenseKeys); 
-            exceptions.addAll(msgs);
-            timer.accum(subTimer);
-          }
-          catch (PipelineException ex) {
-            exceptions.add(ex.getMessage());
-          }
-          timer.aquire();
-          synchronized (pJobReqsChanges) {
-            timer.resume();
-            pJobReqsChanges.put(entry.getKey(), reqs);
+      synchronized(pJobs) {
+        timer.resume();
+        for (Long id : ids) {
+          QueueJob job = pJobs.get(id);
+          if (job != null) {
+            QueueJob copy = job.queryOnlyCopy(); 
+            jobs.put(id, copy);
+            NodeID nodeID = copy.getNodeID();
+            nodeIDs.add(nodeID);
+            String author = nodeID.getAuthor();
+            if (!privileges.containsKey(author))
+              privileges.put(author, pAdminPrivileges.isQueueManaged(req, author));
           }
         }
-        else 
-          unprivileged = true;
       }
-
-      if(unprivileged)
-        exceptions.add
-         ("Some jobs did not have their permissions changed due to lack of Queue Admin or" +
-          "Queue Manager privileges!");
+    
+      TreeMap<String, BaseKeyChooser> selectionKeys = 
+        new TreeMap<String, BaseKeyChooser>();
+      TreeMap<String, BaseKeyChooser> licenseKeys = 
+        new TreeMap<String, BaseKeyChooser>();
+      TreeMap<String, BaseKeyChooser> hardwareKeys = 
+        new TreeMap<String, BaseKeyChooser>();
+    
+      timer.aquire();
+      synchronized(pSelectionKeys) {
+        timer.resume();
+        for (Entry<String, SelectionKey> entry : pSelectionKeys.entrySet()) {
+          selectionKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+        }
+      }
+    
+      timer.aquire();
+      synchronized(pLicenseKeys) {
+        timer.resume();
+        for (Entry<String, LicenseKey> entry : pLicenseKeys.entrySet()) {
+          licenseKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+        }
+      }
+    
+      timer.aquire();
+      synchronized(pHardwareKeys) {
+        timer.resume();
+        for (Entry<String, HardwareKey> entry : pHardwareKeys.entrySet()) {
+          hardwareKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+        }
+      }
+    
+      try {
+        DoubleMap<NodeID, String, BaseAnnotation> annots = 
+          pMasterMgrClient.getAnnotations(nodeIDs);
       
-      if (exceptions.size() > 0) {
-        String msg = "";
-        for (String each : exceptions)
-          msg += each + "\n\n";
-        
-        throw new PipelineException
-          ("While updating job keys was successful, the following errors occured during " + 
-           "KeyChooser execution.  These errors may effect the ability of the jobs on the " + 
-           "queue to run.\n\n" + msg);
-      }
+        boolean unprivileged = false; 
+        for(Entry<Long, QueueJob> entry : jobs.entrySet()) {
+          QueueJob job = entry.getValue();
+          String author = job.getNodeID().getAuthor();
+          if(privileges.get(author)) {
+            JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
+            try {
+              TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
+              timer.suspend();
+              TreeMap<String, BaseAnnotation> annot = annots.get(job.getNodeID());
+              ArrayList<String> msgs = 
+                adjustJobRequirements(subTimer, job, reqs, annot, 
+                                      selectionKeys, hardwareKeys, licenseKeys); 
+              exceptions.addAll(msgs);
+              timer.accum(subTimer);
+            }
+            catch (PipelineException ex) {
+              exceptions.add(ex.getMessage());
+            }
+            timer.aquire();
+            synchronized (pJobReqsChanges) {
+              timer.resume();
+              pJobReqsChanges.put(entry.getKey(), reqs);
+            }
+          }
+          else 
+            unprivileged = true;
+        }
 
-      return new SuccessRsp(timer);
+        if(unprivileged)
+          exceptions.add
+            ("Some jobs did not have their permissions changed due to lack of Queue Admin " +
+             "or Queue Manager privileges!");
+      
+        if (exceptions.size() > 0) {
+          String msg = "";
+          for (String each : exceptions)
+            msg += each + "\n\n";
+        
+          throw new PipelineException
+            ("While updating job keys was successful, the following errors occured during " + 
+             "KeyChooser execution.  These errors may effect the ability of the jobs on " + 
+             "the queue to run.\n\n" + msg);
+        }
+
+        return new SuccessRsp(timer);
+      }
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());      
+      }     
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());      
-    }     
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
+    
   
   /**
    * Change the given job requirements so that they are correct based on the
@@ -5708,7 +6152,11 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.preemptNodeJobs()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
       NodeID nodeID = req.getNodeID();
 
       if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
@@ -5765,7 +6213,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
   }
 
   /**
@@ -5786,7 +6237,11 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.killNodeJobs()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
       NodeID nodeID = req.getNodeID();
 
       if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
@@ -5844,7 +6299,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
   }
 
   /**
@@ -5865,7 +6323,11 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.pauseNodeJobs()");
 
-    try {
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try { 
+      timer.resume();
+
       NodeID nodeID = req.getNodeID();
 
       if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
@@ -5921,7 +6383,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
   
   /**
@@ -5942,7 +6407,11 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.resumeNodeJobs()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
       NodeID nodeID = req.getNodeID();
 
       if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
@@ -5997,7 +6466,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }     
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
   }
 
 
@@ -6020,10 +6492,13 @@ class QueueMgr
   )
   {
     TaskTimer timer = new TaskTimer();
+
     timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      try {
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pJobGroups) {
+        timer.resume();
+
 	Long groupID = req.getGroupID();
 	QueueJobGroup group = pJobGroups.get(groupID);
 	if(group == null) 
@@ -6032,9 +6507,12 @@ class QueueMgr
 
 	return new QueueGetJobGroupRsp(timer, group);
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }   
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -6060,22 +6538,28 @@ class QueueMgr
     String view   = req.getView();
 
     timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
-      for(Long groupID : pJobGroups.keySet()) {
-	QueueJobGroup group = pJobGroups.get(groupID);
-        if(group != null) {
-          if((author == null) ||
-             (author.equals(group.getNodeID().getAuthor()) &&
-              ((view == null) || 
-               view.equals(group.getNodeID().getView())))) {
-            groups.put(groupID, group);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pJobGroups) {
+        timer.resume();
+        TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
+        for(Long groupID : pJobGroups.keySet()) {
+          QueueJobGroup group = pJobGroups.get(groupID);
+          if(group != null) {
+            if((author == null) ||
+               (author.equals(group.getNodeID().getAuthor()) &&
+                ((view == null) || 
+                 view.equals(group.getNodeID().getView())))) {
+              groups.put(groupID, group);
+            }
           }
         }
+        
+        return new QueueGetJobGroupsRsp(timer, groups);
       }
-      
-      return new QueueGetJobGroupsRsp(timer, groups);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -6096,7 +6580,12 @@ class QueueMgr
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.deleteJobGroups()");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
       TreeMap<Long,String> groupAuthors = req.getGroupAuthors();
       
       TreeSet<String> authors = new TreeSet<String>(groupAuthors.values());
@@ -6131,7 +6620,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }   
+    } 
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   /**
@@ -6152,7 +6644,11 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.deleteViewJobGroups()");
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
       if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
 	throw new PipelineException
 	  ("Only a user with Queue Manager privileges may delete job groups owned " + 
@@ -6187,7 +6683,10 @@ class QueueMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }   
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
 
   /**
@@ -6209,25 +6708,31 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.deleteAllJobGroups()");
 
     timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      
-      ArrayList<QueueJobGroup> dead = new ArrayList<QueueJobGroup>();
-      for(Long groupID : pJobGroups.keySet()) 
-	dead.add(pJobGroups.get(groupID));
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pJobGroups) {
+        timer.resume();
+        
+        ArrayList<QueueJobGroup> dead = new ArrayList<QueueJobGroup>();
+        for(Long groupID : pJobGroups.keySet()) 
+          dead.add(pJobGroups.get(groupID));
 	
-      for(QueueJobGroup group : dead) {   
-	if(pAdminPrivileges.isQueueManaged(req, group.getNodeID())) {
-	  try {
-	    deleteCompletedJobGroup(timer, group);
-	  }
-	  catch(PipelineException ex) {
-	  }
-	}
+        for(QueueJobGroup group : dead) {   
+          if(pAdminPrivileges.isQueueManaged(req, group.getNodeID())) {
+            try {
+              deleteCompletedJobGroup(timer, group);
+            }
+            catch(PipelineException ex) {
+            }
+          }
+        }
       }
+      
+      return new SuccessRsp(timer);
     }
-	
-    return new SuccessRsp(timer);
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -6294,215 +6799,224 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("Collector");
 
-    /* get the names of the currently enabled/disabled hosts */
-    TreeSet<String> needsCollect = new TreeSet<String>();
-    TreeSet<String> needsTotals = new TreeSet<String>();
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Collector [Find Enabled]");
-      tm.aquire();
-      synchronized(pHostsInfo) {
-        tm.resume();
-	for(String hname : pHostsInfo.keySet()) {
-	  QueueHostInfo qinfo = pHostsInfo.get(hname);
-	  switch(qinfo.getStatus()) {
-	  case Enabled:	 
-	    needsCollect.add(hname);
-	    if((qinfo.getNumProcessors() == null) || 
-	       (qinfo.getTotalMemory() == null) ||
-	       (qinfo.getTotalDisk() == null)) 
-	      needsTotals.add(hname);
-	  }	  
-	}
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Col, LogMgr.Level.Finer,
-	 tm, timer);
-    }
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
 
-    /* collect system resource usage samples and other stats from the hosts */ 
-    {
-      ArrayList<SubCollectorTask> cthreads = new ArrayList<SubCollectorTask>();
+      /* get the names of the currently enabled/disabled hosts */
+      TreeSet<String> needsCollect = new TreeSet<String>();
+      TreeSet<String> needsTotals = new TreeSet<String>();
       {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("Collector [Network]");
+        timer.suspend();
+        TaskTimer tm = new TaskTimer("Collector [Find Enabled]");
+        tm.aquire();
+        synchronized(pHostsInfo) {
+          tm.resume();
+          for(String hname : pHostsInfo.keySet()) {
+            QueueHostInfo qinfo = pHostsInfo.get(hname);
+            switch(qinfo.getStatus()) {
+            case Enabled:	 
+              needsCollect.add(hname);
+              if((qinfo.getNumProcessors() == null) || 
+                 (qinfo.getTotalMemory() == null) ||
+                 (qinfo.getTotalDisk() == null)) 
+                needsTotals.add(hname);
+            }	  
+          }
+        }
+        LogMgr.getInstance().logSubStage
+          (LogMgr.Kind.Col, LogMgr.Level.Finer,
+           tm, timer);
+      }
 
-	/* spawn collection threads */ 
-	if(!needsCollect.isEmpty()) {
-	  SubCollectorTask thread = null;
-	  int wk = 0;
-	  int id = 0;
-	  for(String hname : needsCollect) {
-	    if((wk % pCollectorBatchSize.get()) == 0) {
-	      if(thread != null) {
-		cthreads.add(thread);
-		thread.start();
-	      }
+      /* collect system resource usage samples and other stats from the hosts */ 
+      {
+        ArrayList<SubCollectorTask> cthreads = new ArrayList<SubCollectorTask>();
+        {
+          timer.suspend();
+          TaskTimer tm = new TaskTimer("Collector [Network]");
+
+          /* spawn collection threads */ 
+          if(!needsCollect.isEmpty()) {
+            SubCollectorTask thread = null;
+            int wk = 0;
+            int id = 0;
+            for(String hname : needsCollect) {
+              if((wk % pCollectorBatchSize.get()) == 0) {
+                if(thread != null) {
+                  cthreads.add(thread);
+                  thread.start();
+                }
 	      
-	      thread = new SubCollectorTask(id);
-	      id++;
-	    }
+                thread = new SubCollectorTask(id);
+                id++;
+              }
 	    
-	    thread.addCollect(hname);
-	    if(needsTotals.contains(hname)) 
-	      thread.addTotals(hname);
+              thread.addCollect(hname);
+              if(needsTotals.contains(hname)) 
+                thread.addTotals(hname);
 	    
-	    wk++;
-	  }
+              wk++;
+            }
 	
-	  cthreads.add(thread);
-	  thread.start();
-	}
+            cthreads.add(thread);
+            thread.start();
+          }
 	
-	/* wait for all to finish */ 
-	for(SubCollectorTask thread : cthreads) {
-	  try {
-	    thread.join();
-	  }
-	  catch(InterruptedException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Col, LogMgr.Level.Severe,
-	       "Interrupted while collecting resource information.");
-	    LogMgr.getInstance().flush();
-	  }
-	}
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
-	   tm, timer); 
-      }
+          /* wait for all to finish */ 
+          for(SubCollectorTask thread : cthreads) {
+            try {
+              thread.join();
+            }
+            catch(InterruptedException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Col, LogMgr.Level.Severe,
+                 "Interrupted while collecting resource information.");
+              LogMgr.getInstance().flush();
+            }
+          }
+          LogMgr.getInstance().logSubStage
+            (LogMgr.Kind.Col, LogMgr.Level.Finer,
+             tm, timer); 
+        }
       
-      /* collect the data from all threads and to update pending change tables */ 
-      {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("Collector [Pending Changes]");
-	for(SubCollectorTask thread : cthreads) {
-	  {
-	    boolean hasSamples = false;
+        /* collect the data from all threads and to update pending change tables */ 
+        {
+          timer.suspend();
+          TaskTimer tm = new TaskTimer("Collector [Pending Changes]");
+          for(SubCollectorTask thread : cthreads) {
+            {
+              boolean hasSamples = false;
 
-	    /* cache the latest resource samples */ 
-	    TreeMap<String,ResourceSample> samples = thread.getSamples();
-	    if(!samples.isEmpty()) {
-	      tm.aquire();
-	      synchronized(pSamples) {
-		tm.resume();
+              /* cache the latest resource samples */ 
+              TreeMap<String,ResourceSample> samples = thread.getSamples();
+              if(!samples.isEmpty()) {
+                tm.aquire();
+                synchronized(pSamples) {
+                  tm.resume();
 
-		for(String hname : samples.keySet()) {
-		  ResourceSample sample = samples.get(hname);
-		  if(sample != null) {
-		    ResourceSampleCache cache = pSamples.get(hname);
-		    if(cache == null) {
-		      cache = new ResourceSampleCache(sCollectedSamples);
-		      pSamples.put(hname, cache);
-		    }
+                  for(String hname : samples.keySet()) {
+                    ResourceSample sample = samples.get(hname);
+                    if(sample != null) {
+                      ResourceSampleCache cache = pSamples.get(hname);
+                      if(cache == null) {
+                        cache = new ResourceSampleCache(sCollectedSamples);
+                        pSamples.put(hname, cache);
+                      }
 		
-		    cache.addSample(sample);
-		    hasSamples = true;
-		  }
-		}
-	      }
-	    }
+                      cache.addSample(sample);
+                      hasSamples = true;
+                    }
+                  }
+                }
+              }
 
-	    /* initialize the sample output stamp */ 
-	    if(hasSamples && (pLastSampleWritten.get() == 0L)) {
-	      long oldest = Long.MAX_VALUE;
-	      for(String hname : samples.keySet()) {
-		ResourceSample sample = samples.get(hname);
-		if(sample != null) 
-		  oldest = Math.min(oldest, sample.getTimeStamp());
-	      }
-	      pLastSampleWritten.set(oldest); 
-	    }
-	  }
+              /* initialize the sample output stamp */ 
+              if(hasSamples && (pLastSampleWritten.get() == 0L)) {
+                long oldest = Long.MAX_VALUE;
+                for(String hname : samples.keySet()) {
+                  ResourceSample sample = samples.get(hname);
+                  if(sample != null) 
+                    oldest = Math.min(oldest, sample.getTimeStamp());
+                }
+                pLastSampleWritten.set(oldest); 
+              }
+            }
 
-	  {
-	    TreeMap<String,OsType> osTypes = thread.getOsTypes();
-	    if(!osTypes.isEmpty()) {
-	      tm.aquire();
-	      synchronized(pOsTypeChanges) {
-		tm.resume();
+            {
+              TreeMap<String,OsType> osTypes = thread.getOsTypes();
+              if(!osTypes.isEmpty()) {
+                tm.aquire();
+                synchronized(pOsTypeChanges) {
+                  tm.resume();
 		
-		pOsTypeChanges.putAll(osTypes);
-	      }
-	    }
-	  }
+                  pOsTypeChanges.putAll(osTypes);
+                }
+              }
+            }
 
-	  {
-	    TreeMap<String,Integer> numProcs = thread.getNumProcs();
-	    if(!numProcs.isEmpty()) {
-	      tm.aquire();
-	      synchronized(pNumProcChanges) {
-		tm.resume();
+            {
+              TreeMap<String,Integer> numProcs = thread.getNumProcs();
+              if(!numProcs.isEmpty()) {
+                tm.aquire();
+                synchronized(pNumProcChanges) {
+                  tm.resume();
 		
-		pNumProcChanges.putAll(numProcs);
-	      }
-	    }
-	  }
+                  pNumProcChanges.putAll(numProcs);
+                }
+              }
+            }
 
-	  {
-	    TreeMap<String,Long> totalMemory = thread.getTotalMemory();
-	    if(!totalMemory.isEmpty()) {
-	      tm.aquire();
-	      synchronized(pTotalMemoryChanges) {
-		tm.resume();
+            {
+              TreeMap<String,Long> totalMemory = thread.getTotalMemory();
+              if(!totalMemory.isEmpty()) {
+                tm.aquire();
+                synchronized(pTotalMemoryChanges) {
+                  tm.resume();
 		
-		pTotalMemoryChanges.putAll(totalMemory);
-	      }
-	    }
-	  }
+                  pTotalMemoryChanges.putAll(totalMemory);
+                }
+              }
+            }
 
-	  {
-	    TreeMap<String,Long> totalDisk = thread.getTotalDisk();
-	    if(!totalDisk.isEmpty()) {
-	      tm.aquire();
-	      synchronized(pTotalDiskChanges) {
-		tm.resume();
+            {
+              TreeMap<String,Long> totalDisk = thread.getTotalDisk();
+              if(!totalDisk.isEmpty()) {
+                tm.aquire();
+                synchronized(pTotalDiskChanges) {
+                  tm.resume();
 		
-		pTotalDiskChanges.putAll(totalDisk);
-	      }
-	    }
-	  }
-	}
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
-	   tm, timer); 
+                  pTotalDiskChanges.putAll(totalDisk);
+                }
+              }
+            }
+          }
+          LogMgr.getInstance().logSubStage
+            (LogMgr.Kind.Col, LogMgr.Level.Finer,
+             tm, timer); 
+        }
+      }
+
+      /* when enough samples have been collected, write them disk... */ 
+      if(pLastSampleWritten.get() > 0L) { 
+        long now = System.currentTimeMillis();
+        long sinceLastWrite = now - pLastSampleWritten.get();
+
+        if(sinceLastWrite > (PackageInfo.sCollectorInterval * sCollectedSamples)) {
+          timer.suspend();
+          TaskTimer tm = new TaskTimer("Collector [Write Samples]");  
+          try {
+            writeSamples(tm, false); 
+          }
+          catch(PipelineException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Col, LogMgr.Level.Severe,
+               ex.getMessage());
+          }
+          finally {
+            pLastSampleWritten.set(now); 
+          }
+          LogMgr.getInstance().logSubStage
+            (LogMgr.Kind.Col, LogMgr.Level.Finer,
+             tm, timer); 
+        }
+
+        /* cleanup any out-of-date sample files */ 
+        {
+          timer.suspend();
+          TaskTimer tm = new TaskTimer("Collector [Clean Samples]");
+          {
+            cleanupSamples(tm);
+          }
+          LogMgr.getInstance().logSubStage
+            (LogMgr.Kind.Col, LogMgr.Level.Finer,
+             tm, timer); 
+        }
       }
     }
-
-    /* when enough samples have been collected, write them disk... */ 
-    if(pLastSampleWritten.get() > 0L) { 
-      long now = System.currentTimeMillis();
-      long sinceLastWrite = now - pLastSampleWritten.get();
-
-      if(sinceLastWrite > (PackageInfo.sCollectorInterval * sCollectedSamples)) {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("Collector [Write Samples]");  
-	try {
-	  writeSamples(tm, false); 
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Col, LogMgr.Level.Severe,
-	     ex.getMessage());
-	}
-	finally {
-	  pLastSampleWritten.set(now); 
-	}
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
-	   tm, timer); 
-      }
-
-      /* cleanup any out-of-date sample files */ 
-      {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("Collector [Clean Samples]");
-	{
-	  cleanupSamples(tm);
-	}
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
-	   tm, timer); 
-      }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
 
     /* if we're ahead of schedule, take a nap */ 
@@ -6545,10 +7059,18 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("User Balance Info");
    
-    pUserBalanceInfo.calculateUsage(timer);
-    
-    pUserBalanceRecalculated.set(true);
-    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      pUserBalanceInfo.calculateUsage(timer);      
+      pUserBalanceRecalculated.set(true);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+
     long nap = pBalanceSampleInterval.get() - timer.getTotalDuration();
     if(nap > 0) {
       LogMgr.getInstance().logAndFlush
@@ -6604,145 +7126,151 @@ class QueueMgr
        "Writer [Semaphore Acquired, Starting Writer]");
     
     TaskTimer timer = new TaskTimer("Writer");
-   
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Writer [Writing Modified Jobs]");
-      
-      while(true) {
-        Long jobID = pWriteJobList.peek();
-        Long jobInfoID = pWriteJobInfoList.peek();
-        
-        if (jobInfoID != null) {
-          /* Burn the one we already checked. */
-          pWriteJobInfoList.poll();
-          QueueJobInfo info = null;
-          tm.aquire();
-          synchronized(pJobInfo) {
-            tm.resume();
-            QueueJobInfo temp = pJobInfo.get(jobInfoID);
-            if (temp != null)
-              info = new QueueJobInfo(temp);
-          }
 
-          /* 
-           * Could be possible if the job ran, finished, and was cleaned-up before we got around 
-           * to writing the changes to disk.
-           */
-          if (info == null)
-            continue;
-          try {
-            writeJobInfo(info);
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      {
+        timer.suspend();
+        TaskTimer tm = new TaskTimer("Writer [Writing Modified Jobs]");
+      
+        while(true) {
+          Long jobID = pWriteJobList.peek();
+          Long jobInfoID = pWriteJobInfoList.peek();
+        
+          if (jobInfoID != null) {
+            /* Burn the one we already checked. */
+            pWriteJobInfoList.poll();
+            QueueJobInfo info = null;
+            tm.aquire();
+            synchronized(pJobInfo) {
+              tm.resume();
+              QueueJobInfo temp = pJobInfo.get(jobInfoID);
+              if (temp != null)
+                info = new QueueJobInfo(temp);
+            }
+
+            /* 
+             * Could be possible if the job ran, finished, and was cleaned-up before we 
+             * got around to writing the changes to disk.
+             */
+            if (info == null)
+              continue;
+            try {
+              writeJobInfo(info);
+            }
+            catch(PipelineException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+                 "An error occurred when the writer thread tried to write job info " +
+                 "(" + jobID + ") to disk.\n" + ex.getMessage()); 
+            }
           }
-          catch(PipelineException ex) {
-            LogMgr.getInstance().log
-            (LogMgr.Kind.Wri, LogMgr.Level.Severe,
-              "An error occurred when the writer thread tried to write job info " +
-              "(" + jobID + ") to disk.\n" + ex.getMessage()); 
+          else if (jobID != null) {
+            /* Burn the one we already checked. */
+            pWriteJobList.poll();
+            QueueJob job = null;
+            tm.aquire();
+            synchronized(pJobs) {
+              tm.resume();
+              QueueJob temp = pJobs.get(jobID);
+              if (temp != null)
+                job = new QueueJob(temp);
+            }
+
+            /* 
+             * Could be possible if the job ran, finished, and was cleaned-up before we got 
+             * around to writing the changes to disk.
+             */
+            if (job == null)
+              continue;
+            try {
+              writeJob(job);
+            }
+            catch(PipelineException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+                 "An error occurred when the writer thread tried to write job " +
+                 "(" + jobID + ") to disk.\n" + ex.getMessage()); 
+            }
           }
+          else
+            break;
         }
-        else if (jobID != null) {
-          /* Burn the one we already checked. */
-          pWriteJobList.poll();
+        LogMgr.getInstance().logSubStage
+          (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+           tm, timer);
+      }
+    
+      TreeMap<Long,QueueJob> deadJobs = new TreeMap<Long,QueueJob>();
+      TreeMap<Long,QueueJobInfo> deadInfos = new TreeMap<Long,QueueJobInfo>();
+      {
+        timer.suspend();
+        TaskTimer tm = new TaskTimer("Writer [Deleting Jobs]");
+      
+        /* delete the dead jobs */ 
+        while(true) {
+          DeleteListEntry entry = pDeleteList.peek();
+          if (entry == null)
+            break;
+          if (entry.getTimeStamp() > startTime)
+            break;
+          pDeleteList.poll();
+          Long jobID = entry.getJobID();
+
           QueueJob job = null;
           tm.aquire();
           synchronized(pJobs) {
             tm.resume();
-            QueueJob temp = pJobs.get(jobID);
-            if (temp != null)
-              job = new QueueJob(temp);
+            job = pJobs.remove(jobID);
+          }
+          try {
+            if(job != null) {
+              deleteJobFile(jobID);
+              deadJobs.put(jobID, job);
+            }
+          }
+          catch(PipelineException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+               ex.getMessage());
           }
 
-          /* 
-           * Could be possible if the job ran, finished, and was cleaned-up before we got around 
-           * to writing the changes to disk.
-           */
-          if (job == null)
-            continue;
+          tm.aquire();
+          QueueJobInfo info = null;
+          synchronized(pJobInfo) {
+            tm.resume();
+            info = pJobInfo.remove(jobID);
+          }
           try {
-            writeJob(job);
+            if(info != null) {
+              deleteJobInfoFile(jobID);
+              deadInfos.put(jobID, info);
+            }
           }
           catch(PipelineException ex) {
             LogMgr.getInstance().log
               (LogMgr.Kind.Wri, LogMgr.Level.Severe,
-               "An error occurred when the writer thread tried to write job " +
-               "(" + jobID + ") to disk.\n" + ex.getMessage()); 
+               ex.getMessage());
           }
         }
-        else
-          break;
+        LogMgr.getInstance().logSubStage
+          (LogMgr.Kind.Wri, LogMgr.Level.Finer,
+           tm, timer);
       }
-      LogMgr.getInstance().logSubStage
-        (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-         tm, timer);
-    }
-    
-    TreeMap<Long,QueueJob> deadJobs = new TreeMap<Long,QueueJob>();
-    TreeMap<Long,QueueJobInfo> deadInfos = new TreeMap<Long,QueueJobInfo>();
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Writer [Deleting Jobs]");
-      
-      /* delete the dead jobs */ 
-      while(true) {
-        DeleteListEntry entry = pDeleteList.peek();
-        if (entry == null)
-          break;
-        if (entry.getTimeStamp() > startTime)
-          break;
-        pDeleteList.poll();
-        Long jobID = entry.getJobID();
 
-        QueueJob job = null;
-        tm.aquire();
-        synchronized(pJobs) {
-          tm.resume();
-          job = pJobs.remove(jobID);
-        }
-        try {
-          if(job != null) {
-            deleteJobFile(jobID);
-            deadJobs.put(jobID, job);
-          }
-        }
-        catch(PipelineException ex) {
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-             ex.getMessage());
-        }
+      /* post-cleanup task */ 
+      if(!deadJobs.isEmpty() && !deadInfos.isEmpty())  
+        startExtensionTasks(timer, new CleanupJobsExtFactory(deadJobs, deadInfos));    
 
-        tm.aquire();
-        QueueJobInfo info = null;
-        synchronized(pJobInfo) {
-          tm.resume();
-          info = pJobInfo.remove(jobID);
-        }
-        try {
-          if(info != null) {
-            deleteJobInfoFile(jobID);
-            deadInfos.put(jobID, info);
-          }
-        }
-        catch(PipelineException ex) {
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Wri, LogMgr.Level.Severe,
-             ex.getMessage());
-        }
-      }
-      LogMgr.getInstance().logSubStage
-        (LogMgr.Kind.Wri, LogMgr.Level.Finer,
-         tm, timer);
-    }
-
-    /* post-cleanup task */ 
-    if(!deadJobs.isEmpty() && !deadInfos.isEmpty())  
-      startExtensionTasks(timer, new CleanupJobsExtFactory(deadJobs, deadInfos));
-    
-    /* sleep on the semaphore till we get woken up again. */ 
-    {
       LogMgr.getInstance().logStage
         (LogMgr.Kind.Wri, LogMgr.Level.Fine,
          timer); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -6760,56 +7288,65 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("Dispatcher");
 
-    /* apply any pending modifications to the job servers prior to dispatch */ 
-    dspApplyHostEdits(timer);
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
 
-    /* kill/abort the jobs in the hit list */ 
-    dspKillAbort(timer); 
+      /* apply any pending modifications to the job servers prior to dispatch */ 
+      dspApplyHostEdits(timer);
+
+      /* kill/abort the jobs in the hit list */ 
+      dspKillAbort(timer); 
     
-    /* kill and requeue running jobs on the preempt list */ 
-    dspPreempt(timer); 
+      /* kill and requeue running jobs on the preempt list */ 
+      dspPreempt(timer); 
     
-    /* the IDs of jobs which need to have their JobProfile recomputed */ 
-    TreeSet<Long> changedIDs = new TreeSet<Long>();
+      /* the IDs of jobs which need to have their JobProfile recomputed */ 
+      TreeSet<Long> changedIDs = new TreeSet<Long>();
     
-    /* apply the pending changes to the job requirements for jobs */
-    dspChangeJobReqs(timer, changedIDs); 
+      /* apply the pending changes to the job requirements for jobs */
+      dspChangeJobReqs(timer, changedIDs); 
 
-    /* the names of the toolsets used by jobs which are ready to run */ 
-    TreeSet<String> readyToolsets = new TreeSet<String>();
+      /* the names of the toolsets used by jobs which are ready to run */ 
+      TreeSet<String> readyToolsets = new TreeSet<String>();
 
-    /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
-    dspSortWaiting(timer, readyToolsets, changedIDs); 
+      /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
+      dspSortWaiting(timer, readyToolsets, changedIDs); 
 
-    /* retrieve any toolsets required by newly ready jobs which are not already cached */
-    dspToolsets(timer, readyToolsets); 
+      /* retrieve any toolsets required by newly ready jobs which are not already cached */
+      dspToolsets(timer, readyToolsets); 
 
-    /* update the read-only cache of job server info before acquiring any potentially
-       long duration locks on the pHosts table */ 
-    dspUpdateHostsInfo(timer); 
+      /* update the read-only cache of job server info before acquiring any potentially
+         long duration locks on the pHosts table */ 
+      dspUpdateHostsInfo(timer); 
 
-    /* process the available job server slots in dispatch order */
-    dspDispatchTotal(timer, changedIDs); 
+      /* process the available job server slots in dispatch order */
+      dspDispatchTotal(timer, changedIDs); 
 
-    /* check for newly completed job groups */ 
-    dspUpdateJobGroups(timer); 
+      /* check for newly completed job groups */ 
+      dspUpdateJobGroups(timer); 
 
-    /* filter any jobs not ready for execution from the ready list */
-    dspFilterUnready(timer); 
+      /* filter any jobs not ready for execution from the ready list */
+      dspFilterUnready(timer); 
 
-    /* perform garbage collection of jobs at regular intervals */ 
-    pDispatcherCycles++;
-    if(pDispatcherCycles > sGarbageCollectAfter) {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Garbage Collect]");
-      {
-	garbageCollectJobs(tm);
+      /* perform garbage collection of jobs at regular intervals */ 
+      pDispatcherCycles++;
+      if(pDispatcherCycles > sGarbageCollectAfter) {
+        timer.suspend();
+        TaskTimer tm = new TaskTimer("Dispatcher [Garbage Collect]");
+        {
+          garbageCollectJobs(tm);
+        }
+        LogMgr.getInstance().logSubStage
+          (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+           tm, timer);
+
+        pDispatcherCycles = 0;
       }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-
-      pDispatcherCycles = 0;
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
 
     /* if we're ahead of schedule, take a nap */ 
@@ -7061,7 +7598,7 @@ class QueueMgr
     if (!changedIDs.isEmpty())
       LogMgr.getInstance().log
         (Kind.Wri, Level.Finest, 
-         "Adding jobs with ids " + changedIDs + " to the write list");
+      "Adding jobs with ids " + changedIDs + " to the write list");
     if (trigger)
       pWriterSemaphore.release();
   }
@@ -7483,7 +8020,7 @@ class QueueMgr
     
     if (changed) {
       WorkGroups wgroups = pAdminPrivileges.getWorkGroups();
-
+      
       pDispMaxShare.clear();
       
       dtm.aquire();
@@ -7500,9 +8037,9 @@ class QueueMgr
           pDispMaxShare.put(groupName, maxShares);
         }
       }
-      pUserBalanceChanged.set(false);      
+      pUserBalanceChanged.set(false);
     }
-   
+      
     if (calculated) {
       DoubleMap<String, String, Double> currentUsage = 
         pUserBalanceInfo.getCurrentUsage();
@@ -7512,23 +8049,23 @@ class QueueMgr
         for (Entry<String, Double> entry : userUsage.entrySet()) {
           pDispUserUsage.setUserUse(groupName, entry.getKey(), entry.getValue());
         }
-      }
+        }
       pUserBalanceRecalculated.set(false);
-    }
-
-    LogMgr.getInstance().logAndFlush
-      (Kind.Usr, Level.Finest, 
+      }
+      
+      LogMgr.getInstance().logAndFlush
+        (Kind.Usr, Level.Finest, 
        "Current balance group user shares: " + pDispUserUsage);
     
     LogMgr.getInstance().logAndFlush
       (Kind.Usr, Level.Finest, 
        "Current balance group slot weights: " + pDispSlotWeight);
-   
+      
     if (calculated || changed)
       LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
          "Cleared and rebuilt all Balance Group Profiles.");
-  }
+    }    
 
   /**
    * Calculate how many slots each user is using per-balance group and determine the maximum 
@@ -8005,15 +8542,15 @@ class QueueMgr
           usersOverMax = new TreeSet<String>();
           
           if (currentUse != null) {
-            for (Entry<String, Integer> entry : currentUse.entrySet()) {
-              String user = entry.getKey();
-              Integer use = entry.getValue();
-              Integer max = maxSlots.get(user);
+          for (Entry<String, Integer> entry : currentUse.entrySet()) {
+            String user = entry.getKey();
+            Integer use = entry.getValue();
+            Integer max = maxSlots.get(user);
               if ( (max == null) || (max == 0) || (use != null && (use >= max))) {
-                usersOverMax.add(user);
-              }
+              usersOverMax.add(user);
             }
           }
+        }
           
           TreeSet<String> zeroUsers = pDispZeroSlotUsers.get(balanceGroupName);
           if (zeroUsers != null)
@@ -8585,7 +9122,7 @@ class QueueMgr
         }
       }
     }
-    
+
     if (trigger)
       pWriterSemaphore.release();
 
@@ -8899,7 +9436,16 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("Scheduler");
     
-    doScheduler(timer);
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      doScheduler(timer);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
     
     /* if we're ahead of schedule, take a nap */ 
     {
@@ -9021,6 +9567,202 @@ class QueueMgr
 	}
       }
     }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   D A T A B A S E   B A C K U P                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Periodically synchronizes the database with a backup directory and optionally creates
+   * tar archives of this backup directory.
+   */ 
+  public void 
+  backupSync
+  (
+   boolean first
+  ) 
+  {
+    /* initial delay the first time through */ 
+    if(first) {
+      try {
+        pBackupSyncTrigger.tryAcquire(1, pBackupSyncInterval.get(), TimeUnit.MILLISECONDS);
+      }
+      catch(InterruptedException ex) {
+        return;
+      }
+    }
+
+    TaskTimer timer = new TaskTimer();
+
+    Path backupTarget = pBackupSyncTarget.getAndSet(null);
+    boolean doBackup = (backupTarget != null); 
+
+    if(doBackup) {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Bak, LogMgr.Level.Info, 
+         "Starting Database Backup..."); 
+    }
+    else {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Bak, LogMgr.Level.Fine, 
+         "Starting Database Backup Synchronization...");
+    }
+
+    /* synchronize the backup directory with the database without locking, 
+         this reduced the time needed to hold the lock */ 
+    Boolean success = backupSyncHelper(false);
+    if(success == null) 
+      return;
+
+    if(success && doBackup) {      
+      /* synchronize the backup directory with the database locked */ 
+      success = backupSyncHelper(true); 
+      if(success == null) 
+        return;
+
+      if(success) {
+        /* make a tarball out of the newly synced backup directory */ 
+        try {
+          TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
+          
+          ArrayList<String> args = new ArrayList<String>();
+          args.add("-zcf");
+          args.add(backupTarget.toOsString());
+          args.add("pipeline");
+          
+          SubProcessLight proc = 
+            new SubProcessLight("DatabaseBackupArchive", "tar", args, System.getenv(), 
+                                PackageInfo.sQueueBackupPath.toFile());
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to create the Database Backup Archive: " + backupTarget + "\n\n" + 
+                 "  " + proc.getStdErr());	
+          }
+          catch(InterruptedException ex) {
+            proc.kill();
+
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+               "Interrupted while performing Database Backup Archive!"); 
+            return;
+          }
+          
+          LogMgr.getInstance().logStage(LogMgr.Kind.Bak, LogMgr.Level.Info, tm); 
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Bak, LogMgr.Level.Severe, 
+             ex.getMessage());
+        }
+      }
+    }
+    
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      long nap = pBackupSyncInterval.get() - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+          pBackupSyncTrigger.tryAcquire(1, nap, TimeUnit.MILLISECONDS);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+      else {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Bak, LogMgr.Level.Finest,
+	   "Database Backup Sync: Overbudget by " + 
+           "(" + TimeStamps.formatInterval(-nap) + ")..."); 
+      }
+    }
+  }
+
+  /**
+   * Synchronize the backup directory with the database. 
+   * 
+   * @param needsLock
+   *   Whether the database-wide lock is required.
+   * 
+   * @return
+   *   Whether the sync was successful, null if interrupted.
+   */ 
+  private Boolean 
+  backupSyncHelper
+  (
+   boolean needsLock
+  ) 
+  {
+    try {
+      TaskTimer tm = new TaskTimer("Database Backup Synchronized " + 
+                                   "(" + (needsLock ? "locked" : "live") + ")");
+      tm.aquire();
+      if(needsLock) 
+        pDatabaseLock.writeLock().lock();
+      try {
+        tm.resume();	
+        
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("--archive");
+        args.add("--quiet");
+        args.add("--delete");
+        args.add("--delete-excluded");
+        args.add("--exclude=/pipeline/annotations");
+        args.add("--exclude=/pipeline/archives");
+        args.add("--exclude=/pipeline/checksum");
+        args.add("--exclude=/pipeline/downstream");
+        args.add("--exclude=/pipeline/etc");
+        args.add("--exclude=/pipeline/events");
+        args.add("--exclude=/pipeline/lock");
+        args.add("--exclude=/pipeline/plugins");
+        args.add("--exclude=/pipeline/queue/job-servers/samples");
+        args.add("--exclude=/pipeline/queue/lock");
+        args.add("--exclude=/pipeline/repository");
+        args.add("--exclude=/pipeline/toolsets");
+        args.add("--exclude=/pipeline/working");
+        args.add("pipeline");
+        args.add(PackageInfo.sQueueBackupPath.toOsString() + "/");
+        
+        SubProcessLight proc = 
+          new SubProcessLight("DatabaseBackupSync", "rsync", args, System.getenv(), 
+                              PackageInfo.sNodePath.getParentPath().toFile());
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to perform Database Backup Synchronization:\n\n" + 
+               "  " + proc.getStdErr());	
+        }
+        catch(InterruptedException ex) {
+          proc.kill();
+
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Bak, LogMgr.Level.Warning,
+             "Interrupted while performing Database Backup Synchronization!"); 
+          return null;
+        }
+        
+        LogMgr.getInstance().logStage
+          (LogMgr.Kind.Bak, needsLock ? LogMgr.Level.Info : LogMgr.Level.Fine, 
+           tm); 
+      }
+      finally {
+        if(needsLock) 
+          pDatabaseLock.writeLock().unlock();
+      }
+
+      return true;
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Bak, LogMgr.Level.Severe, 
+         ex.getMessage());
+      return false;
+    }  
   }
 
 
@@ -10204,11 +10946,11 @@ class QueueMgr
       
       try {
         if(file.exists()) {
-          if(backup.exists())
-            if(!backup.delete()) 
-              throw new IOException
-                ("Unable to remove the backup working version file (" + backup + ")!");
-
+        if(backup.exists())
+          if(!backup.delete()) 
+            throw new IOException
+            ("Unable to remove the backup working version file (" + backup + ")!");
+        
 
           if(!file.renameTo(backup)) 
             throw new IOException
@@ -10416,26 +11158,26 @@ class QueueMgr
       File backup = new File(pQueueDir, "queue/job-info-bak/" + jobID);
 
       try {
-        if(file.exists()) {
+      if(file.exists()) {
           if(backup.exists())
             if(!backup.delete()) 
               throw new IOException
                 ("Unable to remove the backup job information file (" + backup + ")!");
-
+      
 
           if(!file.renameTo(backup)) 
             throw new IOException
               ("Unable to backup the current job information file (" + file + ") to the " + 
                "the file (" + backup + ")!");
         }
-
-        try {
-          GlueEncoderImpl.encodeFile("JobInfo", info, file);
-        }
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
-        }
+      
+      try {
+        GlueEncoderImpl.encodeFile("JobInfo", info, file);
       }
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
+      }
+    }
       catch(IOException ex) {
         throw new PipelineException
           ("I/O ERROR: \n" + 
@@ -10469,14 +11211,14 @@ class QueueMgr
       File file = new File(pQueueDir, "queue/job-info/" + jobID);
       File backup = new File(pQueueDir, "queue/job-info-bak/" + jobID);
       try {
-        if(file.isFile()) {
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-             "Reading Job Information: " + jobID);
+      if(file.isFile()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Job Information: " + jobID);
 
-          try {
-            return((QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", file));
-          }	
+        try {
+          return((QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", file));
+        }	
           catch(Exception ex) {
             LogMgr.getInstance().log
               (LogMgr.Kind.Glu, LogMgr.Level.Severe,
@@ -10528,13 +11270,13 @@ class QueueMgr
 
               throw ex;
             }
-          }
-        }
-        else {
-          throw new PipelineException
-            ("Somehow for job (" + jobID + "), no job info file (" + file + ") exists!");
         }
       }
+      else {
+	throw new PipelineException
+	  ("Somehow for job (" + jobID + "), no job info file (" + file + ") exists!");
+      }
+    }
       catch(Exception ex) {
         throw new PipelineException
           ("I/O ERROR: \n" + 
@@ -10559,7 +11301,7 @@ class QueueMgr
   {
     Object lock = getJobInfoFileLock(jobID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/job-info/" + jobID);
+      File file = new File(pQueueDir, "queue/job-info/" + jobID); 
       File backup = new File(pQueueDir, "queue/job-info-bak/" + jobID);
 
       LogMgr.getInstance().log
@@ -10739,7 +11481,7 @@ class QueueMgr
       return (hostA.getOrder() - hostB.getOrder());
     }      
   }
-  
+
   private
   class BalanceGroupUsage
   {
@@ -11062,7 +11804,7 @@ class QueueMgr
     private long pJobID;
     private long pTimeStamp;
   }
-  
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -11078,10 +11820,21 @@ class QueueMgr
     run() 
     {
       TaskTimer timer = new TaskTimer("Demand Scheduler");
-      doScheduler(timer);
-      LogMgr.getInstance().logStage
-	(LogMgr.Kind.Sch, LogMgr.Level.Fine,
-	 timer); 
+
+      timer.aquire();
+      pDatabaseLock.readLock().lock();
+      try {
+        timer.resume();
+
+        doScheduler(timer);
+
+        LogMgr.getInstance().logStage
+          (LogMgr.Kind.Sch, LogMgr.Level.Fine,
+           timer); 
+      }
+      finally {
+        pDatabaseLock.readLock().unlock();
+      }
     }
   }
   
@@ -11170,50 +11923,60 @@ class QueueMgr
     run() 
     {
       TaskTimer timer = new TaskTimer("SubCollector " + pID + " [Total]");
-      for(String hname : pNeedsCollect) {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("SubCollector " + pID + " [" + hname + "]");
-        JobMgrControlClient client = null;
-	try {
-          client = new JobMgrControlClient(hname);
-	  ResourceSample sample = client.getResources();
-	  pSamples.put(hname, sample);
-	  
-	  if(pNeedsTotals.contains(hname)) {
-	    pOsTypes.put(hname, client.getOsType());
-	    pNumProcs.put(hname, client.getNumProcessors());
-	    pTotalMemory.put(hname, client.getTotalMemory());
-	    pTotalDisk.put(hname, client.getTotalDisk());
-	  }
-	}
-	catch(Exception ex) {
-          tm.aquire();
-          synchronized(pHosts) {
-            tm.resume();
-            QueueHost host = pHosts.get(hname);
-            if(host != null) 
-              setHostStatus(host, QueueHost.Status.Limbo);
-          }
 
-          String header = 
-            ("Lost contact with the Job Manager (" + hname + ") while attempting " + 
-             "to collect resource samples."); 
-          String msg = header;
-          if(!(ex instanceof PipelineException))
+      timer.aquire();
+      pDatabaseLock.readLock().lock();
+      try {
+        timer.resume();
+
+        for(String hname : pNeedsCollect) {
+          timer.suspend();
+          TaskTimer tm = new TaskTimer("SubCollector " + pID + " [" + hname + "]");
+          JobMgrControlClient client = null;
+          try {
+            client = new JobMgrControlClient(hname);
+            ResourceSample sample = client.getResources();
+            pSamples.put(hname, sample);
+            
+            if(pNeedsTotals.contains(hname)) {
+              pOsTypes.put(hname, client.getOsType());
+              pNumProcs.put(hname, client.getNumProcessors());
+              pTotalMemory.put(hname, client.getTotalMemory());
+              pTotalDisk.put(hname, client.getTotalDisk());
+            }
+          }
+          catch(Exception ex) {
+            tm.aquire();
+            synchronized(pHosts) {
+              tm.resume();
+              QueueHost host = pHosts.get(hname);
+              if(host != null) 
+                setHostStatus(host, QueueHost.Status.Limbo);
+            }
+            
+            String header = 
+              ("Lost contact with the Job Manager (" + hname + ") while attempting " + 
+               "to collect resource samples."); 
+            String msg = header;
+            if(!(ex instanceof PipelineException))
             msg = Exceptions.getFullMessage(header, ex);
-          LogMgr.getInstance().log(LogMgr.Kind.Net, LogMgr.Level.Warning, msg); 
-	}
-        finally { 
-          if(client != null)
-	  client.disconnect();
+            LogMgr.getInstance().log(LogMgr.Kind.Net, LogMgr.Level.Warning, msg); 
+          }
+          finally { 
+            if(client != null)
+              client.disconnect();
+          }
+          LogMgr.getInstance().logSubStage
+            (LogMgr.Kind.Col, LogMgr.Level.Finest,
+             tm, timer);
         }
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
-	   tm, timer);
+        LogMgr.getInstance().logStage
+          (LogMgr.Kind.Col, LogMgr.Level.Finer,
+           timer); 
       }
-      LogMgr.getInstance().logStage
-	(LogMgr.Kind.Col, LogMgr.Level.Finer,
-         timer); 
+      finally {
+        pDatabaseLock.readLock().unlock();
+      }
     }
 
 
@@ -11303,11 +12066,14 @@ class QueueMgr
       /* whether we've put the job into Limbo state and will resume monitoring it later */ 
       boolean remonitored = false;
 
+      long jobID = getJobID();
+      TaskTimer timer = new TaskTimer("Monitor - Job " + jobID);
+
+      timer.aquire();
+      pDatabaseLock.readLock().lock();
       try {
-        long jobID = getJobID();
-
-        TaskTimer timer = new TaskTimer("Monitor - Job " + jobID);
-
+	timer.resume();
+        
         /* attempt to start the job on the selected server, 
 	   no environment means the job has been started previously */  
         QueueJobInfo startedInfo = null;
@@ -11490,36 +12256,36 @@ class QueueMgr
           /* update job information */
           QueueJobInfo info = getJobInfo(tm, jobID); 
           if(info != null) {
-            switch(info.getState()) {
-            case Preempted: 
-              preempted = true;
-              break;
-            
-            default:
-              {
-                JobState prevState = null;
-                if(isTerminal != null) {
-                  if(isTerminal) {
-                    LogMgr.getInstance().log
-                      (LogMgr.Kind.Net, LogMgr.Level.Warning, 
-                       "Treating job (" + jobID + ") as Failed because the Job Manager " + 
-                       "(" + pHostname + ") was manually Shutdown before establishing " + 
-                       "whether the job had completed."); 
-                    
-                    prevState = info.exited(null);
+              switch(info.getState()) {
+              case Preempted: 
+                preempted = true;
+                break;
+              
+              default:
+                {
+                  JobState prevState = null;
+                  if(isTerminal != null) {
+                    if(isTerminal) {
+                      LogMgr.getInstance().log
+                        (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+                         "Treating job (" + jobID + ") as Failed because the Job Manager " + 
+                         "(" + pHostname + ") was manually Shutdown before establishing " + 
+                         "whether the job had completed."); 
+                      
+                      prevState = info.exited(null);
+                    }
+                    else {
+                      prevState = info.limbo(pHostname);
+                    }
                   }
                   else {
-                    prevState = info.limbo(pHostname);
+                    prevState = info.exited(results);
                   }
+                  pJobCounters.update(tm, prevState, info);
+                  if(!remonitored) 
+                    finishedInfo = new QueueJobInfo(info);
                 }
-                else {
-                  prevState = info.exited(results);
-                }
-                pJobCounters.update(tm, prevState, info);
-                if(!remonitored) 
-                  finishedInfo = new QueueJobInfo(info);
               }
-            }
             pWriteJobInfoList.add(info.getJobID());
             pWriterSemaphore.release();
           }
@@ -11610,6 +12376,8 @@ class QueueMgr
       finally {
         if(!remonitored) 
           unmonitorJob(this); 
+
+        pDatabaseLock.readLock().unlock();
       }
     }
 
@@ -12122,6 +12890,8 @@ class QueueMgr
     run() 
     {
       JobMgrControlClient client = null;
+
+      pDatabaseLock.readLock().lock();
       try {
 	client = new JobMgrControlClient(pHostname);	
 	client.jobKill(pJobID);
@@ -12144,6 +12914,8 @@ class QueueMgr
       finally { 
 	if(client != null)
 	  client.disconnect();
+
+        pDatabaseLock.readLock().unlock();
       }
     }
 
@@ -12172,33 +12944,39 @@ class QueueMgr
     public void 
     run() 
     {
-      TreeSet<String> hnames = new TreeSet<String>();
-      synchronized(pHosts) {
-	for(String hname : pHosts.keySet()) {
-	  QueueHost host = pHosts.get(hname);
-	  switch(host.getStatus()) {
-	  case Disabled:
-	  case Enabled:
-	    hnames.add(hname);
-	  }
-	}
+      pDatabaseLock.readLock().lock();
+      try {
+        TreeSet<String> hnames = new TreeSet<String>();
+        synchronized(pHosts) {
+          for(String hname : pHosts.keySet()) {
+            QueueHost host = pHosts.get(hname);
+            switch(host.getStatus()) {
+            case Disabled:
+            case Enabled:
+              hnames.add(hname);
+            }
+          }
+        }
+        
+        for(String hname : hnames) {	  
+          JobMgrControlClient client = null;
+          try {
+            client = new JobMgrControlClient(hname);	
+            client.cleanupResources(pJobIDs);
+          }
+          catch(Exception ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Job, LogMgr.Level.Severe,
+               ex.getMessage()); 
+          }
+          finally {
+            if(client != null)
+              client.disconnect();
+          }
+        }
       }
-
-      for(String hname : hnames) {	  
-	JobMgrControlClient client = null;
-	try {
-	  client = new JobMgrControlClient(hname);	
-	  client.cleanupResources(pJobIDs);
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Job, LogMgr.Level.Severe,
-	     ex.getMessage()); 
-	}
-	finally {
-	  if(client != null)
-	    client.disconnect();
-	}
+      finally {
+        pDatabaseLock.readLock().unlock();
       }
     }
 
@@ -12277,15 +13055,6 @@ class QueueMgr
    * This lock exists primary to support write-locked database backups. <P> 
    */ 
   private ReentrantReadWriteLock  pDatabaseLock;
-  
-  /**
-   * The interval (in milliseconds) between the live synchronization of the database 
-   * files associated with the Master Manager and backup copies of these files.
-   */ 
-  private AtomicLong  pBackupSyncInterval; 
-  
-
-  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The common back-end directories.
@@ -12305,6 +13074,32 @@ class QueueMgr
    */
   private boolean  pRebuild; 
 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The interval (in milliseconds) between the live synchronization of the database 
+   * files associated with the Master Manager and optionally making a tarball of these 
+   * backup copies.
+   */ 
+  private AtomicLong  pBackupSyncInterval; 
+
+  /**
+   * Used to allow interruptible blocking of the backup synchronzation task.
+   */ 
+  private Semaphore  pBackupSyncTrigger; 
+
+  /**
+   * When set, the path to the tarball in which the backup is archived. <P> 
+   * 
+   * If this is <CODE>null</CODE>, then the backup task just synchronizes the database
+   * with the backup directory without holding locks.  If it has a value, then the 
+   * synchronization is performed while holding the pDatabase.writeLock() and a tarball
+   * is created with this given path.  The backup task will unset the value after
+   * processing it.
+   */ 
+  private AtomicReference<Path>  pBackupSyncTarget; 
+  
 
   /*----------------------------------------------------------------------------------------*/
  

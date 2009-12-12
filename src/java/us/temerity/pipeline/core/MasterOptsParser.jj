@@ -302,6 +302,7 @@ TOKEN :
 | <LOG_EXT: 	     "ext">    
 | <LOG_TIM: 	     "tim">    
 | <LOG_BLD: 	     "bld">    
+| <LOG_BAK: 	     "bak">    
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -583,7 +584,7 @@ LogMgr.Kind LogKind() :
 }
 {
   (g=ArgKind() | g=OpsKind() | g=MemKind() | g=NetKind() | g=SubKind() | g=SumKind() | 
-   g=PlgKind() | g=GluKind() | g=ExtKind() | g=TimKind() | g=BldKind())
+   g=PlgKind() | g=GluKind() | g=ExtKind() | g=TimKind() | g=BldKind() | g=BakKind())
   {
     return g;
   }
@@ -685,6 +686,15 @@ LogMgr.Kind BldKind() :
   <LOG_BLD>
   {
     return LogMgr.Kind.Bld;
+  }
+}
+
+LogMgr.Kind BakKind() : 
+{}
+{
+  <LOG_BAK>
+  {
+    return LogMgr.Kind.Bak;
   }
 }
 

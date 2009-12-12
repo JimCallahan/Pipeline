@@ -198,7 +198,8 @@ TOKEN :
 | <LOG_OPS: 	     "ops">     
 | <LOG_NET: 	     "net">     
 | <LOG_PLG: 	     "plg">     
-| <LOG_TIM: 	     "tim">     
+| <LOG_TIM: 	     "tim">      
+| <LOG_BAK: 	     "bak">     
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -466,7 +467,7 @@ LogMgr.Kind LogKind() :
   LogMgr.Kind g;
 }
 {
-  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=TimKind())
+  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=TimKind() | g=BakKind())
   {
     return g;
   }
@@ -514,6 +515,15 @@ LogMgr.Kind TimKind() :
   <LOG_TIM>
   {
     return LogMgr.Kind.Tim;
+  }
+}
+
+LogMgr.Kind BakKind() : 
+{}
+{
+  <LOG_BAK>
+  {
+    return LogMgr.Kind.Bak;
   }
 }
 

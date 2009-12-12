@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.56 2009/12/09 14:28:04 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.57 2009/12/12 01:17:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1104,15 +1104,6 @@ class PackageInfo
    */
   @Deprecated
   public static final File sPluginMgrDir = new File("@PL_PLUGIN_DIRECTORY@"); 
-
-
-  /** 
-   * The abstract pathname of the directory used to store Plugin Manager database backups. <P>
-   *
-   * Set by the PluginDirectory customer profile entry.
-   */
-  public static final Path sPluginBackupPath = 
-    new Path(new Path("@PL_PLUGIN_DIRECTORY@-backup"), "plpluginmgr");
 
 
 
