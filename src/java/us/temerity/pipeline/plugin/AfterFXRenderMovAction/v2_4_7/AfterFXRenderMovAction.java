@@ -151,6 +151,7 @@ class AfterFXRenderMovAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
+  @Override
   public SubProcessHeavy
   prep
   (
@@ -506,8 +507,8 @@ class AfterFXRenderMovAction
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = -4702997916421451111L;
+
+  private static final long serialVersionUID = -4012679894994342687L;
   
   public static final String aCompName = "CompName";
   
