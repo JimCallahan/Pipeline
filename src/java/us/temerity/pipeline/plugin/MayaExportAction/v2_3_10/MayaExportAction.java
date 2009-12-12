@@ -220,6 +220,7 @@ class MayaExportAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
+  @Override
   public SubProcessHeavy
   prep
   (
@@ -287,7 +288,7 @@ class MayaExportAction
       	        "{\n" +
       	        "  select -r $export;\n");
       if (includeSet)
-	out.write("  select -r -ne $export;\n");
+	out.write("  select -add -ne $export;\n");
       out.write("}\n\n");
 
       if (melSnippet != null) 
