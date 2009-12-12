@@ -1,4 +1,4 @@
-// $Id: OptionalBranchPanel.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
+// $Id: OptionalBranchPanel.java,v 1.2 2009/12/12 03:59:06 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_12;
 
@@ -24,7 +24,7 @@ class OptionalBranchPanel
   OptionalBranchPanel
   (
     TemplateNetworkScan scan,
-    TemplateGlueInformation oldSettings  
+    TemplateGlueInformation oldSettings
   )
   {
     super();
@@ -63,8 +63,26 @@ class OptionalBranchPanel
         JLabel label = UIFactory.createFixedLabel("Default Value:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
       }
-      
       pHeaderBox.add(Box.createHorizontalGlue());
+    }
+    
+    {
+      pToggleAllBox = TemplateUIFactory.createHorizontalBox();
+      int width = 150;
+      {
+        JLabel label = UIFactory.createFixedLabel("Toggle All:", width, SwingConstants.LEFT);
+        pToggleAllBox.add(label);
+      }
+      pToggleAllBox.add(TemplateUIFactory.createHorizontalSpacer());
+      {
+        JBooleanField field = UIFactory.createBooleanField(false, 150);
+        field.setActionCommand("toggle-all");
+        field.addActionListener(this);
+        field.setMaximumSize(field.getPreferredSize());
+        pToggleAllBox.add(field);
+        pToggleAllField = field;
+      }
+      pToggleAllBox.add(Box.createHorizontalGlue());
     }
     
     if (oldSettings != null) {
@@ -74,7 +92,6 @@ class OptionalBranchPanel
        createEntry(entry.getKey(), entry.getValue());
      }
     }
-    
     
     {
       pButtonBox2 = TemplateUIFactory.createHorizontalBox();
@@ -168,6 +185,8 @@ class OptionalBranchPanel
     pBox.removeAll();
     pBox.add(pTitleBox);
     pBox.add(TemplateUIFactory.createLargeVerticalGap());
+    pBox.add(pToggleAllBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(pHeaderBox);
     pBox.add(TemplateUIFactory.createVerticalGap());
     for (int i : pOrder) {
@@ -250,6 +269,12 @@ class OptionalBranchPanel
       if (!existing.contains(name)) 
         createEntry(name, null);
       relayout();
+    }
+    else if (command.startsWith("toggle-all")) {
+      boolean value = pToggleAllField.getValue();
+      for (OptionalBranchEntry entry : pEntries.values()) {
+        entry.pDefaultValue.setValue(value);
+      }
     }
   } 
   
@@ -335,7 +360,10 @@ class OptionalBranchPanel
   private Box pTitleBox;
   private Box pButtonBox;
   private Box pHeaderBox;
+  private Box pToggleAllBox;
   private Box pButtonBox2;
+  
+  private JBooleanField pToggleAllField;
   
   private boolean pHasMissing;
 }
