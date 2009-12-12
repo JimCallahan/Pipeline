@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.52 2009/12/09 05:05:55 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.53 2009/12/12 23:12:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -32,7 +32,24 @@ class QueueMgrClient
   public
   QueueMgrClient()
   {
-    super(PackageInfo.sQueueServer, PackageInfo.sQueuePort, 
+    this(false);
+  }
+
+  /** 
+   * Construct a new queue manager client.
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   */
+  public
+  QueueMgrClient
+  (
+   boolean forceLongTransactions   
+  )
+  {
+    super(PackageInfo.sQueueServer, PackageInfo.sQueuePort, forceLongTransactions, 
 	  QueueRequest.Disconnect, QueueRequest.Shutdown, "QueueMgr");
 
     /* the canonical names of this host */ 

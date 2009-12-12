@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.37 2009/10/28 20:53:59 jim Exp $
+// $Id: BaseMgrClient.java,v 1.38 2009/12/12 23:12:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,6 +31,11 @@ class BaseMgrClient
    * @param port 
    *   The network port listened to by server.
    * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   * 
    * @param disconnect
    *   The disconnect request enum.
    * 
@@ -45,6 +50,7 @@ class BaseMgrClient
   (
     String hostname, 
     int port, 
+    boolean forceLongTransactions, 
     Object disconnect, 
     Object shutdown, 
     String clientID
@@ -58,6 +64,8 @@ class BaseMgrClient
       throw new IllegalArgumentException("Illegal port number (" + port + ")!");
     pPort = port;
 
+    pForceLongTransactions = forceLongTransactions;
+
     if(disconnect == null) 
       throw new IllegalArgumentException("The disconnect request cannot be (null)!");
     pDisconnect = disconnect;
@@ -70,6 +78,55 @@ class BaseMgrClient
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  A C C E S S                                                                           */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the name of the host running the server.
+   */ 
+  public String
+  getHostname() 
+  {
+    return pHostname;
+  }
+
+  /**
+   * Get the network port listened to by server.
+   */ 
+  public int 
+  getPort() 
+  {
+    return pPort;
+  }
+
+  /**
+   * Get whether to treat all uses of {@link performTransaction} like 
+   * {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   * response retry interval with infinite retries.
+   */
+  public boolean 
+  getForceLongTransactions() 
+  {
+    return pForceLongTransactions; 
+  }
+
+  /**
+   * Set whether to treat all uses of {@link performTransaction} like 
+   * {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   * response retry interval with infinite retries.
+   */ 
+  public void 
+  setForceLongTransactions
+  (
+   boolean tf
+  ) 
+  {
+    pForceLongTransactions = tf;
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*  C O N N E C T I O N                                                                   */
@@ -439,6 +496,9 @@ class BaseMgrClient
   ) 
     throws PipelineException 
   {
+    if(pForceLongTransactions) 
+      return performLongTransaction(kind, req, 0, 60000);
+
     try {
       pSocket.setSoTimeout(timeout);
 
@@ -525,7 +585,7 @@ class BaseMgrClient
   ) 
     throws PipelineException 
   {
-    pLongTransactionStart = new Date();
+    pLongTransactionStart = System.currentTimeMillis(); 
 
     try {
       pSocket.setSoTimeout(reqTimeout);
@@ -679,9 +739,16 @@ class BaseMgrClient
   protected int  pPort;
 
   /**
+   * Whether to treat all uses of {@link performTransaction} like 
+   * {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   * response retry interval with infinite retries.
+   */                       
+  private boolean pForceLongTransactions;
+
+  /**
    * The timestamp of when a long transaction was started.
    */ 
-  protected Date  pLongTransactionStart;
+  protected Long  pLongTransactionStart;
 
   /**
    * The network socket connection.

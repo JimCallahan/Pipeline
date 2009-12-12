@@ -1,4 +1,4 @@
-// $Id: UnreachableServers.java,v 1.1 2005/07/15 20:10:45 jim Exp $
+// $Id: UnreachableServers.java,v 1.2 2009/12/12 23:12:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -22,7 +22,7 @@ class UnreachableServers
   public 
   UnreachableServers()
   {
-    pStamps = new TreeMap<String,Date>();
+    pStamps = new TreeMap<String,Long>();
   }
 
 
@@ -43,7 +43,7 @@ class UnreachableServers
    String hostname
   ) 
   {
-    pStamps.put(hostname, new Date());
+    pStamps.put(hostname, System.currentTimeMillis());
   }
      
   /**
@@ -55,7 +55,7 @@ class UnreachableServers
    * @return 
    *   The timestamp or <CODE>null</CODE> if the server has never been unreachable.
    */  
-  public synchronized Date
+  public synchronized Long
   lastUnreachable
   (
    String hostname
@@ -73,6 +73,6 @@ class UnreachableServers
   /**
    * The timestamp of when a long transaction was started.
    */ 
-  private TreeMap<String,Date>  pStamps;
+  private TreeMap<String,Long>  pStamps;
 
 }

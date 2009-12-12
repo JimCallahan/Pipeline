@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.19 2009/12/12 01:17:27 jim Exp $
+// $Id: PluginMgrControlClient.java,v 1.20 2009/12/12 23:12:50 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -38,7 +38,24 @@ class PluginMgrControlClient
   public
   PluginMgrControlClient() 
   {
-    super("PluginMgrControl");
+    this(false);
+  }
+
+  /** 
+   * Construct the sole instance.
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   **/
+  public
+  PluginMgrControlClient
+  ( 
+   boolean forceLongTransactions 
+  ) 
+  {
+    super(forceLongTransactions, "PluginMgrControl");
 
     try {
       pDigest = MessageDigest.getInstance("MD5");

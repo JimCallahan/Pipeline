@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.28 2009/12/02 20:23:16 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.29 2009/12/12 23:12:49 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -29,14 +29,23 @@ class BasePluginMgrClient
 
   /** 
    * Construct the sole instance.
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   * 
+   * @param clientID
+   *   The clientID sent to the server.
    **/
   protected 
   BasePluginMgrClient
   (
-    String clientID
+   boolean forceLongTransactions, 
+   String clientID
   )
   {
-    super(PackageInfo.sPluginServer, PackageInfo.sPluginPort, 
+    super(PackageInfo.sPluginServer, PackageInfo.sPluginPort, forceLongTransactions, 
           PluginRequest.Disconnect, PluginRequest.Shutdown, clientID);
 
     pEditors            = new PluginDataCache(PluginType.Editor);  

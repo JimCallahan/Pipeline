@@ -1,4 +1,4 @@
-// $Id: JobMgrClient.java,v 1.13 2009/07/01 16:43:14 jim Exp $
+// $Id: JobMgrClient.java,v 1.14 2009/12/12 23:12:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -50,7 +50,28 @@ class JobMgrClient
    String hostname
   ) 
   {
-    super(hostname, PackageInfo.sJobPort, 
+    this(hostname, false); 
+  }
+
+  /** 
+   * Construct a new job manager client.
+   * 
+   * @param hostname 
+   *   The name of the host running <B>pljobmgr</B>(1).
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   */
+  public
+  JobMgrClient
+  ( 
+   String hostname,
+   boolean forceLongTransactions   
+  ) 
+  {
+    super(hostname, PackageInfo.sJobPort, forceLongTransactions, 
 	  JobRequest.Disconnect, null, "JobMgr");
   }
 

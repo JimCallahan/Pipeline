@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.22 2009/12/12 01:17:27 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.23 2009/12/12 23:12:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -32,7 +32,24 @@ class QueueMgrControlClient
   public
   QueueMgrControlClient() 
   {
-    super();
+    this(false);
+  }
+
+  /** 
+   * Construct a new queue manager control client.
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   */
+  public
+  QueueMgrControlClient
+  (
+   boolean forceLongTransactions   
+  )
+  {
+    super(forceLongTransactions);
   }
 
 

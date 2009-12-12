@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.68 2009/12/11 04:21:11 jesse Exp $
+// $Id: JManagerPanel.java,v 1.69 2009/12/12 23:12:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3809,8 +3809,8 @@ class JManagerPanel
         MasterMgrClient mclient = null;
         QueueMgrClient qclient = null;
         try {
-          mclient = new MasterMgrClient();
-          qclient = new QueueMgrClient();
+          mclient = new MasterMgrClient(true);
+          qclient = new QueueMgrClient(true);
           
           BaseBuilder builder = 
             collection.instantiateBuilder(pBuilderName, mclient, qclient,

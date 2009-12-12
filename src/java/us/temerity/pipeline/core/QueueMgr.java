@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.139 2009/12/12 01:17:27 jim Exp $
+// $Id: QueueMgr.java,v 1.140 2009/12/12 23:12:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -443,12 +443,12 @@ class QueueMgr
         JobReaderThread readThread = new JobReaderThread(fileQueue, running, missingGroup);
         readThread.start();
         threads.add(readThread);
-	    }
+      }
 	    
       for (JobReaderThread thread : threads) {
         try {
           thread.join();
-	  }
+        }
         catch(InterruptedException ex) {
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,

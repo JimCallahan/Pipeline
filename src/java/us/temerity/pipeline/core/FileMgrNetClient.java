@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.26 2009/11/12 01:11:57 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.27 2009/12/12 23:12:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -39,7 +39,24 @@ class FileMgrNetClient
   public
   FileMgrNetClient()
   {
-    super(PackageInfo.sFileServer, PackageInfo.sFilePort, 
+    this(false);
+  }
+
+  /** 
+   * Construct a new file manager client.
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   */
+  public
+  FileMgrNetClient
+  (
+   boolean forceLongTransactions   
+  )
+  {
+    super(PackageInfo.sFileServer, PackageInfo.sFilePort, forceLongTransactions, 
 	  FileRequest.Disconnect, FileRequest.Shutdown, "FileMgrNet");
   }
 

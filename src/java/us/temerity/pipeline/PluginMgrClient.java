@@ -1,4 +1,4 @@
-// $Id: PluginMgrClient.java,v 1.10 2009/08/19 22:50:38 jim Exp $
+// $Id: PluginMgrClient.java,v 1.11 2009/12/12 23:12:49 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -43,11 +43,19 @@ class PluginMgrClient
 
   /** 
    * Construct the sole instance.
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
    **/
   protected 
-  PluginMgrClient() 
+  PluginMgrClient
+  (
+   boolean forceLongTransactions
+  )
   {
-    super("PluginMgr");
+    super(forceLongTransactions, "PluginMgr");
   }
 
 
@@ -63,11 +71,11 @@ class PluginMgrClient
   init() 
     throws PipelineException
   {
-    init(false);
+    init(false, false);
   }
 
   /**
-   * Initialize the plugin manager instance. 
+   * Initialize the plugin manager instance. <P> 
    * 
    * @param failFast
    *   Whether to abort immediately if unable to connect to the plugin manager.
@@ -79,10 +87,32 @@ class PluginMgrClient
   ) 
     throws PipelineException
   {
+    init(failFast, false);
+  }
+
+  /**
+   * Initialize the plugin manager instance. 
+   * 
+   * @param failFast
+   *   Whether to abort immediately if unable to connect to the plugin manager.
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   */
+  public static void 
+  init
+  (
+   boolean failFast, 
+   boolean forceLongTransactions
+  ) 
+    throws PipelineException
+  {
     if(sPluginMgrClient != null)
       throw new PipelineException("PluginMgrClient has already been initialized!");
 
-    sPluginMgrClient = new PluginMgrClient();
+    sPluginMgrClient = new PluginMgrClient(forceLongTransactions);
     
     if(failFast) 
       sPluginMgrClient.verifyConnection();

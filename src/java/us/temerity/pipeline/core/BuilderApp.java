@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.33 2009/11/03 04:03:04 jesse Exp $
+// $Id: BuilderApp.java,v 1.34 2009/12/12 23:12:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -67,7 +67,7 @@ public class BuilderApp
     boolean success = false;
     
     try {
-      PluginMgrClient.init();
+      PluginMgrClient.init(true, true);
     }
     catch (PipelineException ex)
     {
@@ -98,13 +98,13 @@ public class BuilderApp
       if (pBuilderName != null && pCollectionName != null) {
         BaseBuilderCollection collection = 
           PluginMgrClient.getInstance().newBuilderCollection
-          (pCollectionName, pCollectionVersion, pCollectionVendor);
+            (pCollectionName, pCollectionVersion, pCollectionVendor);
 
         MasterMgrClient mclient = null;
         QueueMgrClient qclient = null;
         try {
-          mclient = new MasterMgrClient();
-          qclient = new QueueMgrClient();
+          mclient = new MasterMgrClient(true);
+          qclient = new QueueMgrClient(true);
 
           BaseBuilder builder = 
             collection.instantiateBuilder(pBuilderName, mclient, qclient, info);

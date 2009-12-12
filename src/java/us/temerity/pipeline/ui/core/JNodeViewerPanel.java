@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.154 2009/11/06 21:53:12 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.155 2009/12/12 23:12:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7884,8 +7884,8 @@ class JNodeViewerPanel
         MasterMgrClient mclient = null;
         QueueMgrClient qclient = null;
         try {
-          mclient = new MasterMgrClient();
-          qclient = new QueueMgrClient();
+          mclient = new MasterMgrClient(true);
+          qclient = new QueueMgrClient(true);
           
           BaseBuilder builder = 
             collection.instantiateBuilder(pBuilderName, mclient, qclient,

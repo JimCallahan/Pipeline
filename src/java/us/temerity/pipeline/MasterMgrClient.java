@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.152 2009/12/12 01:17:26 jim Exp $
+// $Id: MasterMgrClient.java,v 1.153 2009/12/12 23:12:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,10 +44,28 @@ class MasterMgrClient
   public
   MasterMgrClient()
   {
-    super(PackageInfo.sMasterServer, PackageInfo.sMasterPort, 
+    this(false); 
+  }
+
+  /** 
+   * Construct a new master manager client.
+   * 
+   * @param forceLongTransactions
+   *   Whether to treat all uses of {@link performTransaction} like 
+   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   response retry interval with infinite retries.
+   */
+  public
+  MasterMgrClient
+  (
+   boolean forceLongTransactions   
+  )
+  {
+    super(PackageInfo.sMasterServer, PackageInfo.sMasterPort, forceLongTransactions, 
 	  MasterRequest.Disconnect, MasterRequest.Shutdown, "MasterMgr");
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*  C O N N E C T I O N                                                                   */
