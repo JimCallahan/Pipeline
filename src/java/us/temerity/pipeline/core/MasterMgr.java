@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.321 2009/12/10 05:49:22 jim Exp $
+// $Id: MasterMgr.java,v 1.322 2009/12/12 00:22:43 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -23309,17 +23309,18 @@ class MasterMgr
 	    throw new IOException
 	      ("Unable to create working version directory (" + dir + ")!");
       }
-      
-      if(backup.exists())
-	if(!backup.delete()) 
-	  throw new IOException
-	    ("Unable to remove the backup working version file (" + backup + ")!");
-      
-      if(file.exists()) 
-	if(!file.renameTo(backup)) 
-	  throw new IOException
-	    ("Unable to backup the current working version file (" + file + ") to the " + 
-	     "the file (" + backup + ")!");
+
+      if(file.exists())  {
+        if(backup.exists())
+          if(!backup.delete()) 
+            throw new IOException
+              ("Unable to remove the backup working version file (" + backup + ")!");
+
+        if(!file.renameTo(backup)) 
+          throw new IOException
+            ("Unable to backup the current working version file (" + file + ") to the " + 
+             "the file (" + backup + ")!");
+      }
             
       try {
         GlueEncoderImpl.encodeFile("NodeMod", mod, file);
