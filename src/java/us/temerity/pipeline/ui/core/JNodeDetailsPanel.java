@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.64 2009/09/01 10:59:39 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.65 2009/12/12 03:00:11 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4734,9 +4734,7 @@ class JNodeDetailsPanel
 	  TreeSet<String> values = new TreeSet<String>(pWorkingToolsetField.getValues());
 	  values.add(toolset);
 	  
-	  LinkedList<String> vlist = new LinkedList<String>(values);
-	  Collections.reverse(vlist);	  
-	  pWorkingToolsetField.setValues(vlist);
+	  pWorkingToolsetField.setValues(values);
 	}
 	
 	pWorkingToolsetField.setSelected(toolset);
