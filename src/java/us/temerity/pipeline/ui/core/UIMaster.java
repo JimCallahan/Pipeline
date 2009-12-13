@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.120 2009/12/10 02:30:12 jim Exp $
+// $Id: UIMaster.java,v 1.121 2009/12/13 01:23:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6453,25 +6453,33 @@ class UIMaster
     public void 
     run() 
     {
+      StringBuilder buf = new StringBuilder();
+      boolean errors = false;
+
       MasterMgrClient client = acquireMasterMgrClient();
       if(beginPanelOp(pChannel)) {
 	try {
 	  for(String name : pIndices.keySet()) {
 	    updatePanelOp(pChannel, "Submitting Jobs to the Queue: " + name);
-	    client.submitJobs(pAuthorName, pViewName, name, 
-                              pIndices.get(name), pBatchSize, pPriority, pRampUp,
-			      pMaxLoad, pMinMemory, pMinDisk,
-			      pSelectionKeys, pLicenseKeys, pHardwareKeys);
-	  }
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	  return;
+            try {
+              client.submitJobs(pAuthorName, pViewName, name, 
+                                pIndices.get(name), pBatchSize, pPriority, pRampUp,
+                                pMaxLoad, pMinMemory, pMinDisk,
+                                pSelectionKeys, pLicenseKeys, pHardwareKeys);
+            }
+            catch(PipelineException ex) {
+              buf.append(ex.getMessage() + "\n\n"); 
+              errors = true;
+            }
+          }            
 	}
 	finally {
 	  releaseMasterMgrClient(client);
 	  endPanelOp(pChannel, "Done.");
 	}
+
+        if(errors) 
+	  showErrorDialog("Warning:", buf.toString());
 
 	postOp();
       }
