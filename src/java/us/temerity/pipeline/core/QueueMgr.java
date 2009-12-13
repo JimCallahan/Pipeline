@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.140 2009/12/12 23:12:50 jim Exp $
+// $Id: QueueMgr.java,v 1.141 2009/12/13 01:06:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,7 +52,7 @@ class QueueMgr
   (
    QueueMgrServer server,
    boolean rebuild, 
-   Integer jobReaderThreads,
+   int jobReaderThreads,
    QueueControls controls
   ) 
     throws PipelineException 
@@ -61,9 +61,10 @@ class QueueMgr
 
     pServer = server;
     pRebuild = rebuild;
-    
-    /* Needs to be here so the runtime controls can be set correctly. */
-    pUserBalanceInfo = new UserBalanceInfo();
+
+    if(jobReaderThreads < 1) 
+      throw new PipelineException
+        ("The number of job read threads (" + jobReaderThreads + ") must be at least (1)!");
 
     /* Needs to be here so the runtime controls can be set correctly. */
     pUserBalanceInfo = new UserBalanceInfo();
@@ -103,7 +104,7 @@ class QueueMgr
   private void 
   init
   (
-    Integer jobReaderThreads  
+   int jobReaderThreads  
   )
   { 
     /* initialize the fields */ 
@@ -412,7 +413,7 @@ class QueueMgr
   private void 
   initJobTables
   (
-    Integer jobReaderThreads  
+    int jobReaderThreads  
   ) 
     throws PipelineException
   {
@@ -434,12 +435,8 @@ class QueueMgr
       LinkedBlockingQueue<File> fileQueue = 
         new LinkedBlockingQueue<File>(Arrays.asList(files));
 
-      int numThreads = 1;
-      if (jobReaderThreads != null && jobReaderThreads > 0)
-        numThreads = jobReaderThreads;
-	    
       ArrayList<JobReaderThread> threads = new ArrayList<JobReaderThread>();
-      for (int i = 0; i < numThreads; i++) {
+      for (int i = 0; i < jobReaderThreads; i++) {
         JobReaderThread readThread = new JobReaderThread(fileQueue, running, missingGroup);
         readThread.start();
         threads.add(readThread);

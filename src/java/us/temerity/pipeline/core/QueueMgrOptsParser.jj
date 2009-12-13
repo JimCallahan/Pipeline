@@ -49,6 +49,7 @@ QueueMgrOptsParser
   {
     pControls = new QueueControls(); 
     pLogBackups = 10;
+    pJobReaderThreads = 2;
   }
  
 
@@ -70,7 +71,7 @@ QueueMgrOptsParser
   /**
    * The number of job reader threads to spawn.
    */
-  private Integer  pJobReaderThreads; 
+  private int  pJobReaderThreads; 
 
 
   /*----------------------------------------------------------------------------------------*/
