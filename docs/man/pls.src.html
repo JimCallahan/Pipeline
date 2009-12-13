@@ -1,248 +1,303 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <title>pls(1)</title>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-</head>
-<body>
-<h3><a name="Name"></a>Name
-</h3>
-<blockquote><b>pls</b> - lists the files in a directory according as
-Pipeline file sequences<br>
-</blockquote>
-<h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote><b>pls</b> [<a href="#Global_Options"><span
- style="font-style: italic;">options</span></a>]
-[<span style="font-style: italic;">directory</span>]<br>
-  <br>
-  <b>pls</b> <a style="font-weight: bold;" href="#--help">--help</a><b><br>
-pls</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
-  <b>pls</b> <b><a href="#--version">--version</a><br>
-pls</b><span style="font-weight: bold;"> <a href="#--release-date">--release-date</a></span><b><br>
-pls</b><span style="font-weight: bold;"> <a href="#--copyright">--copyright</a><br>
-pls <a href="#--license">--license</a><br>
-  </span></blockquote>
-<h3><a name="Description"></a>Description</h3>
-<blockquote>A utility program which lists the files in a directory
-grouped by Pipeline file sequence.&nbsp; If a directory name is given (<span
- style="font-style: italic;">directory</span>), then the contents of
-that directory will be listed.&nbsp; If no directory option is given,
-the current directory will be listed.&nbsp; This tool is a more
-practical replacement for <span style="font-weight: bold;">ls</span>(1)
-when listing directories containing large numbers of images or other
-sequentially named files.<br>
-  <br>
-A file is considered to be part of a Pipeline file sequence if it
-contains one or
-more digits ("0", "1" ... "9") and shares a common prefix and/or suffix
-with one or more files in the directory.&nbsp; In other words, files of
-the form:<br>
-  <br>
-  <div style="margin-left: 40px;">[<span style="font-style: italic;">prefix</span>]<span
- style="font-style: italic;">frame-number</span>[<span
- style="font-style: italic;">suffix</span>]<br>
-  </div>
-</blockquote>
-<div style="margin-left: 40px;">Where (<span style="font-style: italic;">suffix</span>)
-does not contain any digits, the (<span style="font-style: italic;">frame</span>-number)
-contains only digits and the (<span style="font-style: italic;">prefix</span>)
-contains any character as long as the last character is not a
-digit.&nbsp; The (<span style="font-style: italic;">frame</span>-number)
-can be zero-padded or unpadded. <br>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;">The default output of <b>pls</b>(1)
-lists file
-sequences in alphabetic order in the following format:<br>
-<br>
-<div style="margin-left: 40px;">[<span style="font-style: italic;">prefix</span>]<span
- style="font-style: italic;">pad</span>[<span
- style="font-style: italic;">suffix</span>]&nbsp; (<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>x<span
- style="font-style: italic;">by</span>[: <span
- style="font-style: italic;">range</span>[,<span
- style="font-style: italic;">range</span>[...]]])<br>
-</div>
-<br>
-Where (pad) is one or more "@" characters, each representing a padded
-frame number digit.&nbsp; The (pad) component can also be a "#"
-character which is shorthand for 4-digit padded frame numbers.&nbsp; In
-other words, "#" means the same thing as "@@@@". <br>
-<br>
-The frame range
-pattern is composed of the start frame (<span
- style="font-style: italic;">start</span>), the end frame (<span
- style="font-style: italic;">end</span>) and the frame increment (<span
- style="font-style: italic;">by</span>).&nbsp; If there are missing
-frames in the sequence, the frame range patten will be followed by a
-list of existing frame ranges (range) which will either be single frame
-numbers or contigous frame ranges.<br>
-<br>
-As an example, compare the output from ls(1) and pls(1) for a sample
-directory:<br>
-<br>
-<div style="margin-left: 40px;"><code>&gt; ls<br>
-comp.006.rgb<br>
-comp.112.rgb<br>
-comp.114.rgb<br>
-comp.115.rgb<br>
-comp.116.rgb<br>
-render.0001.tif<br>
-render.0002.tif<br>
-render.0004.tif<br>
-render.0005.tif<br>
-render.0006.tif<br>
-<br>
-&gt; pls<br>
-comp.@@@.rgb (6-116x1: 6,112,114-116)<br>
-render.#.tif (1-6x1: 1-2,4-6)<br>
-<br>
-&gt; pls --fcheck<br>
-fcheck -n 6 116 1 comp.@.rgb<br>
-fcheck -n 1 6 1 render.#.tif<br>
-</code><br>
-</div>
-</div>
-<h3><a name="Information_Options"></a>Information Options</h3>
-<blockquote>The following options provide information about <b>pls</b>(1)
-and then immediately exit:<br>
-  <br>
-  <b><a name="--help"></a>--help</b><br>
-  <blockquote>Prints a brief usage message and exits.<br>
-  </blockquote>
-  <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser. <br>
-  </blockquote>
-  <b><a name="--version"></a>--version</b><br>
-  <blockquote>Prints the version number of this software and exits.<br>
-  </blockquote>
-  <b><a name="--release-date"></a>--release-date</b><br>
-  <blockquote> Prints date that this software was released and exits.<b><br>
-    </b></blockquote>
-  <b><a name="--copyright"></a>--copyright</b><br>
-  <blockquote> Prints the <a href="#Copyright"><span
- style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-  </blockquote>
-  <b><a name="--license"></a>--license</b><br>
-  <div style="margin-left: 40px;"><b> </b><br>
-Prints the <a style="font-weight: bold;" href="#License_Agreement">license
-agreement</a> for this software and exits. </div>
-  <blockquote> </blockquote>
-</blockquote>
-<blockquote> </blockquote>
-<h3><a name="Global_Options"></a>Global Options</h3>
-<blockquote><b><a name="--fcheck"></a>--fcheck<br>
-  <a name="--fcheck-exec"></a>--fcheck-exec<br>
-  </b>
-  <blockquote>The <span style="font-weight: bold;">--fcheck</span>
-option prints an alternative output format consisting of a set of <span
- style="font-weight: bold;"><a href="http://www.alias.com/"><span
- style="font-weight: bold;">fcheck</span></a></span>(1) command lines
-which which
-display the file sequences (if they are legal image files).&nbsp; The <b>--fcheck-exec</b>
-option will execute these fcheck command lines in addition to printing
-them. </blockquote>
-  <span style="font-weight: bold;"><a name="--zero"></a>--zero</span><br>
-  <span style="font-weight: bold;"><a name="--size"></a>--size</span>=<span
- style="font-style: italic;">bytes<br>
-  </span>
-  <div style="margin-left: 40px;"><br>
-In addition to the normal output, these two options cause pls(1) to
-print the frame numbers of files which are zero length (<span
- style="font-weight: bold;">--zero</span>) or are smaller than the
-given size (<span style="font-weight: bold;">--size</span>=<span
- style="font-style: italic;">bytes</span>).&nbsp; This can be useful
-for detecting bad image frames in a sequence.&nbsp; The bad frame
-numbers are listing at the end of the line between "&lt;BAD:" and
-"&gt;" seperators.<br>
-  <br>
-These two options are mutually exclusive and cannot be used with the <span
- style="font-weight: bold;">--fcheck </span>or <span
- style="font-weight: bold;">--fcheck-exec</span> option.<br>
-  </div>
-  <blockquote> </blockquote>
-  <span style="font-weight: bold;"></span></blockquote>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--stats"></a>--stats</span>=<span style="font-style: italic;">level&nbsp;</span></div>
-<h3></h3>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Print stage statistics with the given
-level of vebosity (<span style="font-style: italic;">level</span>).&nbsp;
-<br>
-<br>
-By default, stage statistics are disabled.<br>
-<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--warnings"></a>--warnings</span>=<span
- style="font-style: italic;">level</span><br>
-<div style="margin-left: 40px;"><br>
-Print warning messages with the given level of vebosity (<span
- style="font-style: italic;">level</span>). <br>
-<br>
-By default, warning messages are disabled.</div>
-</div>
-<h3><a name="See_Also"></a>See Also</h3>
-<blockquote><span style="font-weight: bold;"><span
- style="font-weight: bold;">Pipeline
-Java API<br>
-  </span></span>
-  <div style="margin-left: 40px;"><a style="font-weight: bold;"
- href="../javadoc/us/temerity/pipeline/FileSeq.html">FileSeq</a><br>
-  <br>
-  </div>
-  <span style="font-weight: bold;">Pipeline Programs</span><span
- style="font-weight: bold;"></span><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span><br>
-  <div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
- style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
- href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-  <a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-  <a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
- href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-  <a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-  <a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-  <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
- href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-  <a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-  <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-  <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-  <a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1),
-  <a href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-  <a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-  <span style="font-weight: bold;"></span><a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)</div>
-</blockquote>
-<blockquote>
-  <blockquote> </blockquote>
-</blockquote>
-<blockquote> </blockquote>
-<blockquote> </blockquote>
-<h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
- href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.</div>
-<span style="font-weight: bold;">
-</span>
-<h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-</div>
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
-</body>
-</html>
+
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+
+  <TITLE>pls(1)</TITLE>
+  <META http-equiv="content-type" content=
+  "text/html; charset=us-ascii">
+  <STYLE type="text/css">
+div.c5 {margin-left: 40px}
+  div.c4 {margin-left: 40px;}
+  span.c3 {font-weight: bold;}
+  a.c2 {font-weight: bold;}
+  span.c1 {font-style: italic;}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3><A name="Name" id="Name"></A>Name</H3>
+
+  <BLOCKQUOTE>
+    <B>pls</B> - lists the files in a directory according as
+    Pipeline file sequences<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Synopsis" id="Synopsis"></A>Synopsis</H3>
+
+  <BLOCKQUOTE>
+    <B>pls</B> [<A href="#Global_Options"><SPAN class=
+    "c1">options</SPAN></A>] [<SPAN class=
+    "c1">directory</SPAN>]<BR>
+    <BR>
+    <B>pls</B> <A class="c2" href="#--help">--help</A><B><BR>
+    pls</B> <A class="c2" href="#--html-help">--html-help</A><BR>
+    <B>pls</B> <B><A href="#--version">--version</A><BR>
+    pls</B> <SPAN class="c3"><A href=
+    "#--release-date">--release-date</A></SPAN><B><BR>
+    pls</B> <SPAN class="c3"><A href=
+    "#--copyright">--copyright</A><BR>
+    pls <A href="#--license">--license</A><BR></SPAN>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id="Description"></A>Description</H3>
+
+  <BLOCKQUOTE>
+    A utility program which lists the files in a directory grouped
+    by Pipeline file sequence.&nbsp; If a directory name is given
+    (<SPAN class="c1">directory</SPAN>), then the contents of that
+    directory will be listed.&nbsp; If no directory option is
+    given, the current directory will be listed.&nbsp; This tool is
+    a more practical replacement for <SPAN class="c3">ls</SPAN>(1)
+    when listing directories containing large numbers of images or
+    other sequentially named files.<BR>
+    <BR>
+    A file is considered to be part of a Pipeline file sequence if
+    it contains one or more digits ("0", "1" ... "9") and shares a
+    common prefix and/or suffix with one or more files in the
+    directory.&nbsp; In other words, files of the form:<BR>
+    <BR>
+
+    <DIV class="c4">
+      [<SPAN class="c1">prefix</SPAN>]<SPAN class=
+      "c1">frame-number</SPAN>[<SPAN class="c1">suffix</SPAN>]<BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <DIV class="c4">
+    Where (<SPAN class="c1">suffix</SPAN>) does not contain any
+    digits, the (<SPAN class="c1">frame</SPAN>-number) contains
+    only digits and the (<SPAN class="c1">prefix</SPAN>) contains
+    any character as long as the last character is not a
+    digit.&nbsp; The (<SPAN class="c1">frame</SPAN>-number) can be
+    zero-padded or unpadded.<BR>
+  </DIV>
+
+  <DIV class="c4">
+    <BR>
+  </DIV>
+
+  <DIV class="c4">
+    The default output of <B>pls</B>(1) lists file sequences in
+    alphabetic order in the following format:<BR>
+    <BR>
+
+    <DIV class="c4">
+      [<SPAN class="c1">prefix</SPAN>]<SPAN class=
+      "c1">pad</SPAN>[<SPAN class="c1">suffix</SPAN>]&nbsp;
+      (<SPAN class="c1">start</SPAN>-<SPAN class=
+      "c1">end</SPAN>x<SPAN class="c1">by</SPAN>[: <SPAN class=
+      "c1">range</SPAN>[,<SPAN class="c1">range</SPAN>[...]]])<BR>
+    </DIV><BR>
+    Where (pad) is one or more "@" characters, each representing a
+    padded frame number digit.&nbsp; The (pad) component can also
+    be a "#" character which is shorthand for 4-digit padded frame
+    numbers.&nbsp; In other words, "#" means the same thing as
+    "@@@@".<BR>
+    <BR>
+    The frame range pattern is composed of the start frame
+    (<SPAN class="c1">start</SPAN>), the end frame (<SPAN class=
+    "c1">end</SPAN>) and the frame increment (<SPAN class=
+    "c1">by</SPAN>).&nbsp; If there are missing frames in the
+    sequence, the frame range patten will be followed by a list of
+    existing frame ranges (range) which will either be single frame
+    numbers or contigous frame ranges.<BR>
+    <BR>
+    As an example, compare the output from ls(1) and pls(1) for a
+    sample directory:<BR>
+    <BR>
+
+    <DIV class="c4">
+      <CODE>&gt; ls<BR>
+      comp.006.rgb<BR>
+      comp.112.rgb<BR>
+      comp.114.rgb<BR>
+      comp.115.rgb<BR>
+      comp.116.rgb<BR>
+      render.0001.tif<BR>
+      render.0002.tif<BR>
+      render.0004.tif<BR>
+      render.0005.tif<BR>
+      render.0006.tif<BR>
+      <BR>
+      &gt; pls<BR>
+      comp.@@@.rgb (6-116x1: 6,112,114-116)<BR>
+      render.#.tif (1-6x1: 1-2,4-6)<BR>
+      <BR>
+      &gt; pls --fcheck<BR>
+      fcheck -n 6 116 1 comp.@.rgb<BR>
+      fcheck -n 1 6 1 render.#.tif<BR></CODE><BR>
+    </DIV>
+  </DIV>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    The following options provide information about <B>pls</B>(1)
+    and then immediately exit:<BR>
+    <BR>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.<BR>
+    </BLOCKQUOTE><B><A name="--version"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and
+      exits.<B><BR></B>
+    </BLOCKQUOTE><B><A name="--copyright"></A>--copyright</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the <A href="#Copyright"><SPAN class="c3">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+    </BLOCKQUOTE><B><A name="--license"></A>--license</B><BR>
+
+    <DIV class="c4">
+      <BR>
+      Prints the <A class="c2" href="#License_Agreement">license
+      agreement</A> for this software and exits.
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Global_Options" id="Global_Options"></A>Global
+  Options</H3>
+
+  <BLOCKQUOTE>
+    <B><A name="--fcheck"></A>--fcheck<BR>
+    <A name="--fcheck-exec"></A>--fcheck-exec<BR></B>
+
+    <BLOCKQUOTE>
+      The <SPAN class="c3">--fcheck</SPAN> option prints an
+      alternative output format consisting of a set of <SPAN class=
+      "c3"><A href="http://www.alias.com/"><SPAN class=
+      "c3">fcheck</SPAN></A></SPAN>(1) command lines which which
+      display the file sequences (if they are legal image
+      files).&nbsp; The <B>--fcheck-exec</B> option will execute
+      these fcheck command lines in addition to printing them.
+    </BLOCKQUOTE><SPAN class="c3"><A name=
+    "--zero"></A>--zero</SPAN><BR>
+    <SPAN class="c3"><A name=
+    "--size"></A>--size</SPAN>=<SPAN class="c1">bytes<BR></SPAN>
+
+    <DIV class="c4">
+      <BR>
+      In addition to the normal output, these two options cause
+      pls(1) to print the frame numbers of files which are zero
+      length (<SPAN class="c3">--zero</SPAN>) or are smaller than
+      the given size (<SPAN class="c3">--size</SPAN>=<SPAN class=
+      "c1">bytes</SPAN>).&nbsp; This can be useful for detecting
+      bad image frames in a sequence.&nbsp; The bad frame numbers
+      are listing at the end of the line between "&lt;BAD:" and
+      "&gt;" seperators.<BR>
+      <BR>
+      These two options are mutually exclusive and cannot be used
+      with the <SPAN class="c3">--fcheck</SPAN> or <SPAN class=
+      "c3">--fcheck-exec</SPAN> option.<BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <DIV class="c4">
+    <SPAN class="c3"><A name=
+    "--stats"></A>--stats</SPAN>=<SPAN class=
+    "c1">level&nbsp;</SPAN>
+  </DIV>
+
+  <DIV class="c5">
+    Print stage statistics with the given level of vebosity
+    (<SPAN class="c1">level</SPAN>).&nbsp;<BR>
+    <BR>
+    By default, stage statistics are disabled.<BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c4">
+    <SPAN class="c3"><A name=
+    "--warnings"></A>--warnings</SPAN>=<SPAN class=
+    "c1">level</SPAN><BR>
+
+    <DIV class="c4">
+      <BR>
+      Print warning messages with the given level of vebosity
+      (<SPAN class="c1">level</SPAN>).<BR>
+      <BR>
+      By default, warning messages are disabled.
+    </DIV>
+  </DIV>
+
+  <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+  <BLOCKQUOTE>
+    <SPAN class="c3"><SPAN class="c3">Pipeline Java
+    API<BR></SPAN></SPAN>
+
+    <DIV class="c4">
+      <A class="c2" href=
+      "../javadoc/us/temerity/pipeline/FileSeq.html">FileSeq</A><BR>
+
+      <BR>
+    </DIV><SPAN class="c3">Pipeline Programs</SPAN><BR>
+
+    <DIV class="c4">
+      <A href="plui.html"><SPAN class="c3">plui</SPAN></A>(1),
+      <A href="plremote.html"><SPAN class=
+      "c3">plremote</SPAN></A>(1), plversion(1), <A href=
+      "plscript.html"><SPAN class="c3">plscript</SPAN></A>(1),
+      <A href="plpython.html"><SPAN class=
+      "c3">plpython</SPAN></A>(1), <A href=
+      "plplugin.html"></A><A href="plplugin.html"><SPAN class=
+      "c3">plplugin</SPAN></A>(1), <A href=
+      "plbuilder.html"><SPAN class="c3">plbuilder</SPAN></A>(1)<BR>
+      <A href="plmaster.html"><SPAN class=
+      "c3">plmaster</SPAN></A>(1), <A href=
+      "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+      "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+      "c3">plqueuemgr</SPAN></A>(1), <A href=
+      "plpluginmgr.html"><SPAN class=
+      "c3">plpluginmgr</SPAN></A>(1), <A href=
+      "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+      "c3">plfilemgr</SPAN></A>(1), <A href=
+      "pljobmgr.html"><SPAN class="c3">pljobmgr</SPAN></A>(1)<BR>
+      <A href="pls.html"><SPAN class="c3">pls</SPAN></A>(1),
+      <A href="plbrowse.html"><SPAN class=
+      "c3">plbrowse</SPAN></A>(1), <A href=
+      "realpath.html"><SPAN class="c3">realpath</SPAN></A>(1)<BR>
+      <A href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <SPAN class="c3">plconfig</SPAN></A>(1)
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Author" id="Author"></A>Author</H3>
+
+  <DIV class="c4">
+    Created by <SPAN class="c3">Jim Callahan</SPAN> of <A href=
+    "http://temerity.us/"><SPAN class="c3">Temerity Software,
+    Inc</SPAN></A>.
+  </DIV>
+
+  <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+  <DIV class="c4">
+    @COPYRIGHT@<BR>
+  </DIV>
+
+  <H3><A name="License_Agreement" id=
+  "License_Agreement"></A>License Agreement</H3>
+
+  <DIV class="c4">
+    @LICENSE@
+  </DIV>
+</BODY>
+</HTML>

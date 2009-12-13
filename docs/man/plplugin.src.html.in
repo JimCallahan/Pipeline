@@ -1,1055 +1,1286 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
-  <title>plplugin(1)</title>
-</head>
-<body>
-<h3><a name="Name"></a>Name</h3>
-<blockquote><b>plplugin</b> - the Pipeline plugin installation tool<br>
-</blockquote>
-<h3><a name="Synopsis"></a>Synopsis<br>
-</h3>
-<blockquote> <span style="font-weight: bold;">plplugin</span> [<a
- href="#Global_Options"><span style="font-style: italic;">options</span></a>]
-  <a href="#List">list</a> [<span style="font-style: italic;">plugin-filtering-options</span>]<br>
-  <span style="font-weight: bold;">plplugin</span> [<a
- href="#Global_Options"><span style="font-style: italic;">options</span></a>]
-  <a href="#Contents">contents</a> [<span style="font-style: italic;">plugin-filtering-options</span>]<br>
-  <span style="font-weight: bold;">plplugin</span> [<a
- href="#Global_Options"><span style="font-style: italic;">options</span></a>]
-  <a href="#Summary">summary</a><br>
-  <span style="font-weight: bold;">plplugin</span> [<a
- href="#Global_Options"><span style="font-style: italic;">options</span></a>]
-  <a href="#Install">install</a> [<span style="font-style: italic;">install-options</span>]
-  <span style="font-style: italic;">plugin-file1</span> [<span
- style="font-style: italic;">plugin-file2 ...</span>]<br>
-  <span style="font-weight: bold;">plplugin</span> [<a
- href="#Global_Options"><span style="font-style: italic;">options</span></a>]
-  <a href="#Extract">extract</a> [<span style="font-style: italic;">plugin-filtering-options</span>]
-[<span style="font-style: italic;">extract-options</span>] [<span
- style="font-style: italic;">extract-path ...</span>]<i><br>
-  </i><br>
-  <b>plplugin</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
-  <b>plplugin</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
-  <b>plplugin</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
-  <b>plplugin</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
-  <b>plplugin</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
-  <span style="font-weight: bold;">plplugin <a href="#--license">--license</a></span><br>
-</blockquote>
-<h3><a name="Description"></a>Description<br>
-</h3>
-<blockquote>Pipeline can be extended through the use of Java plugins
-written using the <a href="../javadoc/index.html"><span
- style="font-weight: bold;">Pipeline API</span></a>.&nbsp; This tool is
-used to install new plugins or update existing plugins in a safe manner
-so that running Pipeline daemons and client programs will properly load
-and use the newly installed plugins.&nbsp; All Pipeline programs are
-capable of reloading plugins on the fly.&nbsp; This is
-important when developing and testing new plugins, but it requires that
-care be taken so that Pipeline maintains a consistent state.&nbsp; <br>
-  <br>
-  <span style="color: rgb(153, 0, 0);"></span><span
- style="color: rgb(153, 0, 0);"></span><span
- style="font-weight: normal;">This program must be run by a user with
-Master Admin
-privileges</span> when installing plugins (see <a href="#--install"><span
- style="font-weight: bold;">install</span></a>).<br>
-</blockquote>
-<h3><a name="Plugin_Limitations"></a>Plugin Requirements</h3>
-<blockquote>Besides safely installing plugin files, <span
- style="font-weight: bold;">plplugin</span>(1) inspects the compiled
-Java class or JAR files to make sure they will be loaded properly by
-Pipeline
-programs before performing the installation.&nbsp; Due to the dynamic
-nature of how Pipeline loads plugins, there are some
-restrictions on what plugins may contain and how they are named and
-versioned.<br>
-  <br>
-All plugins must be a (direct or indirect) subclass of one of the
-plugin base classes: <a
- href="../javadoc/us/temerity/pipeline/BaseEditor.html"><span
- style="font-weight: bold;">BaseEditor</span></a>, <a
- href="../javadoc/us/temerity/pipeline/BaseAction.html"><span
- style="font-weight: bold;">BaseAction</span></a>, <a
- href="../javadoc/us/temerity/pipeline/BaseComparator.html"><span
- style="font-weight: bold;">BaseComparator</span></a>, <a
- href="../javadoc/us/temerity/pipeline/BaseTool.html"><span
- style="font-weight: bold;">BaseTool</span></a>, <a
- href="../javadoc/us/temerity/pipeline/BaseArchiver.html"><span
- style="font-weight: bold;">BaseArchiver</span></a>, <a
- href="../javadoc/us/temerity/pipeline/BaseMasterExt.html"><span
- style="font-weight: bold;">BaseMasterExt</span></a>, <a
- href="../javadoc/us/temerity/pipeline/BaseQueueExt.html"><span
- style="font-weight: bold;">BaseQueueExt</span></a>, <a
- href="../javadoc/us/temerity/pipeline/BaseAnnotation.html"><span
- style="font-weight: bold;">BaseAnnotation</span></a>, <a
- href="../javadoc/us/temerity/pipeline/BaseKeyChooser.html"><span
- style="font-weight: bold;">BaseKeyChooser</span></a> or <a
- href="../javadoc/us/temerity/pipeline/BaseKeyChooser.html"><span
- style="font-weight: bold;">BaseBuilderCollection</span></a>.&nbsp;
-Each of
-these classes has a protected constructor which should be called from
-your plugin's single no-arg constructor with constant values for the
-following four parameters:<br>
-</blockquote>
-<div style="margin-left: 40px;"><big><code>String name</code></big><br>
-</div>
-<div style="margin-left: 40px;"><br>
-<div style="margin-left: 40px;">The unique name of the plugin.&nbsp;
-This name should be short since it will be used in popup menus and
-option lists within plui(1) to
-identify the plugin.&nbsp; For convenience of using the names in
-scripts and command line arguments, its advisable that it does not
-contain whitespace or other non-printable characters.<br>
-</div>
-<br>
-<big><code>VersionID vid</code></big><br>
-<br>
-<div style="margin-left: 40px;">The plugin revision number.&nbsp;
-Pipeline allows multiple versions of the same plugin to be used
-simultaneously and this revision number is used to distinguish between
-the various versions.&nbsp; <br>
-</div>
-<br>
-<big><code>String vendor</code></big><br>
-<div style="margin-left: 40px;"><br>
-The short name of the organization which created the
-plugin.&nbsp;&nbsp; This name will also be displayed in the UI and
-should be fairly short. The plugins which are part of the Pipeline
-release all have a vendor name of "Temerity".&nbsp;&nbsp; When choosing
-a vendor name for your site, it would be prudent to consult Support &lt;<a
- href="mailto:support@temerity.us">support@temerity.us</a>&gt; to make
-sure your choice is unique.&nbsp; In particular, you should NEVER use
-the "Temerity" vendor name for your plugins.<br>
-</div>
-<br>
-<big><code>String desc</code></big><br>
-<br>
-<div style="margin-left: 40px;">A short description of the
-plugin.&nbsp; This should be a short phrase suitable for use in tool
-tips and other one line UI contexts.<br>
-</div>
-</div>
-<blockquote>The plugin class should belong to a Java package who's last
-component
-corresponds with the plugin revision number.&nbsp; Due to the syntax of
-Java package specifications a "v" must be prepended to the version
-number and the version number component must be separated by "_"
-instead of "." characters.&nbsp; <br>
-  <br>
-For example, here is complete source code of the 2.0.0 version of the
-simple Emacs editor plugin distributed with Pipeline:<code><br>
-  </code>
-  <div style="margin-left: 40px;"><code><br>
-  <a name="emacs"></a>package
-us.temerity.pipeline.plugin.v2_0_0;<br style="font-family: monospace;">
-  <br style="font-family: monospace;">
-import
-us.temerity.pipeline.BaseEditor; <br style="font-family: monospace;">
-import
-us.temerity.pipeline.VersionID; <br style="font-family: monospace;">
-  <br style="font-family: monospace;">
-/**<br style="font-family: monospace;">
-&nbsp;* The GNU extensible,
-customizable, self-documenting text editor.<br
- style="font-family: monospace;">
-&nbsp;*/<br style="font-family: monospace;">
-public<br style="font-family: monospace;">
-class EmacsEditor<br style="font-family: monospace;">
-&nbsp; extends BaseEditor<br style="font-family: monospace;">
-{&nbsp; <br style="font-family: monospace;">
-&nbsp; public<br style="font-family: monospace;">
-&nbsp; EmacsEditor()<br style="font-family: monospace;">
-&nbsp; {<br style="font-family: monospace;">
-&nbsp;&nbsp;&nbsp;
-super("Emacs", new VersionID("2.0.0"), "Temerity", <br
- style="font-family: monospace;">
-&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "The GNU text editor.", <br
- style="font-family: monospace;">
-&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "emacs");<br
- style="font-family: monospace;">
-&nbsp; }<br style="font-family: monospace;">
-  <br style="font-family: monospace;">
-&nbsp; private static final
-long serialVersionUID = <br>
-&nbsp;&nbsp;&nbsp; -5044455288055639029L;<br
- style="font-family: monospace;">
-}</code> <code><br style="font-family: monospace;">
-  </code> <br style="font-family: monospace;">
-  </div>
-You could use a shorter package name, but the general Java convention
-of prefixing the package with the company domain in reverse order is
-advisable to reduce the possiblity of Java class name clashes.<br>
-  <br>
-Notice that the Java class name is "EmacsEditor" and not "Emacs".&nbsp;
-There is no requirement that Editor plugins have "Editor" in their
-names or that the class name corresponds to the plugin name, but its
-probably not a bad idea to follow this convention in order to keeping
-things
-straight.&nbsp;&nbsp;&nbsp; <br>
-  <br>
-Note also that a "serialVersionUID" is provided for the plugin.&nbsp;
-This
-is important since these classes are serialized by Pipeline programs
-when communicating with each other over the network and this reduces
-the possibility of Java's serialization system from getting mixed
-up.&nbsp; You can easily generate this ID using the <span
- style="font-weight: bold;">serialver</span>(1) program shipped with
-Sun's Java development environment.<br>
-  <br>
-The source code for all of the plugins which are distributed by
-Temerity with Pipeline can be found here:<br>
-  <br>
-  <div style="margin-left: 40px;">@ROOT_INST_DIR@/examples/us/temerity/pipeline/plugin<br>
-  </div>
-</blockquote>
-<h3><a name="Important_Caveats"></a>Important Caveats</h3>
-<blockquote>Pipeline has a flexible plugin architecture, but it can get
-you into trouble if you aren't careful.&nbsp; <br>
-  <br>
-Action plugins should be treated with some extra caution.&nbsp; Its
-important to remember that one of Pipeline's fundamental principles is
-that checked-in nodes with regeneration actions should be able to
-exactly regenerate their files at any time.&nbsp; If you were to
-replace a
-version of an Action plugin that is used by checked-in nodes you would
-be
-taking a big risk that your changes would violate this behavior.<br>
-  <br>
-The plugin versioning prevents this possibility.&nbsp;
-Whenever you need to change an existing plugin, you must make the
-changes in a new plugin version.&nbsp;&nbsp; This guarantees
-that both checked-in and working versions of nodes which use the older
-versions of the plugin will continue to behave in a consistent
-manner.&nbsp; <br>
-  <br>
-To facilitate testing of new plugin versions, the API provides a way to
-mark plugin versions as being under active development by calling
-the <big><code><a
- href="../javadoc/us/temerity/pipeline/BasePlugin.html#underDevelopment"><span
- style="font-weight: bold;">underDevelopment</span></a></code></big>
-method
-in the plugin's constructor.&nbsp; This lets Pipeline know that the
-plugin might change substantially and that its use should be restricted
-when changes could cause problems.&nbsp; In particular, nodes who's
-Action plugin is under development cannot be Checked-In.&nbsp; <br>
-  <br>
-Plugins which are under developement can also be repeatably updated
-using the <a href="#--install"><span style="font-weight: bold;">install</span></a>
-option.&nbsp; Once the the plugin is no longer under developement, it
-cannot be updated and a new version has to be created in order to
-change the plugin.<br>
-</blockquote>
-<h3> </h3>
-<h3><a name="Information_Options"></a>Information Options</h3>
-<blockquote>The following options provide information about <b>plplugin</b>(1)
-and then immediately exit:</blockquote>
-<blockquote><b><a name="--help"></a>--help</b><br>
-  <blockquote>Prints a brief usage message and exits.<br>
-  </blockquote>
-  <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser. </blockquote>
-  <b><a name="--version"></a>--version</b><br>
-  <blockquote>Prints the version number of this software and exits.<br>
-  </blockquote>
-  <b><a name="--release-date"></a>--release-date</b><br>
-  <blockquote> Prints date that this software was released and exits.<br>
-  </blockquote>
-  <b><a name="--copyright"></a>--copyright<br>
-  </b><br>
-  <div style="margin-left: 40px;"> Prints the <a href="#Copyright"><span
- style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-  <br>
-  </div>
-  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
-  <br>
-  </span>
-  <div style="margin-left: 40px;">Prints the <a
- href="#License_Agreement"><span style="font-weight: bold;">license
-agreement</span></a> for this software and exits.<br>
-  </div>
-  <blockquote> </blockquote>
-</blockquote>
-<h3><a name="Global_Options"></a>Global Options<br>
-</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--log-file"></a>--log-file</span>=<span
- style="font-style: italic;">filename<br>
-<br>
-</span>
-<div style="margin-left: 40px;"><span style="font-style: italic;"><span
- style="font-style: italic;"></span></span>Write all output to the
-given log file (filename) instead of printing to stdout.<br>
-<br>
-<span style="font-style: italic;"></span></div>
-<span style="font-weight: bold;"><a name="--default-log-file"></a>--standard-log-file<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Write all output to the standard log
-file for <span style="font-weight: bold;">plplugin</span>(1) instead
-of printing to stdout.<br>
-<br>
-The standard log file for this site is:<br>
-<div style="margin-left: 40px;"><br>
-@ROOT_INST_DIR@/logs/plplugin.log.#<br>
-</div>
-</div>
-<span style="font-weight: bold;"><br>
-<a name="--log-depth"></a>--log-backups</span>=<span
- style="font-style: italic;">num<br>
-</span>
-<div style="margin-left: 40px;"><br>
-When logging to a file using <a href="#--log-file"><span
- style="font-weight: bold;">--log-file</span></a>, this option sets the
-number of rotating backups (<span style="font-style: italic;">num</span>)
-to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
-are the
-same as the log file with the backup number appended to the end of the
-name.&nbsp;&nbsp; The logfile will be automatically close the current
-logfile,
-rotate the backups and reopen the logfile whenever the log grows to
-larger than 10MB.<br>
-<br>
-The default number of backups is (10).<br>
-</div>
-<br>
-<span style="font-weight: bold;"><a name="--log"></a>--log</span>=<span
- style="font-style: italic;">logger:level</span>[<span
- style="font-style: italic;">,logger:level</span>[...]]</div>
-<div style="margin-left: 40px;"><br>
-<div style="margin-left: 40px;">In addition to the normal output, <b>plplugin</b>(1)
-can
-generate
-detailed output tracing the various stages of internal execution.&nbsp;
-The arguments control the several different types
-of logging information (<span style="font-style: italic;">logger</span>)
-and different amounts of information (<span style="font-style: italic;">level</span>)
-of each type to generate.&nbsp; Several loggers can be modified in one
-option.<br>
-<br>
-The (<span style="font-style: italic;">logger</span>) portion of the
-option's argument can be:<br>
-<span style="font-weight: bold;"><br>
-</span>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br
- style="font-weight: bold;">
-</div>
-<div style="margin-left: 80px;">A shortcut for specifying all loggers
-at once.<br>
-</div>
-<div style="margin-left: 40px;"><br>
-<span style="font-weight: bold;">arg</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs errors related to parsing the
-command-line options.<br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span>Logs
-command operations.<br>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;"></span></div>
-<span style="font-weight: bold;">net</span><br>
-</div>
-<div style="margin-left: 80px;">Logs
-network connections and activity.<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
-plg</span><br>
-<div style="margin-left: 40px;">Logs the loading and
-initialization of
-Pipeline plugins.<br>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;"></span></div>
-<span style="font-weight: bold;"></span></div>
-<br>
-<span style="font-weight: bold;"></span>The (<span
- style="font-style: italic;">level</span>) portion of
-the option's argument can be:<br>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">This level is used for error messages
-and other catastrophic events.<br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">warning</span><br>
-</div>
-<div style="margin-left: 80px;">This level is used for non-fatal error
-messages and advisory information.<br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">info</span><br>
-</div>
-<div style="margin-left: 80px;">This is the default output level for
-all loggers and is used for normal output from <b>plplugin</b>(1). <br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">fine</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
-</div>
-<div style="margin-left: 80px;">These three levels are used for
-increasingly more detailed command tracing messages. <br>
-</div>
-</div>
-</div>
-<h3><a name="Action_Options"></a>Action Commands<br>
-</h3>
-<div style="margin-left: 40px;">The following options specify the
-action to be taken by <b>plplugin</b>(1) and may be followed by the
-file system paths to one or more compiled Java class or JAR files
-containing
-Pipeline plugins.&nbsp; The class files should each contain one plugin
-and be named identically to the Java class with the "<span
- style="font-family: monospace;">.class</span>" extension
-appended.&nbsp; <br>
-<br>
-Alternatively, a JAR archive file may be specified for plugins which
-require more than one complied class file.&nbsp; This JAR file must
-contain at least one class which matches the same naming conventions as
-the single compiled class file specified for plugins with only a single
-file.&nbsp; It may also contain additional class files used by this
-main plugin class.&nbsp; The JAR file must be named identically to the
-single class file case, except with the ".jar" extention instead of
-".class".&nbsp; <br>
-<br>
-Although you can manually create JAR files which contain any type of
-file, <span style="font-weight: bold;">plplugin</span>(1) will only
-install the compiled class files contained in a JAR.&nbsp; The Manifest
-file in the JAR is also ignored if present.&nbsp; For these reasons,
-the JAR file saved in the installed plugins directory will not
-necessarily be identical to the JAR file given to <span
- style="font-weight: bold;">plplugin</span>(1).&nbsp; In fact, if you
-specify a JAR file containing only the single required plugin class
-file, then only this class will be installed without a wrapping JAR
-file.<br>
-<br>
-Each of the class file arguments is loaded using a Java class path
-containing only the current directory.&nbsp; This means that <span
- style="font-weight: bold;">plplugin</span>(1) should be run from the
-top Java build directory so that the directory portion of the class
-file path matches the package name.&nbsp; <br>
-<br>
-For instance, to command line to install the <a href="#emacs"><span
- style="font-weight: bold;">EmacsEditor</span></a> plugin<span
- style="font-weight: bold;"> </span>mentioned above would be be: <br>
-<br>
-<div style="margin-left: 40px;"><code>&gt;
-plplugin install us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<br>
-</code></div>
-<br>
-A JAR file example, might look like this: <br>
-<div style="margin-left: 40px;">
-<pre>&gt; jar -cvf com/studioX/plugin/v2_1_0/ExampleAction.jar \<br>  com/studioX/plugin/v2_1_0/ExampleAction.class \<br>  com/studioX/plugin/v2_1_0/ExampleExtras.class <br><br>&gt; plplugin install com/studioX/plugin/v2_1_0/ExampleAction.jar<br><code></code></pre>
-</div>
-</div>
-<div style="margin-left: 40px;">You can also install mixtures of class
-and JAR files in one invocation of <span style="font-weight: bold;">plplugin</span>(1).<span
- style="font-weight: bold;"><br>
-<br>
-<a name="List"></a>list </span>[<a href="#Plugin_Filtering_Options"><span
- style="font-style: italic;">plugin-filtering-options</span></a>]<br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;"><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Lists information about each plugin and
-exits.&nbsp;&nbsp;
-The <a href="#Plugin_Filtering_Options"><span
- style="font-style: italic;">plugin-filtering-options</span></a> can be
-used to filter the results.<br>
-<br>
-</div>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"></div>
-</div>
-<div style="margin-left: 40px;"><a name="Contents"></a><span
- style="font-weight: bold;">contents</span> [<a
- href="#Plugin_Filtering_Options"><span style="font-style: italic;">plugin-filtering-options</span></a>]<br>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;">List information about each plugin
-including associated resources and exits.&nbsp; The <a
- href="#Plugin_Filtering_Options"><span style="font-style: italic;">plugin-filtering-options</span></a>
-can be used to filter the results.<br>
-<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><a name="Summary"></a><span
- style="font-weight: bold;">summary</span><br>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;">Prints a summary of the numbers of
-required, loaded and unknown plugins organized plugin vendor.</div>
-</div>
-<div style="margin-left: 40px;"><br>
-<a name="Plugin_Filtering_Options"></a><span style="font-weight: bold;">Plugin
-Filtering Options</span><br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="Plugin_Filtering_Options--status"></a>--status=</span><span
- style="font-style: italic;">filter[,filter ...]</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
-<span style="font-style: italic;"><br>
-</span></div>
-<div style="margin-left: 40px;">The possible installation status
-filtering options (<span style="font-style: italic;">filter</span>) can
-be:<br>
-</div>
-</div>
-<div style="margin-left: 80px;"><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 80px;"><span style="font-weight: bold;">all</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;">This is the default value that performs
-no filtering.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">req</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;">This filter displays required plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">inst</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;">This filter displays installed plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">dev</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;">This filter displays plugins under
-development.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">perm</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;">This filter displays plugins NOT under
-development.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">miss</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;">This filter displays plugins that need
-to be installed.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">unknown</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;">This filter displays plugins that are
-unknown to plpluginmgr.<br>
-</div>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="Plugin_Filtering_Options--type"></a>--type=</span><span
- style="font-style: italic;">filter[,filter ...]</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;"><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">The possible plugin type filtering
-options (<span style="font-style: italic;">filter</span>) can be:<br>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This is the default value that performs
-no filtering.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">act</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays Action plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">annot</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays Annotation plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">arch</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays Archiver plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">build</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays BuilderCollection
-plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">comp</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays Comparator plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">edit</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays Editor plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">key</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays KeyChooser plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">master</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays MasterExt plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">queue</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays QueueExt plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">tool</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
-</div>
-<div style="margin-left: 40px;">This filter displays Tool plugins.<br>
-</div>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="Plugin_Filtering_Options--vendor"></a>--vendor=</span><span
- style="font-style: italic;">filter[,filter ...]</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;"><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">The vendor filtering options (<span
- style="font-style: italic;">filter</span>) must be an exact match for
-the plugin's vendor property.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="Plugin_Filtering_Options--name"></a>--name=</span><span
- style="font-style: italic;">filter[,filter ...]</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
-</div>
-</div>
-<div style="margin-left: 80px;"><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">The name filtering options (<span
- style="font-style: italic;">filter</span>) must be an exact match for
-the plugin's name property.<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-style: italic;"><br>
-</span></div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="Plugin_Filtering_Options--version"></a>--version=</span><span
- style="font-style: italic;">filter[,filter ...]</span><br>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
-<span style="font-style: italic;"><br>
-</span></div>
-<div style="margin-left: 40px;">The version filtering options (<span
- style="font-style: italic;">filter</span>) must be an exact match for
-the plugin's name property.<br>
-</div>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;"><b>Examples</b>:<br>
-<div style="margin-left: 40px;"><br>
-To display all Builder Collection plugins from the Temerity vendor
-which are under development:<br>
-<br>
-<div style="margin-left: 40px;">plplugin list --status=dev --type=build
---vendor=Temerity<br>
-</div>
-<br>
-To display all Action, Editor and Tool plugins:<br>
-<br>
-<div style="margin-left: 40px;">plplugin list --type=act,edit,tool<br>
-</div>
-<br>
-To display all missing and unknown plugins:<br>
-<br>
-<div style="margin-left: 40px;">plplugin list --status=miss,unknown<br>
-</div>
-</div>
-</div>
-<div style="margin-left: 40px;">
-</div>
-<br>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="Install"></a></span><span style="font-weight: bold;">install</span><i>
-</i>[<a style="font-style: italic;"
- href="plplugin.src.html.in#Install_Options">install-options</a>] <i>plugin-file1
-</i>[<i>plugin-file2
-...</i>]&nbsp;<br>
-<br>
-<div style="margin-left: 40px;">Installs one or more compiled plugins (<span
- style="font-style: italic;">plugin-file</span>) contained in the
-given class or JAR files and prints
-information about the plugins processed.&nbsp; <br>
-<br>
-If there exists a
-previously installed plugin with the same name and version as one of
-the given plugins, the existing plugin must be under development or an
-error will be generated (see <a href="#Important_Caveats"><span
- style="font-weight: bold;">Important
-Caveats</span></a>).&nbsp; While under development, if the form of the
-installed plugin is changed from a single class file to a JAR (or visa
-versa) the previous installed plugin file will be removed when the
-plugin is installed.&nbsp; In other words, there will never be both a
-class and JAR file form installed for a given plugin version.<br>
-<br>
-<span style="font-weight: normal;">This command requires Developer
-privileges (see <a style="font-weight: bold;"
- href="../javadoc/us/temerity/pipeline/Privileges.html#isDeveloper">Privileges</a>).<br>
-</span></div>
-<span style="font-weight: normal;"></span><span
- style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;"><a name="Install_Options"></a>Install
-Options</span><br>
-<br>
-A plugin is identified to Pipeline by the combination its Name,
-VersionID and Vendor.&nbsp; This information is specified by the plugin
-as
-part of its constructor and accessors are provided for this information
-in BasePlugin.&nbsp; When you attempt to install a plugin, there is no
-requirement that the name of the plugin Java class and package have any
-relationship with the Name, Version and Vendor of the
-plugin.&nbsp;&nbsp; <br>
-<br>
-One consequence of this is that it is possible to accidentally copy the
-source code of an existing class as a starting point for a new class
-and forget to change the original Name, Version and Vendor.&nbsp; If
-you install this new plugin and the original plugin is still under
-development, the new plugin will overwrite the existing one instead of
-adding a new kind of plugin to Pipeline!&nbsp; <br>
-<br>
-In order to reduce the possibility of mistakes of this kind, additional
-checks have been added to the plugin installation procedure which
-should catch most of these type of accidents.&nbsp; The following
-options allow expert users to selectively disable these additional
-checks in cases where it is required.&nbsp;&nbsp; These options are
-only valid when given before the <span style="font-weight: bold;">--install</span>
-option on the command line: <br>
-<br>
-<span style="font-weight: bold;"><a name="--external"></a>--external<br>
-</span>
-<div style="margin-left: 40px;"><br>
-A default <a href="plconfig.html#--local-vendor"><span
- style="font-weight: bold;">Local Vendor</span></a> has been added to
-the site profile created with <a href="plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)
-for a studio.&nbsp; If you attempt to install a plugin who's Vendor
-does not
-match this default Local Vendor, an error will be generated and the
-plugin will not be installed.&nbsp; If you wish to install plugins
-created by another Vendor, this option will disable the requirement
-that it match the Local Vendor.<br>
-</div>
-<span style="font-weight: bold;"><br>
-<a name="--rename"></a>--rename</span><br>
-<br>
-<div style="margin-left: 40px;">When installing a plugin which will
-replace a currently installed and under development plugin, the Java
-class and package names of the existing and new plugin will be
-compared.&nbsp; If they are not identical, the new plugin will not be
-installed and an error will be generated.&nbsp; This check is to
-prevent the accidental overwriting of an entirely different plugin due
-to the new plugin specifying incorrect Name, VersionID and Vendor
-information.&nbsp; However, it is occasonally necessary to be able to
-override this check and this option provides the means to do so.<br>
-</div>
-<span style="font-weight: bold;"><br>
-<a name="--dry-run"></a>--dry-run</span><br>
-<br>
-<div style="margin-left: 40px;">Perform all required checks to validate
-that an install of a plugin but do not actually perform the
-installation.&nbsp; This option allows for plugin developer to check
-whether a plugin would be installed successfully without installing it.<br>
-<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><a name="Extract"></a><span
- style="font-weight: bold;">extract</span> <a
- href="#Plugin_Filtering_Options"><span style="font-style: italic;"></span></a>[<a
- href="#Extract"><span style="font-style: italic;">extract-options</span></a>]
-[<span style="font-style: italic;">extract-path ...</span>]<br>
-<br>
-Extracts all or a subset of resources associated with a single
-plugin.&nbsp; The <span style="font-style: italic;">extract-path</span>
-can be an exact name of a resource or a path that contains multiple
-resources.&nbsp; By specifying a combination of --type, --vendor,
---name, and --version the result should be a single plugin.<br>
-<br>
-<a name="Extract_Options"></a><span style="font-weight: bold;">Extract
-Options<br>
-<br>
-<a name="Extract--type"></a>--type</span>=<span
- style="font-style: italic;"><span style="font-style: italic;">plugin-type</span><br>
-<br>
-</span>
-<div style="margin-left: 40px;">See the plugin-filtering-options for <a
- href="#Plugin_Filtering_Options--type"><span
- style="font-style: italic;">--type</span></a>.<br>
-</div>
-<span style="font-style: italic;"><br>
-</span><span style="font-weight: bold;"><a name="Extract--vendor"></a>--vendor</span>=<span
- style="font-style: italic;"><span style="font-style: italic;">plugin-vendor</span><br>
-<br>
-</span>
-<div style="margin-left: 40px;">See the plugin-filtering-options for <a
- href="#Plugin_Filtering_Options--vendor"><span
- style="font-style: italic;">--vendor</span></a>.</div>
-<span style="font-style: italic;"><br>
-</span><span style="font-weight: bold;"><a name="Extract--name"></a>--name</span>=<span
- style="font-style: italic;"><span style="font-style: italic;">plugin-name</span><br>
-<br>
-</span>
-<div style="margin-left: 40px;">See the plugin-filtering-options for <a
- href="#Plugin_Filtering_Options--name"><span
- style="font-style: italic;">--name</span></a>.</div>
-<span style="font-style: italic;"><br>
-</span><a name="Extract--version"></a><span style="font-weight: bold;">--version</span>=<span
- style="font-style: italic;"><span style="font-style: italic;">plugin-version</span><br>
-<br>
-</span>
-<div style="margin-left: 40px;">See the plugin-filtering-options for <a
- href="#Plugin_Filtering_Options--version"><span
- style="font-style: italic;">--version</span></a>.</div>
-<span style="font-style: italic;"><br>
-</span><span style="font-weight: bold;"><a name="Extract--dir"></a>--dir</span>=<span
- style="font-style: italic;">directory-name<br>
-</span>
-<div style="margin-left: 40px;"><br>
-The directory where to write the resource plugins.&nbsp; If this
-options is not specified the current directory is used.<br>
-</div>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"></div>
-</div>
-<h3><a name="See_Also"></a>See Also</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
-<br>
-</div>
-<div style="margin-left: 80px;"><a href="../javadoc/index.html"><span
- style="font-weight: bold;">Pipeline
-Java API</span></a><br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
-Programs</span><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span><br>
-<div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
- style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
- href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-<a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-<a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
- href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-<a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-<a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
- href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-<a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1), <a
- href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-<a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-<span style="font-weight: bold;"></span><a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)</div>
-<span style="font-weight: bold;"></span>
-<blockquote>
-  <blockquote> </blockquote>
-</blockquote>
-<blockquote> </blockquote>
-<blockquote> </blockquote>
-</div>
-<h3><a name="Files"></a>Files</h3>
-<div style="margin-left: 40px; font-weight: bold;"><a name="plugins_dir"></a><a
- href="../../../plugins">@ROOT_INST_DIR@/plugins</a><br>
-</div>
-<div style="margin-left: 40px;"><br>
-<div style="margin-left: 40px;">The directory containing the installed
-plugin class and JAR files.<br>
-</div>
-</div>
-<h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Originally created by <span
- style="font-weight: bold;">Jim Callahan</span>, but extended and now
-maintained by <span style="font-weight: bold;">John Lee</span> of <a
- href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.</div>
-<span style="font-weight: bold;">
-</span>
-<h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-</div>
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
-</body>
-</html>
+
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  <META content="text/html; charset=us-ascii" http-equiv=
+  "content-type">
+
+  <TITLE>plplugin(1)</TITLE>
+  <STYLE type="text/css">
+div.c12 {margin-left: 40px; font-weight: bold;}
+  a.c11 {font-style: italic;}
+  div.c10 {margin-left: 40px}
+  span.c9 {font-family: monospace;}
+  div.c8 {margin-left: 80px;}
+  br.c7 {font-weight: bold;}
+  br.c6 {font-family: monospace;}
+  div.c5 {margin-left: 40px;}
+  span.c4 {font-weight: normal;}
+  a.c3 {font-weight: bold;}
+  span.c2 {font-style: italic;}
+  span.c1 {font-weight: bold;}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3><A name="Name" id="Name"></A>Name</H3>
+
+  <BLOCKQUOTE>
+    <B>plplugin</B> - the Pipeline plugin installation tool<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Synopsis" id="Synopsis"></A>Synopsis<BR></H3>
+
+  <BLOCKQUOTE>
+    <SPAN class="c1">plplugin</SPAN> [<A href=
+    "#Global_Options"><SPAN class="c2">options</SPAN></A>] <A href=
+    "#List">list</A> [<SPAN class=
+    "c2">plugin-filtering-options</SPAN>]<BR>
+    <SPAN class="c1">plplugin</SPAN> [<A href=
+    "#Global_Options"><SPAN class="c2">options</SPAN></A>] <A href=
+    "#Contents">contents</A> [<SPAN class=
+    "c2">plugin-filtering-options</SPAN>]<BR>
+    <SPAN class="c1">plplugin</SPAN> [<A href=
+    "#Global_Options"><SPAN class="c2">options</SPAN></A>] <A href=
+    "#Summary">summary</A><BR>
+    <BR>
+    <SPAN class="c1">plplugin</SPAN> [<A href=
+    "#Global_Options"><SPAN class="c2">options</SPAN></A>] <A href=
+    "#Install">install</A> [<SPAN class=
+    "c2">install-options</SPAN>] <SPAN class=
+    "c2">plugin-file1</SPAN> [<SPAN class="c2">plugin-file2
+    ...</SPAN>]<BR>
+    <SPAN class="c1">plplugin</SPAN> [<A href=
+    "#Global_Options"><SPAN class="c2">options</SPAN></A>] <A href=
+    "#Extract">extract</A> [<SPAN class=
+    "c2">plugin-filtering-options</SPAN>] [<SPAN class=
+    "c2">extract-options</SPAN>] [<SPAN class="c2">extract-path
+    ...</SPAN>]<BR>
+    <BR>
+    <B>plplugin</B> <A class="c3" href="#--help">--help</A><BR>
+    <B>plplugin</B> <A class="c3" href=
+    "#--html-help">--html-help</A><BR>
+    <B>plplugin</B> <A class="c3" href=
+    "#--version_">--version</A><BR>
+    <B>plplugin</B> <A class="c3" href=
+    "#--release-date">--release-date</A><BR>
+    <B>plplugin</B> <A class="c3" href=
+    "#--copyright">--copyright</A><BR>
+    <SPAN class="c1">plplugin <A href=
+    "#--license">--license</A></SPAN><BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id=
+  "Description"></A>Description<BR></H3>
+
+  <BLOCKQUOTE>
+    Pipeline can be extended through the use of Java plugins
+    written using the <A href="../javadoc/index.html"><SPAN class=
+    "c1">Pipeline API</SPAN></A>.&nbsp; This tool is used to
+    install new plugins or update existing plugins in a safe manner
+    so that running Pipeline daemons and client programs will
+    properly load and use the newly installed plugins.&nbsp; All
+    Pipeline programs are capable of reloading plugins on the
+    fly.&nbsp; This is important when developing and testing new
+    plugins, but it requires that care be taken so that Pipeline
+    maintains a consistent state.&nbsp;<BR>
+    <BR>
+    <SPAN class="c4">This program must be run by a user with Master
+    Admin privileges</SPAN> when installing plugins (see <A href=
+    "#--install"><SPAN class="c1">install</SPAN></A>).<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Plugin_Limitations" id=
+  "Plugin_Limitations"></A>Plugin Requirements</H3>
+
+  <BLOCKQUOTE>
+    Besides safely installing plugin files, <SPAN class=
+    "c1">plplugin</SPAN>(1) inspects the compiled Java class or JAR
+    files to make sure they will be loaded properly by Pipeline
+    programs before performing the installation.&nbsp; Due to the
+    dynamic nature of how Pipeline loads plugins, there are some
+    restrictions on what plugins may contain and how they are named
+    and versioned.<BR>
+    <BR>
+    All plugins must be a (direct or indirect) subclass of one of
+    the plugin base classes: <A href=
+    "../javadoc/us/temerity/pipeline/BaseEditor.html"><SPAN class=
+    "c1">BaseEditor</SPAN></A>, <A href=
+    "../javadoc/us/temerity/pipeline/BaseAction.html"><SPAN class=
+    "c1">BaseAction</SPAN></A>, <A href=
+    "../javadoc/us/temerity/pipeline/BaseComparator.html"><SPAN class="c1">
+    BaseComparator</SPAN></A>, <A href=
+    "../javadoc/us/temerity/pipeline/BaseTool.html"><SPAN class=
+    "c1">BaseTool</SPAN></A>, <A href=
+    "../javadoc/us/temerity/pipeline/BaseArchiver.html"><SPAN class="c1">
+    BaseArchiver</SPAN></A>, <A href=
+    "../javadoc/us/temerity/pipeline/BaseMasterExt.html"><SPAN class="c1">
+    BaseMasterExt</SPAN></A>, <A href=
+    "../javadoc/us/temerity/pipeline/BaseQueueExt.html"><SPAN class="c1">
+    BaseQueueExt</SPAN></A>, <A href=
+    "../javadoc/us/temerity/pipeline/BaseAnnotation.html"><SPAN class="c1">
+    BaseAnnotation</SPAN></A>, <A href=
+    "../javadoc/us/temerity/pipeline/BaseKeyChooser.html"><SPAN class="c1">
+    BaseKeyChooser</SPAN></A> or <A href=
+    "../javadoc/us/temerity/pipeline/BaseKeyChooser.html"><SPAN class="c1">
+    BaseBuilderCollection</SPAN></A>.&nbsp; Each of these classes
+    has a protected constructor which should be called from your
+    plugin's single no-arg constructor with constant values for the
+    following four parameters:<BR>
+  </BLOCKQUOTE>
+
+  <DIV class="c5">
+    <STRONG><CODE>String name</CODE></STRONG><BR>
+  </DIV>
+
+  <DIV class="c5">
+    <BR>
+
+    <DIV class="c5">
+      The unique name of the plugin.&nbsp; This name should be
+      short since it will be used in popup menus and option lists
+      within plui(1) to identify the plugin.&nbsp; For convenience
+      of using the names in scripts and command line arguments, its
+      advisable that it does not contain whitespace or other
+      non-printable characters.<BR>
+    </DIV><BR>
+    <STRONG><CODE>VersionID vid</CODE></STRONG><BR>
+    <BR>
+
+    <DIV class="c5">
+      The plugin revision number.&nbsp; Pipeline allows multiple
+      versions of the same plugin to be used simultaneously and
+      this revision number is used to distinguish between the
+      various versions.&nbsp;<BR>
+    </DIV><BR>
+    <STRONG><CODE>String vendor</CODE></STRONG><BR>
+
+    <DIV class="c5">
+      <BR>
+      The short name of the organization which created the
+      plugin.&nbsp;&nbsp; This name will also be displayed in the
+      UI and should be fairly short. The plugins which are part of
+      the Pipeline release all have a vendor name of
+      "Temerity".&nbsp;&nbsp; When choosing a vendor name for your
+      site, it would be prudent to consult Support &lt;<A href=
+      "mailto:support@temerity.us">support@temerity.us</A>&gt; to
+      make sure your choice is unique.&nbsp; In particular, you
+      should NEVER use the "Temerity" vendor name for your
+      plugins.<BR>
+    </DIV><BR>
+    <STRONG><CODE>String desc</CODE></STRONG><BR>
+    <BR>
+
+    <DIV class="c5">
+      A short description of the plugin.&nbsp; This should be a
+      short phrase suitable for use in tool tips and other one line
+      UI contexts.<BR>
+    </DIV>
+  </DIV>
+
+  <BLOCKQUOTE>
+    The plugin class should belong to a Java package who's last
+    component corresponds with the plugin revision number.&nbsp;
+    Due to the syntax of Java package specifications a "v" must be
+    prepended to the version number and the version number
+    component must be separated by "_" instead of "."
+    characters.&nbsp;<BR>
+    <BR>
+    For example, here is complete source code of the 2.0.0 version
+    of the simple Emacs editor plugin distributed with
+    Pipeline:<BR>
+    <BR>
+
+    <DIV class="c5">
+      <CODE><A name="emacs" id="emacs"></A>package
+      us.temerity.pipeline.plugin.v2_0_0;<BR class="c6">
+      <BR class="c6">
+      import us.temerity.pipeline.BaseEditor;<BR class="c6">
+      import us.temerity.pipeline.VersionID;<BR class="c6">
+      <BR class="c6">
+      /**<BR class="c6">
+      &nbsp;* The GNU extensible, customizable, self-documenting
+      text editor.<BR class="c6">
+      &nbsp;*/<BR class="c6">
+      public<BR class="c6">
+      class EmacsEditor<BR class="c6">
+      &nbsp; extends BaseEditor<BR class="c6">
+      {&nbsp;<BR class="c6">
+      &nbsp; public<BR class="c6">
+      &nbsp; EmacsEditor()<BR class="c6">
+      &nbsp; {<BR class="c6">
+      &nbsp;&nbsp;&nbsp; super("Emacs", new VersionID("2.0.0"),
+      "Temerity",<BR class="c6">
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "The GNU
+      text editor.",<BR class="c6">
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      "emacs");<BR class="c6">
+      &nbsp; }<BR class="c6">
+      <BR class="c6">
+      &nbsp; private static final long serialVersionUID =<BR>
+      &nbsp;&nbsp;&nbsp; -5044455288055639029L;<BR class="c6">
+      }</CODE>
+    </DIV><BR>
+    You could use a shorter package name, but the general Java
+    convention of prefixing the package with the company domain in
+    reverse order is advisable to reduce the possiblity of Java
+    class name clashes.<BR>
+    <BR>
+    Notice that the Java class name is "EmacsEditor" and not
+    "Emacs".&nbsp; There is no requirement that Editor plugins have
+    "Editor" in their names or that the class name corresponds to
+    the plugin name, but its probably not a bad idea to follow this
+    convention in order to keeping things
+    straight.&nbsp;&nbsp;&nbsp;<BR>
+    <BR>
+    Note also that a "serialVersionUID" is provided for the
+    plugin.&nbsp; This is important since these classes are
+    serialized by Pipeline programs when communicating with each
+    other over the network and this reduces the possibility of
+    Java's serialization system from getting mixed up.&nbsp; You
+    can easily generate this ID using the <SPAN class=
+    "c1">serialver</SPAN>(1) program shipped with Sun's Java
+    development environment.<BR>
+    <BR>
+    The source code for all of the plugins which are distributed by
+    Temerity with Pipeline can be found here:<BR>
+    <BR>
+
+    <DIV class="c5">
+      @ROOT_INST_DIR@/examples/us/temerity/pipeline/plugin<BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Important_Caveats" id=
+  "Important_Caveats"></A>Important Caveats</H3>
+
+  <BLOCKQUOTE>
+    Pipeline has a flexible plugin architecture, but it can get you
+    into trouble if you aren't careful.&nbsp;<BR>
+    <BR>
+    Action plugins should be treated with some extra caution.&nbsp;
+    Its important to remember that one of Pipeline's fundamental
+    principles is that checked-in nodes with regeneration actions
+    should be able to exactly regenerate their files at any
+    time.&nbsp; If you were to replace a version of an Action
+    plugin that is used by checked-in nodes you would be taking a
+    big risk that your changes would violate this behavior.<BR>
+    <BR>
+    The plugin versioning prevents this possibility.&nbsp; Whenever
+    you need to change an existing plugin, you must make the
+    changes in a new plugin version.&nbsp;&nbsp; This guarantees
+    that both checked-in and working versions of nodes which use
+    the older versions of the plugin will continue to behave in a
+    consistent manner.&nbsp;<BR>
+    <BR>
+    To facilitate testing of new plugin versions, the API provides
+    a way to mark plugin versions as being under active development
+    by calling the <BIG><CODE><A href=
+    "../javadoc/us/temerity/pipeline/BasePlugin.html#underDevelopment">
+    <SPAN class="c1">underDevelopment</SPAN></A></CODE></BIG>
+    method in the plugin's constructor.&nbsp; This lets Pipeline
+    know that the plugin might change substantially and that its
+    use should be restricted when changes could cause
+    problems.&nbsp; In particular, nodes who's Action plugin is
+    under development cannot be Checked-In.&nbsp;<BR>
+    <BR>
+    Plugins which are under developement can also be repeatably
+    updated using the <A href="#--install"><SPAN class=
+    "c1">install</SPAN></A> option.&nbsp; Once the the plugin is no
+    longer under developement, it cannot be updated and a new
+    version has to be created in order to change the plugin.<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    The following options provide information about
+    <B>plplugin</B>(1) and then immediately exit:
+  </BLOCKQUOTE>
+
+  <BLOCKQUOTE>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.
+    </BLOCKQUOTE><B><A name="--version"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and exits.<BR>
+    </BLOCKQUOTE><B><A name="--copyright"></A>--copyright</B><BR>
+    <BR>
+
+    <DIV class="c5">
+      Prints the <A href="#Copyright"><SPAN class="c1">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+      <BR>
+    </DIV><SPAN class="c1"><A name="--license"></A>--license<BR>
+    <BR></SPAN>
+
+    <DIV class="c5">
+      Prints the <A href="#License_Agreement"><SPAN class=
+      "c1">license agreement</SPAN></A> for this software and
+      exits.<BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Global_Options" id="Global_Options"></A>Global
+  Options<BR></H3>
+
+  <DIV class="c5">
+    <SPAN class="c1"><A name=
+    "--log-file"></A>--log-file</SPAN>=<SPAN class=
+    "c2">filename<BR>
+    <BR></SPAN>
+
+    <DIV class="c5">
+      Write all output to the given log file (filename) instead of
+      printing to stdout.<BR>
+      <BR>
+    </DIV><SPAN class="c1"><A name=
+    "--default-log-file"></A>--standard-log-file<BR>
+    <BR></SPAN>
+
+    <DIV class="c5">
+      Write all output to the standard log file for <SPAN class=
+      "c1">plplugin</SPAN>(1) instead of printing to stdout.<BR>
+      <BR>
+      The standard log file for this site is:<BR>
+
+      <DIV class="c5">
+        <BR>
+        @ROOT_INST_DIR@/logs/plplugin.log.#<BR>
+      </DIV>
+    </DIV><BR>
+    <SPAN class="c1"><A name=
+    "--log-depth"></A>--log-backups</SPAN>=<SPAN class=
+    "c2">num</SPAN><BR>
+
+    <DIV class="c5">
+      <BR>
+      When logging to a file using <A href=
+      "#--log-file"><SPAN class="c1">--log-file</SPAN></A>, this
+      option sets the number of rotating backups (<SPAN class=
+      "c2">num</SPAN>) to maintain of the logfile.&nbsp;&nbsp; The
+      names of the backup files are the same as the log file with
+      the backup number appended to the end of the
+      name.&nbsp;&nbsp; The logfile will be automatically close the
+      current logfile, rotate the backups and reopen the logfile
+      whenever the log grows to larger than 10MB.<BR>
+      <BR>
+      The default number of backups is (10).<BR>
+    </DIV><BR>
+    <SPAN class="c1"><A name="--log"></A>--log</SPAN>=<SPAN class=
+    "c2">logger:level</SPAN>[<SPAN class=
+    "c2">,logger:level</SPAN>[...]]
+  </DIV>
+
+  <DIV class="c5">
+    <BR>
+
+    <DIV class="c5">
+      In addition to the normal output, <B>plplugin</B>(1) can
+      generate detailed output tracing the various stages of
+      internal execution.&nbsp; The arguments control the several
+      different types of logging information (<SPAN class=
+      "c2">logger</SPAN>) and different amounts of information
+      (<SPAN class="c2">level</SPAN>) of each type to
+      generate.&nbsp; Several loggers can be modified in one
+      option.<BR>
+      <BR>
+      The (<SPAN class="c2">logger</SPAN>) portion of the option's
+      argument can be:<BR>
+      <BR>
+
+      <DIV class="c5">
+        <SPAN class="c1">all</SPAN><BR class="c7">
+      </DIV>
+
+      <DIV class="c8">
+        A shortcut for specifying all loggers at once.<BR>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+        <SPAN class="c1">arg</SPAN><BR>
+      </DIV>
+
+      <DIV class="c8">
+        Logs errors related to parsing the command-line
+        options.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c5">
+        <SPAN class="c1">ops</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c5">
+          Logs command operations.<BR>
+          <BR>
+        </DIV><SPAN class="c1">net</SPAN><BR>
+      </DIV>
+
+      <DIV class="c8">
+        Logs network connections and activity.
+      </DIV><BR>
+
+      <DIV class="c5">
+        <SPAN class="c1">plg</SPAN><BR>
+
+        <DIV class="c5">
+          Logs the loading and initialization of Pipeline
+          plugins.<BR>
+          <BR>
+        </DIV>
+      </DIV><BR>
+      The (<SPAN class="c2">level</SPAN>) portion of the option's
+      argument can be:<BR>
+      <BR>
+
+      <DIV class="c5">
+        <SPAN class="c1">severe</SPAN><BR>
+      </DIV>
+
+      <DIV class="c8">
+        This level is used for error messages and other
+        catastrophic events.<BR>
+      </DIV>
+
+      <DIV class="c5">
+        <BR class="c7">
+        <SPAN class="c1">warning</SPAN><BR>
+      </DIV>
+
+      <DIV class="c8">
+        This level is used for non-fatal error messages and
+        advisory information.<BR>
+      </DIV>
+
+      <DIV class="c5">
+        <BR class="c7">
+        <SPAN class="c1">info</SPAN><BR>
+      </DIV>
+
+      <DIV class="c8">
+        This is the default output level for all loggers and is
+        used for normal output from <B>plplugin</B>(1).<BR>
+      </DIV>
+
+      <DIV class="c5">
+        <BR class="c7">
+        <SPAN class="c1">fine</SPAN><BR>
+        <SPAN class="c1">finer</SPAN><BR>
+        <SPAN class="c1">finest</SPAN><BR>
+      </DIV>
+
+      <DIV class="c8">
+        These three levels are used for increasingly more detailed
+        command tracing messages.<BR>
+      </DIV>
+    </DIV>
+  </DIV><BR>
+
+  <H3><A name="Information_Action_Commands" id=
+  "Information_Action_Commands"></A>Information Action
+  Commands<BR></H3>
+
+  <DIV class="c5">
+    <SPAN class="c1"><A name="List" id=
+    "List"></A><STRONG>list</STRONG></SPAN> [<A href=
+    "#Plugin_Filtering_Options"><SPAN class=
+    "c2">plugin-filtering-options</SPAN></A>]<BR>
+    <BR>
+
+    <DIV class="c5">
+      Lists information about each plugin and exits.&nbsp;&nbsp;
+      The <A href="#Plugin_Filtering_Options"><SPAN class=
+      "c2">plugin-filtering-options</SPAN></A> can be used to
+      filter the results.
+    </DIV>
+  </DIV><BR>
+
+  <DIV class="c5">
+    <A name="Contents" id="Contents"></A><SPAN class=
+    "c1">contents</SPAN> [<A href=
+    "#Plugin_Filtering_Options"><SPAN class=
+    "c2">plugin-filtering-options</SPAN></A>]<BR>
+    <BR>
+
+    <DIV class="c5">
+      List information about each plugin including associated
+      resources and exits.&nbsp; The <A href=
+      "#Plugin_Filtering_Options"><SPAN class=
+      "c2">plugin-filtering-options</SPAN></A> can be used to
+      filter the results.
+    </DIV>
+  </DIV><BR>
+
+  <DIV class="c5">
+    <A name="Summary" id="Summary"></A><SPAN class=
+    "c1">summary</SPAN><BR>
+
+    <DIV class="c5">
+      Prints a summary of the numbers of required, loaded and
+      unknown plugins organized plugin vendor.
+    </DIV>
+  </DIV><BR>
+
+  <DIV class="c5">
+    <BR>
+    <A name="Plugin_Filtering_Options" id=
+    "Plugin_Filtering_Options"></A><SPAN class="c1">Plugin
+    Filtering Options</SPAN><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c5">
+    <DIV class="c5">
+      <SPAN class="c1"><A name="Plugin_Filtering_Options--status"
+      id=
+      "Plugin_Filtering_Options--status"></A>--status=</SPAN><SPAN class="c2">filter[,filter
+      ...]</SPAN><BR>
+    </DIV>
+
+    <DIV class="c5">
+      <DIV class="c5">
+        <DIV class="c5"></DIV><SPAN class="c2"><BR></SPAN>
+      </DIV>
+
+      <DIV class="c5">
+        The possible installation status filtering options
+        (<SPAN class="c2">filter</SPAN>) can be:<BR>
+      </DIV>
+    </DIV>
+
+    <DIV class="c8">
+      <BR>
+    </DIV>
+
+    <DIV class="c5">
+      <DIV class="c8">
+        <SPAN class="c1">all</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c10"></DIV>
+
+        <DIV class="c8">
+          This is the default value that performs no filtering.<BR>
+        </DIV>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+      </DIV>
+
+      <DIV class="c8">
+        <SPAN class="c1">req</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c10"></DIV>
+
+        <DIV class="c8">
+          This filter displays required plugins.<BR>
+        </DIV>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+      </DIV>
+
+      <DIV class="c8">
+        <SPAN class="c1">inst</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c10"></DIV>
+
+        <DIV class="c8">
+          This filter displays installed plugins.<BR>
+        </DIV>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+      </DIV>
+
+      <DIV class="c8">
+        <SPAN class="c1">dev</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c10"></DIV>
+
+        <DIV class="c8">
+          This filter displays plugins under development.<BR>
+        </DIV>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+      </DIV>
+
+      <DIV class="c8">
+        <SPAN class="c1">perm</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c10"></DIV>
+
+        <DIV class="c8">
+          This filter displays plugins NOT under development.<BR>
+        </DIV>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+      </DIV>
+
+      <DIV class="c8">
+        <SPAN class="c1">miss</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c10"></DIV>
+
+        <DIV class="c8">
+          This filter displays plugins that need to be
+          installed.<BR>
+        </DIV>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+      </DIV>
+
+      <DIV class="c8">
+        <SPAN class="c1">unknown</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c10"></DIV>
+
+        <DIV class="c8">
+          This filter displays plugins that are unknown to
+          plpluginmgr.<BR>
+        </DIV>
+      </DIV>
+    </DIV>
+
+    <DIV class="c5">
+      <BR>
+    </DIV>
+
+    <DIV class="c5">
+      <SPAN class="c1"><A name="Plugin_Filtering_Options--type" id=
+      "Plugin_Filtering_Options--type"></A>--type=</SPAN><SPAN class="c2">filter[,filter
+      ...]</SPAN><BR>
+    </DIV>
+
+    <DIV class="c10"></DIV>
+
+    <DIV class="c8">
+      <BR>
+    </DIV>
+
+    <DIV class="c5">
+      <DIV class="c5">
+        The possible plugin type filtering options (<SPAN class=
+        "c2">filter</SPAN>) can be:<BR>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+      </DIV>
+
+      <DIV class="c5">
+        <DIV class="c5">
+          <SPAN class="c1">all</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This is the default value that performs no
+            filtering.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">act</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays Action plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">annot</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays Annotation plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">arch</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays Archiver plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">build</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays BuilderCollection plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">comp</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays Comparator plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">edit</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays Editor plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">key</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays KeyChooser plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">master</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays MasterExt plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">queue</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays QueueExt plugins.<BR>
+          </DIV>
+        </DIV>
+
+        <DIV class="c5">
+          <BR>
+        </DIV>
+
+        <DIV class="c5">
+          <SPAN class="c1">tool</SPAN><BR>
+        </DIV>
+
+        <DIV class="c5">
+          <DIV class="c10"></DIV>
+
+          <DIV class="c5">
+            This filter displays Tool plugins.<BR>
+          </DIV>
+        </DIV>
+      </DIV>
+
+      <DIV class="c5">
+        <BR>
+      </DIV>
+    </DIV>
+
+    <DIV class="c5">
+      <SPAN class="c1"><A name="Plugin_Filtering_Options--vendor"
+      id=
+      "Plugin_Filtering_Options--vendor"></A>--vendor=</SPAN><SPAN class="c2">filter[,filter
+      ...]</SPAN><BR>
+      <BR>
+
+      <DIV class="c5">
+        The vendor filtering options (<SPAN class=
+        "c2">filter</SPAN>) must be an exact match for the plugin's
+        vendor property.<BR>
+      </DIV>
+    </DIV>
+
+    <DIV class="c5">
+      <BR>
+    </DIV>
+
+    <DIV class="c5">
+      <SPAN class="c1"><A name="Plugin_Filtering_Options--name" id=
+      "Plugin_Filtering_Options--name"></A>--name=</SPAN><SPAN class="c2">filter[,filter
+      ...]</SPAN><BR>
+      <BR>
+
+      <DIV class="c5">
+        The name filtering options (<SPAN class="c2">filter</SPAN>)
+        must be an exact match for the plugin's name property.<BR>
+      </DIV>
+    </DIV><BR>
+
+    <DIV class="c5">
+      <SPAN class="c1"><A name="Plugin_Filtering_Options--version"
+      id=
+      "Plugin_Filtering_Options--version"></A>--version=</SPAN><SPAN class="c2">filter[,filter
+      ...]</SPAN><BR>
+
+      <DIV class="c5">
+        The version filtering options (<SPAN class=
+        "c2">filter</SPAN>) must be an exact match for the plugin's
+        name property.<BR>
+      </DIV>
+    </DIV>
+  </DIV><BR>
+  <BR>
+
+  <DIV class="c5">
+    <B>Examples</B><BR>
+
+    <DIV class="c5">
+      <BR>
+      To display all Builder Collection plugins from the Temerity
+      vendor which are under development:<BR>
+      <BR>
+
+      <DIV class="c5">
+        plplugin list --status=dev --type=build
+        --vendor=Temerity<BR>
+      </DIV><BR>
+      To display all Action, Editor and Tool plugins:<BR>
+      <BR>
+
+      <DIV class="c5">
+        plplugin list --type=act,edit,tool<BR>
+      </DIV><BR>
+      To display all missing and unknown plugins:<BR>
+      <BR>
+
+      <DIV class="c5">
+        plplugin list --status=miss,unknown
+      </DIV>
+    </DIV>
+  </DIV><BR>
+
+  <H3><A name="Installation_Command" id=
+  "Installation_Command"></A>Installation Command</H3>
+
+  <DIV class="c5">
+    <SPAN class="c1"><A name="Install" id=
+    "Install"></A></SPAN><SPAN class="c1">install</SPAN> [<A class=
+    "c11" href=
+    "plplugin.src.html.in#Install_Options">install-options</A>]
+    <I>plugin-file1</I> [<I>plugin-file2 ...</I>]&nbsp;<BR>
+    <BR>
+
+    <DIV class="c5">
+      Installs one or more compiled plugins (<SPAN class=
+      "c2">plugin-file</SPAN>) contained in the given class or JAR
+      files and prints information about the plugins
+      processed.&nbsp; The class files should each contain one
+      plugin and be named identically to the Java class with the
+      "<SPAN class="c9">.class</SPAN>" extension
+      appended.&nbsp;<BR>
+      <BR>
+      Alternatively, a JAR archive file may be specified for
+      plugins which require more than one complied class
+      file.&nbsp; This JAR file must contain at least one class
+      which matches the same naming conventions as the single
+      compiled class file specified for plugins with only a single
+      file.&nbsp; It may also contain additional class files used
+      by this main plugin class.&nbsp; The JAR file must be named
+      identically to the single class file case, except with the
+      ".jar" extention instead of ".class".&nbsp;You can also
+      install mixtures of class and JAR files in one invocation of
+      <SPAN class="c1">plplugin</SPAN>(1).<BR>
+      <BR>
+      Each of the class file arguments is loaded using a Java class
+      path containing only the current directory.&nbsp; This means
+      that <SPAN class="c1">plplugin</SPAN>(1) should be run from
+      the top Java build directory so that the directory portion of
+      the class file path matches the package name.&nbsp;<BR>
+      <BR>
+      If there exists a previously installed plugin with the same
+      name and version as one of the given plugins, the existing
+      plugin must be under development or an error will be
+      generated (see <A href="#Important_Caveats"><SPAN class=
+      "c1">Important Caveats</SPAN></A>).&nbsp; While under
+      development, if the form of the installed plugin is changed
+      from a single class file to a JAR (or visa versa) the
+      previous installed plugin file will be removed when the
+      plugin is installed.&nbsp; In other words, there will never
+      be both a class and JAR file form installed for a given
+      plugin version.<BR>
+      <BR>
+      <SPAN class="c4">This command requires Developer privileges
+      (see <A class="c3" href=
+      "../javadoc/us/temerity/pipeline/Privileges.html#isDeveloper">
+      Privileges</A>).<BR></SPAN>
+    </DIV><BR>
+    <SPAN class="c1"><A name="Install_Options" id=
+    "Install_Options"></A>Install Options</SPAN><BR>
+    <BR>
+
+    <DIV class="c5">
+      A plugin is identified to Pipeline by the combination its
+      Name, VersionID and Vendor.&nbsp; This information is
+      specified by the plugin as part of its constructor and
+      accessors are provided for this information in
+      BasePlugin.&nbsp; When you attempt to install a plugin, there
+      is no requirement that the name of the plugin Java class and
+      package have any relationship with the Name, Version and
+      Vendor of the plugin.&nbsp;&nbsp;<BR>
+      <BR>
+      One consequence of this is that it is possible to
+      accidentally copy the source code of an existing class as a
+      starting point for a new class and forget to change the
+      original Name, Version and Vendor.&nbsp; If you install this
+      new plugin and the original plugin is still under
+      development, the new plugin will overwrite the existing one
+      instead of adding a new kind of plugin to Pipeline!&nbsp;<BR>
+      <BR>
+      In order to reduce the possibility of mistakes of this kind,
+      additional checks have been added to the plugin installation
+      procedure which should catch most of these type of
+      accidents.&nbsp; The following options allow expert users to
+      selectively disable these additional checks in cases where it
+      is required.&nbsp;&nbsp;<BR>
+      <BR>
+      <SPAN class="c1"><A name=
+      "--external"></A>--external<BR></SPAN>
+
+      <DIV class="c5">
+        <BR>
+        A default <A href=
+        "plconfig.html#--local-vendor"><SPAN class="c1">Local
+        Vendor</SPAN></A> has been added to the site profile
+        created with <A href="plconfig.html"><SPAN class=
+        "c1">plconfig</SPAN></A>(1) for a studio.&nbsp; If you
+        attempt to install a plugin who's Vendor does not match
+        this default Local Vendor, an error will be generated and
+        the plugin will not be installed.&nbsp; If you wish to
+        install plugins created by another Vendor, this option will
+        disable the requirement that it match the Local Vendor.
+      </DIV><BR>
+      <SPAN class="c1"><A name="--rename"></A>--rename</SPAN><BR>
+      <BR>
+
+      <DIV class="c5">
+        When installing a plugin which will replace a currently
+        installed and under development plugin, the Java class and
+        package names of the existing and new plugin will be
+        compared.&nbsp; If they are not identical, the new plugin
+        will not be installed and an error will be generated.&nbsp;
+        This check is to prevent the accidental overwriting of an
+        entirely different plugin due to the new plugin specifying
+        incorrect Name, VersionID and Vendor information.&nbsp;
+        However, it is occasonally necessary to be able to override
+        this check and this option provides the means to do so.
+      </DIV><BR>
+      <SPAN class="c1"><A name="--dry-run"></A>--dry-run</SPAN><BR>
+      <BR>
+
+      <DIV class="c5">
+        Perform all required checks to validate that an install of
+        a plugin but do not actually perform the
+        installation.&nbsp; This option allows for plugin developer
+        to check whether a plugin would be installed successfully
+        without installing it.
+      </DIV>
+    </DIV>
+  </DIV><BR>
+  <BR>
+
+  <DIV class="c5">
+    <SPAN class="c1">Examples</SPAN><BR>
+    <BR>
+
+    <DIV class="c5">
+      The command line to install the <A href="#emacs"><SPAN class=
+      "c1">EmacsEditor</SPAN></A> plugin mentioned above would be
+      be:<BR>
+      <BR>
+
+      <DIV class="c5">
+        <CODE>&gt; plplugin install
+        us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<BR></CODE>
+      </DIV><BR>
+      A JAR file example, might look like this:
+
+      <DIV class="c5">
+        <PRE>
+&gt; jar -cvf com/studioX/plugin/v2_1_0/ExampleAction.jar \<BR>  com/studioX/plugin/v2_1_0/ExampleAction.class \<BR>  com/studioX/plugin/v2_1_0/ExampleExtras.class <BR><BR>&gt; plplugin install com/studioX/plugin/v2_1_0/ExampleAction.jar
+</PRE>
+      </DIV>
+    </DIV>
+  </DIV>
+
+  <H3><A name="Extraction_Command" id=
+  "Extraction_Command"></A>Extraction Command</H3>
+
+  <DIV class="c5">
+    <A name="Extract" id="Extract"></A><SPAN class=
+    "c1">extract</SPAN> <A href=
+    "#Plugin_Filtering_Options"></A>[<A href=
+    "#Extract"><SPAN class="c2">extract-options</SPAN></A>]
+    [<SPAN class="c2">extract-path ...</SPAN>]<BR>
+    <BR>
+    Extracts all or a subset of resources associated with a single
+    plugin.&nbsp; The <SPAN class="c2">extract-path</SPAN> can be
+    an exact name of a resource or a path that contains multiple
+    resources.&nbsp; By specifying a combination of --type,
+    --vendor, --name, and --version the result should be a single
+    plugin.<BR>
+    <BR>
+    <A name="Extract_Options" id="Extract_Options"></A><SPAN class=
+    "c1">Extract Options<BR>
+    <BR></SPAN>
+
+    <DIV class="c5">
+      <SPAN class="c1"><A name="Extract--type" id=
+      "Extract--type"></A>--type</SPAN>=<SPAN class=
+      "c2"><SPAN class="c2">plugin-type</SPAN><BR>
+      <BR></SPAN>
+
+      <DIV class="c5">
+        See the plugin-filtering-options for <A href=
+        "#Plugin_Filtering_Options--type"><SPAN class=
+        "c2">--type</SPAN></A>.
+      </DIV><BR>
+
+      <SPAN class="c1"><A name=
+      "Extract--vendor" id=
+      "Extract--vendor"></A>--vendor</SPAN>=<SPAN class=
+      "c2"><SPAN class="c2">plugin-vendor</SPAN></SPAN><BR><BR>
+
+      <DIV class="c5">
+        See the plugin-filtering-options for <A href=
+        "#Plugin_Filtering_Options--vendor"><SPAN class=
+        "c2">--vendor</SPAN></A>.
+      </DIV><BR>
+
+      <SPAN class="c1"><A name=
+      "Extract--name" id=
+      "Extract--name"></A>--name</SPAN>=<SPAN class=
+      "c2"><SPAN class="c2">plugin-name</SPAN></SPAN><BR>
+      <BR>
+
+      <DIV class="c5">
+        See the plugin-filtering-options for <A href=
+        "#Plugin_Filtering_Options--name"><SPAN class=
+        "c2">--name</SPAN></A>.
+      </DIV>
+      <BR>
+
+      <A name="Extract--version"
+      id="Extract--version"></A><SPAN class=
+      "c1">--version</SPAN>=<SPAN class="c2"><SPAN class=
+      "c2">plugin-version</SPAN>
+      </SPAN><BR><BR>
+
+      <DIV class="c5">
+        See the plugin-filtering-options for <A href=
+        "#Plugin_Filtering_Options--version"><SPAN class=
+        "c2">--version</SPAN></A>.
+      </DIV><BR>
+
+      <SPAN class="c1"><A name=
+      "Extract--dir" id=
+      "Extract--dir"></A>--dir</SPAN>=<SPAN class="c2">directory-name<BR>
+      </SPAN>
+
+      <DIV class="c5">
+        <BR>
+        The directory where to write the resource plugins.&nbsp; If
+        this options is not specified the current directory is
+        used.<BR>
+      </DIV>
+    </DIV>
+
+    </DIV>
+
+    <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+    <DIV class="c5">
+      <SPAN class="c1">Documentation</SPAN><BR>
+    </DIV>
+
+    <DIV class="c8">
+      <A href="../javadoc/index.html"><SPAN class="c1">Pipeline
+      Java API</SPAN></A><BR>
+      <BR>
+    </DIV>
+
+    <DIV class="c5">
+      <SPAN class="c1">Pipeline Programs</SPAN><BR>
+
+      <DIV class="c5">
+        <A href="plui.html"><SPAN class="c1">plui</SPAN></A>(1),
+        <A href="plremote.html"><SPAN class=
+        "c1">plremote</SPAN></A>(1), plversion(1), <A href=
+        "plscript.html"><SPAN class="c1">plscript</SPAN></A>(1),
+        <A href="plpython.html"><SPAN class=
+        "c1">plpython</SPAN></A>(1), <A href=
+        "plplugin.html"></A><A href="plplugin.html"><SPAN class=
+        "c1">plplugin</SPAN></A>(1), <A href=
+        "plbuilder.html"><SPAN class=
+        "c1">plbuilder</SPAN></A>(1)<BR>
+        <A href="plmaster.html"><SPAN class=
+        "c1">plmaster</SPAN></A>(1), <A href=
+        "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+        "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+        "c1">plqueuemgr</SPAN></A>(1), <A href=
+        "plpluginmgr.html"><SPAN class=
+        "c1">plpluginmgr</SPAN></A>(1), <A href=
+        "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+        "c1">plfilemgr</SPAN></A>(1), <A href=
+        "pljobmgr.html"><SPAN class="c1">pljobmgr</SPAN></A>(1)<BR>
+        <A href="pls.html"><SPAN class="c1">pls</SPAN></A>(1),
+        <A href="plbrowse.html"><SPAN class=
+        "c1">plbrowse</SPAN></A>(1), <A href=
+        "realpath.html"><SPAN class="c1">realpath</SPAN></A>(1)<BR>
+        <A href=
+        "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+        <SPAN class="c1">plconfig</SPAN></A>(1)
+      </DIV>
+    </DIV>
+
+    <H3><A name="Files" id="Files"></A>Files</H3>
+
+    <DIV class="c12">
+      <A name="plugins_dir" id="plugins_dir"></A><A href=
+      "../../../plugins">@ROOT_INST_DIR@/plugins</A><BR>
+    </DIV>
+
+    <DIV class="c5">
+      <BR>
+
+      <DIV class="c5">
+        The directory containing the installed plugin class and JAR
+        files.<BR>
+      </DIV>
+    </DIV>
+
+    <H3><A name="Author" id="Author"></A>Author</H3>
+
+    <DIV class="c5">
+      Originally created by <SPAN class="c1">Jim Callahan</SPAN>,
+      but extended and now maintained by <SPAN class="c1">John
+      Lee</SPAN> of <A href="http://temerity.us/"><SPAN class=
+      "c1">Temerity Software, Inc</SPAN></A>.
+    </DIV>
+
+    <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+    <DIV class="c5">
+      @COPYRIGHT@<BR>
+    </DIV>
+
+    <H3><A name="License_Agreement" id=
+    "License_Agreement"></A>License Agreement</H3>
+
+    <DIV class="c5">
+      @LICENSE@
+    </DIV>
+  </DIV>
+</BODY>
+</HTML>

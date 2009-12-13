@@ -1,373 +1,453 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <title>pljava(1)</title>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-</head>
-<body>
-<h3>Name</h3>
-<blockquote><b>pljava</b> - a utility for running Java programs which
-use the Pipeline Java API.<br>
-</blockquote>
-<h3>Synopsis</h3>
-<blockquote><b>pljava</b> [<a href="#Global_Options"><i>options</i></a>]
-  <span style="font-weight: bold;">--jar</span>=<span
- style="font-style: italic;">program.jar</span><span
- style="font-style: italic;"></span><span style="font-weight: bold;"></span>
-[<span style="font-weight: bold;">--main</span>=<span
- style="font-style: italic;">mainclass</span>]&nbsp; [<span
- style="font-weight: bold;">--</span> <span style="font-style: italic;">args</span>
-...] <br>
-  <b>pljava</b> [<a href="pljava.src.html.in#Global_Options"><i>options</i></a>]&nbsp;<span
- style="font-weight: bold;"></span><span style="font-weight: bold;">--classpath</span>=<span
- style="font-style: italic;">classdir </span>[<span
- style="font-weight: bold;">--classpath</span>=...<span
- style="font-style: italic;"></span>] <span style="font-weight: bold;">--main</span>=<span
- style="font-style: italic;">mainclass&nbsp; </span><span
- style="font-style: italic;"></span><span style="font-weight: bold;"></span>
-[<span style="font-weight: bold;">--</span> <span
- style="font-style: italic;">args</span> ...]<br>
-  <b>pljava</b> [<a href="pljava.src.html.in#Global_Options"><i>options</i></a>]
-  <span style="font-weight: bold;">--source</span>=<span
- style="font-style: italic;">program.java&nbsp; </span><span
- style="font-style: italic;"></span><span style="font-weight: bold;"></span>
-[<span style="font-weight: bold;">--</span> <span
- style="font-style: italic;">args</span> ...] <br>
-  <br>
-  <b>pljava</b> <a href="#--help" style="font-weight: bold;">--help</a><br>
-  <b>pljava</b> <a href="#--html-help" style="font-weight: bold;">--html-help</a><br>
-  <b>pljava</b> <a href="#--version_" style="font-weight: bold;">--version</a><br>
-  <b>pljava</b> <a href="#--release-date" style="font-weight: bold;">--release-date</a><br>
-  <b>pljava</b> <a href="#--copyright" style="font-weight: bold;">--copyright</a><br>
-  <span style="font-weight: bold;">pljava <a href="#--license">--license</a></span><br>
-</blockquote>
-<h3><a name="Description"></a>Description</h3>
-<blockquote>This tool uses the Java Runtime Enviroment (JRE) to execute
-a Java based program which makes use of the Pipeline API.&nbsp; This
-tool is not strictly necessary, but makes it easier to run Pipeline
-related programs by managing the fairly complex set of command-line
-options which must be provided to the <span style="font-weight: bold;">java</span>(1)
-program in order to take advantage of the Pipeline API.<br>
-</blockquote>
-<div style="margin-left: 40px;">There are three ways that the Java
-program can be specified:&nbsp; <br>
-</div>
-<div style="margin-left: 40px;">
-<ol>
-</ol>
-<span style="font-weight: bold;">--jar</span>=<span
- style="font-style: italic;">program.jar</span><span
- style="font-style: italic;"></span><span style="font-weight: bold;"></span>
-[<span style="font-weight: bold;">--main</span>=<span
- style="font-style: italic;">mainclass</span>]<br>
-<div style="margin-left: 40px;"><br>
-The class files that make up the program have been packaged into an
-Java Archive (<span style="font-style: italic;">program.jar</span>)
-using <span style="font-weight: bold;">jar</span>(1).&nbsp; If the
-Manifest of the supplied JAR file includes a "Main-Class" entry, then
-it's "main" method will be executed as the entry point for the
-program.&nbsp; Alternatively, the entry point class can be specified on
-the command-line using the <span style="font-weight: bold;">--main</span>
-option instead.&nbsp;&nbsp; Either way, the entry point class (<span
- style="font-style: italic;">mainclass</span>) should be specified as
-using a fully resolved class name which includes any package
-prefixes.&nbsp; If a <span style="font-weight: bold;">--main</span>
-option is given, it will override and "Main-Class" specified in the
-Manifest of the JAR file.&nbsp; <br>
-<br>
-</div>
-<span style="font-weight: bold;">--classpath</span>=<span
- style="font-style: italic;">classdir </span>[<span
- style="font-weight: bold;">--classpath</span>=<span
- style="font-style: italic;"></span>...<span style="font-style: italic;"></span>]&nbsp;
-<span style="font-weight: bold;">--main</span>=<span
- style="font-style: italic;">mainclass<br>
-<br>
-</span>
-<div style="margin-left: 40px;">The class files are not packaged, but
-instead live under one or more directories (<span
- style="font-style: italic;">classdir</span>) who's structure mirrors
-that of the Java package heirarchy.&nbsp; Each of these package root
-directories is specified with a separate <span
- style="font-weight: bold;">--classpath</span> option.&nbsp; With this
-approach the entry point class (<span style="font-style: italic;">mainclass</span>)
-must be provided using the <span style="font-weight: bold;">--main</span>
-option.<br>
-</div>
-<span style="font-weight: bold;"><br>
---source</span>=<span style="font-style: italic;">program.java</span><br>
-<div style="margin-left: 40px;"><br>
-Normally, a developer would use <span style="font-weight: bold;">javac</span>(1)
-is to compile Java source code files into Java bytecode and then used
-either the <span style="font-weight: bold;">--jar</span> or <span
- style="font-weight: bold;">--classpath</span> methods to run the
-resulting bytecode.&nbsp; Although this is the most efficient way and
-recommended way of creating Java programs, it can be inconvenient when
-writing very simple single class programs.&nbsp; When only one class is
-required, it can be useful to be able to compile and then run it all in
-one step.&nbsp; Using this <span style="font-weight: bold;">--source</span>
-option to supply the single Java source code file, it can effectively
-be treated as if it was a scripting language.&nbsp; The Java source
-file given to the <span style="font-weight: bold;">--source</span>
-option must contain a class with a "main" method and not be included in
-a Java package.&nbsp; The source file name (minus the ".java"
-extension) must also be identical to the classname.<br>
-</div>
-</div>
-<blockquote>All three methods allow additional
-command-line arguments (<span style="font-style: italic;">args</span>)
-to be given following <span style="font-weight: bold;">--</span> which
-will be passed unaltered to the Java program as the arguments to the
-main(String[] args) method of the entry point class. <span
- class="postbody"></span><span class="postbody"><br>
-  </span><span style="font-family: monospace;"></span>
-  <div style="margin-left: 40px;"><span style="font-family: monospace;">
-  </span></div>
-</blockquote>
-<h3><a name="Information_Options"></a>Information
-Options</h3>
-<blockquote>The following options provide online information about <span
- style="font-weight: bold;">pljava</span>(1)
-and then immediately
-exit:</blockquote>
-<blockquote><b><a name="--help"></a>--help</b><br>
-  <blockquote>Prints a brief usage message and exits.<br>
-  </blockquote>
-  <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser.<br>
-  </blockquote>
-  <b><a name="--version_"></a>--version</b><br>
-  <blockquote>Prints the version number of this software and exits.<br>
-  </blockquote>
-  <b><a name="--release-date"></a>--release-date</b><br>
-  <blockquote> Prints date that this software was released and exits.<br>
-  </blockquote>
-  <b><a name="--copyright"></a>--copyright</b><br>
-  <blockquote> Prints the <a href="#Copyright"><span
- style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-  </blockquote>
-  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
-  <br>
-  </span>
-  <div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span>Prints the <a
- href="#License_Agreement"><span style="font-weight: bold;">license
-agreement</span></a> for this software and exits.</div>
-</blockquote>
-<blockquote>
-  <blockquote> </blockquote>
-</blockquote>
-<blockquote> </blockquote>
-<h3><a name="Global_Options"></a>Global
-Options</h3>
-<span style="color: rgb(0, 0, 0);"></span><a href="pljobmgr.html"><span
- style="font-weight: bold;"></span></a>
-<blockquote>
-  <blockquote> </blockquote>
-</blockquote>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--log-file"></a>--log-file</span>=<span
- style="font-style: italic;">filename</span><br>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span><br>
-<span style="font-style: italic;">
-</span></div>
-</div>
-<div style="margin-left: 40px;"><span style="font-style: italic;"><span
- style="font-style: italic;"></span></span>Write all output to the
-given log file (filename) instead of printing to stdout.<br>
-</div>
-<div style="margin-left: 80px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--default-log-file"></a>--standard-log-file</span><br>
-<span style="font-weight: bold;">
-</span><br>
-<span style="font-weight: bold;">
-</span></div>
-<div style="margin-left: 80px;">Write all output to the standard log
-file for <span style="font-weight: bold;">pljava</span>(1) instead
-of
-printing to stdout.<br>
-<br>
-The standard log file for this site is:<br>
-<div style="margin-left: 40px;"><br>
-$HOME/pljava.log.#<br>
-</div>
-</div>
-<div style="margin-left: 40px;">
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">
-<a name="--log-depth"></a>--log-backups</span>=<span
- style="font-style: italic;">num</span><br>
-<span style="font-style: italic;">
-</span><br>
-<div style="margin-left: 40px;">
-When logging to a file using <a href="#--log-file"><span
- style="font-weight: bold;">--log-file</span></a>, this option sets the
-number of rotating backups (<span style="font-style: italic;">num</span>)
-to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
-are the
-same as the log file with the backup number appended to the end of the
-name.&nbsp;&nbsp; The logfile will be automatically close the current
-logfile,
-rotate the backups and reopen the logfile whenever the log grows to
-larger than 10MB.<br>
-<br>
-The default number of backups is (10).</div>
-<br>
-<span style="font-weight: bold;"><a name="--logging"></a>--log</span>=<span
- style="font-style: italic;">logger:level</span>[<span
- style="font-style: italic;">,logger:level</span>[...]]</div>
-<br>
-<div style="margin-left: 80px;">In addition to the normal program
-output, <span style="font-weight: bold;">pljava</span>(1) can
-generate
-detailed detailed
-output on the command line tracing the various stages of internal
-execution. <br>
-<br>
-The following arguments control the several different
-types of logging information (<span style="font-style: italic;">logger</span>)
-and different amounts of information (<span style="font-style: italic;">level</span>)
-of each type to generate.&nbsp; Several loggers can be modified in one
-option.<br>
-<br>
-The (<span style="font-style: italic;">logger</span>) portion of the
-option's argument can be:<br>
-<br>
-</div>
-<div style="margin-left: 120px;"><span style="font-weight: bold;">all</span><br
- style="font-weight: bold;">
-</div>
-<div style="margin-left: 160px;">A shortcut for specifying all loggers
-at once.</div>
-<div style="margin-left: 120px;"><span style="font-weight: bold;"></span><br
- style="font-weight: bold;">
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">arg</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 160px;">Logs errors related to parsing the
-command-line options.<br>
-<br>
-</div>
-<div style="margin-left: 120px;"><span style="font-weight: bold;">ops</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 160px;">Logs the main operations performed by
-the program.<br>
-<br>
-</div>
-<div style="margin-left: 120px;"><span style="font-weight: bold;">net</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 160px;">Logs network connections and activity.<br>
-<br>
-</div>
-<div style="margin-left: 120px;"><span style="font-weight: bold;">plg</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 160px;">Logs the loading and initialization
-of&nbsp;
-Pipeline plugins.
-</div>
-<div style="margin-left: 120px;"><span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">sub</span><br>
-</div>
-<div style="margin-left: 160px;">Logs the launching and monitoring
-of OS level subprocesses.<br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;"></span><br>
-The (<span style="font-style: italic;">level</span>) portion of
-the option's argument can be:<br>
-<br>
-</div>
-<div style="margin-left: 120px;"><span style="font-weight: bold;">severe</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 160px;">This level is used for error messages
-and other catastrophic events.<br>
-</div>
-<div style="margin-left: 120px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">warning</span><br>
-</div>
-<div style="margin-left: 160px;">This level is used for non-fatal error
-messages and advisory information.<br>
-</div>
-<div style="margin-left: 120px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">info</span><br>
-</div>
-<div style="margin-left: 160px;">This is the default output level for
-all loggers. <br>
-</div>
-<div style="margin-left: 120px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">fine</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
-</div>
-<div style="margin-left: 160px;">These three levels are used for
-increasingly more detailed command tracing messages. <br>
-</div>
-<h3><a name="See_Also"></a>See
-Also</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><a
- href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
-Java API</span></a>, <a href="http://java.sun.com/javase/6/docs/"><span
- style="font-weight: bold;">JDK</span><small><small>TM</small></small><span
- style="font-weight: bold;"> 6 Documentation</span></a><a
- href="http://www.jython.org/docs/javadoc/index.html"><span
- style="font-weight: bold;"></span></a><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span></div>
-</div>
-<blockquote>
-  <blockquote> </blockquote>
-  <span style="font-weight: bold;">Pipeline Programs</span><span
- style="font-weight: bold;"></span><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span><br>
-  <div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
- style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
- href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-  <a href="pljava.html"><span style="font-weight: bold;">pljava</span></a>(1),
-  <a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
- href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-  <a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-  <a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-  <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
- href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-  <a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-  <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-  <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-  <a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1),
-  <a href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-  <a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-  <span style="font-weight: bold;"></span><a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)<br>
-  </div>
-  <span style="font-weight: bold;"><br>
-  </span>
-  <div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
-  </span><span style="font-weight: bold;"></span><small><small><small></small></small></small></div>
-</blockquote>
-<h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of&nbsp; <a
- href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.<br>
-</div>
-<h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-</div>
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
-</body>
-</html>
+
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+
+  <TITLE>pljava(1)</TITLE>
+  <META http-equiv="content-type" content=
+  "text/html; charset=us-ascii">
+  <STYLE type="text/css">
+div.c9 {margin-left: 160px;}
+  div.c8 {margin-left: 120px;}
+  br.c7 {font-weight: bold;}
+  div.c6 {margin-left: 80px;}
+  div.c5 {margin-left: 40px}
+  div.c4 {margin-left: 40px;}
+  a.c3 {font-weight: bold;}
+  span.c2 {font-style: italic;}
+  span.c1 {font-weight: bold;}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3>Name</H3>
+
+  <BLOCKQUOTE>
+    <B>pljava</B> - a utility for running Java programs which use
+    the Pipeline Java API.<BR>
+  </BLOCKQUOTE>
+
+  <H3>Synopsis</H3>
+
+  <BLOCKQUOTE>
+    <B>pljava</B> [<A href="#Global_Options"><I>options</I></A>]
+    <SPAN class="c1">--jar</SPAN>=<SPAN class=
+    "c2">program.jar</SPAN> [<SPAN class=
+    "c1">--main</SPAN>=<SPAN class="c2">mainclass</SPAN>]&nbsp;
+    [<SPAN class="c1">--</SPAN> <SPAN class="c2">args</SPAN>
+    ...]<BR>
+    <B>pljava</B> [<A href=
+    "pljava.src.html.in#Global_Options"><I>options</I></A>]&nbsp;<SPAN class="c1">--classpath</SPAN>=<SPAN class="c2">classdir</SPAN>
+    [<SPAN class="c1">--classpath</SPAN>=...] <SPAN class=
+    "c1">--main</SPAN>=<SPAN class="c2">mainclass&nbsp;</SPAN>
+    [<SPAN class="c1">--</SPAN> <SPAN class="c2">args</SPAN>
+    ...]<BR>
+    <B>pljava</B> [<A href=
+    "pljava.src.html.in#Global_Options"><I>options</I></A>]
+    <SPAN class="c1">--source</SPAN>=<SPAN class=
+    "c2">program.java&nbsp;</SPAN> [<SPAN class="c1">--</SPAN>
+    <SPAN class="c2">args</SPAN> ...]<BR>
+    <BR>
+    <B>pljava</B> <A href="#--help" class="c3">--help</A><BR>
+    <B>pljava</B> <A href="#--html-help" class=
+    "c3">--html-help</A><BR>
+    <B>pljava</B> <A href="#--version_" class=
+    "c3">--version</A><BR>
+    <B>pljava</B> <A href="#--release-date" class=
+    "c3">--release-date</A><BR>
+    <B>pljava</B> <A href="#--copyright" class=
+    "c3">--copyright</A><BR>
+    <SPAN class="c1">pljava <A href=
+    "#--license">--license</A></SPAN><BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id="Description"></A>Description</H3>
+
+  <BLOCKQUOTE>
+    This tool uses the Java Runtime Enviroment (JRE) to execute a
+    Java based program which makes use of the Pipeline API.&nbsp;
+    This tool is not strictly necessary, but makes it easier to run
+    Pipeline related programs by managing the fairly complex set of
+    command-line options which must be provided to the <SPAN class=
+    "c1">java</SPAN>(1) program in order to take advantage of the
+    Pipeline API.<BR>
+  </BLOCKQUOTE>
+
+  <DIV class="c4">
+    There are three ways that the Java program can be
+    specified:&nbsp;
+  </DIV><BR>
+
+  <DIV class="c4">
+    <SPAN class="c1">--jar</SPAN>=<SPAN class=
+    "c2">program.jar</SPAN> [<SPAN class=
+    "c1">--main</SPAN>=<SPAN class="c2">mainclass</SPAN>]<BR>
+
+    <DIV class="c4">
+      <BR>
+      The class files that make up the program have been packaged
+      into an Java Archive (<SPAN class="c2">program.jar</SPAN>)
+      using <SPAN class="c1">jar</SPAN>(1).&nbsp; If the Manifest
+      of the supplied JAR file includes a "Main-Class" entry, then
+      it's "main" method will be executed as the entry point for
+      the program.&nbsp; Alternatively, the entry point class can
+      be specified on the command-line using the <SPAN class=
+      "c1">--main</SPAN> option instead.&nbsp;&nbsp; Either way,
+      the entry point class (<SPAN class="c2">mainclass</SPAN>)
+      should be specified as using a fully resolved class name
+      which includes any package prefixes.&nbsp; If a <SPAN class=
+      "c1">--main</SPAN> option is given, it will override and
+      "Main-Class" specified in the Manifest of the JAR
+      file.&nbsp;<BR>
+      <BR>
+    </DIV><SPAN class="c1">--classpath</SPAN>=<SPAN class=
+    "c2">classdir</SPAN> [<SPAN class=
+    "c1">--classpath</SPAN>=...]&nbsp; <SPAN class=
+    "c1">--main</SPAN>=<SPAN class="c2">mainclass<BR>
+    <BR></SPAN>
+
+    <DIV class="c4">
+      The class files are not packaged, but instead live under one
+      or more directories (<SPAN class="c2">classdir</SPAN>) who's
+      structure mirrors that of the Java package heirarchy.&nbsp;
+      Each of these package root directories is specified with a
+      separate <SPAN class="c1">--classpath</SPAN> option.&nbsp;
+      With this approach the entry point class (<SPAN class=
+      "c2">mainclass</SPAN>) must be provided using the
+      <SPAN class="c1">--main</SPAN> option.
+    </DIV><BR>
+    <SPAN class="c1">--source</SPAN>=<SPAN class=
+    "c2">program.java</SPAN><BR>
+
+    <DIV class="c4">
+      <BR>
+      Normally, a developer would use <SPAN class=
+      "c1">javac</SPAN>(1) is to compile Java source code files
+      into Java bytecode and then used either the <SPAN class=
+      "c1">--jar</SPAN> or <SPAN class="c1">--classpath</SPAN>
+      methods to run the resulting bytecode.&nbsp; Although this is
+      the most efficient way and recommended way of creating Java
+      programs, it can be inconvenient when writing very simple
+      single class programs.&nbsp; When only one class is required,
+      it can be useful to be able to compile and then run it all in
+      one step.&nbsp; Using this <SPAN class="c1">--source</SPAN>
+      option to supply the single Java source code file, it can
+      effectively be treated as if it was a scripting
+      language.&nbsp; The Java source file given to the
+      <SPAN class="c1">--source</SPAN> option must contain a class
+      with a "main" method and not be included in a Java
+      package.&nbsp; The source file name (minus the ".java"
+      extension) must also be identical to the classname.<BR>
+    </DIV>
+  </DIV>
+
+  <BLOCKQUOTE>
+    All three methods allow additional command-line arguments
+    (<SPAN class="c2">args</SPAN>) to be given following
+    <SPAN class="c1">--</SPAN> which will be passed unaltered to
+    the Java program as the arguments to the main(String[] args)
+    method of the entry point class. <SPAN class="postbody"><BR>
+    </SPAN>
+
+    <DIV class="c4"></DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    The following options provide online information about
+    <SPAN class="c1">pljava</SPAN>(1) and then immediately exit:
+  </BLOCKQUOTE>
+
+  <BLOCKQUOTE>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.<BR>
+    </BLOCKQUOTE><B><A name="--version_"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and exits.<BR>
+    </BLOCKQUOTE><B><A name="--copyright"></A>--copyright</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the <A href="#Copyright"><SPAN class="c1">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+    </BLOCKQUOTE><SPAN class="c1"><A name=
+    "--license"></A>--license<BR>
+    <BR></SPAN>
+
+    <DIV class="c4">
+      Prints the <A href="#License_Agreement"><SPAN class=
+      "c1">license agreement</SPAN></A> for this software and
+      exits.
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Global_Options" id="Global_Options"></A>Global
+  Options</H3><A href="pljobmgr.html"></A>
+
+  <DIV class="c4">
+    <SPAN class="c1"><A name=
+    "--log-file"></A>--log-file</SPAN>=<SPAN class=
+    "c2">filename</SPAN><BR>
+
+    <DIV class="c5">
+      <BR>
+    </DIV>
+
+    <DIV class="c4">
+      Write all output to the given log file (filename) instead of
+      printing to stdout.<BR>
+    </DIV>
+
+    <DIV class="c6">
+      <BR>
+    </DIV>
+
+    <DIV class="c4"></DIV>
+  </DIV>
+
+  <DIV class="c4">
+    <SPAN class="c1"><A name=
+    "--default-log-file"></A>--standard-log-file</SPAN><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c6">
+    Write all output to the standard log file for <SPAN class=
+    "c1">pljava</SPAN>(1) instead of printing to stdout.<BR>
+    <BR>
+    The standard log file for this site is:<BR>
+
+    <DIV class="c4">
+      <BR>
+      $HOME/pljava.log.#<BR>
+    </DIV>
+  </DIV>
+
+  <DIV class="c4">
+    <BR>
+    <SPAN class="c1"><A name=
+    "--log-depth"></A>--log-backups</SPAN>=<SPAN class=
+    "c2">num</SPAN><BR>
+    <BR>
+
+    <DIV class="c4">
+      When logging to a file using <A href=
+      "#--log-file"><SPAN class="c1">--log-file</SPAN></A>, this
+      option sets the number of rotating backups (<SPAN class=
+      "c2">num</SPAN>) to maintain of the logfile.&nbsp;&nbsp; The
+      names of the backup files are the same as the log file with
+      the backup number appended to the end of the
+      name.&nbsp;&nbsp; The logfile will be automatically close the
+      current logfile, rotate the backups and reopen the logfile
+      whenever the log grows to larger than 10MB.<BR>
+      <BR>
+      The default number of backups is (10).
+    </DIV><BR>
+    <SPAN class="c1"><A name=
+    "--logging"></A>--log</SPAN>=<SPAN class=
+    "c2">logger:level</SPAN>[<SPAN class=
+    "c2">,logger:level</SPAN>[...]]
+  </DIV><BR>
+
+  <DIV class="c6">
+    In addition to the normal program output, <SPAN class=
+    "c1">pljava</SPAN>(1) can generate detailed detailed output on
+    the command line tracing the various stages of internal
+    execution.<BR>
+    <BR>
+    The following arguments control the several different types of
+    logging information (<SPAN class="c2">logger</SPAN>) and
+    different amounts of information (<SPAN class=
+    "c2">level</SPAN>) of each type to generate.&nbsp; Several
+    loggers can be modified in one option.<BR>
+    <BR>
+    The (<SPAN class="c2">logger</SPAN>) portion of the option's
+    argument can be:<BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c8">
+    <SPAN class="c1">all</SPAN><BR class="c7">
+  </DIV>
+
+  <DIV class="c9">
+    A shortcut for specifying all loggers at once.
+  </DIV>
+
+  <DIV class="c8">
+    <BR class="c7">
+    <SPAN class="c1">arg</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    Logs errors related to parsing the command-line options.<BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c8">
+    <SPAN class="c1">ops</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    Logs the main operations performed by the program.<BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c8">
+    <SPAN class="c1">net</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    Logs network connections and activity.<BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c8">
+    <SPAN class="c1">plg</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    Logs the loading and initialization of&nbsp; Pipeline plugins.
+  </DIV>
+
+  <DIV class="c8">
+    <BR>
+    <SPAN class="c1">sub</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    Logs the launching and monitoring of OS level subprocesses.<BR>
+  </DIV>
+
+  <DIV class="c6">
+    <BR>
+    The (<SPAN class="c2">level</SPAN>) portion of the option's
+    argument can be:<BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c8">
+    <SPAN class="c1">severe</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    This level is used for error messages and other catastrophic
+    events.<BR>
+  </DIV>
+
+  <DIV class="c8">
+    <BR class="c7">
+    <SPAN class="c1">warning</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    This level is used for non-fatal error messages and advisory
+    information.<BR>
+  </DIV>
+
+  <DIV class="c8">
+    <BR class="c7">
+    <SPAN class="c1">info</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    This is the default output level for all loggers.<BR>
+  </DIV>
+
+  <DIV class="c8">
+    <BR class="c7">
+    <SPAN class="c1">fine</SPAN><BR>
+    <SPAN class="c1">finer</SPAN><BR>
+    <SPAN class="c1">finest</SPAN><BR>
+  </DIV>
+
+  <DIV class="c9">
+    These three levels are used for increasingly more detailed
+    command tracing messages.<BR>
+  </DIV>
+
+  <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+  <DIV class="c4">
+    <SPAN class="c1">Documentation</SPAN><BR>
+
+    <DIV class="c4">
+      <A href="../javadoc/index.html"><SPAN class="c1">Pipeline
+      Java API</SPAN></A>, <A href=
+      "http://java.sun.com/javase/6/docs/"><SPAN class=
+      "c1">JDK</SPAN><SMALL><SMALL>TM</SMALL></SMALL> <SPAN class=
+      "c1">6 Documentation</SPAN></A><A href=
+      "http://www.jython.org/docs/javadoc/index.html"></A>
+    </DIV>
+  </DIV>
+
+  <BLOCKQUOTE>
+    <SPAN class="c1">Pipeline Programs</SPAN><BR>
+
+    <DIV class="c4">
+      <A href="plui.html"><SPAN class="c1">plui</SPAN></A>(1),
+      <A href="plremote.html"><SPAN class=
+      "c1">plremote</SPAN></A>(1), plversion(1), <A href=
+      "plscript.html"><SPAN class="c1">plscript</SPAN></A>(1),
+      <A href="pljava.html"><SPAN class="c1">pljava</SPAN></A>(1),
+      <A href="plplugin.html"></A><A href=
+      "plplugin.html"><SPAN class="c1">plplugin</SPAN></A>(1),
+      <A href="plbuilder.html"><SPAN class=
+      "c1">plbuilder</SPAN></A>(1)<BR>
+      <A href="plmaster.html"><SPAN class=
+      "c1">plmaster</SPAN></A>(1), <A href=
+      "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+      "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+      "c1">plqueuemgr</SPAN></A>(1), <A href=
+      "plpluginmgr.html"><SPAN class=
+      "c1">plpluginmgr</SPAN></A>(1), <A href=
+      "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+      "c1">plfilemgr</SPAN></A>(1), <A href=
+      "pljobmgr.html"><SPAN class="c1">pljobmgr</SPAN></A>(1)<BR>
+      <A href="pls.html"><SPAN class="c1">pls</SPAN></A>(1),
+      <A href="plbrowse.html"><SPAN class=
+      "c1">plbrowse</SPAN></A>(1), <A href=
+      "realpath.html"><SPAN class="c1">realpath</SPAN></A>(1)<BR>
+      <A href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <SPAN class="c1">plconfig</SPAN></A>(1)<BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Author" id="Author"></A>Author</H3>
+
+  <DIV class="c4">
+    Created by <SPAN class="c1">Jim Callahan</SPAN> of&nbsp;
+    <A href="http://temerity.us/"><SPAN class="c1">Temerity
+    Software, Inc</SPAN></A>.<BR>
+  </DIV>
+
+  <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+  <DIV class="c4">
+    @COPYRIGHT@<BR>
+  </DIV>
+
+  <H3><A name="License_Agreement" id=
+  "License_Agreement"></A>License Agreement</H3>
+
+  <DIV class="c4">
+    @LICENSE@
+  </DIV>
+</BODY>
+</HTML>

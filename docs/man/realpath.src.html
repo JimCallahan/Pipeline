@@ -1,108 +1,142 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <title>realpath(1)</title>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
-</head>
-<body>
-<h3><a name="Name"></a>Name
-</h3>
-<blockquote><span style="font-weight: bold;">realpath</span> - prints
-the absolute canonical file system path<br>
-</blockquote>
-<h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote><span style="font-weight: bold;">realpath</span> <span
- style="font-style: italic;">path<br>
-  <br>
-  </span><span style="font-weight: bold;">realpath <a href="#--help">--help</a><br>
-realpath <a href="#--html-help">--html-help</a><br>
-realpath <a href="#--version">--version</a><br>
-realpath <a href="#--release-date">--release-date</a><br>
-realpath </span><span style="font-weight: bold;"><a href="#--copyright"><span
- style="font-weight: bold;">--copyright</span></a><br>
-realpath <a href="#--license">--license</a><br>
-  </span><span style="font-style: italic;"></span><span
- style="font-weight: bold;"></span></blockquote>
-<h3><a name="Description"></a>Description</h3>
-<div style="margin-left: 40px;">Expands all symbolic links and resolves
-references
-to '/./', '/../' and extra '/' characters in (<i>path</i>) and prints
-the
-fully resolved path to stdout.&nbsp; The resulting path will have no
-symbolic
-links, '/./' or '/../' components.</div>
-<h3><a name="Information_Options"></a>Information Options</h3>
-<blockquote><b><a name="--help"></a>--help</b><br>
-  <blockquote>Prints a brief usage message and exits.<br>
-  </blockquote>
-  <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser. <br>
-  </blockquote>
-  <b><a name="--version"></a>--version</b><br>
-  <blockquote>Prints the version number of this software and exits.<br>
-  </blockquote>
-  <b><a name="--release-date"></a>--release-date</b><br>
-  <blockquote> Prints date that this software was released and exits.<b><br>
-    </b></blockquote>
-  <b><a name="--copyright"></a>--copyright</b><br>
-  <blockquote> Prints the <a href="#Copyright"><span
- style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-  </blockquote>
-  <b><a name="--license"></a>--license</b><br>
-  <div style="margin-left: 40px;"><b> </b><br>
-Prints the <a style="font-weight: bold;" href="#License_Agreement">license
-agreement</a> for this software and exits. </div>
-  <blockquote> </blockquote>
-</blockquote>
-<blockquote> </blockquote>
-<h3><a name="See_Also"></a>See Also</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
-Programs</span><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span><br>
-<div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
- style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
- href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-<a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-<a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
- href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-<a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-<a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
- href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-<a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1), <a
- href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-<a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-<span style="font-weight: bold;"></span><a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)</div>
-</div>
-<blockquote>
-  <blockquote> </blockquote>
-</blockquote>
-<blockquote> </blockquote>
-<blockquote> </blockquote>
-<h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
- href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.</div>
-<h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-</div>
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
-</body>
-</html>
+
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+
+  <TITLE>realpath(1)</TITLE>
+  <META content="text/html; charset=us-ascii" http-equiv=
+  "content-type">
+  <STYLE type="text/css">
+a.c4 {font-weight: bold;}
+  div.c3 {margin-left: 40px;}
+  span.c2 {font-style: italic;}
+  span.c1 {font-weight: bold;}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3><A name="Name" id="Name"></A>Name</H3>
+
+  <BLOCKQUOTE>
+    <SPAN class="c1">realpath</SPAN> - prints the absolute
+    canonical file system path<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Synopsis" id="Synopsis"></A>Synopsis</H3>
+
+  <BLOCKQUOTE>
+    <SPAN class="c1">realpath</SPAN> <SPAN class="c2">path<BR>
+    <BR></SPAN> <SPAN class="c1">realpath <A href=
+    "#--help">--help</A><BR>
+    realpath <A href="#--html-help">--html-help</A><BR>
+    realpath <A href="#--version">--version</A><BR>
+    realpath <A href="#--release-date">--release-date</A><BR>
+    realpath</SPAN> <SPAN class="c1"><A href=
+    "#--copyright"><SPAN class="c1">--copyright</SPAN></A><BR>
+    realpath <A href="#--license">--license</A><BR></SPAN>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id="Description"></A>Description</H3>
+
+  <DIV class="c3">
+    Expands all symbolic links and resolves references to '/./',
+    '/../' and extra '/' characters in (<I>path</I>) and prints the
+    fully resolved path to stdout.&nbsp; The resulting path will
+    have no symbolic links, '/./' or '/../' components.
+  </DIV>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.<BR>
+    </BLOCKQUOTE><B><A name="--version"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and
+      exits.<B><BR></B>
+    </BLOCKQUOTE><B><A name="--copyright"></A>--copyright</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the <A href="#Copyright"><SPAN class="c1">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+    </BLOCKQUOTE><B><A name="--license"></A>--license</B><BR>
+
+    <DIV class="c3">
+      <BR>
+      Prints the <A class="c4" href="#License_Agreement">license
+      agreement</A> for this software and exits.
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+  <DIV class="c3">
+    <SPAN class="c1">Pipeline Programs</SPAN><BR>
+
+    <DIV class="c3">
+      <A href="plui.html"><SPAN class="c1">plui</SPAN></A>(1),
+      <A href="plremote.html"><SPAN class=
+      "c1">plremote</SPAN></A>(1), plversion(1), <A href=
+      "plscript.html"><SPAN class="c1">plscript</SPAN></A>(1),
+      <A href="plpython.html"><SPAN class=
+      "c1">plpython</SPAN></A>(1), <A href=
+      "plplugin.html"></A><A href="plplugin.html"><SPAN class=
+      "c1">plplugin</SPAN></A>(1), <A href=
+      "plbuilder.html"><SPAN class="c1">plbuilder</SPAN></A>(1)<BR>
+      <A href="plmaster.html"><SPAN class=
+      "c1">plmaster</SPAN></A>(1), <A href=
+      "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+      "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+      "c1">plqueuemgr</SPAN></A>(1), <A href=
+      "plpluginmgr.html"><SPAN class=
+      "c1">plpluginmgr</SPAN></A>(1), <A href=
+      "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+      "c1">plfilemgr</SPAN></A>(1), <A href=
+      "pljobmgr.html"><SPAN class="c1">pljobmgr</SPAN></A>(1)<BR>
+      <A href="pls.html"><SPAN class="c1">pls</SPAN></A>(1),
+      <A href="plbrowse.html"><SPAN class=
+      "c1">plbrowse</SPAN></A>(1), <A href=
+      "realpath.html"><SPAN class="c1">realpath</SPAN></A>(1)<BR>
+      <A href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <SPAN class="c1">plconfig</SPAN></A>(1)
+    </DIV>
+  </DIV>
+
+  <H3><A name="Author" id="Author"></A>Author</H3>
+
+  <DIV class="c3">
+    Created by <SPAN class="c1">Jim Callahan</SPAN> of <A href=
+    "http://temerity.us/"><SPAN class="c1">Temerity Software,
+    Inc</SPAN></A>.
+  </DIV>
+
+  <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+  <DIV class="c3">
+    @COPYRIGHT@<BR>
+  </DIV>
+
+  <H3><A name="License_Agreement" id=
+  "License_Agreement"></A>License Agreement</H3>
+
+  <DIV class="c3">
+    @LICENSE@
+  </DIV>
+</BODY>
+</HTML>

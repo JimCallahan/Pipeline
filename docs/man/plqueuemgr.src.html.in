@@ -1,633 +1,597 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
 
-  
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-
-  
-  <title>plqueuemgr(1)</title>
-</head>
-
-
-<body>
-
-<h3><a name="Name"></a>Name</h3>
-
-<blockquote><b>plqueuemgr</b> - the Pipeline Queue Manager daemon<br>
-
-</blockquote>
-
-<h3><a name="Synopsis"></a>Synopsis</h3>
-
-<blockquote><b>plqueuemgr</b> [<a href="#Global_Options"><i>options</i></a>]<i><br>
-
-  </i><br>
-
-  <b>plqueuemgr</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
-
-  <b>plqueuemgr</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
-
-  <b>plqueuemgr</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
-
-  <b>plqueuemgr</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
-
-  <b>plqueuemgr</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
-
-  <span style="font-weight: bold;">plqueuemgr <a href="#--license">--license</a></span><br>
-
-</blockquote>
-
-<h3><a name="Description"></a>Description<br>
-
-</h3>
-
-<blockquote>A daemon process which dispatches queue jobs to the active <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)
-daemons and provides information about existing queue jobs to the <a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1)
-daemon and <a href="plui.html"><span style="font-weight: bold;">plui</span></a>(1)
-client programs. <br>
-
-</blockquote>
-
-<h3> </h3>
-
-<h3><a name="Information_Options"></a>Information Options</h3>
-
-<blockquote>The following options provide information about <b>plqueuemgr</b>(1)
-and then immediately exit:</blockquote>
-
-<blockquote><b><a name="--help"></a>--help</b><br>
-
-  
-  <blockquote>Prints a brief usage message and exits.<br>
-
-  </blockquote>
-
-  <b><a name="--html-help"></a>--html-help</b><br>
-
-  
-  <blockquote>Opens this page using the default web browser. </blockquote>
-
-  <b><a name="--version"></a>--version</b><br>
-
-  
-  <blockquote>Prints the version number of this software and exits.<br>
-
-  </blockquote>
-
-  <b><a name="--release-date"></a>--release-date</b><br>
-
-  
-  <blockquote> Prints date that this software was released and exits.<br>
-
-  </blockquote>
-
-  <b><a name="--copyright"></a>--copyright<br>
-
-  </b><br>
-
-  
-  <div style="margin-left: 40px;"> Prints the <a href="#Copyright"><span style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-
-  <br>
-
-  </div>
-
-  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
-
-  <br>
-
-  </span>
-  
-  <div style="margin-left: 40px;">Prints the <a href="#License_Agreement"><span style="font-weight: bold;">license
-agreement</span></a> for this software and exits.<br>
-
-  </div>
-
-  
-  <blockquote> </blockquote>
-
-</blockquote>
-
-<h3><a name="Global_Options"></a>Global Options</h3>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span style="font-style: italic;">filename</span><br>
-
-<span style="font-style: italic;"></span><br>
-
-<span style="font-style: italic;"></span></div>
-
-<div style="margin-left: 80px;"><span style="font-style: italic;"><span style="font-style: italic;"></span></span>Write all output to the
-given log file (filename) instead of printing to stdout.<br>
-
-<br>
-
-<span style="font-style: italic;"></span></div>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--default-log-file"></a>--standard-log-file</span><br>
-
-<span style="font-weight: bold;"></span><br>
-
-<span style="font-weight: bold;"></span></div>
-
-<div style="margin-left: 80px;">Write all output to the standard log
-file for <span style="font-weight: bold;">plqueuemgr</span>(1) instead
-of printing to stdout.<br>
-
-<br>
-
-The standard log file for this site is:<br>
-
-<div style="margin-left: 40px;"><br>
-
-@ROOT_INST_DIR@/logs/plqueuemgr.log.#<br>
-
-<br>
-
-</div>
-
-</div>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span style="font-weight: bold;"><a name="--standard-log-dir"></a>--standard-log-dir</span>=<span style="font-style: italic;">dirname</span><br>
-
-<span style="font-weight: bold;">
-</span><br>
-
-<span style="font-weight: bold;">
-</span>
-<div style="margin-left: 40px;">Write all output to the standard log
-file for <span style="font-weight: bold;">plqueuemgr</span>(1) written
-to the given logs directory (<span style="font-style: italic;">dirname</span>)
-instead
-of printing to stdout.</div>
-
-<br>
-
-<span style="font-weight: bold;"><a name="--log-depth"></a>--log-backups</span>=<span style="font-style: italic;">num</span><br>
-
-<span style="font-style: italic;"></span></div>
-
-<div style="margin-left: 80px;"><br>
-
-When logging to a file using <a href="#--log-file"><span style="font-weight: bold;">--log-file</span></a>, this option sets the
-number of rotating backups (<span style="font-style: italic;">num</span>)
-to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
-are the
-same as the log file with the backup number appended to the end of the
-name.&nbsp;&nbsp; The logfile will be automatically close the current
-logfile,
-rotate the backups and reopen the logfile whenever the log grows to
-larger than 10MB.<br>
-
-<br>
-
-The default number of backups is (10).<br>
-
-</div>
-
-<blockquote style="margin-left: 80px;"> <code></code><span style="font-weight: bold;"><a href="http://www.gnu.org/software/autoconf/"><span style="font-weight: bold;"></span></a></span><span style="font-weight: bold;"> </span></blockquote>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--log"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span style="font-style: italic;">,logger:level</span>[...]]</div>
-
-<div style="margin-left: 40px;"><br>
-
-<div style="margin-left: 40px;">In addition to the normal output, <b>plqueuemgr</b>(1)
-can
-generate
-detailed output tracing the various stages of internal execution.&nbsp;
-The arguments control the several different types
-of logging information (<span style="font-style: italic;">logger</span>)
-and different amounts of information (<span style="font-style: italic;">level</span>)
-of each type to generate.&nbsp; Several loggers can be modified in one
-option.<br>
-
-<br>
-
-The (<span style="font-style: italic;">logger</span>) portion of the
-option's argument can be:<br>
-
-<span style="font-weight: bold;"><br>
-
-</span>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br style="font-weight: bold;">
-
-</div>
-
-<div style="margin-left: 80px;">A shortcut for specifying all loggers
-at once.<br>
-
-</div>
-
-<div style="margin-left: 40px;"><br>
-
-<span style="font-weight: bold;">arg</span><br>
-
-<span style="font-weight: bold;"></span></div>
-
-<div style="margin-left: 80px;">Logs errors related to parsing the
-command-line options.<br>
-
-<br>
-
-</div>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;">col<br>
-
-</span>
-<div style="margin-left: 40px;">Logs activity and timing statistics for
-the job server dynamics resources collector thread.<br>
-
-</div>
-
-<br>
-
-<span style="font-weight: bold;">dsp<br>
-
-</span>
-<div style="margin-left: 40px;">Logs activity and timing statistics for
-the job dispatcher thread.<br>
-
-</div>
-
-<br>
-
-<span style="font-weight: bold;">sel<br>
-
-</span>
-<div style="margin-left: 40px;">Logs details about the criteria used to
-select individual jobs to run on specific Job Managers.<br>
-
-<br>
-
-</div>
-
-<span style="font-weight: bold;">ext<br>
-
-</span>
-<div style="margin-left: 40px;">Logs the activity of server extension
-plugin tasks.<br>
-
-</div>
-
-<span style="font-weight: bold;"></span><br>
-
-<span style="font-weight: bold;">job<br>
-
-</span>
-<div style="margin-left: 40px;">Logs the activity of the threads which
-start each job and wait for it to finish.<br>
-
-<br>
-
-</div>
-
-<span style="font-weight: bold;">sch<br>
-
-</span>
-<div style="margin-left: 40px;">Logs activity and timing statistics for
-the selection scheduler thread.<br>
-
-<br>
-
-</div>
-
-<span style="font-weight: bold;">glu<br>
-
-</span>
-<div style="margin-left: 40px;">Logs the I/O activity related to <a style="font-weight: bold;" href="../javadoc/us/temerity/pipeline/glue/package-summary.html">Glue</a>
-format files.<br>
-
-</div>
-
-<span style="font-weight: bold;"><br>
-
-</span><span style="font-weight: bold;">ops</span><br>
-
-<span style="font-weight: bold;"></span></div>
-
-<div style="margin-left: 80px;">Logs general activity of
-the
-server unrelated to the dispatcher or collector threads.<br>
-
-<br>
-
-</div>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;">mem<br>
-
-</span>
-<div style="margin-left: 40px;">Logs dynamic memory usage statistics.<br>
-
-<br>
-
-</div>
-
-<span style="font-weight: bold;">net</span><br>
-
-<span style="font-weight: bold;"></span></div>
-
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Logs network connections and
-activity. <br>
-
-<br>
-
-</div>
-
-</div>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;">plg<br>
-
-</span>
-<div style="margin-left: 40px;">Logs the loading and initialization of
-Action, Editor and Tool plugins.<br>
-
-<br>
-
-</div>
-
-</div>
-
-<span style="font-weight: bold;"></span>The (<span style="font-style: italic;">level</span>) portion of
-the option's argument can be:<br>
-
-<br>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
-
-<span style="font-weight: bold;"></span></div>
-
-<div style="margin-left: 80px;">This level is used for error messages
-and other catastrophic events.<br>
-
-</div>
-
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-
-<span style="font-weight: bold;">warning</span><br>
-
-</div>
-
-<div style="margin-left: 80px;">This level is used for non-fatal error
-messages and advisory information.<br>
-
-</div>
-
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-
-<span style="font-weight: bold;">info</span><br>
-
-</div>
-
-<div style="margin-left: 80px;">This is the default output level for
-all loggers and is used for normal output from <b>plqueuemgr</b>(1). <br>
-
-</div>
-
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-
-<span style="font-weight: bold;">fine</span><br>
-
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
-
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
-
-</div>
-
-<div style="margin-left: 80px;">These three levels are used for
-increasingly more detailed command tracing messages. <br>
-
-</div>
-
-</div>
-
-</div>
-
-<h3><a name="Global_Options"></a>Global Options<br>
-
-</h3>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--rebuild"></a>--rebuild</span><br>
-
-<span style="font-weight: bold;"></span><br>
-
-<div style="margin-left: 40px;">When <span style="font-weight: bold;">plqueuemgr</span>(1)
-is inproperly
-shutdown, it cannot be restarted without using this option.&nbsp; This
-will override the default behavior which views the existance of a
-"lock" file as proof that another Queue Manager process is currently
-running.&nbsp; For this reason, you should be very careful about using
-this option if it is possible that another instance of the Queue
-Manager is already running.<br>
-<br>
-<br>
-</div>
-<span style="font-weight: bold;"><a name="--rebuild"></a>--job-reader-threads</span>=<span style="font-style: italic;">num</span><br>
-
-<span style="font-weight: bold;"></span><br>
-
-<div style="margin-left: 40px;">The number of threads the queue manager
-should use to read jobs from disk. &nbsp;More threads will lead to
-increased throughput in cases where the operation is not disk limited.
-&nbsp;Increasing the number of threads may actually lead to a decrease
-in performance, if &nbsp;too many threads are fighting over locks and
-disk access. &nbsp;It is probably worth studios doing some tuning
-exercises with large number of jobs to determine the optimal number of
-threads, since it may vary depending on hardware configurations<br>
-<br>
-The default value is (1).<br>
-</div>
-
-</div>
-
-<h3><a name="Performance_Tuning_Options"></a>Performance Tuning Options</h3>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--collector-batch-size"></a>--collector-batch-size</span>=<span style="font-style: italic;">num</span><br>
-
-<div style="margin-left: 40px;"><br>
-
-Overrides the maximum number of servers (<span style="font-style: italic;">num</span>) each collector sub-thread
-processes in one collection cycle.&nbsp; If the collector thread is
-frequently exceeding its normal 15sec interval, you may wish to set
-this to a lower value to increase the network parallelism.<br>
-
-<br>
-
-The default value is (50) servers per sub-thread.<br>
-
-<br>
-
-</div>
-
-<span style="font-weight: bold;"><a name="--dispatcher-interval"></a>--dispatcher-interval</span>=<span style="font-style: italic;">msec</span><br>
-
-<div style="margin-left: 40px;"><br>
-
-Overrides the dispatcher cycle interval (<span style="font-style: italic;">msec</span>).&nbsp; If the dispatcher
-thread completes one cycle in less time than this interval, it will
-sleep for the remainder of the time.&nbsp; Increasing the interval will
-reduce CPU load at the expense of job dispatch latency.<br>
-
-<br>
-
-The default value is (2000) msec.&nbsp; Which is (2) seconds.<br>
-
-<br>
-
-</div>
-
-</div>
-
-
-<div style="margin-left: 40px;"><span style="font-weight: normal;"><span style="font-weight: bold;"><a name="--nfs-cache-interval"></a>--nfs-cache-interval</span>=<span style="font-style: italic;">msec<br>
-
-</span></span>
-<div style="margin-left: 40px;"><br>
-
-Overrides the NFS directory attribute caching interval (msec).&nbsp;
-This sets the minimum time the Queue Manager should to wait before
-attempting a NFS directory attribute lookup operation after a file in
-the directory has been created by another host on the network.&nbsp;
-This interval should be set to the same value as the NFS (acdirmax)
-mount option for the root production directory on the host running the
-Queue Manager.<br>
-
-<br>
-
-The default is (5000) msec.&nbsp; Which is (5) seconds.
-</div>
-
-</div>
-<br>
-
-
-
-
-<div style="margin-left: 40px;"><span style="font-weight: normal;"><span style="font-weight: bold;"><a name="--backup-sync-interval"></a>--backup-sync-interval</span>=<span style="font-style: italic;">msec<br>
-
-</span></span>
-<div style="margin-left: 40px;"><br>
-Overrides the interval (msec) between the live synchronization of the
-database files associated with the Queue Manager and backup copies of
-these files.&nbsp;In order to minimize the amount of time that database
-operations need to be locked during a backup to insure data integrity,
-this live synchronization process occurs a more frequent intervals so
-that the unique data which needs to be copied between the live and
-backup database directories can be minimized.&nbsp;In essense, these
-database synchronization operations are identical to a backup with the
-exception that the database does not need to be locked and no tarball
-is created from the files in the backup directory.<br>
-
-<br>
-
-The default is (21600000) msec.&nbsp; Which is (6) hours.<span style="font-weight: bold;"><br>
-<br>
-</span></div>
-<span style="font-weight: bold;"><a name="--balance-sample-interval"></a>--balance-sample-interval</span>=<span style="font-style: italic;">msec</span><br>
-
-<div style="margin-left: 40px;"><span style="font-weight: normal;"><span style="font-style: italic;"></span></span>
-<div style="margin-left: 40px;"><br>
-</div>
-Overrides the sampling interval for the balancer (msec).&nbsp;
-This sets the length of time a single sample in the balancer will last.
-&nbsp;At the end of sample, the balancer will add up all the usage over
-the time-period and then combine that with all of its existing samples
-(minus any which have expired due to reaching the maximum number of
-samples) to compute overall user usage of each balance group. &nbsp;The
-shorter the sample interval, the more responsive the queue will be to
-changes in fast changes user usage, a situation that would be caused by
-having many short-duration jobs spamming the queue. &nbsp;The longer
-the sample interval, the more samples can be kept making the balancing
-of user usage fairer over an increased time period.<br>
-
-<br>
-
-The default is (120000) msec.&nbsp; Which is (2) minutes.<br>
-<br>
-</div>
-<span style="font-weight: bold;"><a name="--balance-samples-to-keep"></a>--balance-samples-to-keep</span>=<span style="font-style: italic;">num</span><br>
-
-<span style="font-weight: normal;"><span style="font-style: italic;"></span></span>
-<div style="margin-left: 40px;"><br>
-</div>
-<div style="margin-left: 40px;">Overrides the number of time samples
-that the balancer will keep. &nbsp;The balancer will retain a set
-number of user usage samples per balance group based on this setting.
-&nbsp;Multiplying this number times the sample interval will give the
-total time period over which samples are retained (and over which user
-usage is being balanced).<br>
-<br>
-The default is (30) samples. &nbsp;This leads to a total sampling range of (1) hour.</div>
-
-
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">
-</div>
-<br>
-
-</div>
-
-
-
-
-</div>
-
-<h3><a name="See_Also"></a>See Also</h3>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
-<br>
-
-</div>
-
-<div style="margin-left: 80px;"><a href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
-Java API</span></a><br>
-
-<br>
-
-</div>
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
-Programs</span><span style="font-weight: bold;"></span><span style="font-weight: bold;"></span><span style="font-weight: bold;"></span><br>
-
-<div style="margin-left: 40px;"><a href="plui.html"><span style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-<a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-<a href="plplugin.html"><span style="font-weight: bold;"></span></a><a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-<a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-
-<a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a href="plmaster.html"><span style="font-weight: bold;"></span></a> <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-
-<a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1), <a href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-<a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-
-<span style="font-weight: bold;"></span><a href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span style="font-weight: bold;">plconfig</span></a>(1)</div>
-
-</div>
-
-<h3><a name="Author"></a>Author</h3>
-
-<div style="margin-left: 40px;">Created by <span style="font-weight: bold;">Jim Callahan</span> of <a href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.</div>
-
-<span style="font-weight: bold;">
-</span>
-<h3><a name="Copyright"></a>Copyright</h3>
-
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-
-</div>
-
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
-
-</body>
-</html>
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  <META content="text/html; charset=us-ascii" http-equiv=
+  "content-type">
+
+  <TITLE>plqueuemgr(1)</TITLE>
+  <STYLE type="text/css">
+span.c9 {font-weight: normal;}
+  div.c8 {margin-left: 40px}
+  br.c7 {font-weight: bold;}
+  blockquote.c6 {margin-left: 80px;}
+  div.c5 {margin-left: 80px;}
+  span.c4 {font-style: italic;}
+  div.c3 {margin-left: 40px;}
+  span.c2 {font-weight: bold;}
+  a.c1 {font-weight: bold;}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3><A name="Name" id="Name"></A>Name</H3>
+
+  <BLOCKQUOTE>
+    <B>plqueuemgr</B> - the Pipeline Queue Manager daemon<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Synopsis" id="Synopsis"></A>Synopsis</H3>
+
+  <BLOCKQUOTE>
+    <B>plqueuemgr</B> [<A href=
+    "#Global_Options"><I>options</I></A>]<BR>
+    <BR>
+    <B>plqueuemgr</B> <A class="c1" href="#--help">--help</A><BR>
+    <B>plqueuemgr</B> <A class="c1" href=
+    "#--html-help">--html-help</A><BR>
+    <B>plqueuemgr</B> <A class="c1" href=
+    "#--version_">--version</A><BR>
+    <B>plqueuemgr</B> <A class="c1" href=
+    "#--release-date">--release-date</A><BR>
+    <B>plqueuemgr</B> <A class="c1" href=
+    "#--copyright">--copyright</A><BR>
+    <SPAN class="c2">plqueuemgr <A href=
+    "#--license">--license</A></SPAN><BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id=
+  "Description"></A>Description<BR></H3>
+
+  <BLOCKQUOTE>
+    A daemon process which dispatches queue jobs to the active
+    <A href="pljobmgr.html"><SPAN class="c2">pljobmgr</SPAN></A>(1)
+    daemons and provides information about existing queue jobs to
+    the <A href="plmaster.html"><SPAN class=
+    "c2">plmaster</SPAN></A>(1) daemon and <A href=
+    "plui.html"><SPAN class="c2">plui</SPAN></A>(1) client
+    programs.<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    The following options provide information about
+    <B>plqueuemgr</B>(1) and then immediately exit:
+  </BLOCKQUOTE>
+
+  <BLOCKQUOTE>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.
+    </BLOCKQUOTE><B><A name="--version"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--copyright"></A>--copyright<BR></B><BR>
+
+    <DIV class="c3">
+      Prints the <A href="#Copyright"><SPAN class="c2">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+      <BR>
+    </DIV><SPAN class="c2"><A name="--license"></A>--license<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+      Prints the <A href="#License_Agreement"><SPAN class=
+      "c2">license agreement</SPAN></A> for this software and
+      exits.<BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Global_Options" id="Global_Options"></A>Global
+  Options</H3>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--log-file"></A>--log-file</SPAN>=<SPAN class=
+    "c4">filename</SPAN><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c5">
+    Write all output to the given log file (filename) instead of
+    printing to stdout.<BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--default-log-file"></A>--standard-log-file</SPAN><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c5">
+    Write all output to the standard log file for <SPAN class=
+    "c2">plqueuemgr</SPAN>(1) instead of printing to stdout.<BR>
+    <BR>
+    The standard log file for this site is:<BR>
+
+    <DIV class="c3">
+      <BR>
+      @ROOT_INST_DIR@/logs/plqueuemgr.log.#<BR>
+      <BR>
+    </DIV>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--standard-log-dir"></A>--standard-log-dir</SPAN>=<SPAN class=
+    "c4">dirname</SPAN><BR>
+    <BR>
+
+    <DIV class="c3">
+      Write all output to the standard log file for <SPAN class=
+      "c2">plqueuemgr</SPAN>(1) written to the given logs directory
+      (<SPAN class="c4">dirname</SPAN>) instead of printing to
+      stdout.
+    </DIV><BR>
+    <SPAN class="c2"><A name=
+    "--log-depth"></A>--log-backups</SPAN>=<SPAN class=
+    "c4">num</SPAN><BR>
+  </DIV>
+
+  <DIV class="c5">
+    <BR>
+    When logging to a file using <A href="#--log-file"><SPAN class=
+    "c2">--log-file</SPAN></A>, this option sets the number of
+    rotating backups (<SPAN class="c4">num</SPAN>) to maintain of
+    the logfile.&nbsp;&nbsp; The names of the backup files are the
+    same as the log file with the backup number appended to the end
+    of the name.&nbsp;&nbsp; The logfile will be automatically
+    close the current logfile, rotate the backups and reopen the
+    logfile whenever the log grows to larger than 10MB.<BR>
+    <BR>
+    The default number of backups is (10).<BR>
+  </DIV>
+
+  <BLOCKQUOTE class="c6">
+    <SPAN class="c2"><A href=
+    "http://www.gnu.org/software/autoconf/"></A></SPAN>
+  </BLOCKQUOTE>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name="--log"></A>--log</SPAN>=<SPAN class=
+    "c4">logger:level</SPAN>[<SPAN class=
+    "c4">,logger:level</SPAN>[...]]
+  </DIV>
+
+  <DIV class="c3">
+    <BR>
+
+    <DIV class="c3">
+      In addition to the normal output, <B>plqueuemgr</B>(1) can
+      generate detailed output tracing the various stages of
+      internal execution.&nbsp; The arguments control the several
+      different types of logging information (<SPAN class=
+      "c4">logger</SPAN>) and different amounts of information
+      (<SPAN class="c4">level</SPAN>) of each type to
+      generate.&nbsp; Several loggers can be modified in one
+      option.<BR>
+      <BR>
+      The (<SPAN class="c4">logger</SPAN>) portion of the option's
+      argument can be:<BR>
+      <SPAN class="c2"><BR></SPAN>
+
+      <DIV class="c3">
+        <SPAN class="c2">all</SPAN><BR class="c7">
+      </DIV>
+
+      <DIV class="c5">
+        A shortcut for specifying all loggers at once.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR>
+        <SPAN class="c2">arg</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        Logs errors related to parsing the command-line
+        options.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c3">
+        <SPAN class="c2">col<BR></SPAN>
+
+        <DIV class="c3">
+          Logs activity and timing statistics for the job server
+          dynamics resources collector thread.<BR>
+        </DIV><BR>
+        <SPAN class="c2">dsp<BR></SPAN>
+
+        <DIV class="c3">
+          Logs activity and timing statistics for the job
+          dispatcher thread.<BR>
+        </DIV><BR>
+        <SPAN class="c2">sel<BR></SPAN>
+
+        <DIV class="c3">
+          Logs details about the criteria used to select individual
+          jobs to run on specific Job Managers.<BR>
+          <BR>
+        </DIV><SPAN class="c2">ext<BR></SPAN>
+
+        <DIV class="c3">
+          Logs the activity of server extension plugin tasks.<BR>
+        </DIV><BR>
+        <SPAN class="c2">job<BR></SPAN>
+
+        <DIV class="c3">
+          Logs the activity of the threads which start each job and
+          wait for it to finish.<BR>
+          <BR>
+        </DIV><SPAN class="c2">sch<BR></SPAN>
+
+        <DIV class="c3">
+          Logs activity and timing statistics for the selection
+          scheduler thread.<BR>
+          <BR>
+        </DIV><SPAN class="c2">glu<BR></SPAN>
+
+        <DIV class="c3">
+          Logs the I/O activity related to <A class="c1" href=
+          "../javadoc/us/temerity/pipeline/glue/package-summary.html">
+          Glue</A> format files.<BR>
+        </DIV><SPAN class="c2"><BR></SPAN> <SPAN class=
+        "c2">ops</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        Logs general activity of the server unrelated to the
+        dispatcher or collector threads.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c3">
+        <SPAN class="c2">mem<BR></SPAN>
+
+        <DIV class="c3">
+          Logs dynamic memory usage statistics.<BR>
+          <BR>
+        </DIV><SPAN class="c2">net</SPAN><BR>
+      </DIV>
+
+      <DIV class="c8">
+        Logs network connections and activity.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c3">
+        <SPAN class="c2">plg<BR></SPAN>
+
+        <DIV class="c3">
+          Logs the loading and initialization of Action, Editor and
+          Tool plugins.<BR>
+          <BR>
+        </DIV>
+      </DIV>The (<SPAN class="c4">level</SPAN>) portion of the
+      option's argument can be:<BR>
+      <BR>
+
+      <DIV class="c3">
+        <SPAN class="c2">severe</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        This level is used for error messages and other
+        catastrophic events.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">warning</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        This level is used for non-fatal error messages and
+        advisory information.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">info</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        This is the default output level for all loggers and is
+        used for normal output from <B>plqueuemgr</B>(1).<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">fine</SPAN><BR>
+        <SPAN class="c2">finer</SPAN><BR>
+        <SPAN class="c2">finest</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        These three levels are used for increasingly more detailed
+        command tracing messages.<BR>
+      </DIV>
+    </DIV>
+  </DIV>
+
+  <H3><A name="Global_Options" id="Global_Options"></A>Global
+  Options<BR></H3>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name="--rebuild"></A>--rebuild</SPAN><BR>
+    <BR>
+
+    <DIV class="c3">
+      When <SPAN class="c2">plqueuemgr</SPAN>(1) is inproperly
+      shutdown, it cannot be restarted without using this
+      option.&nbsp; This will override the default behavior which
+      views the existance of a "lock" file as proof that another
+      Queue Manager process is currently running.&nbsp; For this
+      reason, you should be very careful about using this option if
+      it is possible that another instance of the Queue Manager is
+      already running.
+    </DIV>
+  </DIV><BR>
+
+  <DIV class="c3">
+    <SPAN class="c5"><SPAN class="c2"><A name=
+    "--backup-sync-interval"></A>--backup-sync-interval</SPAN>=<SPAN class="c4">msec<BR>
+    </SPAN></SPAN>
+
+    <DIV class="c3">
+      <BR>
+      Overrides the interval (msec) between the live
+      synchronization of the database files associated with the
+      Master Manager and backup copies of these files.&nbsp;In
+      order to minimize the amount of time that database operations
+      need to be locked during a backup to insure data integrity,
+      this live synchronization process occurs a more frequent
+      intervals so that the unique data which needs to be copied
+      between the live and backup database directories can be
+      minimized.&nbsp;In essense, these database synchronization
+      operations are identical to a backup with the exception that
+      the database does not need to be locked and no tarball is
+      created from the files in the backup directory.<BR>
+      <BR>
+      The default is (21600000) msec.&nbsp; Which is (6) hours.
+    </DIV>
+  </DIV><BR>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--rebuild"></A>--job-reader-threads</SPAN>=<SPAN class=
+    "c4">num</SPAN><BR>
+    <BR>
+
+    <DIV class="c3">
+      The number of threads the queue manager should use to read
+      jobs from disk. &nbsp;More threads will lead to increased
+      throughput in cases where the operation is not disk limited.
+      &nbsp;Increasing the number of threads may actually lead to a
+      decrease in performance, if &nbsp;too many threads are
+      fighting over locks and disk access. &nbsp;It is probably
+      worth studios doing some tuning exercises with large number
+      of jobs to determine the optimal number of threads, since it
+      may vary depending on hardware configurations<BR>
+      <BR>
+      The default value is (2).<BR>
+    </DIV>
+  </DIV>
+
+  <H3><A name="Performance_Tuning_Options" id=
+  "Performance_Tuning_Options"></A>Performance Tuning Options</H3>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--collector-batch-size"></A>--collector-batch-size</SPAN>=<SPAN class="c4">num</SPAN><BR>
+
+
+    <DIV class="c3">
+      <BR>
+      Overrides the maximum number of servers (<SPAN class=
+      "c4">num</SPAN>) each collector sub-thread processes in one
+      collection cycle.&nbsp; If the collector thread is frequently
+      exceeding its normal 15sec interval, you may wish to set this
+      to a lower value to increase the network parallelism.<BR>
+      <BR>
+      The default value is (50) servers per sub-thread.<BR>
+      <BR>
+    </DIV><SPAN class="c2"><A name=
+    "--dispatcher-interval"></A>--dispatcher-interval</SPAN>=<SPAN class="c4">msec</SPAN><BR>
+
+
+    <DIV class="c3">
+      <BR>
+      Overrides the dispatcher cycle interval (<SPAN class=
+      "c4">msec</SPAN>).&nbsp; If the dispatcher thread completes
+      one cycle in less time than this interval, it will sleep for
+      the remainder of the time.&nbsp; Increasing the interval will
+      reduce CPU load at the expense of job dispatch latency.<BR>
+      <BR>
+      The default value is (2000) msec.&nbsp; Which is (2)
+      seconds.<BR>
+      <BR>
+    </DIV>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c9"><SPAN class="c2"><A name=
+    "--nfs-cache-interval"></A>--nfs-cache-interval</SPAN>=<SPAN class="c4">msec<BR>
+    </SPAN></SPAN>
+
+    <DIV class="c3">
+      <BR>
+      Overrides the NFS directory attribute caching interval
+      (msec).&nbsp; This sets the minimum time the Queue Manager
+      should to wait before attempting a NFS directory attribute
+      lookup operation after a file in the directory has been
+      created by another host on the network.&nbsp; This interval
+      should be set to the same value as the NFS (acdirmax) mount
+      option for the root production directory on the host running
+      the Queue Manager.<BR>
+      <BR>
+      The default is (5000) msec.&nbsp; Which is (5) seconds.
+    </DIV>
+  </DIV><BR>
+
+  <DIV class="c3">
+    <SPAN class="c9"><SPAN class="c2"><A name=
+    "--backup-sync-interval"></A>--backup-sync-interval</SPAN>=<SPAN class="c4">msec<BR>
+    </SPAN></SPAN>
+
+    <DIV class="c3">
+      <BR>
+      Overrides the interval (msec) between the live
+      synchronization of the database files associated with the
+      Queue Manager and backup copies of these files.&nbsp;In order
+      to minimize the amount of time that database operations need
+      to be locked during a backup to insure data integrity, this
+      live synchronization process occurs a more frequent intervals
+      so that the unique data which needs to be copied between the
+      live and backup database directories can be
+      minimized.&nbsp;In essense, these database synchronization
+      operations are identical to a backup with the exception that
+      the database does not need to be locked and no tarball is
+      created from the files in the backup directory.<BR>
+      <BR>
+      The default is (21600000) msec.&nbsp; Which is (6)
+      hours.<SPAN class="c2"><BR>
+      <BR></SPAN>
+    </DIV><SPAN class="c2"><A name=
+    "--balance-sample-interval"></A>--balance-sample-interval</SPAN>=<SPAN class="c4">msec</SPAN><BR>
+
+
+    <DIV class="c3">
+      <DIV class="c3">
+        <BR>
+      </DIV>Overrides the sampling interval for the balancer
+      (msec).&nbsp; This sets the length of time a single sample in
+      the balancer will last. &nbsp;At the end of sample, the
+      balancer will add up all the usage over the time-period and
+      then combine that with all of its existing samples (minus any
+      which have expired due to reaching the maximum number of
+      samples) to compute overall user usage of each balance group.
+      &nbsp;The shorter the sample interval, the more responsive
+      the queue will be to changes in fast changes user usage, a
+      situation that would be caused by having many short-duration
+      jobs spamming the queue. &nbsp;The longer the sample
+      interval, the more samples can be kept making the balancing
+      of user usage fairer over an increased time period.<BR>
+      <BR>
+      The default is (120000) msec.&nbsp; Which is (2) minutes.<BR>
+      <BR>
+    </DIV><SPAN class="c2"><A name=
+    "--balance-samples-to-keep"></A>--balance-samples-to-keep</SPAN>=<SPAN class="c4">num</SPAN><BR>
+
+
+    <DIV class="c3">
+      <BR>
+    </DIV>
+
+    <DIV class="c3">
+      Overrides the number of time samples that the balancer will
+      keep. &nbsp;The balancer will retain a set number of user
+      usage samples per balance group based on this setting.
+      &nbsp;Multiplying this number times the sample interval will
+      give the total time period over which samples are retained
+      (and over which user usage is being balanced).<BR>
+      <BR>
+      The default is (30) samples. &nbsp;This leads to a total
+      sampling range of (1) hour.
+    </DIV>
+
+    <DIV class="c3">
+      <DIV class="c3"></DIV><BR>
+    </DIV>
+  </DIV>
+
+  <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+  <DIV class="c3">
+    <SPAN class="c2">Documentation</SPAN><BR>
+  </DIV>
+
+  <DIV class="c5">
+    <A href="../javadoc/index.html"><SPAN class="c2">Pipeline Java
+    API</SPAN></A><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2">Pipeline Programs</SPAN><BR>
+
+    <DIV class="c3">
+      <A href="plui.html"><SPAN class="c2">plui</SPAN></A>(1),
+      <A href="plremote.html"><SPAN class=
+      "c2">plremote</SPAN></A>(1), plversion(1), <A href=
+      "plscript.html"><SPAN class="c2">plscript</SPAN></A>(1),
+      <A href="plpython.html"><SPAN class=
+      "c2">plpython</SPAN></A>(1), <A href=
+      "plplugin.html"></A><A href="plplugin.html"><SPAN class=
+      "c2">plplugin</SPAN></A>(1), <A href=
+      "plbuilder.html"><SPAN class="c2">plbuilder</SPAN></A>(1)<BR>
+      <A href="plmaster.html"><SPAN class=
+      "c2">plmaster</SPAN></A>(1), <A href=
+      "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+      "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+      "c2">plqueuemgr</SPAN></A>(1), <A href=
+      "plpluginmgr.html"><SPAN class=
+      "c2">plpluginmgr</SPAN></A>(1), <A href=
+      "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+      "c2">plfilemgr</SPAN></A>(1), <A href=
+      "pljobmgr.html"><SPAN class="c2">pljobmgr</SPAN></A>(1)<BR>
+      <A href="pls.html"><SPAN class="c2">pls</SPAN></A>(1),
+      <A href="plbrowse.html"><SPAN class=
+      "c2">plbrowse</SPAN></A>(1), <A href=
+      "realpath.html"><SPAN class="c2">realpath</SPAN></A>(1)<BR>
+      <A href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <SPAN class="c2">plconfig</SPAN></A>(1)
+    </DIV>
+  </DIV>
+
+  <H3><A name="Author" id="Author"></A>Author</H3>
+
+  <DIV class="c3">
+    Created by <SPAN class="c2">Jim Callahan</SPAN> of <A href=
+    "http://temerity.us/"><SPAN class="c2">Temerity Software,
+    Inc</SPAN></A>.
+  </DIV>
+
+  <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+  <DIV class="c3">
+    @COPYRIGHT@<BR>
+  </DIV>
+
+  <H3><A name="License_Agreement" id=
+  "License_Agreement"></A>License Agreement</H3>
+
+  <DIV class="c3">
+    @LICENSE@
+  </DIV>
+</BODY>
+</HTML>

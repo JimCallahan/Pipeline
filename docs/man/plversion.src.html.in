@@ -1,317 +1,404 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <title>plversion(1)</title>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-</head>
-<body>
-<h3>Name</h3>
-<blockquote><b>plversion</b> - quick graphical Pipeline version control
-tool<br>
-</blockquote>
-<h3>Synopsis</h3>
-<blockquote><b>plversion</b> [<a href="#Global_Options"><i>options</i></a>]<br>
-  <br>
-  <b>plversion</b> <a href="#--help" style="font-weight: bold;">--help</a><br>
-  <b>plversion</b> <a href="#--html-help" style="font-weight: bold;">--html-help</a><br>
-  <b>plversion</b> <a href="#--version_" style="font-weight: bold;">--version</a><br>
-  <b>plversion</b> <a href="#--release-date" style="font-weight: bold;">--release-date</a><br>
-  <b>plversion</b> <a href="#--copyright" style="font-weight: bold;">--copyright</a><br>
-  <span style="font-weight: bold;">plversion <a href="#--license">--license</a></span><br>
-</blockquote>
-<h3><a name="Description"></a>Description</h3>
-<blockquote>The <span style="font-weight: bold;">plversion</span>(1)
-tool
-is a simplified graphical tool for performing Pipeline version control
-operations.&nbsp; Typically, this program is used from within
-interactive 2d/3d tools to version control the node which managed the
-file currently being edited.&nbsp;&nbsp; <br>
-  <br>
-This is not intended as a general replacement for <span
- style="font-weight: bold;">plui</span>(1), but can provide access to
-quick version control operations in cases where seeing the full context
-of the operation is uneccessary.&nbsp; In particular, if the node has a
-task related Annotation with an Edit Purpose or no Annotations at
-all.&nbsp; If invoked on other types of nodes, <span
- style="font-weight: bold;">plversion</span>(1) will provide warn the
-user and present an option to direct a running <span
- style="font-weight: bold;">plui</span>(1) to view the node in question
-to start <span style="font-weight: bold;">plui</span>(1) if none are
-currently running.<br>
-</blockquote>
-<h3><a name="Information_Options"></a>Information
-Options</h3>
-<blockquote>The following options provide online information about <span
- style="font-weight: bold;">plversion</span>(1)
-and then immediately
-exit:</blockquote>
-<blockquote><b><a name="--help"></a>--help</b><br>
-  <blockquote>Prints a brief usage message and exits.<br>
-  </blockquote>
-  <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser. <br>
-  </blockquote>
-  <b><a name="--version_"></a>--version</b><br>
-  <blockquote>Prints the version number of this software and exits.<br>
-  </blockquote>
-  <b><a name="--release-date"></a>--release-date</b><br>
-  <blockquote> Prints date that this software was released and exits.<br>
-  </blockquote>
-  <b><a name="--copyright"></a>--copyright</b><br>
-  <blockquote> Prints the <a href="#Copyright"><span
- style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-  </blockquote>
-  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
-  <br>
-  </span>
-  <div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span>Prints the <a
- href="#License_Agreement"><span style="font-weight: bold;">license
-agreement</span></a> for this software and exits.</div>
-</blockquote>
-<blockquote>
-  <blockquote> </blockquote>
-</blockquote>
-<blockquote> </blockquote>
-<h3><a name="Global_Options"></a>Global
-Options</h3>
-<span style="color: rgb(0, 0, 0);"></span><a href="pljobmgr.html"><span
- style="font-weight: bold;"></span></a>
-<blockquote>
-  <blockquote> </blockquote>
-</blockquote>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--log-file"></a>--log-file</span>=<span
- style="font-style: italic;">filename</span><br>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span><br>
-<span style="font-style: italic;">
-</span></div>
-</div>
-<div style="margin-left: 40px;"><span style="font-style: italic;"><span
- style="font-style: italic;"></span></span>Write all output to the
-given log file (filename) instead of printing to stdout.<br>
-</div>
-<div style="margin-left: 80px;"><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--default-log-file"></a>--standard-log-file</span><br>
-<span style="font-weight: bold;">
-</span><br>
-<span style="font-weight: bold;">
-</span></div>
-<div style="margin-left: 80px;">Write all output to the standard log
-file for <span style="font-weight: bold;">plversion</span>(1) instead
-of
-printing to stdout.<br>
-<br>
-The standard log file for this site on Linux and Mac OS X is:<br>
-<br>
-<div style="margin-left: 40px;">$HOME/.pipeline/plversion.log.#<br>
-<br>
-</div>
-On Windows the standard log file path is:<br>
-<div style="margin-left: 40px;">&nbsp;<br>
-%APPDATA%\Temerity\Pipeline\plversion.log.#<br>
-<br>
-</div>
-</div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 80px;"></div>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;"><a
- name="--standard-log-dir"></a>--standard-log-dir</span>=<span
- style="font-style: italic;">dirname</span><br>
-<span style="font-weight: bold;">
-</span><br>
-<span style="font-weight: bold;">
-</span>
-<div style="margin-left: 40px;">Write all output to the standard log
-file for <span style="font-weight: bold;">plversion</span>(1) written
-to
-the given logs directory (<span style="font-style: italic;">dirname</span>)
-instead
-of printing to stdout.</div>
-<br>
-<span style="font-weight: bold;">
-<a name="--log-depth"></a>--log-backups</span>=<span
- style="font-style: italic;">num</span><br>
-<span style="font-style: italic;">
-</span><br>
-<div style="margin-left: 40px;">
-When logging to a file using <a href="#--log-file"><span
- style="font-weight: bold;">--log-file</span></a>, this option sets the
-number of rotating backups (<span style="font-style: italic;">num</span>)
-to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
-are the
-same as the log file with the backup number appended to the end of the
-name.&nbsp;&nbsp; The logfile will be automatically close the current
-logfile,
-rotate the backups and reopen the logfile whenever the log grows to
-larger than 10MB.<br>
-<br>
-The default number of backups is (10).</div>
-<br>
-<span style="font-weight: bold;"><a name="--logging"></a>--log</span>=<span
- style="font-style: italic;">logger:level</span>[<span
- style="font-style: italic;">,logger:level</span>[...]]</div>
-<div style="margin-left: 40px;"><br>
-<div style="margin-left: 40px;">Normally all output from <span
- style="font-weight: bold;">plversion</span>(1) is displayed using
-dialogs and other graphical components.&nbsp; In addition to this UI
-output, <span style="font-weight: bold;">plversion</span>(1) can
-generate
-detailed
-output on the command line tracing the various stages of internal
-execution.&nbsp; <br>
-<br>
-The following arguments control the several different
-types of logging information (<span style="font-style: italic;">logger</span>)
-and different amounts of information (<span style="font-style: italic;">level</span>)
-of each type to generate.&nbsp; Several loggers can be modified in one
-option.<br>
-<br>
-The (<span style="font-style: italic;">logger</span>) portion of the
-option's argument can be:<br>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br
- style="font-weight: bold;">
-</div>
-<div style="margin-left: 80px;">A shortcut for specifying all loggers
-at once.</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><br
- style="font-weight: bold;">
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">arg</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs errors related to parsing the
-command-line options.<br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs node operations initiated by the
-user interface.<br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">net</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs network connections and activity.<br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">plg</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs the loading and initialization of
-Action, Editor and Tool plugins.<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">sub</span><br>
-</div>
-<div style="margin-left: 80px;">Logs the launching and monitoring
-of OS level subprocesses.<br>
-</div>
-<span style="font-weight: bold;"></span><br>
-The (<span style="font-style: italic;">level</span>) portion of
-the option's argument can be:<br>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">This level is used for error messages
-and other catastrophic events.<br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">warning</span><br>
-</div>
-<div style="margin-left: 80px;">This level is used for non-fatal error
-messages and advisory information.<br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">info</span><br>
-</div>
-<div style="margin-left: 80px;">This is the default output level for
-all loggers and is used for normal output from <b>plversion</b>(1). <br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">fine</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
-</div>
-<div style="margin-left: 80px;">These three levels are used for
-increasingly more detailed command tracing messages. <br>
-</div>
-</div>
-</div>
-<h3><a name="Command_Options"></a>Command Options</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">--check-in</span>=<span
- style="font-style: italic;">file-name<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Check-in the node which manages the
-given file (<span style="font-style: italic;">file-name</span>).&nbsp;
-The name of the working area view and node name will be determined from
-this file name.&nbsp;&nbsp; For the most consistent results, the file
-name should be supplied as an absolute file system path.<br>
-</div>
-</div>
-<h3><a name="See_Also"></a>See
-Also</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
-<br>
-<div style="margin-left: 40px;"><a href="../javadoc/index.html"><span
- style="font-weight: bold;">Pipeline
-Java API</span></a><span style="font-weight: bold;"></span></div>
-</div>
-<blockquote>
-  <blockquote> </blockquote>
-  <span style="font-weight: bold;">Pipeline Programs</span><span
- style="font-weight: bold;"></span><span style="font-weight: bold;"></span><br>
-  <div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
- style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
- href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-  <a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-  <a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
- href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-  <a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-  <a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-  <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
- href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-  <a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-  <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-  <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-  <a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1),
-  <a href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-  <a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-  <span style="font-weight: bold;"></span><a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)</div>
-</blockquote>
-<blockquote>
-  <blockquote>
-    <blockquote> </blockquote>
-    <blockquote> </blockquote>
-    <blockquote> </blockquote>
-  </blockquote>
-</blockquote>
-<h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
- href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.<br>
-</div>
-<h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-</div>
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
-</body>
-</html>
+
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+
+  <TITLE>plversion(1)</TITLE>
+  <META http-equiv="content-type" content=
+  "text/html; charset=us-ascii">
+  <STYLE type="text/css">
+br.c7 {font-weight: bold;}
+  div.c6 {margin-left: 80px;}
+  div.c5 {margin-left: 40px}
+  span.c4 {font-style: italic;}
+  div.c3 {margin-left: 40px;}
+  span.c2 {font-weight: bold;}
+  a.c1 {font-weight: bold;}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3>Name</H3>
+
+  <BLOCKQUOTE>
+    <B>plversion</B> - quick graphical Pipeline version control
+    tool<BR>
+  </BLOCKQUOTE>
+
+  <H3>Synopsis</H3>
+
+  <BLOCKQUOTE>
+    <B>plversion</B> [<A href=
+    "#Global_Options"><I>options</I></A>]<BR>
+    <BR>
+    <B>plversion</B> <A href="#--help" class="c1">--help</A><BR>
+    <B>plversion</B> <A href="#--html-help" class=
+    "c1">--html-help</A><BR>
+    <B>plversion</B> <A href="#--version_" class=
+    "c1">--version</A><BR>
+    <B>plversion</B> <A href="#--release-date" class=
+    "c1">--release-date</A><BR>
+    <B>plversion</B> <A href="#--copyright" class=
+    "c1">--copyright</A><BR>
+    <SPAN class="c2">plversion <A href=
+    "#--license">--license</A></SPAN><BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id="Description"></A>Description</H3>
+
+  <BLOCKQUOTE>
+    The <SPAN class="c2">plversion</SPAN>(1) tool is a simplified
+    graphical tool for performing Pipeline version control
+    operations.&nbsp; Typically, this program is used from within
+    interactive 2d/3d tools to version control the node which
+    managed the file currently being edited.&nbsp;&nbsp;<BR>
+    <BR>
+    This is not intended as a general replacement for <SPAN class=
+    "c2">plui</SPAN>(1), but can provide access to quick version
+    control operations in cases where seeing the full context of
+    the operation is uneccessary.&nbsp; In particular, if the node
+    has a task related Annotation with an Edit Purpose or no
+    Annotations at all.&nbsp; If invoked on other types of nodes,
+    <SPAN class="c2">plversion</SPAN>(1) will provide warn the user
+    and present an option to direct a running <SPAN class=
+    "c2">plui</SPAN>(1) to view the node in question to start
+    <SPAN class="c2">plui</SPAN>(1) if none are currently
+    running.<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    The following options provide online information about
+    <SPAN class="c2">plversion</SPAN>(1) and then immediately exit:
+  </BLOCKQUOTE>
+
+  <BLOCKQUOTE>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.<BR>
+    </BLOCKQUOTE><B><A name="--version_"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and exits.<BR>
+    </BLOCKQUOTE><B><A name="--copyright"></A>--copyright</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the <A href="#Copyright"><SPAN class="c2">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+    </BLOCKQUOTE><SPAN class="c2"><A name=
+    "--license"></A>--license<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+      Prints the <A href="#License_Agreement"><SPAN class=
+      "c2">license agreement</SPAN></A> for this software and
+      exits.
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Global_Options" id="Global_Options"></A>Global
+  Options</H3><A href="pljobmgr.html"></A>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--log-file"></A>--log-file</SPAN>=<SPAN class=
+    "c4">filename</SPAN><BR>
+
+    <DIV class="c5">
+      <BR>
+    </DIV>
+
+    <DIV class="c3">
+      Write all output to the given log file (filename) instead of
+      printing to stdout.<BR>
+    </DIV>
+
+    <DIV class="c6">
+      <BR>
+    </DIV>
+
+    <DIV class="c3"></DIV>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--default-log-file"></A>--standard-log-file</SPAN><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c6">
+    Write all output to the standard log file for <SPAN class=
+    "c2">plversion</SPAN>(1) instead of printing to stdout.<BR>
+    <BR>
+    The standard log file for this site on Linux and Mac OS X
+    is:<BR>
+    <BR>
+
+    <DIV class="c3">
+      $HOME/.pipeline/plversion.log.#<BR>
+      <BR>
+    </DIV>On Windows the standard log file path is:<BR>
+
+    <DIV class="c3">
+      &nbsp;<BR>
+      %APPDATA%\Temerity\Pipeline\plversion.log.#<BR>
+      <BR>
+    </DIV>
+  </DIV>
+
+  <DIV class="c3">
+    <DIV class="c6"></DIV><SPAN class="c2"><A name=
+    "--standard-log-dir"></A>--standard-log-dir</SPAN>=<SPAN class=
+    "c4">dirname</SPAN><BR>
+    <BR>
+
+    <DIV class="c3">
+      Write all output to the standard log file for <SPAN class=
+      "c2">plversion</SPAN>(1) written to the given logs directory
+      (<SPAN class="c4">dirname</SPAN>) instead of printing to
+      stdout.
+    </DIV><BR>
+    <SPAN class="c2"><A name=
+    "--log-depth"></A>--log-backups</SPAN>=<SPAN class=
+    "c4">num</SPAN><BR>
+    <BR>
+
+    <DIV class="c3">
+      When logging to a file using <A href=
+      "#--log-file"><SPAN class="c2">--log-file</SPAN></A>, this
+      option sets the number of rotating backups (<SPAN class=
+      "c4">num</SPAN>) to maintain of the logfile.&nbsp;&nbsp; The
+      names of the backup files are the same as the log file with
+      the backup number appended to the end of the
+      name.&nbsp;&nbsp; The logfile will be automatically close the
+      current logfile, rotate the backups and reopen the logfile
+      whenever the log grows to larger than 10MB.<BR>
+      <BR>
+      The default number of backups is (10).
+    </DIV><BR>
+    <SPAN class="c2"><A name=
+    "--logging"></A>--log</SPAN>=<SPAN class=
+    "c4">logger:level</SPAN>[<SPAN class=
+    "c4">,logger:level</SPAN>[...]]
+  </DIV>
+
+  <DIV class="c3">
+    <BR>
+
+    <DIV class="c3">
+      Normally all output from <SPAN class="c2">plversion</SPAN>(1)
+      is displayed using dialogs and other graphical
+      components.&nbsp; In addition to this UI output, <SPAN class=
+      "c2">plversion</SPAN>(1) can generate detailed output on the
+      command line tracing the various stages of internal
+      execution.&nbsp;<BR>
+      <BR>
+      The following arguments control the several different types
+      of logging information (<SPAN class="c4">logger</SPAN>) and
+      different amounts of information (<SPAN class=
+      "c4">level</SPAN>) of each type to generate.&nbsp; Several
+      loggers can be modified in one option.<BR>
+      <BR>
+      The (<SPAN class="c4">logger</SPAN>) portion of the option's
+      argument can be:<BR>
+      <BR>
+
+      <DIV class="c3">
+        <SPAN class="c2">all</SPAN><BR class="c7">
+      </DIV>
+
+      <DIV class="c6">
+        A shortcut for specifying all loggers at once.
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">arg</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        Logs errors related to parsing the command-line
+        options.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c3">
+        <SPAN class="c2">ops</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        Logs node operations initiated by the user interface.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c3">
+        <SPAN class="c2">net</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        Logs network connections and activity.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c3">
+        <SPAN class="c2">plg</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        Logs the loading and initialization of Action, Editor and
+        Tool plugins.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR>
+        <SPAN class="c2">sub</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        Logs the launching and monitoring of OS level
+        subprocesses.<BR>
+      </DIV><BR>
+      The (<SPAN class="c4">level</SPAN>) portion of the option's
+      argument can be:<BR>
+      <BR>
+
+      <DIV class="c3">
+        <SPAN class="c2">severe</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        This level is used for error messages and other
+        catastrophic events.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">warning</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        This level is used for non-fatal error messages and
+        advisory information.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">info</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        This is the default output level for all loggers and is
+        used for normal output from <B>plversion</B>(1).<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">fine</SPAN><BR>
+        <SPAN class="c2">finer</SPAN><BR>
+        <SPAN class="c2">finest</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        These three levels are used for increasingly more detailed
+        command tracing messages.<BR>
+      </DIV>
+    </DIV>
+  </DIV>
+
+  <H3><A name="Command_Options" id="Command_Options"></A>Command
+  Options</H3>
+
+  <DIV class="c3">
+    <SPAN class="c2">--check-in</SPAN>=<SPAN class=
+    "c4">file-name<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+      Check-in the node which manages the given file (<SPAN class=
+      "c4">file-name</SPAN>).&nbsp; The name of the working area
+      view and node name will be determined from this file
+      name.&nbsp;&nbsp; For the most consistent results, the file
+      name should be supplied as an absolute file system path.<BR>
+    </DIV>
+  </DIV>
+
+  <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+  <DIV class="c3">
+    <SPAN class="c2">Documentation</SPAN><BR>
+
+    <DIV class="c3">
+      <A href="../javadoc/index.html"><SPAN class="c2">Pipeline
+      Java API</SPAN></A>
+    </DIV>
+  </DIV>
+
+  <BLOCKQUOTE>
+    <SPAN class="c2">Pipeline Programs</SPAN><BR>
+
+    <DIV class="c3">
+      <A href="plui.html"><SPAN class="c2">plui</SPAN></A>(1),
+      <A href="plremote.html"><SPAN class=
+      "c2">plremote</SPAN></A>(1), plversion(1), <A href=
+      "plscript.html"><SPAN class="c2">plscript</SPAN></A>(1),
+      <A href="plpython.html"><SPAN class=
+      "c2">plpython</SPAN></A>(1), <A href=
+      "plplugin.html"></A><A href="plplugin.html"><SPAN class=
+      "c2">plplugin</SPAN></A>(1), <A href=
+      "plbuilder.html"><SPAN class="c2">plbuilder</SPAN></A>(1)<BR>
+      <A href="plmaster.html"><SPAN class=
+      "c2">plmaster</SPAN></A>(1), <A href=
+      "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+      "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+      "c2">plqueuemgr</SPAN></A>(1), <A href=
+      "plpluginmgr.html"><SPAN class=
+      "c2">plpluginmgr</SPAN></A>(1), <A href=
+      "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+      "c2">plfilemgr</SPAN></A>(1), <A href=
+      "pljobmgr.html"><SPAN class="c2">pljobmgr</SPAN></A>(1)<BR>
+      <A href="pls.html"><SPAN class="c2">pls</SPAN></A>(1),
+      <A href="plbrowse.html"><SPAN class=
+      "c2">plbrowse</SPAN></A>(1), <A href=
+      "realpath.html"><SPAN class="c2">realpath</SPAN></A>(1)<BR>
+      <A href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <SPAN class="c2">plconfig</SPAN></A>(1)
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Author" id="Author"></A>Author</H3>
+
+  <DIV class="c3">
+    Created by <SPAN class="c2">Jim Callahan</SPAN> of <A href=
+    "http://temerity.us/"><SPAN class="c2">Temerity Software,
+    Inc</SPAN></A>.<BR>
+  </DIV>
+
+  <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+  <DIV class="c3">
+    @COPYRIGHT@<BR>
+  </DIV>
+
+  <H3><A name="License_Agreement" id=
+  "License_Agreement"></A>License Agreement</H3>
+
+  <DIV class="c3">
+    @LICENSE@
+  </DIV>
+</BODY>
+</HTML>

@@ -1,294 +1,394 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
-  <title>pljobmgr(1)</title>
-</head>
-<body>
-<h3><a name="Name"></a>Name</h3>
-<blockquote><b>pljobmgr</b> - the Pipeline Job Manager daemon<br>
-</blockquote>
-<h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote><b>pljobmgr</b> [<a href="#Global_Options"><i>options</i></a>]<i><br>
-  </i><br>
-  <b>pljobmgr</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
-  <b>pljobmgr</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
-  <b>pljobmgr</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
-  <b>pljobmgr</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
-  <b>pljobmgr</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
-  <span style="font-weight: bold;">pljobmgr <a href="#--license">--license</a></span><br>
-</blockquote>
-<h3><a name="Description"></a>Description<br>
-</h3>
-<blockquote>A daemon process which manages the execution of queue jobs
-on a host which is part of the Pipeline&nbsp; Queue.&nbsp; The <span
- style="font-weight: bold;">pljobmgr</span>(1) daemon communicates with
-the <a href="pljobmgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1)
-daemon which gathers resource usage information from this daemon and
-dispatches queue jobs for execution by this daemon. &nbsp; This deamon
-also provides subprocess output information for queue jobs executed by
-this daemon directly to <a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1)
-client programs. <br>
-</blockquote>
-<h3> </h3>
-<h3><a name="Information_Options"></a>Information Options</h3>
-<blockquote>The following options provide information about <b>pljobmgr</b>(1)
-and then immediately exit:</blockquote>
-<blockquote><b><a name="--help"></a>--help</b><br>
-  <blockquote>Prints a brief usage message and exits.<br>
-  </blockquote>
-  <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser. </blockquote>
-  <b><a name="--version"></a>--version</b><br>
-  <blockquote>Prints the version number of this software and exits.<br>
-  </blockquote>
-  <b><a name="--release-date"></a>--release-date</b><br>
-  <blockquote> Prints date that this software was released and exits.<br>
-  </blockquote>
-  <b><a name="--copyright"></a>--copyright<br>
-  </b><br>
-  <div style="margin-left: 40px;"> Prints the <a href="#Copyright"><span
- style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-  <br>
-  </div>
-  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
-  <br>
-  </span>
-  <div style="margin-left: 40px;">Prints the <a
- href="#License_Agreement"><span style="font-weight: bold;">license
-agreement</span></a> for this software and exits.<br>
-  </div>
-  <blockquote> </blockquote>
-</blockquote>
-<h3><a name="Global_Options"></a>Global Options<br>
-</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--log-file"></a>--log-file</span>=<span
- style="font-style: italic;">filename</span><br>
-<span style="font-style: italic;">
-</span><br>
-<span style="font-style: italic;">
-</span></div>
-<div style="margin-left: 80px;"><span style="font-style: italic;"><span
- style="font-style: italic;"></span></span>Write all output to the
-given log file (filename) instead of printing to stdout.<br>
-<br>
-<span style="font-style: italic;"></span></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--default-log-file"></a>--standard-log-file</span><br>
-<span style="font-weight: bold;">
-</span><br>
-<span style="font-weight: bold;">
-</span></div>
-<div style="margin-left: 80px;">Write all output to the standard log
-file for <span style="font-weight: bold;">pljobmgr</span>(1) instead
-of printing to stdout.<br>
-<br>
-The standard log file for this site is:<br>
-<div style="margin-left: 40px;"><br>
-@ROOT_INST_DIR@/logs/pljobmgr.<span style="font-style: italic;">hostname</span>.log.#<br>
-<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"><a name="--standard-log-dir"></a>--standard-log-dir</span>=<span
- style="font-style: italic;">dirname</span><br>
-<span style="font-weight: bold;">
-</span><br>
-<span style="font-weight: bold;">
-</span></div>
-<div style="margin-left: 80px;">Write all output to the standard log
-file for <span style="font-weight: bold;">pljobmgr</span>(1) written
-to the given logs directory (<span style="font-style: italic;">dirname</span>)
-instead
-of printing to stdout.</div>
-<div style="margin-left: 40px;"><br>
-<span style="font-weight: bold;">
-<a name="--log-depth"></a>--log-backups</span>=<span
- style="font-style: italic;">num</span><br>
-<span style="font-style: italic;">
-</span></div>
-<br>
-<div style="margin-left: 80px;">When logging to a file using <a
- href="#--log-file"><span style="font-weight: bold;">--log-file</span></a>,
-this option sets the number of rotating backups (<span
- style="font-style: italic;">num</span>)
-to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
-are the
-same as the log file with the backup number appended to the end of the
-name.&nbsp;&nbsp; The logfile will be automatically close the current
-logfile,
-rotate the backups and reopen the logfile whenever the log grows to
-larger than 10MB.<br>
-<br>
-The default number of backups is (10).</div>
-<blockquote style="margin-left: 80px;"> <code></code><span
- style="font-weight: bold;"><a
- href="http://www.gnu.org/software/autoconf/"><span
- style="font-weight: bold;"></span></a></span><span
- style="font-weight: bold;"> </span></blockquote>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--log"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span
- style="font-style: italic;">,logger:level</span>[...]]</div>
-<div style="margin-left: 40px;"><br>
-<div style="margin-left: 40px;">In addition to the normal output, <b>pljobmgr</b>(1)
-can
-generate
-detailed output tracing the various stages of internal execution.&nbsp;
-The arguments control the several different types
-of logging information (<span style="font-style: italic;">logger</span>)
-and different amounts of information (<span style="font-style: italic;">level</span>)
-of each type to generate.&nbsp; Several loggers can be modified in one
-option.<br>
-<br>
-The (<span style="font-style: italic;">logger</span>) portion of the
-option's argument can be:<br>
-<span style="font-weight: bold;"><br>
-</span>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br
- style="font-weight: bold;">
-</div>
-<div style="margin-left: 80px;">A shortcut for specifying all loggers
-at once.<br>
-</div>
-<div style="margin-left: 40px;"><br>
-<span style="font-weight: bold;">arg</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs errors related to parsing the
-command-line options.<br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs queue job related activity of
-the
-server.<br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">net</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Logs network connections and
-activity. <br>
-</div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
-plg</span><br>
-<div style="margin-left: 40px;">Logs the loading and
-initialization of Pipeline plugins.<br>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;"></span></div>
-<span style="font-weight: bold;">sub</span><br>
-<div style="margin-left: 40px;">Logs the launching and monitoring
-of OS level subprocesses.<br>
-</div>
-</div>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">sum</span><br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;"></span>Logs
-the activity of checksums used to optimize
-comparisons of the working area and repository files associated with
-nodes.<br>
-<br>
-</div>
-The (<span style="font-style: italic;">level</span>) portion of
-the option's argument can be:<br>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">This level is used for error messages
-and other catastrophic events.<br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">warning</span><br>
-</div>
-<div style="margin-left: 80px;">This level is used for non-fatal error
-messages and advisory information.<br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">info</span><br>
-</div>
-<div style="margin-left: 80px;">This is the default output level for
-all loggers and is used for normal output from <b>pljobmgr</b>(1). <br>
-</div>
-<div style="margin-left: 40px;"><br style="font-weight: bold;">
-<span style="font-weight: bold;">fine</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
-</div>
-<div style="margin-left: 80px;">These three levels are used for
-increasingly more detailed command tracing messages. <br>
-<br>
-</div>
-</div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--fail-fast"></a>--fail-fast </span><br>
-<br>
-<div style="margin-left: 40px;">If unable to contact <span
- style="font-weight: bold;">plpluginmgr</span>(1), the daemon will
-abort immediately instead of repeatedly retrying the connection.&nbsp;
-This is usefull when launching pljobmgr(1) from an init(8) script so
-that if the plpluginmgr(1) isn't running, the daemon will fail
-quickly.&nbsp; <br>
-</div>
-</div>
-<br>
-<h3><a name="See_Also"></a>See Also</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
-<br>
-</div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;"></span><a
- href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
-Java API</span></a><br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
-Programs</span><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span><br>
-<div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
- style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
- href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-<a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-<a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
- href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-<a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-<a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
- href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-<a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1), <a
- href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-<a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-<span style="font-weight: bold;"></span><a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)</div>
-</div>
-<h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
- href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.</div>
-<span style="font-weight: bold;">
-</span>
-<h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-</div>
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
-</body>
-</html>
+
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  <META content="text/html; charset=us-ascii" http-equiv=
+  "content-type">
+
+  <TITLE>pljobmgr(1)</TITLE>
+  <STYLE type="text/css">
+div.c8 {margin-left: 40px}
+  br.c7 {font-weight: bold;}
+  blockquote.c6 {margin-left: 80px;}
+  div.c5 {margin-left: 80px;}
+  span.c4 {font-style: italic;}
+  div.c3 {margin-left: 40px;}
+  span.c2 {font-weight: bold;}
+  a.c1 {font-weight: bold;}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3><A name="Name" id="Name"></A>Name</H3>
+
+  <BLOCKQUOTE>
+    <B>pljobmgr</B> - the Pipeline Job Manager daemon<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Synopsis" id="Synopsis"></A>Synopsis</H3>
+
+  <BLOCKQUOTE>
+    <B>pljobmgr</B> [<A href=
+    "#Global_Options"><I>options</I></A>]<I><BR></I><BR>
+    <B>pljobmgr</B> <A class="c1" href="#--help">--help</A><BR>
+    <B>pljobmgr</B> <A class="c1" href=
+    "#--html-help">--html-help</A><BR>
+    <B>pljobmgr</B> <A class="c1" href=
+    "#--version_">--version</A><BR>
+    <B>pljobmgr</B> <A class="c1" href=
+    "#--release-date">--release-date</A><BR>
+    <B>pljobmgr</B> <A class="c1" href=
+    "#--copyright">--copyright</A><BR>
+    <SPAN class="c2">pljobmgr <A href=
+    "#--license">--license</A></SPAN><BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id=
+  "Description"></A>Description<BR></H3>
+
+  <BLOCKQUOTE>
+    A daemon process which manages the execution of queue jobs on a
+    host which is part of the Pipeline&nbsp; Queue.&nbsp; The
+    <SPAN class="c2">pljobmgr</SPAN>(1) daemon communicates with
+    the <A href="pljobmgr.html"><SPAN class=
+    "c2">plqueuemgr</SPAN></A>(1) daemon which gathers resource
+    usage information from this daemon and dispatches queue jobs
+    for execution by this daemon. &nbsp; This deamon also provides
+    subprocess output information for queue jobs executed by this
+    daemon directly to <A href="plui.html"><SPAN class=
+    "c2">plui</SPAN></A>(1) client programs.<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    The following options provide information about
+    <B>pljobmgr</B>(1) and then immediately exit:
+  </BLOCKQUOTE>
+
+  <BLOCKQUOTE>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.
+    </BLOCKQUOTE><B><A name="--version"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and exits.<BR>
+    </BLOCKQUOTE><B><A name="--copyright"></A>--copyright</B><BR>
+    <BR>
+
+    <DIV class="c3">
+      Prints the <A href="#Copyright"><SPAN class="c2">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+      <BR>
+    </DIV><SPAN class="c2"><A name="--license"></A>--license<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+      Prints the <A href="#License_Agreement"><SPAN class=
+      "c2">license agreement</SPAN></A> for this software and
+      exits.<BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Global_Options" id="Global_Options"></A>Global
+  Options<BR></H3>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--log-file"></A>--log-file</SPAN>=<SPAN class=
+    "c4">filename</SPAN><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c5">
+    Write all output to the given log file (filename) instead of
+    printing to stdout.<BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--default-log-file"></A>--standard-log-file</SPAN><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c5">
+    Write all output to the standard log file for <SPAN class=
+    "c2">pljobmgr</SPAN>(1) instead of printing to stdout.<BR>
+    <BR>
+    The standard log file for this site is:<BR>
+
+    <DIV class="c3">
+      <BR>
+      @ROOT_INST_DIR@/logs/pljobmgr.<SPAN class=
+      "c4">hostname</SPAN>.log.#<BR>
+      <BR>
+    </DIV>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--standard-log-dir"></A>--standard-log-dir</SPAN>=<SPAN class=
+    "c4">dirname</SPAN><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c5">
+    Write all output to the standard log file for <SPAN class=
+    "c2">pljobmgr</SPAN>(1) written to the given logs directory
+    (<SPAN class="c4">dirname</SPAN>) instead of printing to
+    stdout.
+  </DIV>
+
+  <DIV class="c3">
+    <BR>
+    <SPAN class="c2"><A name=
+    "--log-depth"></A>--log-backups</SPAN>=<SPAN class=
+    "c4">num</SPAN><BR>
+  </DIV><BR>
+
+  <DIV class="c5">
+    When logging to a file using <A href="#--log-file"><SPAN class=
+    "c2">--log-file</SPAN></A>, this option sets the number of
+    rotating backups (<SPAN class="c4">num</SPAN>) to maintain of
+    the logfile.&nbsp;&nbsp; The names of the backup files are the
+    same as the log file with the backup number appended to the end
+    of the name.&nbsp;&nbsp; The logfile will be automatically
+    close the current logfile, rotate the backups and reopen the
+    logfile whenever the log grows to larger than 10MB.<BR>
+    <BR>
+    The default number of backups is (10).
+  </DIV>
+
+  <BLOCKQUOTE class="c6">
+    <SPAN class="c2"><A href=
+    "http://www.gnu.org/software/autoconf/"></A></SPAN>
+  </BLOCKQUOTE>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name="--log"></A>--log</SPAN>=<SPAN class=
+    "c4">logger:level</SPAN>[<SPAN class=
+    "c4">,logger:level</SPAN>[...]]
+  </DIV>
+
+  <DIV class="c3">
+    <BR>
+
+    <DIV class="c3">
+      In addition to the normal output, <B>pljobmgr</B>(1) can
+      generate detailed output tracing the various stages of
+      internal execution.&nbsp; The arguments control the several
+      different types of logging information (<SPAN class=
+      "c4">logger</SPAN>) and different amounts of information
+      (<SPAN class="c4">level</SPAN>) of each type to
+      generate.&nbsp; Several loggers can be modified in one
+      option.<BR>
+      <BR>
+      The (<SPAN class="c4">logger</SPAN>) portion of the option's
+      argument can be:<BR>
+      <BR>
+
+      <DIV class="c3">
+        <SPAN class="c2">all</SPAN><BR class="c7">
+      </DIV>
+
+      <DIV class="c5">
+        A shortcut for specifying all loggers at once.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR>
+        <SPAN class="c2">arg</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        Logs errors related to parsing the command-line
+        options.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c3">
+        <SPAN class="c2">ops</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        Logs queue job related activity of the server.<BR>
+        <BR>
+      </DIV>
+
+      <DIV class="c3">
+        <SPAN class="c2">net</SPAN>
+      </DIV>
+
+      <DIV class="c5">
+        Logs network connections and activity.
+      </DIV><BR>
+
+      <DIV class="c3">
+        <SPAN class="c2">plg</SPAN><BR>
+
+        <DIV class="c3">
+          Logs the loading and initialization of Pipeline
+          plugins.<BR>
+          <BR>
+        </DIV><SPAN class="c2">sub</SPAN><BR>
+
+        <DIV class="c3">
+          Logs the launching and monitoring of OS level
+          subprocesses.<BR>
+        </DIV>
+      </DIV><BR>
+
+      <DIV class="c3">
+        <SPAN class="c2">sum</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        Logs the activity of checksums used to optimize comparisons
+        of the working area and repository files associated with
+        nodes.<BR>
+        <BR>
+      </DIV>The (<SPAN class="c4">level</SPAN>) portion of the
+      option's argument can be:<BR>
+      <BR>
+
+      <DIV class="c3">
+        <SPAN class="c2">severe</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        This level is used for error messages and other
+        catastrophic events.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">warning</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        This level is used for non-fatal error messages and
+        advisory information.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">info</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        This is the default output level for all loggers and is
+        used for normal output from <B>pljobmgr</B>(1).<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c7">
+        <SPAN class="c2">fine</SPAN><BR>
+        <SPAN class="c2">finer</SPAN><BR>
+        <SPAN class="c2">finest</SPAN><BR>
+      </DIV>
+
+      <DIV class="c5">
+        These three levels are used for increasingly more detailed
+        command tracing messages.<BR>
+        <BR>
+      </DIV>
+    </DIV>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--fail-fast"></A>--fail-fast</SPAN><BR>
+    <BR>
+
+    <DIV class="c3">
+      If unable to contact <SPAN class="c2">plpluginmgr</SPAN>(1),
+      the daemon will abort immediately instead of repeatedly
+      retrying the connection.&nbsp; This is usefull when launching
+      pljobmgr(1) from an init(8) script so that if the
+      plpluginmgr(1) isn't running, the daemon will fail
+      quickly.&nbsp;<BR>
+    </DIV>
+  </DIV><BR>
+
+  <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+  <DIV class="c3">
+    <SPAN class="c2">Documentation</SPAN><BR>
+  </DIV>
+
+  <DIV class="c5">
+    <A href="../javadoc/index.html"><SPAN class="c2">Pipeline Java
+    API</SPAN></A><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2">Pipeline Programs</SPAN><BR>
+
+    <DIV class="c3">
+      <A href="plui.html"><SPAN class="c2">plui</SPAN></A>(1),
+      <A href="plremote.html"><SPAN class=
+      "c2">plremote</SPAN></A>(1), plversion(1), <A href=
+      "plscript.html"><SPAN class="c2">plscript</SPAN></A>(1),
+      <A href="plpython.html"><SPAN class=
+      "c2">plpython</SPAN></A>(1), <A href=
+      "plplugin.html"></A><A href="plplugin.html"><SPAN class=
+      "c2">plplugin</SPAN></A>(1), <A href=
+      "plbuilder.html"><SPAN class="c2">plbuilder</SPAN></A>(1)<BR>
+      <A href="plmaster.html"><SPAN class=
+      "c2">plmaster</SPAN></A>(1), <A href=
+      "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+      "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+      "c2">plqueuemgr</SPAN></A>(1), <A href=
+      "plpluginmgr.html"><SPAN class=
+      "c2">plpluginmgr</SPAN></A>(1), <A href=
+      "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+      "c2">plfilemgr</SPAN></A>(1), <A href=
+      "pljobmgr.html"><SPAN class="c2">pljobmgr</SPAN></A>(1)<BR>
+      <A href="pls.html"><SPAN class="c2">pls</SPAN></A>(1),
+      <A href="plbrowse.html"><SPAN class=
+      "c2">plbrowse</SPAN></A>(1), <A href=
+      "realpath.html"><SPAN class="c2">realpath</SPAN></A>(1)<BR>
+      <A href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <SPAN class="c2">plconfig</SPAN></A>(1)
+    </DIV>
+  </DIV>
+
+  <H3><A name="Author" id="Author"></A>Author</H3>
+
+  <DIV class="c3">
+    Created by <SPAN class="c2">Jim Callahan</SPAN> of <A href=
+    "http://temerity.us/"><SPAN class="c2">Temerity Software,
+    Inc</SPAN></A>.
+  </DIV>
+
+  <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+  <DIV class="c3">
+    @COPYRIGHT@<BR>
+  </DIV>
+
+  <H3><A name="License_Agreement" id=
+  "License_Agreement"></A>License Agreement</H3>
+
+  <DIV class="c3">
+    @LICENSE@
+  </DIV>
+</BODY>
+</HTML>

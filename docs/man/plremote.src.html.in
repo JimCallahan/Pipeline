@@ -1,209 +1,252 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
-  <title>plremote(1)</title>
-</head>
-<body>
-<h3><a name="Name"></a>Name</h3>
-<blockquote><b>plremote</b> - remote control the Pipeline Graphical
-Client program (plui) <br>
-</blockquote>
-<h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote><b>plremote</b> <span style="font-style: italic;">command </span>[<span
- style="font-style: italic;">options</span> ...]<span
- style="font-style: italic;"><br>
-  </span><span style="font-weight: bold; font-style: italic;"></span><b>plremote</b>
-  <span style="font-style: italic;">command-file</span><br>
-  <b>plremote</b> -<br>
-  <br>
-  <b>plremote</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
-  <b>plremote</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
-  <b>plremote</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
-  <b>plremote</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
-  <b>plremote</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
-  <span style="font-weight: bold;">plremote <a href="#--license">--license</a></span><br>
-</blockquote>
-<h3><a name="Description"></a>Description<br>
-</h3>
-<blockquote>Directs a locally running <span style="font-weight: bold;">plui</span>(1)
-to perform a limited set
-of operations.&nbsp; This is provides a way for external tools, such as
-production tracking applications, to benefit from the features of <span
- style="font-weight: bold;">plui</span>(1) and to coordinate the
-usage of such tools by the artist with
-Pipeline.<br>
-  <br>
-</blockquote>
-<h3> </h3>
-<h3><a name="Information_Options"></a>Information Options</h3>
-<blockquote>The following options provide information about <b>plremote</b>(1)
-and then immediately exit:</blockquote>
-<blockquote><b><a name="--help"></a>--help</b><br>
-  <blockquote>Prints a brief usage message and exits.<br>
-  </blockquote>
-  <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser.&nbsp; </blockquote>
-  <b><a name="--version"></a>--version</b><br>
-  <blockquote>Prints the version number of this software and exits.<br>
-  </blockquote>
-  <b><a name="--release-date"></a>--release-date</b><br>
-  <blockquote> Prints date that this software was released and exits.<br>
-  </blockquote>
-  <b><a name="--copyright"></a>--copyright<br>
-  </b><br>
-  <div style="margin-left: 40px;"> Prints the <a href="#Copyright"><span
- style="font-weight: bold;">copyright notice</span></a> for this
-software and exits.<br>
-  <br>
-  </div>
-  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
-  <br>
-  </span>
-  <div style="margin-left: 40px;">Prints the <a
- href="#License_Agreement"><span style="font-weight: bold;">license
-agreement</span></a> for this software and exits.<br>
-  <br>
-  </div>
-  <blockquote> </blockquote>
-</blockquote>
-<h3><a name="Commands_"></a>Commands<br>
-</h3>
-<blockquote>Unlike most other Pipeline tools, this application is not
-written
-in Java to avoid any startup latency.&nbsp; Actually, it really just
-provides a means of sending a series of text based commands to <span
- style="font-weight: bold;">plui</span>(1) over a network
-connection.&nbsp; This makes it a preferable to <span
- style="font-weight: bold;">plscript</span>(1) for fast viewing of
-checked-in node versions as it has very little startup cost.<br>
-  <br>
-If no instance of <span style="font-weight: bold;">plui</span>(1) is
-already running, <span style="font-weight: bold;">plremote</span>(1)
-will start <span style="font-weight: bold;">plui</span>(1) without
-loading any saved panel layouts.&nbsp; The commands sent to <span
- style="font-weight: bold;">plui</span>(1) can be
-provided in three ways:<br>
-  <ol>
-    <li>As command line arguments (<span style="font-style: italic;">command</span>,
-      <span style="font-style: italic;">options</span>).</li>
-    <li>Saved in a text file (<span style="font-style: italic;">command-file</span>),
-commands separated by newlines.</li>
-    <li>Piped to the STDIN of <span style="font-weight: bold;">plremote</span>(1)
-by specifying (-) as the only command-line argument. </li>
-  </ol>
-The commands
-available are: <span style="font-weight: bold;"><br>
-  <br>
-checked-in --view</span>=<span style="font-style: italic;">node-name</span><span
- style="font-weight: bold;"></span> <span style="font-weight: normal;">
-[</span><span style="font-weight: normal;"></span><span
- style="font-weight: bold;">--version</span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span><span
- style="font-weight: normal;">]</span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"></span></span><span
- style="font-style: italic;"></span><br>
-</blockquote>
-<div style="margin-left: 80px;">Directs <span
- style="font-weight: bold;">plui</span>(1)
-to launch the Editor plugin associated
-with the given revision (<span style="font-weight: normal;"><span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span>)
-of the given checked-in version of a node (<span
- style="font-style: italic;">node-name</span>).
-&nbsp;
-If no <span style="font-weight: bold;">--version</span> option is
-specified, the latest checked-in version will be viewed.&nbsp; If <span
- style="font-weight: bold;">plui</span>(1) is not already running, this
-falls back to using <span style="font-weight: bold;">plscript</span>(1)
-to launch the Editor for the node.&nbsp; For compatibility, <span
- style="font-weight: bold;">plscript</span>(1) if launched will show a
-splash screen so the user has some feedback while the JVM starts up.<br>
-</div>
-<blockquote><span style="font-weight: bold;">working</span> <span
- style="font-weight: bold;">--select</span>=<span
- style="font-style: italic;">node-name </span>[<span
- style="font-weight: bold;">--highlight</span>=<span
- style="font-style: italic;">node-name ...</span>]<span
- style="font-weight: bold;"></span><br>
-</blockquote>
-<div style="margin-left: 80px;">Directs <span
- style="font-weight: bold;">plui</span>(1)
-to add the given node (node-name) to the root nodes selected in the
-Node
-Browser and therefore displayed in any Node Viewer panel sharing an
-update channel.&nbsp; Depending on the user's preferences, this
-command may cause a dialog to be displayed by <span
- style="font-weight: bold;">plui</span>(1)
-which allows the user to decide which specific panels will have their
-node selection modified.&nbsp;&nbsp; <br>
-<br>
-The optional <span style="font-weight: bold;">--highlight</span>
-options will cause the specified nodes (if visible) to be highlighted
-as if they had been selected interactively in the Node Viewer
-panel.&nbsp; This can be useful for brining certain nodes to the user's
-attention such as Edit nodes in the node network used for a task.<br>
-<br>
-</div>
-<h3><a name="See_Also"></a>See Also</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
-<br>
-</div>
-<div style="margin-left: 80px;"><a href="../javadoc/index.html"><span
- style="font-weight: bold;">Pipeline
-Java API</span></a><br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
-Programs</span><span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span><span style="font-weight: bold;"></span><br>
-<div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
- style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
- href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
-<a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-<a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
- href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-<a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-<a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
- href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
-<a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1), <a
- href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
-<a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
-<span style="font-weight: bold;"></span><a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)</div>
-</div>
-<h3><a name="Author"></a>Author</h3>
-<div style="margin-left: 40px;">Created by <span
- style="font-weight: bold;">Jim Callahan</span> of <a
- href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.</div>
-<span style="font-weight: bold;">
-</span>
-<h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;">
-@COPYRIGHT@
-<br>
-</div>
-<h3><a name="License_Agreement"></a>License Agreement</h3>
-<div style="margin-left: 40px;">
-@LICENSE@
-</div>
-</body>
-</html>
+
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  <META content="text/html; charset=us-ascii" http-equiv=
+  "content-type">
+
+  <TITLE>plremote(1)</TITLE>
+  <STYLE type="text/css">
+div.c6 {margin-left: 80px;}
+  span.c5 {font-weight: normal;}
+  div.c4 {margin-left: 40px;}
+  span.c3 {font-weight: bold;}
+  a.c2 {font-weight: bold;}
+  span.c1 {font-style: italic;}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3><A name="Name" id="Name"></A>Name</H3>
+
+  <BLOCKQUOTE>
+    <B>plremote</B> - remote control the Pipeline Graphical Client
+    program (plui)<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Synopsis" id="Synopsis"></A>Synopsis</H3>
+
+  <BLOCKQUOTE>
+    <B>plremote</B> <SPAN class="c1">command</SPAN> [<SPAN class=
+    "c1">options</SPAN> ...]<BR>
+    <B>plremote</B> <SPAN class="c1">command-file</SPAN><BR>
+    <B>plremote</B> -<BR>
+    <BR>
+    <B>plremote</B> <A class="c2" href="#--help">--help</A><BR>
+    <B>plremote</B> <A class="c2" href=
+    "#--html-help">--html-help</A><BR>
+    <B>plremote</B> <A class="c2" href=
+    "#--version_">--version</A><BR>
+    <B>plremote</B> <A class="c2" href=
+    "#--release-date">--release-date</A><BR>
+    <B>plremote</B> <A class="c2" href=
+    "#--copyright">--copyright</A><BR>
+    <SPAN class="c3">plremote <A href=
+    "#--license">--license</A></SPAN><BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id=
+  "Description"></A>Description<BR></H3>
+
+  <BLOCKQUOTE>
+    Directs a locally running <SPAN class="c3">plui</SPAN>(1) to
+    perform a limited set of operations.&nbsp; This is provides a
+    way for external tools, such as production tracking
+    applications, to benefit from the features of <SPAN class=
+    "c3">plui</SPAN>(1) and to coordinate the usage of such tools
+    by the artist with Pipeline.<BR>
+    <BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    The following options provide information about
+    <B>plremote</B>(1) and then immediately exit:
+  </BLOCKQUOTE>
+
+  <BLOCKQUOTE>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.&nbsp;
+    </BLOCKQUOTE><B><A name="--version"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--copyright"></A>--copyright<BR></B><BR>
+
+    <DIV class="c4">
+      Prints the <A href="#Copyright"><SPAN class="c3">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+      <BR>
+    </DIV><SPAN class="c3"><A name="--license"></A>--license<BR>
+    <BR></SPAN>
+
+    <DIV class="c4">
+      Prints the <A href="#License_Agreement"><SPAN class=
+      "c3">license agreement</SPAN></A> for this software and
+      exits.<BR>
+      <BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Commands_" id="Commands_"></A>Commands<BR></H3>
+
+  <BLOCKQUOTE>
+    Unlike most other Pipeline tools, this application is not
+    written in Java to avoid any startup latency.&nbsp; Actually,
+    it really just provides a means of sending a series of text
+    based commands to <SPAN class="c3">plui</SPAN>(1) over a
+    network connection.&nbsp; This makes it a preferable to
+    <SPAN class="c3">plscript</SPAN>(1) for fast viewing of
+    checked-in node versions as it has very little startup
+    cost.<BR>
+    <BR>
+    If no instance of <SPAN class="c3">plui</SPAN>(1) is already
+    running, <SPAN class="c3">plremote</SPAN>(1) will start
+    <SPAN class="c3">plui</SPAN>(1) without loading any saved panel
+    layouts.&nbsp; The commands sent to <SPAN class=
+    "c3">plui</SPAN>(1) can be provided in three ways:<BR>
+
+    <OL>
+      <LI>As command line arguments (<SPAN class=
+      "c1">command</SPAN>, <SPAN class="c1">options</SPAN>).</LI>
+
+      <LI>Saved in a text file (<SPAN class=
+      "c1">command-file</SPAN>), commands separated by
+      newlines.</LI>
+
+      <LI>Piped to the STDIN of <SPAN class="c3">plremote</SPAN>(1)
+      by specifying (-) as the only command-line argument.</LI>
+    </OL>The commands available are: <SPAN class="c3"><BR>
+    <BR>
+    checked-in --view</SPAN>=<SPAN class="c1">node-name</SPAN>
+    <SPAN class="c5">[</SPAN><SPAN class=
+    "c3">--version</SPAN><SPAN class="c5">=<SPAN class=
+    "c1">major</SPAN>.<SPAN class="c1">minor</SPAN>.<SPAN class=
+    "c1">micro</SPAN></SPAN><SPAN class="c5">]</SPAN><BR>
+  </BLOCKQUOTE>
+
+  <DIV class="c6">
+    Directs <SPAN class="c3">plui</SPAN>(1) to launch the Editor
+    plugin associated with the given revision (<SPAN class=
+    "c5"><SPAN class="c1">major</SPAN>.<SPAN class=
+    "c1">minor</SPAN>.<SPAN class="c1">micro</SPAN></SPAN>) of the
+    given checked-in version of a node (<SPAN class=
+    "c1">node-name</SPAN>). &nbsp; If no <SPAN class=
+    "c3">--version</SPAN> option is specified, the latest
+    checked-in version will be viewed.&nbsp; If <SPAN class=
+    "c3">plui</SPAN>(1) is not already running, this falls back to
+    using <SPAN class="c3">plscript</SPAN>(1) to launch the Editor
+    for the node.&nbsp; For compatibility, <SPAN class=
+    "c3">plscript</SPAN>(1) if launched will show a splash screen
+    so the user has some feedback while the JVM starts up.<BR>
+  </DIV>
+
+  <BLOCKQUOTE>
+    <SPAN class="c3">working</SPAN> <SPAN class=
+    "c3">--select</SPAN>=<SPAN class="c1">node-name</SPAN>
+    [<SPAN class="c3">--highlight</SPAN>=<SPAN class="c1">node-name
+    ...</SPAN>]<BR>
+  </BLOCKQUOTE>
+
+  <DIV class="c6">
+    Directs <SPAN class="c3">plui</SPAN>(1) to add the given node
+    (node-name) to the root nodes selected in the Node Browser and
+    therefore displayed in any Node Viewer panel sharing an update
+    channel.&nbsp; Depending on the user's preferences, this
+    command may cause a dialog to be displayed by <SPAN class=
+    "c3">plui</SPAN>(1) which allows the user to decide which
+    specific panels will have their node selection
+    modified.&nbsp;&nbsp;<BR>
+    <BR>
+    The optional <SPAN class="c3">--highlight</SPAN> options will
+    cause the specified nodes (if visible) to be highlighted as if
+    they had been selected interactively in the Node Viewer
+    panel.&nbsp; This can be useful for brining certain nodes to
+    the user's attention such as Edit nodes in the node network
+    used for a task.<BR>
+    <BR>
+  </DIV>
+
+  <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+  <DIV class="c4">
+    <SPAN class="c3">Documentation</SPAN><BR>
+  </DIV>
+
+  <DIV class="c6">
+    <A href="../javadoc/index.html"><SPAN class="c3">Pipeline Java
+    API</SPAN></A><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c4">
+    <SPAN class="c3">Pipeline Programs</SPAN><BR>
+
+    <DIV class="c4">
+      <A href="plui.html"><SPAN class="c3">plui</SPAN></A>(1),
+      <A href="plremote.html"><SPAN class=
+      "c3">plremote</SPAN></A>(1), plversion(1), <A href=
+      "plscript.html"><SPAN class="c3">plscript</SPAN></A>(1),
+      <A href="plpython.html"><SPAN class=
+      "c3">plpython</SPAN></A>(1), <A href=
+      "plplugin.html"></A><A href="plplugin.html"><SPAN class=
+      "c3">plplugin</SPAN></A>(1), <A href=
+      "plbuilder.html"><SPAN class="c3">plbuilder</SPAN></A>(1)<BR>
+      <A href="plmaster.html"><SPAN class=
+      "c3">plmaster</SPAN></A>(1), <A href=
+      "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+      "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+      "c3">plqueuemgr</SPAN></A>(1), <A href=
+      "plpluginmgr.html"><SPAN class=
+      "c3">plpluginmgr</SPAN></A>(1), <A href=
+      "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+      "c3">plfilemgr</SPAN></A>(1), <A href=
+      "pljobmgr.html"><SPAN class="c3">pljobmgr</SPAN></A>(1)<BR>
+      <A href="pls.html"><SPAN class="c3">pls</SPAN></A>(1),
+      <A href="plbrowse.html"><SPAN class=
+      "c3">plbrowse</SPAN></A>(1), <A href=
+      "realpath.html"><SPAN class="c3">realpath</SPAN></A>(1)<BR>
+      <A href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <SPAN class="c3">plconfig</SPAN></A>(1)
+    </DIV>
+  </DIV>
+
+  <H3><A name="Author" id="Author"></A>Author</H3>
+
+  <DIV class="c4">
+    Created by <SPAN class="c3">Jim Callahan</SPAN> of <A href=
+    "http://temerity.us/"><SPAN class="c3">Temerity Software,
+    Inc</SPAN></A>.
+  </DIV>
+
+  <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+  <DIV class="c4">
+    @COPYRIGHT@<BR>
+  </DIV>
+
+  <H3><A name="License_Agreement" id=
+  "License_Agreement"></A>License Agreement</H3>
+
+  <DIV class="c4">
+    @LICENSE@
+  </DIV>
+</BODY>
+</HTML>
