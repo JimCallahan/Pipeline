@@ -1,4 +1,4 @@
-// $Id: ArchiveVolumeTableModel.java,v 1.3 2009/08/19 23:42:47 jim Exp $
+// $Id: ArchiveVolumeTableModel.java,v 1.4 2009/12/13 02:23:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -257,6 +257,8 @@ class ArchiveVolumeTableModel
       }
     }
     else {
+      pNumRows    = 0;
+      pIsUnique   = new boolean[0];
       pContains   = new int[0];
       pRestores   = new int[0];
       pUseVolume  = new boolean[0];
