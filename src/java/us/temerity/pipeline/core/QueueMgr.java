@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.144 2009/12/14 21:48:22 jim Exp $
+// $Id: QueueMgr.java,v 1.145 2009/12/14 21:54:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11205,20 +11205,40 @@ class QueueMgr
                 throw ex;
               }
 
-              LogMgr.getInstance().logAndFlush
-                (LogMgr.Kind.Glu, LogMgr.Level.Warning,
-                 "Successfully recovered the job info from the backup file " + 
-                 "(" + backup + ")\n" + 
-                 "Renaming the backup to (" + file + ")!");
+              switch(info.getState()) {
+              case Queued:
+              case Preempted:
+                {
+                  LogMgr.getInstance().logAndFlush
+                    (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+                     "The backup job info file (" + backup + ") indicates that the job " + 
+                     "was being changed from " + info.getState() + " which means it might " + 
+                     "have been about to change to Running, Paused or Aborted.  The safest " + 
+                     "thing is to treat it as Aborted."); 
+                  
+                  info.abort();
+                  writeJobInfo(info);
+                }
+                break;
 
-              if(!file.delete()) 
-                throw new IOException
-                  ("Unable to remove the corrupted job info file (" + file + ")!");
+              default:
+                {
+                  LogMgr.getInstance().logAndFlush
+                    (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+                     "Successfully recovered the job info from the backup file " + 
+                     "(" + backup + ")\n" + 
+                     "Renaming the backup to (" + file + ")!");
 
-              if(!backup.renameTo(file)) 
-                throw new IOException
-                  ("Unable to replace the corrupted job info file (" + file + ") " + 
-                   "with the valid backup file (" + backup + ")!");
+                  if(!file.delete()) 
+                    throw new IOException
+                      ("Unable to remove the corrupted job info file (" + file + ")!");
+                  
+                  if(!backup.renameTo(file)) 
+                    throw new IOException
+                      ("Unable to replace the corrupted job info file (" + file + ") " + 
+                       "with the valid backup file (" + backup + ")!");
+                }
+              }
 
               return info;
             }
@@ -11649,7 +11669,7 @@ class QueueMgr
               LogMgr.getInstance().logAndFlush
                 (LogMgr.Kind.Glu, LogMgr.Level.Warning,
                  "Unable to load the job info (" + jobID + "), since nothing is known " + 
-                 "about the job we'll mark it as aborted."); 
+                 "about the job we'll mark it as Aborted."); 
 
               info = new QueueJobInfo(jobID);
               
