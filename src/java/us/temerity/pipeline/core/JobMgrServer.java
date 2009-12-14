@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.41 2009/07/06 10:25:26 jim Exp $
+// $Id: JobMgrServer.java,v 1.42 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -102,19 +102,17 @@ class JobMgrServer
 
       try {
 	if(collector != null) {
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Net, LogMgr.Level.Info,
 	     "Waiting on Collector...");
-	  LogMgr.getInstance().flush();
 
 	  collector.join();
 	}
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Net, LogMgr.Level.Info,
 	     "Waiting on Client Handlers...");
-	  LogMgr.getInstance().flush();
 
 	  synchronized(pTasks) {
 	    for(HandlerTask task : pTasks) 
@@ -128,31 +126,27 @@ class JobMgrServer
 	}
       }
       catch(InterruptedException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
-	LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("IO problems on port (" + PackageInfo.sJobPort + "):", ex)); 
-      LogMgr.getInstance().flush();  
     }
     catch (SecurityException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
-      LogMgr.getInstance().flush();  
     }
     catch (Exception ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
 	 Exceptions.getFullMessage(ex));
-      LogMgr.getInstance().flush();  
     }
     finally {
       if(pSocketChannel != null) {
@@ -169,11 +163,10 @@ class JobMgrServer
       PluginMgrClient.getInstance().disconnect();
 
       pTimer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Shutdown.\n" + 
 	 "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();  
     }  
   }
 
@@ -230,10 +223,9 @@ class JobMgrServer
     {
       try {
 	pSocket = pChannel.socket();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Connection Opened: " + pSocket.getInetAddress());
-	LogMgr.getInstance().flush();
 
 	while(pSocket.isConnected() && isLive() && !pShutdown.get()) {
 	  InputStream in     = pSocket.getInputStream();
@@ -252,10 +244,9 @@ class JobMgrServer
             /* dispatch request by kind */ 
 	    JobRequest kind = (JobRequest) objIn.readObject();
 	  
-	    LogMgr.getInstance().log
+	    LogMgr.getInstance().logAndFlush
 	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	    LogMgr.getInstance().flush();
 
             try {
               switch(kind) {
@@ -418,10 +409,9 @@ class JobMgrServer
                 break;
 
               case Shutdown:
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
-                LogMgr.getInstance().flush();
                 shutdown(); 
                 break;	    
 
@@ -500,10 +490,9 @@ class JobMgrServer
       catch(IOException ex) {
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Client Connection Closed.");
-      LogMgr.getInstance().flush();
     }
   }
   
@@ -528,26 +517,23 @@ class JobMgrServer
 	throw new IllegalStateException("The OS type must be Unix!");
 
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Collector Started.");	
-	LogMgr.getInstance().flush();
 	
 	while(!pShutdown.get()) {
 	  pJobMgr.collector();
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("Collector Failed:", ex)); 
-	LogMgr.getInstance().flush();	
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Collector Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }

@@ -1,4 +1,4 @@
-// $Id: ValidateApp.java,v 1.3 2009/07/06 10:25:27 jim Exp $
+// $Id: ValidateApp.java,v 1.4 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -143,7 +143,7 @@ class ValidateApp
     if(root.isDirectory()) {
       File files[] = root.listFiles(); 
       if(files.length == 0) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info, 
 	   "VERSION-OFFLINE " + root); 
 	LogMgr.getInstance().flush();
@@ -225,10 +225,9 @@ class ValidateApp
 	}
       }
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info, 
 	 msg + " " + root); 
-      LogMgr.getInstance().flush();
     }
   }
   

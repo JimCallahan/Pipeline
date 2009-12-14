@@ -1,4 +1,4 @@
-// $Id: JobMgrWinService.java,v 1.5 2008/10/21 00:54:11 jim Exp $
+// $Id: JobMgrWinService.java,v 1.6 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -99,10 +99,9 @@ class JobMgrWinService
   public void 
   onStop()
   { 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Windows Service Shutdown..."); 
-    LogMgr.getInstance().flush();
 
     try {
       String hostname = null;

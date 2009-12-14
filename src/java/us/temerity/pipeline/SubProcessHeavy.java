@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.18 2009/05/16 02:06:18 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.19 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -548,11 +548,10 @@ class SubProcessHeavy
       int wk;
       for(wk=0; wk<env.length; wk++) 
 	buf.append("  " + env[wk] + "\n");
-      LogMgr.getInstance().log
+
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Sub, LogMgr.Level.Finest,
 	 buf.toString());
-	
-      LogMgr.getInstance().flush();
     }
 
     /* the process collection task */ 
@@ -643,10 +642,9 @@ class SubProcessHeavy
 	buf.append("ABORTED");
       }
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Sub, LogMgr.Level.Fine,
 	 buf.toString());
-      LogMgr.getInstance().flush();
     }
   }
 

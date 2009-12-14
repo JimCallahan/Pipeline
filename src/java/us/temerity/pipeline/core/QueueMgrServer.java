@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.77 2009/12/12 01:17:27 jim Exp $
+// $Id: QueueMgrServer.java,v 1.78 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -117,38 +117,34 @@ class QueueMgrServer
 	heapStats.join();
 	
 	{
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
             (LogMgr.Kind.Ops, LogMgr.Level.Info,
              "Waiting on Balancer...");
-          LogMgr.getInstance().flush();
 
           balancer.interrupt();
           balancer.join();
         }
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Collector...");
-	  LogMgr.getInstance().flush();
 
 	  collector.join();
 	}
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Dispatcher...");
-	  LogMgr.getInstance().flush();
 
 	  dispatcher.join();
 	}
 	
 	{
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
             (LogMgr.Kind.Ops, LogMgr.Level.Info,
              "Waiting on Writer...");
-          LogMgr.getInstance().flush();
 
           writer.interrupt();
           writer.join();
@@ -158,20 +154,18 @@ class QueueMgrServer
 	scheduler.join();
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Database Backup Synchronizer...");
-	  LogMgr.getInstance().flush();
           
           backupSync.interrupt();
           backupSync.join();
         }
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Net, LogMgr.Level.Info,
 	     "Waiting on Client Handlers...");
-	  LogMgr.getInstance().flush();
 	  
 	  synchronized(pTasks) {
 	    for(HandlerTask task : pTasks) 
@@ -185,31 +179,27 @@ class QueueMgrServer
 	}
       }
       catch(InterruptedException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
-	LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("IO problems on port (" + PackageInfo.sQueuePort + "):", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
 	 Exceptions.getFullMessage(ex));
-      LogMgr.getInstance().flush();
     }
     finally {
       if(pSocketChannel != null) {
@@ -226,21 +216,19 @@ class QueueMgrServer
       PluginMgrClient.getInstance().disconnect();
       
       {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Ops, LogMgr.Level.Info,
            "Writing Any Jobs Remaining in Cache...");
-        LogMgr.getInstance().flush();
         pQueueMgr.writer(false);
       }
 
       pQueueMgr.shutdown();
 
       pTimer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Shutdown.\n" + 
 	 "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();  
     }
   }
 
@@ -298,10 +286,9 @@ class QueueMgrServer
     {
       try {
 	pSocket = pChannel.socket();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Connection Opened: " + pSocket.getInetAddress());
-	LogMgr.getInstance().flush();
 
 	while(pSocket.isConnected() && isLive() && !pShutdown.get()) {
 	  InputStream in     = pSocket.getInputStream();
@@ -320,10 +307,9 @@ class QueueMgrServer
             /* dispatch request by kind */ 
 	    QueueRequest kind = (QueueRequest) objIn.readObject();
 	  
-	    LogMgr.getInstance().log
+	    LogMgr.getInstance().logAndFlush
 	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	    LogMgr.getInstance().flush();
 	  
             try {
               switch(kind) {
@@ -1163,10 +1149,9 @@ class QueueMgrServer
       catch(IOException ex) {
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Client Connection Closed.");
-      LogMgr.getInstance().flush();
     }
   }
   
@@ -1203,19 +1188,17 @@ class QueueMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
 	   "Establishing Network Connections [MasterMgr]...");
-	LogMgr.getInstance().flush();
    
 	pQueueMgr.establishMasterConnection();
 
 	pTimer.suspend();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
 	   "Server Ready.\n" + 
 	   "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-	LogMgr.getInstance().flush();
 	pTimer = new TaskTimer();
 	
 	pCollector.start();
@@ -1226,10 +1209,9 @@ class QueueMgrServer
 	pBackupSync.start();
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("Master Connector Failed:", ex)); 
-	LogMgr.getInstance().flush();
       }
     }
 
@@ -1259,26 +1241,23 @@ class QueueMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Col, LogMgr.Level.Fine,
 	   "Collector Started.");	
-	LogMgr.getInstance().flush();
 
 	while(!pShutdown.get()) {
 	  pQueueMgr.collector();
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Col, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("Collector Failed:", ex)); 
-	LogMgr.getInstance().flush();	
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Col, LogMgr.Level.Fine,
 	   "Collector Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }
@@ -1301,26 +1280,23 @@ class QueueMgrServer
     run() 
     {
       try {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Usr, LogMgr.Level.Fine,
            "Balancer Started.");       
-        LogMgr.getInstance().flush();
 
         while(!pShutdown.get()) {
           pQueueMgr.balancer();
         }
       }
       catch (Exception ex) {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Usr, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Balancer Failed:", ex)); 
-        LogMgr.getInstance().flush();   
       }
       finally {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Usr, LogMgr.Level.Fine,
            "Balancer Finished.");      
-        LogMgr.getInstance().flush();
       }
     }
   }
@@ -1343,26 +1319,23 @@ class QueueMgrServer
     run() 
     {
       try {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Wri, LogMgr.Level.Fine,
            "Job Writer Started.");       
-        LogMgr.getInstance().flush();
 
         while(!pShutdown.get()) {
           pQueueMgr.writer(true);
         }
       }
       catch (Exception ex) {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Wri, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Job Writer Failed:", ex)); 
-        LogMgr.getInstance().flush();   
       }
       finally {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Wri, LogMgr.Level.Fine,
            "Job Writer Finished.");      
-        LogMgr.getInstance().flush();
       }
     }
   }
@@ -1385,10 +1358,9 @@ class QueueMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Dsp, LogMgr.Level.Fine,
 	   "Dispatcher Started.");	
-	LogMgr.getInstance().flush();
 
 	pQueueMgr.establishMasterConnection();
 
@@ -1397,16 +1369,14 @@ class QueueMgrServer
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("Dispatcher Failed:", ex)); 
-	LogMgr.getInstance().flush();
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Dsp, LogMgr.Level.Fine,
 	   "Dispatcher Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }
@@ -1429,26 +1399,23 @@ class QueueMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Scheduler Started.");	
-	LogMgr.getInstance().flush();
 
 	while(!pShutdown.get()) {
 	  pQueueMgr.scheduler();
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("Scheduler Failed:", ex)); 
-	LogMgr.getInstance().flush();
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Scheduler Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }
@@ -1471,26 +1438,23 @@ class QueueMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "JVM Memory Statistics Started.");	
-	LogMgr.getInstance().flush();
 
 	while(!pShutdown.get()) {
 	  pQueueMgr.heapStats();
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("JVM Memory Statistics Failed:", ex)); 
-	LogMgr.getInstance().flush();	
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "JVM Memory Statistics Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }
@@ -1513,10 +1477,9 @@ class QueueMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Database Backup Synchronizer Started.");	
-	LogMgr.getInstance().flush();
 
         boolean first = true;
 	while(!pShutdown.get()) {
@@ -1525,16 +1488,14 @@ class QueueMgrServer
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Database Backup Synchronizer Failed:", ex)); 
-	LogMgr.getInstance().flush();	
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Database Backup Synchronizer Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }

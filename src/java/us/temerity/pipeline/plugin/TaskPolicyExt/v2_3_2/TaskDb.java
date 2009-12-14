@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.9 2008/02/14 20:26:29 jim Exp $
+// $Id: TaskDb.java,v 1.10 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -73,10 +73,9 @@ class TaskDb
     try {
       Class.forName("com.mysql.jdbc.Driver"); 
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ext, LogMgr.Level.Finer, 
          "Initialized the MySQL JDBC driver used by the TaskPolicy extension!"); 
-      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       Path path = PackageInfo.getJavaRuntime(OsType.Unix);
@@ -116,11 +115,10 @@ class TaskDb
 
     pConnect = null;
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Fine, 
        "Closed the connection to the SQL server on (" + pHostname + ":" + pPort + ") " +
        "for the TaskPolicy extension."); 
-    LogMgr.getInstance().flush();
   }
  
 
@@ -169,11 +167,10 @@ class TaskDb
         isolation = "Uknown";
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ext, LogMgr.Level.Fine, 
          "Established a connection to the SQL server on (" + pHostname + ":" + pPort + ") " +
          "for the TaskPolicy extension using a " + isolation + " transaction isolation."); 
-      LogMgr.getInstance().flush();
     }
     catch(SQLException ex) {
       pConnect = null;

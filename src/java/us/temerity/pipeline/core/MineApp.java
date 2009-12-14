@@ -1,4 +1,4 @@
-// $Id: MineApp.java,v 1.2 2009/07/06 10:25:26 jim Exp $
+// $Id: MineApp.java,v 1.3 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -234,10 +234,9 @@ class MineApp
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Processing Node Events...");
-    LogMgr.getInstance().flush();
 
     processNodeEventDir(new Path("/"));
     
@@ -256,11 +255,10 @@ class MineApp
     }
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "  Found (" + pNumEditEvents + ") edit events.\n" + 
        "  Processed in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();
   }
 
   /**
@@ -474,10 +472,9 @@ class MineApp
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Processing Node Versions...");
-    LogMgr.getInstance().flush();
 
     try {
       for(String name : pNodeIDs.keySet()) {
@@ -550,11 +547,10 @@ class MineApp
     }
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "  Found (" + pNumEditedVersions + ") user edited node versions.\n" + 
        "  Processed in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();
   }
 
   /**
@@ -702,10 +698,9 @@ class MineApp
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Writing Artist Index...");
-    LogMgr.getInstance().flush();
 
     Path path = new Path(pOutputPath, "ArtistIndex");
     try {
@@ -731,10 +726,9 @@ class MineApp
     }
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "  Written in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();
   }
     
   /**
@@ -745,10 +739,9 @@ class MineApp
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Writing Node Index...");
-    LogMgr.getInstance().flush();
 
     Path path = new Path(pOutputPath, "NodeIndex");
     try {
@@ -774,10 +767,9 @@ class MineApp
     }
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "  Written in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();
   }
     
 

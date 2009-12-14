@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.16 2009/09/01 10:59:39 jim Exp $
+// $Id: ViewerNode.java,v 1.17 2009/12/14 21:48:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -245,10 +245,9 @@ class ViewerNode
       pCollapsedDL = null;
       pLockedDL    = null;
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
 	 ex.getMessage());
-      LogMgr.getInstance().flush(); 
     }
   }
 

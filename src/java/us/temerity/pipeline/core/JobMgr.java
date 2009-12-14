@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.52 2009/10/28 06:06:17 jim Exp $
+// $Id: JobMgr.java,v 1.53 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,10 +52,9 @@ class JobMgr
 	    ("Unable to create the temporary directory (" + pJobDir + ")!");
     }
     catch(Exception ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
-      LogMgr.getInstance().flush();
       System.exit(1);
     }
   }
@@ -1012,11 +1011,9 @@ class JobMgr
 
     SubProcessHeavy.collectStats();
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
        timer.toString()); 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
     
     /* if we're ahead of schedule, take a nap */ 
     {

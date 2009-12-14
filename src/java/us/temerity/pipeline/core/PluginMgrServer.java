@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.26 2009/12/12 01:17:27 jim Exp $
+// $Id: PluginMgrServer.java,v 1.27 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -104,10 +104,9 @@ class PluginMgrServer
       }  
 
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
 	   "Waiting on Client Handlers...");
-	LogMgr.getInstance().flush();
 	
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -120,25 +119,22 @@ class PluginMgrServer
 	}
       }
       catch(InterruptedException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
-	LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("IO problems on port (" + PackageInfo.sPluginPort + "):", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
@@ -158,11 +154,10 @@ class PluginMgrServer
       }
 
       pTimer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Shutdown.\n" + 
 	 "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();  
     }
   }
 
@@ -240,10 +235,9 @@ class PluginMgrServer
     {
       try {
 	pSocket = pChannel.socket();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Connection Opened: " + pSocket.getInetAddress());
-	LogMgr.getInstance().flush();
 
 	pSessionID = -1;
 
@@ -264,10 +258,9 @@ class PluginMgrServer
             /* dispatch request by kind */ 
 	    PluginRequest kind = (PluginRequest) objIn.readObject();
 	      
-	    LogMgr.getInstance().log
+	    LogMgr.getInstance().logAndFlush
 	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	    LogMgr.getInstance().flush();
 	      
             try {
               switch(kind) {
@@ -408,10 +401,9 @@ class PluginMgrServer
                 break;
 		
               case Shutdown:
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
-                LogMgr.getInstance().flush();
                 shutdown(); 
                 break;	    
 		
@@ -503,10 +495,9 @@ class PluginMgrServer
       catch(IOException ex) {
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Client Connection Closed.");
-      LogMgr.getInstance().flush();
     }
 
     /**

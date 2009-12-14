@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.38 2009/12/12 23:12:49 jim Exp $
+// $Id: BaseMgrClient.java,v 1.39 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -185,10 +185,9 @@ class BaseMgrClient
       return;
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Establishing Connection: " + pHostname + ":" + pPort); 
-      LogMgr.getInstance().flush();
     }
 
     try {
@@ -239,10 +238,9 @@ class BaseMgrClient
         }
 
         if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
             (LogMgr.Kind.Net, LogMgr.Level.Fine,
              "Connection Opened: " + pSocket.getInetAddress() + ":" + pPort); 
-          LogMgr.getInstance().flush();
         }
       }
     }
@@ -288,10 +286,9 @@ class BaseMgrClient
 	return;
       }
       catch(PipelineException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Warning, 
 	   ex.getMessage());
-	LogMgr.getInstance().flush();
       }
 
       try {
@@ -327,10 +324,9 @@ class BaseMgrClient
 	pSocket.close();
 
 	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	     "Connection Closed: " + pHostname + ":" + pPort); 
-	  LogMgr.getInstance().flush();
 	}
       }
     }

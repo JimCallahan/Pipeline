@@ -1,4 +1,4 @@
-// $Id: TestNativeProcessLightApp.java,v 1.5 2009/07/06 10:25:26 jim Exp $
+// $Id: TestNativeProcessLightApp.java,v 1.6 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -102,7 +102,7 @@ class TestNativeProcessLightApp
 	long totalMemory = rt.totalMemory();
 	long maxMemory   = rt.maxMemory();
 	
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Memory Stats:\n" + 
 	   "  ---- JVM HEAP ----------------------\n" + 
@@ -113,7 +113,6 @@ class TestNativeProcessLightApp
 	   "     Max = " + maxMemory + 
 	   " (" + ByteSize.longToFloatString(maxMemory) + ")\n" +
 	   "  ------------------------------------");
-	LogMgr.getInstance().flush();
       }
     }
     catch(Exception ex) {

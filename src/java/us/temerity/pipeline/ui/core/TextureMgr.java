@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.13 2009/07/17 22:24:06 jim Exp $
+// $Id: TextureMgr.java,v 1.14 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -206,10 +206,9 @@ class TextureMgr
     
     int level, size; 
     for(level=0, size=sMaxFontRes; size>=1; level++, size/=2) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Tex, LogMgr.Level.Finer,
          "Loading MipMap: " + size + "x" + size);
-      LogMgr.getInstance().flush();
 	    
       int icode = (int) code;
       String path = ("fonts/" + name + "/" + icode + "/texture." + size + ".png");
@@ -390,10 +389,9 @@ class TextureMgr
 
       int level, size; 
       for(level=0, size=sMaxTexRes; size>=1; level++, size/=2) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Tex, LogMgr.Level.Finer,
 	   "Loading MipMap: " + size + "x" + size);
-	LogMgr.getInstance().flush();
 
 	String path = ("textures/" + name + "/texture." + size + ".png");
 	URL url = LookAndFeelLoader.class.getResource(path);
@@ -544,11 +542,10 @@ class TextureMgr
 
     int size = sIconRes[idx];
 	  
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Tex, LogMgr.Level.Fine,
        "Loading Icon: " + name + " " + size + "x" + size);
-    LogMgr.getInstance().flush();
-    
+        
     String path = ("textures/" + name + "/texture." + size + ".png");
     URL url = LookAndFeelLoader.class.getResource(path);
     if(url == null) 
@@ -698,10 +695,9 @@ class TextureMgr
                     pIcons.put(name, icons);
                   }
                   
-                  LogMgr.getInstance().log
+                  LogMgr.getInstance().logAndFlush
                     (LogMgr.Kind.Tex, LogMgr.Level.Fine,
                      "Building Icon: " + name + " " + size + "x" + size);
-                  LogMgr.getInstance().flush();
                   
                   {
                     BufferedImage result = 
@@ -733,10 +729,9 @@ class TextureMgr
                         pIcons.put(name, icons);
                       }
                   
-                      LogMgr.getInstance().log
+                      LogMgr.getInstance().logAndFlush
                         (LogMgr.Kind.Tex, LogMgr.Level.Fine,
                          "Building Icon: " + name + " " + size + "x" + size);
-                      LogMgr.getInstance().flush();
                       
                       {
                         Color3d frozen = pFrozenFinishedColor; 
@@ -813,11 +808,10 @@ class TextureMgr
                   pIcons.put(name, icons);
                 }
 
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Tex, LogMgr.Level.Fine,
                    "Building Icon: " + name + " " + size + "x" + size);
-                LogMgr.getInstance().flush();
-                
+                                
                 {
                   BufferedImage result = 
                     compositeNodeImages(ringImgs[idx], ringColor, 
@@ -858,11 +852,10 @@ class TextureMgr
                 pIcons.put(name, icons);
               }
               
-              LogMgr.getInstance().log
+              LogMgr.getInstance().logAndFlush
                 (LogMgr.Kind.Tex, LogMgr.Level.Fine,
                  "Building Icon: " + name + " " + size + "x" + size);
-              LogMgr.getInstance().flush();
-              
+                            
               {
                 BufferedImage result = 
                   compositeNodeImages(ringImgs[0], ringColor, 
@@ -886,11 +879,10 @@ class TextureMgr
                   pIcons.put(name, icons);
                 }
               
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Tex, LogMgr.Level.Fine,
                    "Building Icon: " + name + " " + size + "x" + size);
-                LogMgr.getInstance().flush();
-                
+                                
                 {
                   Color3d frozen = pFrozenFinishedColor; 
                   if(qstate == QueueState.Stale)
@@ -937,11 +929,10 @@ class TextureMgr
                   pIcons.put(name, icons);
                 }
 
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Tex, LogMgr.Level.Fine,
                    "Building Icon: " + name + " " + size + "x" + size);
-                LogMgr.getInstance().flush();
-                  
+                                  
                 {
                   BufferedImage result = 
                     compositeNodeImages(ringImgs[1], ringColor, 
@@ -965,11 +956,10 @@ class TextureMgr
                     pIcons.put(name, icons);
                   }
                   
-                  LogMgr.getInstance().log
+                  LogMgr.getInstance().logAndFlush
                     (LogMgr.Kind.Tex, LogMgr.Level.Fine,
                      "Building Icon: " + name + " " + size + "x" + size);
-                  LogMgr.getInstance().flush();
-                  
+                                    
                   {
                     Color3d frozen = pFrozenFinishedColor; 
                     if(qstate == QueueState.Stale)
@@ -1019,11 +1009,10 @@ class TextureMgr
             pIcons.put(name, icons);
           }
             
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
             (LogMgr.Kind.Tex, LogMgr.Level.Fine,
              "Building Icon: " + name + " " + size + "x" + size);
-          LogMgr.getInstance().flush();
-          
+                    
           {
             BufferedImage result = 
               compositeNodeImages(ringImgs[0], ringColor, 
@@ -1068,10 +1057,9 @@ class TextureMgr
           pIcons.put(name, icons);
         }
                   
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Tex, LogMgr.Level.Fine,
            "Building Icon: " + name + " " + size + "x" + size);
-        LogMgr.getInstance().flush();
           
         {
           BufferedImage result = 
@@ -1101,11 +1089,10 @@ class TextureMgr
         pIcons.put(name, icons);
       }
         
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Tex, LogMgr.Level.Fine,
          "Building Icon: " + name + " " + size + "x" + size);
-      LogMgr.getInstance().flush();
-        
+              
       {
         BufferedImage result = 
           compositeNodeImages(ringImgs[2], ringColor, 
@@ -1392,11 +1379,9 @@ class TextureMgr
       }
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Tex, LogMgr.Level.Fine,
        buf.toString()); 
-
-    LogMgr.getInstance().flush();
   }
   
   /**
@@ -1487,10 +1472,9 @@ class TextureMgr
                "  Height = " + model.getHeight() + "\n" +
                "  Bands = " + model.getNumBands());
                  
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Tex, LogMgr.Level.Fine,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
 

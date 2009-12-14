@@ -1,4 +1,4 @@
-// $Id: LogQueueActivityExt.java,v 1.2 2009/07/01 16:43:14 jim Exp $
+// $Id: LogQueueActivityExt.java,v 1.3 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.plugin.LogQueueActivityExt.v2_1_1;
 
@@ -264,11 +264,10 @@ LogQueueActivityExt
     try {
       Integer delay = (Integer) getParamValue(aEnableDelay); 
       if((delay != null) && (delay > 0)) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ext, LogMgr.Level.Info, 
 	   "LogQueueActivity Enabling - " + 
 	   "Please Wait (" + delay + ") milliseconds..."); 
-	LogMgr.getInstance().flush();
 
 	Thread.sleep(delay);
       }
@@ -312,11 +311,10 @@ LogQueueActivityExt
     try {
       Integer delay = (Integer) getParamValue(aDisableDelay); 
       if((delay != null) && (delay > 0)) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ext, LogMgr.Level.Info, 
 	   "LogQueueActivity Disabling - " + 
 	   "Please Wait (" + delay + ") milliseconds..."); 
-	LogMgr.getInstance().flush();
 
 	Thread.sleep(delay);
       }

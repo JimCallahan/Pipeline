@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.9 2009/11/05 00:23:31 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.10 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -890,11 +890,10 @@ LogMasterActivityExt
     try {
       Integer delay = (Integer) getParamValue(aEnableDelay); 
       if((delay != null) && (delay > 0)) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ext, LogMgr.Level.Info, 
 	   "LogMasterActivity Enabling - " + 
 	   "Please Wait (" + delay + ") milliseconds..."); 
-	LogMgr.getInstance().flush();
 
 	Thread.sleep(delay);
       }
@@ -938,11 +937,10 @@ LogMasterActivityExt
     try {
       Integer delay = (Integer) getParamValue(aDisableDelay); 
       if((delay != null) && (delay > 0)) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ext, LogMgr.Level.Info, 
 	   "LogMasterActivity Disabling - " + 
 	   "Please Wait (" + delay + ") milliseconds..."); 
-	LogMgr.getInstance().flush();
 
 	Thread.sleep(delay);
       }

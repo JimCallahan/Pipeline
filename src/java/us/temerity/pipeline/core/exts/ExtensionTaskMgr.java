@@ -1,4 +1,4 @@
-// $Id: ExtensionTaskMgr.java,v 1.2 2009/05/16 02:06:19 jim Exp $
+// $Id: ExtensionTaskMgr.java,v 1.3 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -77,10 +77,9 @@ ExtensionTaskMgr
     pIsJoining.set(true);
     synchronized(pTasks) { 
       for(BaseExtTask task : pTasks) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
 	   "Waiting on " + task.getName() + "...");
-	LogMgr.getInstance().flush();
 	
 	task.join();
       }

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.324 2009/12/14 03:20:56 jim Exp $
+// $Id: MasterMgr.java,v 1.325 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -257,10 +257,9 @@ class MasterMgr
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Establishing Network Connections [PluginMgr FileMgr QueueMgr]...");
-    LogMgr.getInstance().flush();
 
     {
       /* initialize the plugins */ 
@@ -307,10 +306,9 @@ class MasterMgr
 
     /* validate startup state */ 
     if(pRebuildCache) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Net, LogMgr.Level.Info,
          "Removing Stale Caches...");
-      LogMgr.getInstance().flush();
 
       removeLockFile();
       removeDownstreamLinksCache(); 
@@ -425,10 +423,9 @@ class MasterMgr
       readNextIDs();
     }
     catch(Exception ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
-      LogMgr.getInstance().flush();
 
       System.exit(1);
     }
@@ -445,10 +442,9 @@ class MasterMgr
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Loading Privileges...");   
-    LogMgr.getInstance().flush();
 
     {
       pAdminPrivileges.readAll();
@@ -456,10 +452,9 @@ class MasterMgr
     }
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();
   }
 
   /**
@@ -578,10 +573,9 @@ class MasterMgr
 	  readOfflined();
 	}
 	else {
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
             (LogMgr.Kind.Ops, LogMgr.Level.Info,
              "Starting Offlined Cache Rebuild (in background)...");    
-          LogMgr.getInstance().flush();
           
           pRebuildOfflinedCacheTask = new RebuildOfflinedCacheTask();
           pRebuildOfflinedCacheTask.start(); 
@@ -591,10 +585,9 @@ class MasterMgr
       /* scan archive volume GLUE files */ 
       {
 	TaskTimer timer = new TaskTimer();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   "Rebuilding ArchiveOn Cache...");   
-	LogMgr.getInstance().flush();
 	
 	{
 	  File dir = new File(pNodeDir, "archives/manifests");
@@ -626,19 +619,17 @@ class MasterMgr
 	}
 	
 	timer.suspend();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
 	   "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-	LogMgr.getInstance().flush();
       }
  
       /* scan restore output files */ 
       {
 	TaskTimer timer = new TaskTimer();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   "Rebuilding RestoredOn Cache...");   
-	LogMgr.getInstance().flush();
 
 	{
 	  File dir = new File(pNodeDir, "archives/output/restore");
@@ -666,18 +657,16 @@ class MasterMgr
 	}      
 
 	timer.suspend();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
 	   "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-	LogMgr.getInstance().flush();
       }
     }
     else {
       TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Loading Archive Caches...");   
-      LogMgr.getInstance().flush();
 
       readOfflined();
       readArchivedIn();
@@ -687,10 +676,9 @@ class MasterMgr
       removeArchivesCache();
 
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();
     }
 
     readRestoreReqs();
@@ -740,10 +728,9 @@ class MasterMgr
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Loading Toolsets...");   
-    LogMgr.getInstance().flush();
 
     readDefaultToolset();
     readActiveToolsets();
@@ -908,10 +895,9 @@ class MasterMgr
     }
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();
   }
 
 
@@ -925,10 +911,9 @@ class MasterMgr
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Loading Extensions...");   
-    LogMgr.getInstance().flush();
 
     {
       readMasterExtensions();
@@ -940,10 +925,9 @@ class MasterMgr
     }
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();    
   }
   
 
@@ -956,10 +940,9 @@ class MasterMgr
   initWorkingAreas() 
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Loading Working Areas...");   
-    LogMgr.getInstance().flush();
 
     {
       File dir = new File(pNodeDir, "working");
@@ -993,10 +976,9 @@ class MasterMgr
     }
     
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();    
   }
 
 
@@ -1068,10 +1050,9 @@ class MasterMgr
             ("Unable to create the downstream links directory (" + dir + ")!");
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Rebuilding Node Tree and Downstream Link Caches...");    
-      LogMgr.getInstance().flush();
 
       {
 	File dir = new File(pNodeDir, "repository");
@@ -1104,25 +1085,22 @@ class MasterMgr
       } 
 
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();
     }
     else {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Loading Node Tree Cache...");   
-      LogMgr.getInstance().flush();
 
       pNodeTree.readGlueFile(new File(pNodeDir, "etc/node-tree"));
       removeNodeTreeCache();
 
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();
     }
     
     pNodeTree.logNodeTree();
@@ -1321,10 +1299,9 @@ class MasterMgr
           first = false;
 	}
 	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Net, LogMgr.Level.Warning,
 	     ex.getMessage());
-	  LogMgr.getInstance().flush();
 	}
       }
     }
@@ -1342,10 +1319,9 @@ class MasterMgr
           first = false;
 	}
 	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Net, LogMgr.Level.Warning,
 	     ex.getMessage());
-	  LogMgr.getInstance().flush();
 	}
       }
     }
@@ -1358,10 +1334,9 @@ class MasterMgr
 	PluginMgrClient.getInstance().disconnect();
     }
     catch(PipelineException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Warning,
 	 ex.getMessage());
-      LogMgr.getInstance().flush();
     }
 
     /* give the sockets time to disconnect cleanly */ 
@@ -1374,10 +1349,9 @@ class MasterMgr
     /* write the cache files */ 
     try {
       TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Glu, LogMgr.Level.Info,
          "Writing Updated Caches...");
-      LogMgr.getInstance().flush(); 
       
       writeArchivedIn();
       writeArchivedOn();
@@ -1385,16 +1359,14 @@ class MasterMgr
 
       if(pRebuildOfflinedCacheTask != null) {
         try {
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Net, LogMgr.Level.Info,
 	     "Waiting on Offline Cache Rebuild...");
-	  LogMgr.getInstance().flush();
           pRebuildOfflinedCacheTask.join();
 
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Net, LogMgr.Level.Info,
 	     "Writing Offline Cache...");
-          LogMgr.getInstance().flush(); 
           writeOfflined();
         }
         catch(InterruptedException ex) {
@@ -1413,16 +1385,14 @@ class MasterMgr
       pNodeTree.writeGlueFile(new File(pNodeDir, "etc/node-tree"));
 
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Glu, LogMgr.Level.Info,
          "  Saved in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();
     }
     catch(Exception ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Glu, LogMgr.Level.Severe,
          "  Failed to Save Caches:  " + ex.getMessage());
-      LogMgr.getInstance().flush();
 
       removeArchivesCache();
        
@@ -1443,10 +1413,9 @@ class MasterMgr
       writeNextIDs();
     }
     catch(PipelineException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Warning,
 	 ex.getMessage());
-      LogMgr.getInstance().flush();
     }
 
     /* shutdown extensions */ 
@@ -17068,10 +17037,9 @@ class MasterMgr
 	  writeOfflined();
 	}
 	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
 	     ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  removeOfflinedCache();
 	}
@@ -17284,10 +17252,9 @@ class MasterMgr
 	writeRestoreReqs();
       }
       catch(PipelineException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
 	   ex.getMessage());
-	LogMgr.getInstance().flush();
       }
 
       pDatabaseLock.readLock().unlock();
@@ -17360,10 +17327,9 @@ class MasterMgr
 	writeRestoreReqs();
       }
       catch(PipelineException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
 	   ex.getMessage());
-	LogMgr.getInstance().flush();
       }
 
       pDatabaseLock.readLock().unlock();
@@ -17889,10 +17855,9 @@ class MasterMgr
 	writeRestoreReqs();
       }
       catch(PipelineException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
 	   ex.getMessage());
-	LogMgr.getInstance().flush();	
       }
 
       try {
@@ -17905,10 +17870,9 @@ class MasterMgr
 	}
       }
       catch(PipelineException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
 	   ex.getMessage());
-	LogMgr.getInstance().flush();
       }
 
       pDatabaseLock.readLock().unlock();
@@ -17919,10 +17883,9 @@ class MasterMgr
 	  writeOfflined();
 	}
 	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
 	     ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  removeOfflinedCache();
 	}
@@ -20134,18 +20097,16 @@ class MasterMgr
 
     synchronized(pFileMgrNetClients) {
       if(pFileMgrNetClients.isEmpty()) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
 	   "Creating New File Manager Client.");
-	LogMgr.getInstance().flush();
 
 	return new FileMgrNetClient();
       }
       else {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
 	   "Reusing File Manager Client: " + (pFileMgrNetClients.size()-1) + " inactive");
-	LogMgr.getInstance().flush();
 
 	return pFileMgrNetClients.pop();
       }
@@ -20167,10 +20128,9 @@ class MasterMgr
     synchronized(pFileMgrNetClients) {
       pFileMgrNetClients.push((FileMgrNetClient) client);
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Finest,
 	 "Freed File Manager Client: " + pFileMgrNetClients.size() + " inactive");
-      LogMgr.getInstance().flush();
     }
   }
 
@@ -20187,18 +20147,16 @@ class MasterMgr
   {
     synchronized(pQueueMgrClients) {
       if(pQueueMgrClients.isEmpty()) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
 	   "Creating New Queue Manager Client.");
-	LogMgr.getInstance().flush();
 
 	return new QueueMgrControlClient();
       }
       else {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
 	   "Reusing File Manager Client: " + (pQueueMgrClients.size()-1) + " inactive");
-	LogMgr.getInstance().flush();
 
 	return pQueueMgrClients.pop();
       }
@@ -20217,10 +20175,9 @@ class MasterMgr
     synchronized(pQueueMgrClients) {
       pQueueMgrClients.push(client);
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Finest,
 	 "Freed Queue Manager Client: " + pQueueMgrClients.size() + " inactive");
-      LogMgr.getInstance().flush();
     }
   }
 
@@ -21542,10 +21499,9 @@ class MasterMgr
 	
 	File parent = tmp.getParentFile();
 
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
 	   "Deleting Empty Directory: " + tmp);
-	LogMgr.getInstance().flush();
 
 	if(!tmp.delete()) 
 	  throw new PipelineException
@@ -21851,12 +21807,11 @@ class MasterMgr
   { 
     synchronized(pOfflinedLock) {
       if(!isOfflineCacheValid()) {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Glu, LogMgr.Level.Warning,
            "Ignoring the request to write the Offlined Cache to disk because it is not " + 
            "currently valid.  Likely this is because it is currently in the process of " + 
            "being rebuilt."); 
-        LogMgr.getInstance().flush();
         return;
       }
       
@@ -23045,11 +23000,10 @@ class MasterMgr
 	  dfinish = calendar.getTimeInMillis(); 
 	}
 	catch(Exception ex) {
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Glu, LogMgr.Level.Warning,
 	     "Illegal node event directory (" + sdir + ") encountered:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	}
 	
 	if((dstart != null) && (dfinish != null) && 
@@ -23087,18 +23041,16 @@ class MasterMgr
             stamp = Long.parseLong(parts[0]); 
           }
           catch(NumberFormatException ex) {
-            LogMgr.getInstance().log
+            LogMgr.getInstance().logAndFlush
               (LogMgr.Kind.Glu, LogMgr.Level.Warning,
                "Illegal node event file (" + file + ") encountered:\n" + 
                "  " + ex.getMessage());
-            LogMgr.getInstance().flush();
           }
         }
         else {
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
             (LogMgr.Kind.Glu, LogMgr.Level.Warning,
              "Illegal node event file (" + file + ") encountered:"); 
-          LogMgr.getInstance().flush();
         }
 	
 	if((stamp != null) && (stamp >= start) && (stamp <= finish)) 
@@ -23531,10 +23483,9 @@ class MasterMgr
         ("Error trying to write the working glue file.  The name of the nodeID " +
          "(" + id.getName() + ") did not match the name contained in the nodeMod " +
          "(" + mod.getName() + ").");
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 Exceptions.getFullMessage(ex));
-      LogMgr.getInstance().flush();
       throw ex;
     }
       
@@ -23614,11 +23565,10 @@ class MasterMgr
 	  return ((NodeMod) GlueDecoderImpl.decodeFile("NodeMod", file));
 	}
 	catch(Exception ex) {
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	    "The working version file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  if(backup.isFile()) {
 	    LogMgr.getInstance().log
@@ -23630,22 +23580,20 @@ class MasterMgr
 	      mod = (NodeMod) GlueDecoderImpl.decodeFile("NodeMod", backup);
 	    }
 	    catch(Exception ex2) {
-	      LogMgr.getInstance().log
+	      LogMgr.getInstance().logAndFlush
 		(LogMgr.Kind.Glu, LogMgr.Level.Severe,
 		"The backup working version file (" + backup + ") appears to be " + 
 		 "corrupted:\n" +
 		 "  " + ex.getMessage());
-	      LogMgr.getInstance().flush();
 	      
 	      throw ex;
 	    }
 	    
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	    LogMgr.getInstance().logAndFlush
+	      (LogMgr.Kind.Glu, LogMgr.Level.Warning,
 	       "Successfully recovered the working version from the backup file " + 
 	       "(" + backup + ")\n" + 
 	       "Renaming the backup to (" + file + ")!");
-	    LogMgr.getInstance().flush();
 	    
 	    if(!file.delete()) 
 	      throw new IOException
@@ -23659,10 +23607,9 @@ class MasterMgr
 	    return mod;
 	  }
 	  else {
-	    LogMgr.getInstance().log
+	    LogMgr.getInstance().logAndFlush
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	      "The backup working version file (" + backup + ") does not exist!");
-	    LogMgr.getInstance().flush();
 	
 	    throw ex;
 	  }
@@ -24088,23 +24035,21 @@ class MasterMgr
         }
 
         timer.suspend();
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Net, LogMgr.Level.Info,
            "--- Offlined Task (Finished) ---\n" + 
            "  Offlined Cache Rebuild Succeeded.\n" + 
            "    Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()) + "\n" +
            "--------------------------------");
-        LogMgr.getInstance().flush();
       }
       catch(Exception ex) {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Net, LogMgr.Level.Info,
            "--- Offlined Task (Finished) ---\n" + 
            "  Offlined Cache Rebuild Aborted.\n" + 
            "    Time Spent " + TimeStamps.formatInterval(timer.getTotalDuration()) + "\n" +
            Exceptions.getFullMessage("Reason for Abort:", ex) + "\n" +
            "--------------------------------"); 
-        LogMgr.getInstance().flush();
       }
     }
   }

@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.13 2008/05/08 22:46:42 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.14 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -767,10 +767,9 @@ class JColorEditorDialog
 
       int level, size; 
       for(level=0, size=sMaxTexRes; size>=1; level++, size/=2) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Tex, LogMgr.Level.Finer,
 	   "Loading MipMap: " + size + "x" + size);
-	LogMgr.getInstance().flush();
 
 	String path = ("textures/" + name + "/texture." + size + ".png");
 	URL url = LookAndFeelLoader.class.getResource(path);

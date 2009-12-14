@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.52 2009/11/09 01:41:14 jim Exp $
+// $Id: FileMgrServer.java,v 1.53 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -102,10 +102,9 @@ class FileMgrServer
       }
 
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	   "Shutting Down -- Waiting for tasks to complete...");
-	LogMgr.getInstance().flush();
 
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -118,25 +117,22 @@ class FileMgrServer
 	}
       }
       catch(InterruptedException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
-	LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("IO problems on port (" + PackageInfo.sFilePort + "):", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
@@ -155,10 +151,9 @@ class FileMgrServer
 	}
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Shutdown.");    
-      LogMgr.getInstance().flush();  
     }
   }
 
@@ -215,10 +210,9 @@ class FileMgrServer
     {
       try {
 	pSocket = pChannel.socket();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Connection Opened: " + pSocket.getInetAddress());
-	LogMgr.getInstance().flush();
 
 	while(pSocket.isConnected() && isLive() && !pShutdown.get()) {
 	  InputStream in    = pSocket.getInputStream();
@@ -237,10 +231,9 @@ class FileMgrServer
             /* dispatch request by kind */ 
 	    FileRequest kind = (FileRequest) objIn.readObject();
 
-	    LogMgr.getInstance().log
+	    LogMgr.getInstance().logAndFlush
 	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	    LogMgr.getInstance().flush();
 
             try {
               switch(kind) {
@@ -519,10 +512,9 @@ class FileMgrServer
                 break;
 
               case Shutdown:
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
-                LogMgr.getInstance().flush();
                 shutdown(); 
                 break;	    
 
@@ -599,10 +591,9 @@ class FileMgrServer
       catch(IOException ex) {
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Client Connection Closed.");
-      LogMgr.getInstance().flush();
     }
   }
   

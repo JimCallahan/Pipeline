@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.21 2009/06/09 14:11:43 jim Exp $
+// $Id: SubProcessLight.java,v 1.22 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -720,11 +720,10 @@ class SubProcessLight
       int wk;
       for(wk=0; wk<env.length; wk++) 
 	buf.append("  " + env[wk] + "\n");
-      LogMgr.getInstance().log
+
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Sub, LogMgr.Level.Finest,
 	 buf.toString());
-	
-      LogMgr.getInstance().flush();
     }
       
     /* run the process... */ 
@@ -754,10 +753,9 @@ class SubProcessLight
 	pExitCode = -1;
       }
       catch(Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
            Exceptions.getFullMessage(getName() + " [internal error]:", ex)); 
-	LogMgr.getInstance().flush();
 
 	pExitCode = -2;
       }
@@ -808,10 +806,9 @@ class SubProcessLight
 	buf.append("ABORTED");
       }
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Sub, LogMgr.Level.Fine,
 	 buf.toString());
-      LogMgr.getInstance().flush();
     }
   }
 
@@ -898,10 +895,9 @@ class SubProcessLight
 	     ((text != null) ? ("\n" + text + "\n") : "(none)"));
 	}
 
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Sub, LogMgr.Level.Finest,
 	   pName + " [" + pStream + "]: closed.");	
-	LogMgr.getInstance().flush();
       }
       catch (IOException ex) {
 	LogMgr.getInstance().log

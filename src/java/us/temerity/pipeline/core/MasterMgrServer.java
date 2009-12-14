@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.110 2009/12/14 03:20:56 jim Exp $
+// $Id: MasterMgrServer.java,v 1.111 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -137,49 +137,44 @@ class MasterMgrServer
 
       try {
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on License Validator...");
-	  LogMgr.getInstance().flush();
           
           lic.interrupt();
           lic.join();
 	}
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Event Writer...");
-	  LogMgr.getInstance().flush();
 
 	  ewriter.join();
 	}
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Cache Garbage Collector...");
-	  LogMgr.getInstance().flush();
           
           cacheGC.interrupt();
           cacheGC.join();
         }
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Database Backup Synchronizer...");
-	  LogMgr.getInstance().flush();
           
           backupSync.interrupt();
           backupSync.join();
         }
 
 	{
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Client Handlers...");
-	  LogMgr.getInstance().flush();
 	  
 	  synchronized(pTasks) {
 	    for(HandlerTask task : pTasks) 
@@ -193,25 +188,22 @@ class MasterMgrServer
 	}
       }
       catch(InterruptedException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
-	LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("IO problems on port (" + PackageInfo.sMasterPort + "):", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
@@ -233,11 +225,10 @@ class MasterMgrServer
       pMasterMgr.shutdown();
 
       pTimer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Shutdown.\n" + 
 	 "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();
     }
   }
 
@@ -295,10 +286,9 @@ class MasterMgrServer
     {
       try {
 	pSocket = pChannel.socket();
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Connection Opened: " + pSocket.getInetAddress());
-	LogMgr.getInstance().flush();
 
 	while(pSocket.isConnected() && isLive() && !pShutdown.get()) {
 	  InputStream in     = pSocket.getInputStream();
@@ -318,10 +308,9 @@ class MasterMgrServer
 	    MasterRequest kind = (MasterRequest) objIn.readObject();
 	  
 	    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
-	      LogMgr.getInstance().log
+	      LogMgr.getInstance().logAndFlush
 		(LogMgr.Kind.Net, LogMgr.Level.Finer,
 		 "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	      LogMgr.getInstance().flush();
 	    }
 
             try {
@@ -1931,10 +1920,9 @@ class MasterMgrServer
       catch(IOException ex) {
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Client Connection Closed.");
-      LogMgr.getInstance().flush();
     }
 
     private TreeSet<Long>  pRunningEditorIDs; 
@@ -1958,26 +1946,23 @@ class MasterMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Cache Garbage Collector Started.");	
-	LogMgr.getInstance().flush();
 
 	while(!pShutdown.get()) {
 	  pMasterMgr.cacheGC();
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Cache Garbage Collector Failed:", ex)); 
-	LogMgr.getInstance().flush();	
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Cache Garbage Collector Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }
@@ -2000,10 +1985,9 @@ class MasterMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Database Backup Synchronizer Started.");	
-	LogMgr.getInstance().flush();
 
         boolean first = true;
 	while(!pShutdown.get()) {
@@ -2012,16 +1996,14 @@ class MasterMgrServer
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Database Backup Synchronizer Failed:", ex)); 
-	LogMgr.getInstance().flush();	
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Database Backup Synchronizer Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }
@@ -2044,26 +2026,23 @@ class MasterMgrServer
     run() 
     {
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Event Writer Started.");	
-	LogMgr.getInstance().flush();
 
 	while(!pShutdown.get()) {
 	  pMasterMgr.eventWriter();
 	}
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("Event Writer Failed:", ex)); 
-	LogMgr.getInstance().flush();
       }
       finally {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Event Writer Finished.");	
-	LogMgr.getInstance().flush();
       }
     }
   }
@@ -2087,10 +2066,9 @@ class MasterMgrServer
     {
       while(!pShutdown.get()) {
 	if(!pMasterApp.isLicenseValid()) {	  
-	  LogMgr.getInstance().log
+	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
 	     "License Expired Shutdown.");
-	  LogMgr.getInstance().flush();
 
           pMasterMgr.setShutdownOptions(true, true); 
           shutdown();

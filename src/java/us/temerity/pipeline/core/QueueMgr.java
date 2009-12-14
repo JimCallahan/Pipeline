@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.143 2009/12/14 20:46:39 jim Exp $
+// $Id: QueueMgr.java,v 1.144 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -325,10 +325,9 @@ class QueueMgr
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Loading Extensions...");   
-    LogMgr.getInstance().flush();
 
     {
       readQueueExtensions();
@@ -340,10 +339,9 @@ class QueueMgr
     }
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();    
   }
 
   /**
@@ -354,10 +352,9 @@ class QueueMgr
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Loading License/Selection/Hardware Keys...");   
-    LogMgr.getInstance().flush();
 
     /* load the license keys if any exist */ 
     readLicenseKeys();
@@ -376,10 +373,9 @@ class QueueMgr
     readDispatchControls();
 
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();    
   }
 
   /**
@@ -390,18 +386,16 @@ class QueueMgr
     throws PipelineException
   {
     TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Loading Job Servers Info...");   
-    LogMgr.getInstance().flush();
 
     readHosts();
     
     timer.suspend();
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();    
   }
 
   /**
@@ -424,10 +418,9 @@ class QueueMgr
 
     {
       TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Loading Jobs...");   
-      LogMgr.getInstance().flush();
 
       File dir = new File(pQueueDir, "queue/jobs");
       File files[] = dir.listFiles(); 
@@ -454,10 +447,9 @@ class QueueMgr
       }
 
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();    
     } // End job reading.  This is the part that should be multi-threaded.
 
     /* initialize the job groups */ 

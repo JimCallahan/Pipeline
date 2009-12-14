@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.109 2009/12/11 04:21:11 jesse Exp $
+// $Id: ScriptApp.java,v 1.110 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -439,10 +439,9 @@ class ScriptApp
     StringBuilder buf = new StringBuilder();
     printWorkGroupMembersHelper(gname, groups, buf, true);
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();   
   }
 
   /**
@@ -464,10 +463,9 @@ class ScriptApp
       first = false;
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();   
   }
 
   /**
@@ -552,10 +550,9 @@ class ScriptApp
     StringBuilder buf = new StringBuilder();
     printUserPrivilegesHelper(uname, privs, buf, true);
     
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();   
   }
 
   /**
@@ -578,10 +575,9 @@ class ScriptApp
       first = false;
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();   
   }
 
   /**
@@ -792,11 +788,10 @@ class ScriptApp
     /* ask the user if they are ready */
     if(archiver.isManual() && !autoStart) {
       while(true) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   "Are you ready to write the archive volume?\n" + 
 	   "[y/n]: ");
-	LogMgr.getInstance().flush();      
 	
 	try {
 	  InputStreamReader in = new InputStreamReader(System.in);
@@ -855,10 +850,9 @@ class ScriptApp
 	}
       }
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 buf.toString());
-      LogMgr.getInstance().flush();   
     }
 
     /* create the archive volume */ 
@@ -871,10 +865,9 @@ class ScriptApp
        dryRunResults.toString()); 
     }
     else {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Created Archive Volume: " + archiveName + "  (" + formatLong(total) + ")");
-      LogMgr.getInstance().flush();      
     }
   }
 
@@ -939,10 +932,9 @@ class ScriptApp
             buf.append("    v" + vid.toString() + "\n");
         }
         
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Ops, LogMgr.Level.Info,
            buf.toString());
-        LogMgr.getInstance().flush();   
       }
 
       client.offline(versions, dryRunResults);
@@ -954,10 +946,9 @@ class ScriptApp
            dryRunResults.toString()); 
       }
       else {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Ops, LogMgr.Level.Info,
            "Offline Complete.");
-        LogMgr.getInstance().flush();      
       }
     }
   }
@@ -1069,10 +1060,9 @@ class ScriptApp
           buf.append("    v" + vid.toString() + "\n");
       }
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Ops, LogMgr.Level.Info,
          buf.toString());
-      LogMgr.getInstance().flush();  
     }
 
     client.restore(archiveName, aversions, archiver, toolset, dryRunResults);
@@ -1084,10 +1074,9 @@ class ScriptApp
        dryRunResults.toString()); 
     }
     else {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Versions Restored."); 
-      LogMgr.getInstance().flush();      
     }
   }
   
@@ -1112,10 +1101,9 @@ class ScriptApp
     for(String name : archives.keySet()) 
       buf.append(name + "\n");
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
   /**
@@ -1189,10 +1177,9 @@ class ScriptApp
       }
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
 
@@ -1261,10 +1248,9 @@ class ScriptApp
       logLevelMessage(controls, LogMgr.Kind.Ext, buf);
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
 
@@ -1321,10 +1307,9 @@ class ScriptApp
       logLevelMessage(controls, LogMgr.Kind.Usr, buf);
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
   /**
@@ -1408,10 +1393,9 @@ class ScriptApp
       }
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
   /**
@@ -1456,10 +1440,9 @@ class ScriptApp
       }
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
 
@@ -1523,10 +1506,9 @@ class ScriptApp
       throw new PipelineException
 	("No license key named (" + kname + ") exists!");
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
   /**
@@ -1582,10 +1564,9 @@ class ScriptApp
     }
     client.addLicenseKey(key);
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Added license key (" + kname + ").");
-    LogMgr.getInstance().flush();
   }
 
   /**
@@ -1638,10 +1619,9 @@ class ScriptApp
     client.setMaxLicenses(key.getName(), key.getScheme(), 
 			  key.getMaxSlots(), key.getMaxHosts(), key.getMaxHostSlots());
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "License key (" + kname + ") updated.");
-    LogMgr.getInstance().flush();
   }
 
 
@@ -1685,10 +1665,9 @@ class ScriptApp
       throw new PipelineException
 	("No selection key named (" + kname + ") exists!");
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();    
   }
 
 
@@ -1732,10 +1711,9 @@ class ScriptApp
       throw new PipelineException
 	("No hardware key named (" + kname + ") exists!");
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();    
   }
 
 
@@ -1825,10 +1803,9 @@ class ScriptApp
       }
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();      
   }
   
   /**
@@ -1858,10 +1835,9 @@ class ScriptApp
       // TEMPORARY
     }
     
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();      
   }
 
 
@@ -1967,8 +1943,7 @@ class ScriptApp
       }
     } 
 
-    LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Info, buf.toString());
-    LogMgr.getInstance().flush();
+    LogMgr.getInstance().logAndFlush(LogMgr.Kind.Ops, LogMgr.Level.Info, buf.toString());
   }
 
   /**
@@ -2285,10 +2260,9 @@ class ScriptApp
       throw new PipelineException
 	("The filename suffix (" + suffix + ") does not exist!");
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();    
   }
   
   /**
@@ -2457,10 +2431,9 @@ class ScriptApp
       }
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();    
   }
 
   
@@ -3423,17 +3396,15 @@ class ScriptApp
     LinkedList<QueueJobGroup> groups = mclient.submitJobs(nodeID, frameIndices);
 
     for(QueueJobGroup group : groups) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Ops, LogMgr.Level.Info, 
          "Submitted Job Group: [" + group.getGroupID() + "] " + group.getRootPattern());
-      LogMgr.getInstance().flush();        
     }
     
     if(wait) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Waiting for jobs to complete...");
-      LogMgr.getInstance().flush();   
 
       TreeSet<Long> groupIDs = new TreeSet<Long>();
       for(QueueJobGroup group : groups)
@@ -3472,10 +3443,9 @@ class ScriptApp
 	  if(failed) 
 	    throw new PipelineException("Jobs Failed.");
 	  else {
-	    LogMgr.getInstance().log
+	    LogMgr.getInstance().logAndFlush
 	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	       "Jobs Completed Successfully.");
-	    LogMgr.getInstance().flush(); 
 	    return;
 	  }
 	}
@@ -3611,7 +3581,6 @@ class ScriptApp
 	   author + "|" + view); 
       }
     }
-    LogMgr.getInstance().flush();   
   }  
   
   /**
@@ -3633,7 +3602,6 @@ class ScriptApp
 	   author + "|" + view); 
       }
     }
-    LogMgr.getInstance().flush();   
   }  
   
 
@@ -3765,10 +3733,9 @@ class ScriptApp
       }
     }
       
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();    
   }
   
   /**
@@ -3828,10 +3795,9 @@ class ScriptApp
 	 "Check-In Message : " + wordWrap(msg.getMessage(), 20, 80));
     }
       
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();  
   }
 
   /**
@@ -4433,10 +4399,9 @@ class ScriptApp
       }
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();  
   }
 
   private void 
@@ -4663,10 +4628,9 @@ class ScriptApp
       }
     }
     
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
-    LogMgr.getInstance().flush();  
   }
     
   private void

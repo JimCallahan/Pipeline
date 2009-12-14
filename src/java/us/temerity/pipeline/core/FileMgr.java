@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.101 2009/11/05 00:23:30 jim Exp $
+// $Id: FileMgr.java,v 1.102 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -152,10 +152,9 @@ class FileMgr
       validateScratchDirHelper();
     }
     catch(PipelineException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
-      LogMgr.getInstance().flush();
       System.exit(1);
     }
     
@@ -336,10 +335,9 @@ class FileMgr
       }
     }
     catch(Exception ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 Exceptions.getFullMessage(ex));
-      LogMgr.getInstance().flush();
 
       throw new PipelineException(null, ex, true, true); 
     }
@@ -4995,10 +4993,9 @@ class FileMgr
 	
 	File parent = tmp.getParentFile();
 
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
 	   "Deleting Empty Directory: " + tmp);
-	LogMgr.getInstance().flush();
 
 	if(!tmp.delete()) 
 	  throw new PipelineException
@@ -5087,14 +5084,13 @@ class FileMgr
         if(millis > 0) 
           rate = total*1000 / millis;
 
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Net, LogMgr.Level.Info,
            "--- Offlined Task (Active) -----\n" + 
            "      Time Spent: " + TimeStamps.formatInterval(millis) + "\n" +
            "  Dirs Processed: " + total + " (" + rate + " dirs/sec)\n" + 
            "   Offline Found: " + offline + "\n" + 
            "--------------------------------");
-        LogMgr.getInstance().flush();
       }
     }
 

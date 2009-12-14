@@ -1,4 +1,4 @@
-// $Id: RemoteServer.java,v 1.9 2009/07/06 10:25:26 jim Exp $
+// $Id: RemoteServer.java,v 1.10 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -79,11 +79,10 @@ class RemoteServer
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sRemotePort);
       pTimer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Remote Ready.\n" + 
 	 "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();
       pTimer = new TaskTimer();
 
       while(!pShutdown.get()) {
@@ -101,10 +100,9 @@ class RemoteServer
       }
 
       try {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
 	   "Waiting on Client Handlers...");
-	LogMgr.getInstance().flush();
 	
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -117,32 +115,28 @@ class RemoteServer
 	}
       }
       catch(InterruptedException ex) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
-	LogMgr.getInstance().flush();
       }
     }
     catch (BindException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          "The Remote port (" + PackageInfo.sRemotePort + ") is already in use!\n" + 
          "Most likely this is because you are already running another plui this host.");
-      LogMgr.getInstance().flush();
     }
     catch (IOException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
          ("IO problems on port (" + PackageInfo.sRemotePort + "):", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
 	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
-      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
@@ -162,11 +156,10 @@ class RemoteServer
       }
 
       pTimer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Remote Shutdown.\n" + 
 	 "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();  
     }
   }
 
@@ -201,10 +194,9 @@ class RemoteServer
       try {
         try {
           pSocket = pChannel.socket();
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
             (LogMgr.Kind.Net, LogMgr.Level.Fine,
              "Connection Opened: " + pSocket.getInetAddress());
-          LogMgr.getInstance().flush();
 
           if(pSocket.isConnected() && !pShutdown.get()) {
             InputStream in = pSocket.getInputStream();
@@ -224,10 +216,9 @@ class RemoteServer
             
               raw = buf.toString();
 
-              LogMgr.getInstance().log
+              LogMgr.getInstance().logAndFlush
                 (LogMgr.Kind.Net, LogMgr.Level.Finer,
                  "Request [" + pSocket.getInetAddress() + "]: " + raw);     
-              LogMgr.getInstance().flush();
             }
 
             /* parse the request */ 
@@ -238,10 +229,9 @@ class RemoteServer
               while(iter.hasNext()) {
                 String line = (String) iter.next();
             
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Ops, LogMgr.Level.Info,
                    "Remote Command: " + line.replace('\0',' '));
-                LogMgr.getInstance().flush();
               
                 RemoteOptsParser parser = new RemoteOptsParser(new StringReader(line));
                 parser.init(pMaster);
@@ -296,10 +286,9 @@ class RemoteServer
       catch(IOException ex) {
       }
 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Client Connection Closed.");
-      LogMgr.getInstance().flush();
     }
     
     public boolean

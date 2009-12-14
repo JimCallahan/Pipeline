@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.121 2009/12/13 01:23:04 jim Exp $
+// $Id: UIMaster.java,v 1.122 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -262,21 +262,19 @@ class UIMaster
   {
     synchronized(pMasterMgrClientStack) {
       if(pMasterMgrClientStack.isEmpty()) {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Net, LogMgr.Level.Finest,
            "Creating New Master Manager Client.");
-        LogMgr.getInstance().flush();
 
         MasterMgrClient mclient = new MasterMgrClient();
         pMasterMgrList.add(mclient);
         return mclient;
       }
       else {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Net, LogMgr.Level.Finest,
            "Reusing Master Manager Client: " + (pMasterMgrClientStack.size()-1) + 
            " inactive");
-        LogMgr.getInstance().flush();
 
         return pMasterMgrClientStack.pop();
       }
@@ -298,10 +296,9 @@ class UIMaster
     synchronized(pMasterMgrClientStack) {
       pMasterMgrClientStack.push(mclient);
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Net, LogMgr.Level.Finest,
          "Freed Master Manager Client: " + pMasterMgrClientStack.size() + " inactive");
-      LogMgr.getInstance().flush();
     }
   }
 
@@ -318,20 +315,18 @@ class UIMaster
   {
     synchronized(pQueueMgrClientStack) {
       if(pQueueMgrClientStack.isEmpty()) {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Net, LogMgr.Level.Finest,
            "Creating New Queue Manager Client.");
-        LogMgr.getInstance().flush();
 
         QueueMgrClient qclient = new QueueMgrClient();
         pQueueMgrList.add(qclient);
         return qclient;
       }
       else {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Net, LogMgr.Level.Finest,
            "Reusing Queue Manager Client: " + (pQueueMgrClientStack.size()-1) + " inactive");
-        LogMgr.getInstance().flush();
 
         return pQueueMgrClientStack.pop();
       }
@@ -353,13 +348,11 @@ class UIMaster
     synchronized(pQueueMgrClientStack) {
       pQueueMgrClientStack.push(qclient);
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Net, LogMgr.Level.Finest,
          "Freed Queue Manager Client: " + pQueueMgrClientStack.size() + " inactive");
-      LogMgr.getInstance().flush();
     }
- 
-  }
+   }
 
   
  
@@ -4711,10 +4704,9 @@ class UIMaster
         pRemoteServer.join();
       }
       catch(InterruptedException ex) {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Ops, LogMgr.Level.Warning,
            "Interrupted while waiting for RemoteServer connection to shutdown!"); 
-        LogMgr.getInstance().flush();
       }
     }
 
@@ -4763,10 +4755,9 @@ class UIMaster
 	  File dir = lpath.toFile(); 
 	  if(!dir.isDirectory()) {
 	    if(!dir.mkdirs()) {
-	      LogMgr.getInstance().log
+	      LogMgr.getInstance().logAndFlush
 		(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		 "Unable to create (" + dir + ")!");
-	      LogMgr.getInstance().flush();
 	      System.exit(1);	    
 	    }
 	    
@@ -4784,10 +4775,9 @@ class UIMaster
 	      LockedGlueFile.save(dpath.toFile(), "DefaultLayout", "/Default");
 	    }
 	    catch(Exception ex) {
-	      LogMgr.getInstance().log
+	      LogMgr.getInstance().logAndFlush
 		(LogMgr.Kind.Ops, LogMgr.Level.Warning,
 		 "Unable to set the initial default layout!");
-	      LogMgr.getInstance().flush();
 	    }    
 	  }	  
 	}
@@ -4803,11 +4793,10 @@ class UIMaster
 	}
       }
       catch(Exception ex) {	
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   "Unable to initialize the user preferences!\n" + 
 	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
 	System.exit(1);	 
       }
 
@@ -4817,11 +4806,10 @@ class UIMaster
 	client.createWorkingArea(PackageInfo.sUser, "default");
       }
       catch(PipelineException ex) {	
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   "Unable to initialize the default working area!\n" + 
 	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
 	System.exit(1);	 
       }
       finally {

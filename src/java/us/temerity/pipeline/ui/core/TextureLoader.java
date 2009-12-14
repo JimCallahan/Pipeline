@@ -1,4 +1,4 @@
-// $Id: TextureLoader.java,v 1.3 2008/07/03 03:19:02 jim Exp $
+// $Id: TextureLoader.java,v 1.4 2009/12/14 21:48:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,20 +63,18 @@ class TextureLoader
           pDrawable = factory.createGLPbuffer(capabilities, chooser, 1, 1, null); 
         }
         catch(GLException ex) {
-          LogMgr.getInstance().log
+          LogMgr.getInstance().logAndFlush
             (LogMgr.Kind.Ops, LogMgr.Level.Severe,
              "While attempting to create the OpenGL pbuffer needed to load the " + 
              "textures offscreen:\n  " + ex.getMessage());
-          LogMgr.getInstance().flush();
         }
       }
 
       if(pDrawable == null) {
-        LogMgr.getInstance().log
+        LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Ops, LogMgr.Level.Warning,
            "Unable to create the OpenGL pbuffer needed to load the textures " + 
            "offscreen, using an onscreen OpenGL window instead."); 
-        LogMgr.getInstance().flush();
       }
     }
 
@@ -288,11 +286,10 @@ class TextureLoader
       SwingUtilities.invokeLater(pFinishedTask);
     }
     catch(IOException ex) {	
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 "Unable to load the required textures:\n" + 
 	 "  " + ex.getMessage());
-      LogMgr.getInstance().flush();
       System.exit(1);	 
     }
   }
