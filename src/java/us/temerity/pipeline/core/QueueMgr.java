@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.142 2009/12/14 03:20:56 jim Exp $
+// $Id: QueueMgr.java,v 1.143 2009/12/14 20:46:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -236,7 +236,7 @@ class QueueMgr
       initJobTables(jobReaderThreads);
     }
     catch (PipelineException ex) {
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          ex.getMessage());
 
@@ -244,7 +244,7 @@ class QueueMgr
     }
     catch(Exception ex) {
       String message = Exceptions.getFullMessage(ex);
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 message);
 
@@ -447,10 +447,9 @@ class QueueMgr
           thread.join();
         }
         catch(InterruptedException ex) {
-	    LogMgr.getInstance().log
+	    LogMgr.getInstance().logAndFlush
 	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
             "Interrupted while reading jobs.\n" + ex.getMessage());
-          LogMgr.getInstance().flush();
 	}
       }
 
@@ -464,10 +463,9 @@ class QueueMgr
     /* initialize the job groups */ 
     {
       TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Loading Job Groups...");   
-      LogMgr.getInstance().flush();
 
       File dir = new File(pQueueDir, "queue/job-groups");
       File files[] = dir.listFiles(); 
@@ -492,19 +490,17 @@ class QueueMgr
       }
 
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();    
     }
     
     /* fix the job group id in all the jobs that are missing the id */
     if (missingGroup.get()) {
       TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Updating the JobGroupIDs in Jobs...");
-      LogMgr.getInstance().flush();
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Ops, LogMgr.Level.Info,
+         "Updating the JobGroupIDs in Jobs...");
       
       for (Entry<Long, QueueJobGroup> entry: pJobGroups.entrySet()) {
         Long id = entry.getKey();
@@ -518,36 +514,32 @@ class QueueMgr
       }
       
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Ops, LogMgr.Level.Info,
          "  Updated in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();    
     }
 
     /* garbage collect all jobs no longer referenced by a job group */ 
     {
       TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Cleaning Old Jobs...");   
-      LogMgr.getInstance().flush();
 
       garbageCollectJobs(timer);
       
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Cleaned in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();    
     }
 
     /* initialize the job counters */ 
     {
       TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Initializing Job Counters...");   
-      LogMgr.getInstance().flush();
 
       synchronized(pJobGroups) {
 	for(QueueJobGroup group : pJobGroups.values()) 
@@ -560,10 +552,9 @@ class QueueMgr
       }
 
       timer.suspend();
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Initialized in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();    
     }
 
     /* create tasks to manage the previously started jobs which will be started when
@@ -676,10 +667,9 @@ class QueueMgr
   {
     /* shutdown all job servers */ 
     if(pShutdownJobMgrs.get()) { 
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Shutting Down Job Servers..."); 
-      LogMgr.getInstance().flush();
 
       for(String hname : pHosts.keySet()) {
 	QueueHost host = pHosts.get(hname);
@@ -6859,10 +6849,9 @@ class QueueMgr
               thread.join();
             }
             catch(InterruptedException ex) {
-              LogMgr.getInstance().log
+              LogMgr.getInstance().logAndFlush
                 (LogMgr.Kind.Col, LogMgr.Level.Severe,
                  "Interrupted while collecting resource information.");
-              LogMgr.getInstance().flush();
             }
           }
           LogMgr.getInstance().logSubStage
@@ -9775,7 +9764,7 @@ class QueueMgr
       long maxMemory   = rt.maxMemory();
       long overhead    = maxMemory - totalMemory + freeMemory;
       
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	 "Memory Stats:\n" + 
 	 "  ---- JVM HEAP ----------------------\n" + 
@@ -9789,7 +9778,6 @@ class QueueMgr
 	 "     Avl = " + overhead + 
 	             " (" + ByteSize.longToFloatString(overhead) + ")\n" +
 	 "  ------------------------------------");
-      LogMgr.getInstance().flush();
     }
 
     /* if we're ahead of schedule, take a nap */ 
@@ -10622,7 +10610,6 @@ class QueueMgr
 	  pHosts.put(qinfo.getName(), host);
 	  pUserBalanceInfo.addHostChange
 	    (host.getName(), Boolean.FALSE, host.getUserBalanceGroup(), host.getJobSlots());
-	  
 	}
       }
     }
@@ -10935,12 +10922,11 @@ class QueueMgr
       
       try {
         if(file.exists()) {
-        if(backup.exists())
-          if(!backup.delete()) 
-            throw new IOException
-            ("Unable to remove the backup working version file (" + backup + ")!");
-        
-
+          if(backup.exists())
+            if(!backup.delete()) 
+              throw new IOException
+                ("Unable to remove the backup working version file (" + backup + ")!");
+          
           if(!file.renameTo(backup)) 
             throw new IOException
               ("Unable to backup the current job file (" + file + ") to the " + 
@@ -10996,11 +10982,10 @@ class QueueMgr
             return ((QueueJob) GlueDecoderImpl.decodeFile("Job", file));
           }	
           catch(Exception ex) {
-            LogMgr.getInstance().log
+            LogMgr.getInstance().logAndFlush
               (LogMgr.Kind.Glu, LogMgr.Level.Severe,
                "The job file (" + file + ") appears to be corrupted:\n" + 
-              "  " + ex.getMessage());
-            LogMgr.getInstance().flush();
+               "  " + ex.getMessage());
 
             if(backup.isFile()) {
               LogMgr.getInstance().log
@@ -11012,21 +10997,19 @@ class QueueMgr
                 job = (QueueJob) GlueDecoderImpl.decodeFile("Job", backup);
               }
               catch(Exception ex2) {
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Glu, LogMgr.Level.Severe,
                    "The backup job file (" + backup + ") appears to be " + 
                    "corrupted:\n" + "  " + ex.getMessage());
-                LogMgr.getInstance().flush();
 
                 throw ex;
               }
 
-              LogMgr.getInstance().log
-              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-                "Successfully recovered the job from the backup file " + 
-                "(" + backup + ")\n" + 
-                "Renaming the backup to (" + file + ")!");
-              LogMgr.getInstance().flush();
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+                 "Successfully recovered the job from the backup file " + 
+                 "(" + backup + ")\n" + 
+                 "Renaming the backup to (" + file + ")!");
 
               if(!file.delete()) 
                 throw new IOException
@@ -11040,10 +11023,9 @@ class QueueMgr
               return job;
             }
             else {
-              LogMgr.getInstance().log
+              LogMgr.getInstance().logAndFlush
               (LogMgr.Kind.Glu, LogMgr.Level.Severe,
                 "The backup working version file (" + backup + ") does not exist!");
-              LogMgr.getInstance().flush();
 
               throw ex;
             }
@@ -11147,12 +11129,11 @@ class QueueMgr
       File backup = new File(pQueueDir, "queue/job-info-bak/" + jobID);
 
       try {
-      if(file.exists()) {
+        if(file.exists()) {
           if(backup.exists())
             if(!backup.delete()) 
               throw new IOException
                 ("Unable to remove the backup job information file (" + backup + ")!");
-      
 
           if(!file.renameTo(backup)) 
             throw new IOException
@@ -11160,13 +11141,13 @@ class QueueMgr
                "the file (" + backup + ")!");
         }
       
-      try {
-        GlueEncoderImpl.encodeFile("JobInfo", info, file);
+        try {
+          GlueEncoderImpl.encodeFile("JobInfo", info, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
-      catch(GlueException ex) {
-        throw new PipelineException(ex);
-      }
-    }
       catch(IOException ex) {
         throw new PipelineException
           ("I/O ERROR: \n" + 
@@ -11200,45 +11181,43 @@ class QueueMgr
       File file = new File(pQueueDir, "queue/job-info/" + jobID);
       File backup = new File(pQueueDir, "queue/job-info-bak/" + jobID);
       try {
-      if(file.isFile()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading Job Information: " + jobID);
+        if(file.isFile()) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+             "Reading Job Information: " + jobID);
 
-        try {
-          return((QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", file));
-        }	
+          try {
+            return((QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", file));
+          }	
           catch(Exception ex) {
-            LogMgr.getInstance().log
+            LogMgr.getInstance().logAndFlush
               (LogMgr.Kind.Glu, LogMgr.Level.Severe,
                "The job info file (" + file + ") appears to be corrupted:\n" + 
                "  " + ex.getMessage());
-            LogMgr.getInstance().flush();
+
             if(backup.isFile()) {
               LogMgr.getInstance().log
-              (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-                "Reading Working Job Info (Backup): " + jobID);
+                (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+                 "Reading Working Job Info (Backup): " + jobID);
 
               QueueJobInfo info = null;
               try {
                 info = (QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", backup);
               }
               catch(Exception ex2) {
-                LogMgr.getInstance().log
+                LogMgr.getInstance().logAndFlush
                   (LogMgr.Kind.Glu, LogMgr.Level.Severe,
                    "The backup job info file (" + backup + ") appears to be " + 
                    "corrupted:\n" + "  " + ex.getMessage());
-                LogMgr.getInstance().flush();
 
                 throw ex;
               }
 
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Glu, LogMgr.Level.Warning,
                  "Successfully recovered the job info from the backup file " + 
                  "(" + backup + ")\n" + 
                  "Renaming the backup to (" + file + ")!");
-              LogMgr.getInstance().flush();
 
               if(!file.delete()) 
                 throw new IOException
@@ -11252,20 +11231,19 @@ class QueueMgr
               return info;
             }
             else {
-              LogMgr.getInstance().log
+              LogMgr.getInstance().logAndFlush
                 (LogMgr.Kind.Glu, LogMgr.Level.Severe,
                  "The backup job info file (" + backup + ") does not exist!");
-              LogMgr.getInstance().flush();
 
               throw ex;
             }
+          }
+        }
+        else {
+          throw new PipelineException
+            ("Somehow for job (" + jobID + "), no job info file (" + file + ") exists!");
         }
       }
-      else {
-	throw new PipelineException
-	  ("Somehow for job (" + jobID + "), no job info file (" + file + ") exists!");
-      }
-    }
       catch(Exception ex) {
         throw new PipelineException
           ("I/O ERROR: \n" + 
@@ -11666,10 +11644,26 @@ class QueueMgr
         if (file.isFile()) {
           try {
             Long jobID = new Long(file.getName());
+
             QueueJob job = readJob(jobID);
-            QueueJobInfo info = readJobInfo(jobID);
-            if (job.getJobGroupID() == -1)
+            if(job.getJobGroupID() == -1)
               pMissingGroup.set(true);
+
+            QueueJobInfo info = null;
+            try {
+              info = readJobInfo(jobID);
+            }
+            catch(PipelineException ex) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+                 "Unable to load the job info (" + jobID + "), since nothing is known " + 
+                 "about the job we'll mark it as aborted."); 
+
+              info = new QueueJobInfo(jobID);
+              
+              info.aborted();
+              writeJobInfo(info);
+            }
 
             /* initialize the table of working area files to the jobs which create them */ 
             {
@@ -11732,7 +11726,7 @@ class QueueMgr
           catch(NumberFormatException ex) {
             LogMgr.getInstance().log
               (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-               "Illegal job file encountered (" + file + ")!");
+               "Illegal job file encountered (" + file + ")! Ignoring...");
           }
           catch(PipelineException ex) {
             LogMgr.getInstance().log
