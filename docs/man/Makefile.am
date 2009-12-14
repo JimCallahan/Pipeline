@@ -44,3 +44,11 @@ clean:
 	rm -f $(html_DATA) 
 	rm -f copyright @LICENSE_DOC@
 	rm -f checkbot.html checkbot-localhost.html
+
+
+tidy:
+	@(for x in $(srcdir)/*.src.html*; \
+          do \
+            echo "tidy -u -i -m -ascii -clean --gnu-emacs $$x";\
+            tidy -u -i -m -ascii -clean --gnu-emacs $$x;\
+          done)
