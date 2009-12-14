@@ -1,4 +1,4 @@
-// $Id: MasterMgrLightClient.java,v 1.6 2009/09/01 10:59:39 jim Exp $
+// $Id: MasterMgrLightClient.java,v 1.7 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -759,6 +759,32 @@ interface MasterMgrLightClient
    String pattern
   )
     throws PipelineException;
+
+  /**
+   * Get the names of the most downstream nodes in a working area.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @return 
+   *   The fully resolved names of the root working versions. 
+   * 
+   * @throws PipelineException 
+   *   If unable to determine which working versions are the roots.
+   */ 
+  public TreeSet<String> 
+  getWorkingRootNames
+  (
+   String author, 
+   String view
+  )
+    throws PipelineException;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Get the working version of a node. <P> 

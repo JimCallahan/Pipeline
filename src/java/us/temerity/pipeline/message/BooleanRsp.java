@@ -1,4 +1,4 @@
-// $Id: NodeIsSiteVersionInsertedRsp.java,v 1.1 2009/03/25 22:02:24 jim Exp $
+// $Id: BooleanRsp.java,v 1.1 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   G E T   M I S S I N G   S I T E  V E R S I O N   R E F S   R S P             */
+/*  B O O L E A N   R S P                                                                   */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Whether the extracted node contained in the given JAR archive has already been inserted
- * into the node database.
+ * A response containing only a simple boolean value. 
  */
 public
-class NodeIsSiteVersionInsertedRsp
+class BooleanRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -30,19 +29,19 @@ class NodeIsSiteVersionInsertedRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param isInserted
-   *   Whether the extracted node has already been inserted.
+   * @param isTrue
+   *   The boolean value. 
    */
   public
-  NodeIsSiteVersionInsertedRsp
+  BooleanRsp
   (
    TaskTimer timer, 
-   boolean isInserted
+   boolean isTrue
   )
   { 
     super(timer);
 
-    pIsInserted = isInserted; 
+    pIsTrue = isTrue; 
   }
 
 
@@ -52,12 +51,12 @@ class NodeIsSiteVersionInsertedRsp
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Whether the extracted node has already been inserted.
+   * The boolean value. 
    */
   public boolean
-  isInserted() 
+  isTrue() 
   {
-    return pIsInserted; 
+    return pIsTrue; 
   }
 
 
@@ -66,7 +65,7 @@ class NodeIsSiteVersionInsertedRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6790819977837520311L;
+  private static final long serialVersionUID = 955419249100827953L;
 
   
 
@@ -75,9 +74,9 @@ class NodeIsSiteVersionInsertedRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether the extracted node has already been inserted.
+   * The boolean value. 
    */
-  private boolean  pIsInserted; 
+  private boolean  pIsTrue; 
 
 }
   

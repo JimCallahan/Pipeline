@@ -1,26 +1,23 @@
-// $Id: MiscCreateInitialPanelLayoutReq.java,v 1.1 2006/07/02 07:48:55 jim Exp $
+// $Id: NodeWorkingAreaReq.java,v 1.1 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
-import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   C R E A T E   I N I T I A L   P A N E L   L A Y O U T   R E Q                */
+/*   N O D E   W O R K I N G   A R E A                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to create a default saved panel layout file. <P> 
- * 
- * @see MasterMgr
+ * A request which required only the identity of a working area. <P> 
  */
 public
-class MiscCreateInitialPanelLayoutReq
-  implements Serializable
+class NodeWorkingAreaReq
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -29,19 +26,19 @@ class MiscCreateInitialPanelLayoutReq
   /** 
    * Constructs a new request.
    * 
-   * @param author
-   *   The name of the user which owns the working version.
+   * @param author 
+   *   The name of the user which owns the working area.
    * 
    * @param view 
-   *   The name of the user's working area view.
+   *   The name of the user's working area view. 
    */
   public
-  MiscCreateInitialPanelLayoutReq
+  NodeWorkingAreaReq
   (
-   String author,  
-   String view
+   String author, 
+   String view   
   )
-  {
+  { 
     super();
 
     if(author == null) 
@@ -60,7 +57,7 @@ class MiscCreateInitialPanelLayoutReq
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the name of user which owns the working area.
+   * Get the name of user which owens the working area.
    */ 
   public String
   getAuthor() 
@@ -83,7 +80,7 @@ class MiscCreateInitialPanelLayoutReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 501681046339475648L;
+  private static final long serialVersionUID = -4967190455724903926L;
 
   
 

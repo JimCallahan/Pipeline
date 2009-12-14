@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.153 2009/12/12 23:12:49 jim Exp $
+// $Id: MasterMgrClient.java,v 1.154 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3723,7 +3723,7 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    NodeCreateWorkingAreaReq req = new NodeCreateWorkingAreaReq(author, view);
+    NodeWorkingAreaReq req = new NodeWorkingAreaReq(author, view);
 
     Object obj = performTransaction(MasterRequest.CreateWorkingArea, req);
     handleSimpleResponse(obj);
@@ -3758,11 +3758,12 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    NodeRemoveWorkingAreaReq req = new NodeRemoveWorkingAreaReq(author, view);
+    NodeWorkingAreaReq req = new NodeWorkingAreaReq(author, view);
 
     Object obj = performLongTransaction(MasterRequest.RemoveWorkingArea, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
+
 
 
 
@@ -4347,7 +4348,13 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the nodes in a working matching the given search pattern.
+   * Get the names of the nodes in a working area matching the given search pattern.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
    * 
    * @param pattern
    *   A regular expression {@link Pattern pattern} used to match the fully resolved 
@@ -4370,8 +4377,7 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    NodeGetWorkingNamesReq req = 
-      new NodeGetWorkingNamesReq(author, view, pattern);
+    NodeWorkingAreaPatternReq req = new NodeWorkingAreaPatternReq(author, view, pattern);
 
     Object obj = performTransaction(MasterRequest.GetWorkingNames, req);
     if(obj instanceof NodeGetNodeNamesRsp) {
@@ -4383,6 +4389,47 @@ class MasterMgrClient
       return null;
     }
   } 
+
+  /**
+   * Get the names of the most downstream nodes in a working area.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @return 
+   *   The fully resolved names of the root working versions. 
+   * 
+   * @throws PipelineException 
+   *   If unable to determine which working versions are the roots.
+   */ 
+  public synchronized TreeSet<String> 
+  getWorkingRootNames
+  (
+   String author, 
+   String view
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeWorkingAreaReq req = new NodeWorkingAreaReq(author, view);
+
+    Object obj = performTransaction(MasterRequest.GetWorkingRootNames, req);
+    if(obj instanceof NodeGetNodeNamesRsp) {
+      NodeGetNodeNamesRsp rsp = (NodeGetNodeNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Get the working version of a node. <P> 
@@ -6008,7 +6055,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to check-out the nodes.
    */ 
-  public synchronized TreeMap<String,TreeSet<Long>>
+  public synchronized MappedSet<String,Long> 
   checkOut
   ( 
    String author, 
@@ -6052,7 +6099,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to check-out the nodes.
    */ 
-  public synchronized TreeMap<String,TreeSet<Long>>
+  public synchronized MappedSet<String,Long> 
   checkOut
   ( 
    NodeID nodeID,
@@ -6995,9 +7042,9 @@ class MasterMgrClient
     NodeSiteVersionReq req = new NodeSiteVersionReq(jarPath); 
     
     Object obj = performTransaction(MasterRequest.IsSiteVersionInserted, req); 
-    if(obj instanceof NodeIsSiteVersionInsertedRsp) {
-      NodeIsSiteVersionInsertedRsp rsp = (NodeIsSiteVersionInsertedRsp) obj;
-      return rsp.isInserted();
+    if(obj instanceof BooleanRsp) {
+      BooleanRsp rsp = (BooleanRsp) obj;
+      return rsp.isTrue();
     }
     else {
       handleFailure(obj);
@@ -7719,6 +7766,160 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.RemoveFiles, req);
     handleSimpleResponse(obj);    
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether the given working area contains any nodes for which there are unfinished 
+   * jobs currently in the queue.<P> 
+   * 
+   * A job is considered unfinished if it has as JobState of: Queued, Preempted, Paused, 
+   * Running or Limbo.
+   * 
+   * @param author 
+   *   The name of the user which owns the working area.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @throws PipelineException
+   *   If unable to perform the operation.
+   */
+  public synchronized boolean  
+  hasUnfinishedJobs
+  ( 
+   String author, 
+   String view
+  ) 
+    throws PipelineException 
+  {
+    return hasUnfinishedJobs(author, view, null); 
+  }
+
+  /**
+   * Whether the given working area contains matching nodes for which there are unfinished 
+   * jobs currently in the queue.<P> 
+   * 
+   * A job is considered unfinished if it has as JobState of: Queued, Preempted, Paused, 
+   * Running or Limbo.
+   * 
+   * @param author 
+   *   The name of the user which owns the working area.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes or <CODE>null</CODE> to match all nodes.
+   * 
+   * @throws PipelineException
+   *   If unable to perform the operation.
+   */
+  public synchronized boolean  
+  hasUnfinishedJobs
+  ( 
+   String author, 
+   String view, 
+   String pattern
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    NodeWorkingAreaPatternReq req = new NodeWorkingAreaPatternReq(author, view, pattern);
+
+    Object obj = performTransaction(MasterRequest.HasUnfinishedJobs, req);  
+    if(obj instanceof BooleanRsp) {
+      BooleanRsp rsp = (BooleanRsp) obj;
+      return rsp.isTrue();
+    }
+    else {
+      handleFailure(obj);
+      return false;        
+    } 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get all unfinished jobs for the any nodes contained in the given working area. <P> 
+   * 
+   * A job is considered unfinished if it has as JobState of: Queued, Preempted, Paused, 
+   * Running or Limbo.
+   * 
+   * @param author 
+   *   The name of the user which owns the working area.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @return 
+   *   The unfinished jobIDs indexed node name.
+   * 
+   * @throws PipelineException
+   *   If unable to perform the operation.
+   */
+  public synchronized MappedSet<String,Long> 
+  getUnfinishedJobs
+  ( 
+   String author, 
+   String view
+  ) 
+    throws PipelineException 
+  {
+    return getUnfinishedJobs(author, view, null); 
+  }
+
+  /**
+   * Get all unfinished jobs for the matching nodes contained in the given working area. <P> 
+   * 
+   * A job is considered unfinished if it has as JobState of: Queued, Preempted, Paused, 
+   * Running or Limbo.
+   * 
+   * @param author 
+   *   The name of the user which owns the working area.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes or <CODE>null</CODE> to match all nodes.
+   * 
+   * @return 
+   *   The unfinished jobIDs indexed node name.
+   * 
+   * @throws PipelineException
+   *   If unable to perform the operation.
+   */
+  public synchronized MappedSet<String,Long> 
+  getUnfinishedJobs
+  ( 
+   String author, 
+   String view, 
+   String pattern
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    NodeWorkingAreaPatternReq req = new NodeWorkingAreaPatternReq(author, view, pattern);
+
+    Object obj = performTransaction(MasterRequest.GetUnfinishedJobs, req);  
+    if(obj instanceof GetUnfinishedJobsForNodesRsp) {
+      GetUnfinishedJobsForNodesRsp rsp = (GetUnfinishedJobsForNodesRsp) obj;
+      return rsp.getJobIDs();
+    }
+    else {
+      handleFailure(obj);
+      return null;        
+    } 
+  }
+
+  
 
 
 
@@ -8619,7 +8820,8 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscCreateInitialPanelLayoutReq req = new MiscCreateInitialPanelLayoutReq(author, view);
+    NodeWorkingAreaReq req = new NodeWorkingAreaReq(author, view);
+
     Object obj = performTransaction(MasterRequest.CreateInitialPanelLayout, req);
     if(obj instanceof MiscCreateInitialPanelLayoutRsp) {
       MiscCreateInitialPanelLayoutRsp rsp = (MiscCreateInitialPanelLayoutRsp) obj;
@@ -8682,7 +8884,8 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscCreateInitialPanelLayoutReq req = new MiscCreateInitialPanelLayoutReq(author, view);
+    NodeWorkingAreaReq req = new NodeWorkingAreaReq(author, view);
+
     Object obj = performTransaction(MasterRequest.CreateInitialPanelLayout, req);
     if(obj instanceof MiscCreateInitialPanelLayoutRsp) {
       MiscCreateInitialPanelLayoutRsp rsp = (MiscCreateInitialPanelLayoutRsp) obj;

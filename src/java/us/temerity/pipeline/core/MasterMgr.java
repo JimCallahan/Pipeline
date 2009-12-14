@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.323 2009/12/12 01:17:27 jim Exp $
+// $Id: MasterMgr.java,v 1.324 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6700,7 +6700,7 @@ class MasterMgr
   public Object 
   createWorkingArea
   ( 
-   NodeCreateWorkingAreaReq req 
+   NodeWorkingAreaReq req 
   ) 
   {
     String author = req.getAuthor();
@@ -6837,7 +6837,7 @@ class MasterMgr
   public Object 
   removeWorkingArea
   ( 
-   NodeRemoveWorkingAreaReq req 
+   NodeWorkingAreaReq req 
   ) 
   {
     String author = req.getAuthor();
@@ -6986,7 +6986,6 @@ class MasterMgr
     }
   }
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -7057,16 +7056,15 @@ class MasterMgr
    NodeGetNodeNamesReq req 
   ) 
   {
-    TaskTimer timer = new TaskTimer();
+    String pattern = req.getPattern();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.getNodeNames(): [" + pattern + "]");
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
 
-      String pattern = req.getPattern();  
-
-      /* get the node names which match the pattern */ 
       try {
 	Pattern pat = null;
 	if(pattern != null) 
@@ -7850,39 +7848,96 @@ class MasterMgr
    * 
    * @return
    *   <CODE>NodeGetWorkingNamesRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to remove the given working area.
+   *   <CODE>FailureRsp</CODE> if unable to determine which working versions match the pattern.
    */ 
   public Object 
   getWorkingNames
   ( 
-   NodeGetWorkingNamesReq req 
+   NodeWorkingAreaPatternReq req 
   ) 
   {
-    TaskTimer timer = new TaskTimer();
+    String author  = req.getAuthor();
+    String view    = req.getView();
+    String pattern = req.getPattern();
+
+    TaskTimer timer =  
+      new TaskTimer("MasterMgr.getWorkingNames(): " + author + "|" + view + " " + 
+                    "[" + pattern + "]");
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
 
-      String author  = req.getAuthor();
-      String view    = req.getView();
-      String pattern = req.getPattern();  
-
-      /* get the node names which match the pattern */ 
       try {
 	Pattern pat = null;
 	if(pattern != null) 
 	  pat = Pattern.compile(pattern);
 	
 	TreeSet<String> matches = pNodeTree.getMatchingWorkingNodes(author, view, pat);
-
+        
 	return new NodeGetNodeNamesRsp(timer, matches);
       }
       catch(PatternSyntaxException ex) {
 	return new FailureRsp(timer, 
 			      "Illegal Node Name Pattern:\n\n" + ex.getMessage());
       }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }  
+
+  /**
+   * Get the names of the most downstream nodes in a working area.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetWorkingNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine which working versions are the roots.
+   */ 
+  public Object 
+  getWorkingRootNames
+  ( 
+   NodeWorkingAreaReq req 
+  ) 
+  {
+    String author  = req.getAuthor();
+    String view    = req.getView();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getWorkingRootNames(): " + author + "|" + view);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeSet<String> roots = new TreeSet<String>(); 
+
+      for(String name : pNodeTree.getMatchingWorkingNodes(author, view, null)) {
+        timer.aquire();
+        ReentrantReadWriteLock lock = getDownstreamLock(name);
+        lock.readLock().lock();
+        try {
+          timer.resume();
+          
+          DownstreamLinks dsl = getDownstreamLinks(name); 
+          TreeSet<String> links = dsl.getWorking(author, view); 
+          if((links == null) || links.isEmpty()) 
+            roots.add(name);
+        }
+        finally {
+          lock.readLock().unlock();
+        }
+      }
+
+      return new NodeGetNodeNamesRsp(timer, roots);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -9247,16 +9302,15 @@ class MasterMgr
    NodeGetNodeNamesReq req 
   ) 
   {
-    TaskTimer timer = new TaskTimer();
+    String pattern = req.getPattern();  
+
+    TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInNames(): [" + pattern + "]");
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
 
-      String pattern = req.getPattern();  
-
-      /* get the node names which match the pattern */ 
       try {
 	Pattern pat = null;
 	if(pattern != null) 
@@ -10878,7 +10932,7 @@ class MasterMgr
  	if(!fseqs.isEmpty()) {
           QueueMgrControlClient qclient = acquireQueueMgrClient();
           try {
-            TreeMap<String,TreeSet<Long>> jobIDs = 
+            MappedSet<String,Long> jobIDs = 
               qclient.getUnfinishedJobsForNodes(nodeID.getAuthor(), nodeID.getView(), fseqs);
             if(!jobIDs.isEmpty()) 
               return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
@@ -13306,7 +13360,7 @@ class MasterMgr
         }  
       }
 
-      return new NodeIsSiteVersionInsertedRsp(timer, isInserted);    
+      return new BooleanRsp(timer, isInserted);    
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -15555,6 +15609,173 @@ class MasterMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether the given working area contains nodes for which there are unfinished jobs 
+   * currently in the queue.<P> 
+   * 
+   * A job is considered unfinished if it has as JobState of: Queued, Preempted, Paused, 
+   * Running or Limbo.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to fulfill the request. 
+   */ 
+  public Object 
+  hasUnfinishedJobs
+  ( 
+   NodeWorkingAreaPatternReq req 
+  ) 
+  {
+    String author  = req.getAuthor();
+    String view    = req.getView();
+    String pattern = req.getPattern();
+
+    TaskTimer timer =  
+      new TaskTimer("MasterMgr.hasUnfinishedJobs(): " + author + "|" + view + " " + 
+                    "[" + pattern + "]");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      QueueMgrControlClient qclient = acquireQueueMgrClient();
+      try {
+	Pattern pat = null;
+	if(pattern != null) 
+	  pat = Pattern.compile(pattern);
+
+        for(String name : pNodeTree.getMatchingWorkingNodes(author, view, pat)) {
+          TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
+          {
+            NodeID nodeID = new NodeID(author, view, name); 
+            timer.aquire();
+            ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+            lock.readLock().lock();
+            try {
+              timer.resume();	
+              
+              fseqs.put(name, getWorkingBundle(nodeID).getVersion().getPrimarySequence());
+            }
+            catch(PipelineException ex) {
+            }
+            finally {
+              lock.readLock().unlock();
+            }  
+          }
+          
+          /* this could be optimized with a new QueueMgrClient method which returns on the 
+             first match of a unfinished job instead of building up the jobIDs... */ 
+          if(!fseqs.isEmpty() && 
+             !qclient.getUnfinishedJobsForNodes(author, view, fseqs).isEmpty())
+            return new BooleanRsp(timer, true); 
+        }
+      }
+      catch(PatternSyntaxException ex) {
+	return new FailureRsp(timer, 
+			      "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+      }
+      finally {
+        releaseQueueMgrClient(qclient);
+      }
+
+      return new BooleanRsp(timer, false); 
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get all unfinished jobs for the matching nodes contained in the given working area. <P> 
+   * 
+   * A job is considered unfinished if it has as JobState of: Queued, Preempted, Paused, 
+   * Running or Limbo.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to fulfill the request. 
+   */ 
+  public Object 
+  getUnfinishedJobs
+  ( 
+   NodeWorkingAreaPatternReq req 
+  ) 
+  {
+    String author  = req.getAuthor();
+    String view    = req.getView();
+    String pattern = req.getPattern();
+
+    TaskTimer timer =  
+      new TaskTimer("MasterMgr.getUnfinishedJobs(): " + author + "|" + view + 
+                    "[" + pattern + "]");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      MappedSet<String,Long> jobIDs = new MappedSet<String,Long>();
+
+      QueueMgrControlClient qclient = acquireQueueMgrClient();
+      try {
+	Pattern pat = null;
+	if(pattern != null) 
+	  pat = Pattern.compile(pattern);
+        
+        for(String name : pNodeTree.getMatchingWorkingNodes(author, view, pat)) {
+          TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
+          {
+            NodeID nodeID = new NodeID(author, view, name); 
+            timer.aquire();
+            ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+            lock.readLock().lock();
+            try {
+              timer.resume();	
+              
+              fseqs.put(name, getWorkingBundle(nodeID).getVersion().getPrimarySequence());
+            }
+            catch(PipelineException ex) {
+            }
+            finally {
+              lock.readLock().unlock();
+            }  
+          }
+          
+          if(!fseqs.isEmpty()) 
+            jobIDs.putAll(qclient.getUnfinishedJobsForNodes(author, view, fseqs));
+        }
+      }
+      catch(PatternSyntaxException ex) {
+	return new FailureRsp(timer, 
+			      "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+      }
+      finally {
+        releaseQueueMgrClient(qclient);
+      }
+
+      return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -17965,7 +18186,7 @@ class MasterMgr
   public Object
   createInitialPanelLayout
   (
-   MiscCreateInitialPanelLayoutReq req
+   NodeWorkingAreaReq req
   ) 
     throws PipelineException
   {

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.109 2009/12/10 05:50:00 jim Exp $
+// $Id: MasterMgrServer.java,v 1.110 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1094,8 +1094,7 @@ class MasterMgrServer
 
               case CreateWorkingArea:
                 {
-                  NodeCreateWorkingAreaReq req = 
-                    (NodeCreateWorkingAreaReq) objIn.readObject();
+                  NodeWorkingAreaReq req = (NodeWorkingAreaReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.createWorkingArea(req));
                   objOut.flush(); 
                 }
@@ -1103,8 +1102,7 @@ class MasterMgrServer
 
               case RemoveWorkingArea:
                 {
-                  NodeRemoveWorkingAreaReq req = 
-                    (NodeRemoveWorkingAreaReq) objIn.readObject();
+                  NodeWorkingAreaReq req = (NodeWorkingAreaReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.removeWorkingArea(req));
                   objOut.flush(); 
                 }
@@ -1208,8 +1206,17 @@ class MasterMgrServer
               /*-- WORKING VERSIONS ------------------------------------------------------*/
               case GetWorkingNames:
                 {
-                  NodeGetWorkingNamesReq req = (NodeGetWorkingNamesReq) objIn.readObject();
+                  NodeWorkingAreaPatternReq req = 
+                    (NodeWorkingAreaPatternReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getWorkingNames(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetWorkingRootNames:
+                {
+                  NodeWorkingAreaReq req = (NodeWorkingAreaReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getWorkingRootNames(req));
                   objOut.flush(); 
                 }
                 break;
@@ -1608,6 +1615,25 @@ class MasterMgrServer
                 }
                 break;
 
+              case HasUnfinishedJobs:
+                {
+                  NodeWorkingAreaPatternReq req = 
+                    (NodeWorkingAreaPatternReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.hasUnfinishedJobs(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetUnfinishedJobs:
+                {
+                  NodeWorkingAreaPatternReq req = 
+                    (NodeWorkingAreaPatternReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getUnfinishedJobs(req));
+                  objOut.flush(); 
+                }
+                break;
+
+
               /*-- ADMIN -----------------------------------------------------------------*/
               case BackupDatabase: 
                 {
@@ -1779,8 +1805,7 @@ class MasterMgrServer
               /*-- USER INTERFACE --------------------------------------------------------*/
               case CreateInitialPanelLayout: 
                 {
-                  MiscCreateInitialPanelLayoutReq req = 
-                    (MiscCreateInitialPanelLayoutReq) objIn.readObject();
+                  NodeWorkingAreaReq req = (NodeWorkingAreaReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.createInitialPanelLayout(req));
                   objOut.flush(); 
                 }

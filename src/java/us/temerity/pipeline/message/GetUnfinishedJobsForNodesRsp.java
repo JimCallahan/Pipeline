@@ -1,4 +1,4 @@
-// $Id: GetUnfinishedJobsForNodesRsp.java,v 1.2 2009/08/19 22:48:06 jim Exp $
+// $Id: GetUnfinishedJobsForNodesRsp.java,v 1.3 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,7 +37,7 @@ class GetUnfinishedJobsForNodesRsp
   GetUnfinishedJobsForNodesRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeSet<Long>> jobIDs
+   MappedSet<String,Long> jobIDs
   )
   { 
     super(timer);
@@ -60,7 +60,7 @@ class GetUnfinishedJobsForNodesRsp
   /**
    * Gets the unfinished job IDs indexed by node name.
    */
-  public TreeMap<String,TreeSet<Long>>
+  public MappedSet<String,Long>
   getJobIDs() 
   {
     return pJobIDs;
@@ -83,7 +83,7 @@ class GetUnfinishedJobsForNodesRsp
   /**
    * The unfinished job IDs indexed by node name.
    */ 
-  private TreeMap<String,TreeSet<Long>> pJobIDs; 
+  private MappedSet<String,Long> pJobIDs; 
 
 }
   

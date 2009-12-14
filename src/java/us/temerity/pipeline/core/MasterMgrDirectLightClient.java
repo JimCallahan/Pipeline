@@ -1,4 +1,4 @@
-// $Id: MasterMgrDirectLightClient.java,v 1.5 2009/09/01 10:59:39 jim Exp $
+// $Id: MasterMgrDirectLightClient.java,v 1.6 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1111,8 +1111,7 @@ class MasterMgrDirectLightClient
   )
     throws PipelineException
   {
-    NodeGetWorkingNamesReq req = 
-      new NodeGetWorkingNamesReq(author, view, pattern);
+    NodeWorkingAreaPatternReq req = new NodeWorkingAreaPatternReq(author, view, pattern);
 
     Object obj = pMasterMgr.getWorkingNames(req);
     if(obj instanceof NodeGetNodeNamesRsp) {
@@ -1124,6 +1123,45 @@ class MasterMgrDirectLightClient
       return null;
     }
   } 
+
+  /**
+   * Get the names of the most downstream nodes in a working area.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @return 
+   *   The fully resolved names of the root working versions. 
+   * 
+   * @throws PipelineException 
+   *   If unable to determine which working versions are the roots.
+   */ 
+  public TreeSet<String> 
+  getWorkingRootNames
+  (
+   String author, 
+   String view
+  )
+    throws PipelineException
+  {
+    NodeWorkingAreaReq req = new NodeWorkingAreaReq(author, view);
+
+    Object obj = pMasterMgr.getWorkingRootNames(req);
+    if(obj instanceof NodeGetNodeNamesRsp) {
+      NodeGetNodeNamesRsp rsp = (NodeGetNodeNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Get the working version of a node. <P> 

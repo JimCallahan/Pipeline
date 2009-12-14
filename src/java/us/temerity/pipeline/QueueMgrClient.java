@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.53 2009/12/12 23:12:50 jim Exp $
+// $Id: QueueMgrClient.java,v 1.54 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1811,9 +1811,9 @@ class QueueMgrClient
    * load on the server and the amount of data which must be transmitted over the network.<P> 
    * 
    * If you only want to know the most recent resource sample collected for a host, it is 
-   * much more efficient to use the {@link #getHosts() getHosts} method to obtain the current job server
-   * host information and then accessing the last collected resource sample using the 
-   * {@link QueueHostInfo#getLatestSample QueueHostInfo.getLatestSample} method.
+   * much more efficient to use the {@link #getHosts() getHosts} method to obtain the current 
+   * job server host information and then accessing the last collected resource sample using
+   * the {@link QueueHostInfo#getLatestSample QueueHostInfo.getLatestSample} method.
    * 
    * @param intervals
    *   The sample intervals to retrieve indexed by fully resolved hostnames.

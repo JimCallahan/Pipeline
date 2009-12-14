@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.23 2009/12/12 23:12:50 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.24 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -311,7 +311,7 @@ class QueueMgrControlClient
    * @return 
    *   The unfinished job IDs indexed by node name.
    */ 
-  public synchronized TreeMap<String,TreeSet<Long>>
+  public synchronized MappedSet<String,Long>
   getUnfinishedJobsForNodes
   (
    String author, 

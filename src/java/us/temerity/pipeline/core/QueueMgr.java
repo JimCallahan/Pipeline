@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.141 2009/12/13 01:06:41 jim Exp $
+// $Id: QueueMgr.java,v 1.142 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5005,7 +5005,7 @@ class QueueMgr
         }
       }
       
-      TreeMap<String,TreeSet<Long>> jobIDs = new TreeMap<String,TreeSet<Long>>();
+      MappedSet<String,Long> jobIDs = new MappedSet<String,Long>();
       
       timer.aquire();  
       synchronized(pJobInfo) {
@@ -5023,15 +5023,7 @@ class QueueMgr
                 case Paused:
                 case Running:
                 case Limbo:
-                  {
-                    TreeSet<Long> ids = jobIDs.get(name);
-                    if(ids == null) {
-                      ids = new TreeSet<Long>();
-                      jobIDs.put(name, ids);
-                    }
-                    
-                    ids.add(jobID);
-                  }
+                  jobIDs.put(name, jobID);
                 }
               }
             }

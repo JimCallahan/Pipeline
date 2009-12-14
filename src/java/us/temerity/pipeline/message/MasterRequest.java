@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.69 2009/11/02 03:44:11 jim Exp $
+// $Id: MasterRequest.java,v 1.70 2009/12/14 03:20:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -513,12 +513,12 @@ enum MasterRequest
   GetWorkingAreasContaining,  
 
   /**
-   * An instance of {@link NodeCreateWorkingAreaReq} is next.
+   * Create a new empty working area. 
    */
   CreateWorkingArea,  
 
   /**
-   * An instance of {@link NodeRemoveWorkingAreaReq} is next.
+   * Remove an entire working area.
    */
   RemoveWorkingArea,  
 
@@ -587,9 +587,14 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link NodeGetWorkingNamesReq} is next.
+   * Get the names of the nodes in a working area matching the given search pattern.
    */
   GetWorkingNames, 
+
+  /**
+   * Get the names of the most downstream nodes in a working area.
+   */
+  GetWorkingRootNames, 
 
   /**
    * An instance of {@link NodeGetWorkingReq} is next.
@@ -704,11 +709,6 @@ enum MasterRequest
    * An instance of {@link NodeDeleteReq} is next.
    */
   Delete, 
-
-  /**
-   * An instance of {@link NodeRemoveFilesReq} is next.
-   */
-  RemoveFiles, 
 
   /**
    * An instance of {@link NodeRenameReq} is next.
@@ -837,6 +837,22 @@ enum MasterRequest
    */
   Vouch, 
 
+  /**
+   * An instance of {@link NodeRemoveFilesReq} is next.
+   */
+  RemoveFiles, 
+
+  /**
+   * Whether the given working area contains nodes for which there are unfinished jobs 
+   * currently in the queue.
+   */
+  HasUnfinishedJobs,  
+
+  /**
+   * Get all unfinished jobs for the matching nodes contained in the given working area.
+   */
+  GetUnfinishedJobs,  
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -959,7 +975,7 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link MiscCreateInitialPanelLayoutReq} is next.
+   * Create a default saved panel layout file.
    */
   CreateInitialPanelLayout, 
 
