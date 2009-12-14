@@ -107,6 +107,45 @@ span.c9 {font-weight: normal;}
   Options</H3>
 
   <DIV class="c3">
+    <SPAN class="c2"><A name="--rebuild"></A>--rebuild</SPAN><BR>
+    <BR>
+
+    <DIV class="c3">
+      When <SPAN class="c2">plqueuemgr</SPAN>(1) is inproperly
+      shutdown, it cannot be restarted without using this
+      option.&nbsp; This will override the default behavior which
+      views the existance of a "lock" file as proof that another
+      Queue Manager process is currently running.&nbsp; For this
+      reason, you should be very careful about using this option if
+      it is possible that another instance of the Queue Manager is
+      already running.
+    </DIV>
+  </DIV><BR>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--job-reader-threads"></A>--job-reader-threads</SPAN>=<SPAN class="c4">num</SPAN><BR>
+
+    <BR>
+
+    <DIV class="c3">
+      The number of threads the Queue Manager should use to read
+      jobs during startup. Using more threads could lead to
+      increased throughput in cases where the operation is not
+      already file I/O limited. However, increasing the number of
+      threads could also potentiallly lead to a decrease in
+      performance, in cases where reading is file I/O limited. So
+      some experimentation will may be necessary with a particular
+      hardware configuration to determine the ideal number of
+      threads. In most cases, the default value is probably
+      sufficient.<BR>
+      <BR>
+      The default value is (2).
+    </DIV>
+  </DIV><BR>
+  <BR>
+
+  <DIV class="c3">
     <SPAN class="c2"><A name=
     "--log-file"></A>--log-file</SPAN>=<SPAN class=
     "c4">filename</SPAN><BR>
@@ -334,70 +373,6 @@ span.c9 {font-weight: normal;}
         These three levels are used for increasingly more detailed
         command tracing messages.<BR>
       </DIV>
-    </DIV>
-  </DIV>
-
-  <H3><A name="Global_Options" id="Global_Options"></A>Global
-  Options<BR></H3>
-
-  <DIV class="c3">
-    <SPAN class="c2"><A name="--rebuild"></A>--rebuild</SPAN><BR>
-    <BR>
-
-    <DIV class="c3">
-      When <SPAN class="c2">plqueuemgr</SPAN>(1) is inproperly
-      shutdown, it cannot be restarted without using this
-      option.&nbsp; This will override the default behavior which
-      views the existance of a "lock" file as proof that another
-      Queue Manager process is currently running.&nbsp; For this
-      reason, you should be very careful about using this option if
-      it is possible that another instance of the Queue Manager is
-      already running.
-    </DIV>
-  </DIV><BR>
-
-  <DIV class="c3">
-    <SPAN class="c5"><SPAN class="c2"><A name=
-    "--backup-sync-interval"></A>--backup-sync-interval</SPAN>=<SPAN class="c4">msec<BR>
-    </SPAN></SPAN>
-
-    <DIV class="c3">
-      <BR>
-      Overrides the interval (msec) between the live
-      synchronization of the database files associated with the
-      Master Manager and backup copies of these files.&nbsp;In
-      order to minimize the amount of time that database operations
-      need to be locked during a backup to insure data integrity,
-      this live synchronization process occurs a more frequent
-      intervals so that the unique data which needs to be copied
-      between the live and backup database directories can be
-      minimized.&nbsp;In essense, these database synchronization
-      operations are identical to a backup with the exception that
-      the database does not need to be locked and no tarball is
-      created from the files in the backup directory.<BR>
-      <BR>
-      The default is (21600000) msec.&nbsp; Which is (6) hours.
-    </DIV>
-  </DIV><BR>
-
-  <DIV class="c3">
-    <SPAN class="c2"><A name=
-    "--rebuild"></A>--job-reader-threads</SPAN>=<SPAN class=
-    "c4">num</SPAN><BR>
-    <BR>
-
-    <DIV class="c3">
-      The number of threads the queue manager should use to read
-      jobs from disk. &nbsp;More threads will lead to increased
-      throughput in cases where the operation is not disk limited.
-      &nbsp;Increasing the number of threads may actually lead to a
-      decrease in performance, if &nbsp;too many threads are
-      fighting over locks and disk access. &nbsp;It is probably
-      worth studios doing some tuning exercises with large number
-      of jobs to determine the optimal number of threads, since it
-      may vary depending on hardware configurations<BR>
-      <BR>
-      The default value is (2).<BR>
     </DIV>
   </DIV>
 
