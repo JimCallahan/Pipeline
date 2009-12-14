@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.145 2009/12/14 21:54:37 jim Exp $
+// $Id: QueueMgr.java,v 1.146 2009/12/14 21:58:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11216,7 +11216,7 @@ class QueueMgr
                      "have been about to change to Running, Paused or Aborted.  The safest " + 
                      "thing is to treat it as Aborted."); 
                   
-                  info.abort();
+                  info.aborted();
                   writeJobInfo(info);
                 }
                 break;
