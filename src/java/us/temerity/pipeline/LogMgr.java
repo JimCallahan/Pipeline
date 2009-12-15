@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.15 2009/12/12 01:17:26 jim Exp $
+// $Id: LogMgr.java,v 1.16 2009/12/15 12:36:28 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -346,6 +346,59 @@ class LogMgr
       }
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T I M I N G                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Log the beginning of some timed task.
+   * 
+   * @param kind
+   *   The kind of message being logged.
+   * 
+   * @param msg
+   *   The start message to log.
+   */ 
+  public TaskTimer
+  taskBegin
+  (
+   Kind kind,
+   String msg
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    if(msg != null) 
+      logAndFlush(kind, LogMgr.Level.Info, msg); 
+    return timer;
+  }
+
+  /**
+   * Log the completion of the task and the time that it took.
+   * 
+   * @param timer
+   *   The timer created by {@link #taskBegin}.
+   * 
+   * @param kind
+   *   The kind of message being logged.
+   * 
+   * @param msg
+   *   The completion message to log.
+   */ 
+  public void 
+  taskEnd
+  (
+   TaskTimer timer,
+   Kind kind, 
+   String msg
+  ) 
+  {
+    timer.suspend();
+    logAndFlush(kind, LogMgr.Level.Info,
+                "  " + msg + " in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
