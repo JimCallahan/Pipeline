@@ -1,4 +1,4 @@
-// $Id: QueueMgrApp.java,v 1.15 2009/07/06 10:25:26 jim Exp $
+// $Id: QueueMgrApp.java,v 1.16 2009/12/15 12:42:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -120,17 +120,17 @@ class QueueMgrApp
        "  plqueuemgr --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
+       "  [--rebuild] [--job-reader-threads=...]\n" + 
        "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
        "  [--log-backups=...] [--log=...]\n" +
-       "  [--rebuild]\n" + 
        "\n" + 
        "PERFORMANCE TUNING OPTIONS:\n" +
        "  [--collector-batch-size=...] [--dispatcher-interval=...]\n" + 
-       "  [--sample-cleanup-interval=...]\n" +
+       "  [--nfs-cache-interval=...] [--backup-sync-interval=...]\n" +
+       "  [--balance-sample-interval=...] [--balance-samples-to-keep=...]\n" +
        "\n" +  
        "Use \"plqueuemgr --html-help\" to browse the full documentation.\n");
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/

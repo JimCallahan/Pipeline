@@ -116,12 +116,14 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <REBUILD:           "--rebuild"> 
-| <LOG_FILE:          "--log-file">           : PATH_SEP
-| <STANDARD_LOG_FILE: "--standard-log-file"> 
-| <STANDARD_LOG_DIR:  "--standard-log-dir">   : PATH_SEP
-| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
-| <LOG:               "--log">                : LOG_SEP
+| <REBUILD:            "--rebuild"> 
+| <JOB_READER_THREADS: "--job-reader-threads"> : INTEGER_SEP
+
+| <LOG_FILE:           "--log-file">           : PATH_SEP
+| <STANDARD_LOG_FILE:  "--standard-log-file"> 
+| <STANDARD_LOG_DIR:   "--standard-log-dir">   : PATH_SEP
+| <LOG_BACKUPS:        "--log-backups">        : INTEGER_SEP
+| <LOG:                "--log">                : LOG_SEP
 
   /* performance tuning options */ 
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">     : INTEGER_SEP
@@ -130,7 +132,6 @@ TOKEN :
 | <BACKUP_SYNC_INTERVAL:     "--backup-sync-interval">     : INTEGER_SEP
 | <BALANCE_SAMPLE_INTERVAL:  "--balance-sample-interval">  : INTEGER_SEP
 | <BALANCE_SAMPLES_TO_KEEP:  "--balance-samples-to-keep">  : INTEGER_SEP
-| <JOB_READER_THREADS:       "--job-reader-threads">       : INTEGER_SEP
 
 
   /* seperators */ 

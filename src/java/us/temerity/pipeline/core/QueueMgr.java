@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.146 2009/12/14 21:58:21 jim Exp $
+// $Id: QueueMgr.java,v 1.147 2009/12/15 12:42:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -228,10 +228,6 @@ class QueueMgr
       /* load the hosts if any exist */ 
       initHosts();
       
-      /* run the scheduler to get everything all lined up and correct */
-//      TaskTimer timer = new TaskTimer("Scheduler");
-//      doScheduler(timer);
-      
       /* initialize the job related tables from disk files */ 
       initJobTables(jobReaderThreads);
     }
@@ -324,10 +320,8 @@ class QueueMgr
   initQueueExtensions()
     throws PipelineException
   {
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading Extensions...");   
+    TaskTimer timer = 
+      LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Extensions...");   
 
     {
       readQueueExtensions();
@@ -338,10 +332,7 @@ class QueueMgr
       }
     }
 
-    timer.suspend();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
   }
 
   /**
@@ -351,10 +342,9 @@ class QueueMgr
   initLicenseSelectionKeys() 
     throws PipelineException
   {
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading License/Selection/Hardware Keys...");   
+    TaskTimer timer = 
+      LogMgr.getInstance().taskBegin
+      (LogMgr.Kind.Ops, "Loading License/Selection/Hardware Keys...");   
 
     /* load the license keys if any exist */ 
     readLicenseKeys();
@@ -372,10 +362,7 @@ class QueueMgr
     
     readDispatchControls();
 
-    timer.suspend();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
   }
 
   /**
@@ -385,17 +372,12 @@ class QueueMgr
   initHosts() 
     throws PipelineException
   {
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading Job Servers Info...");   
+    TaskTimer timer = 
+      LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Job Servers Info...");   
 
     readHosts();
     
-    timer.suspend();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
   }
 
   /**
@@ -411,53 +393,67 @@ class QueueMgr
   ) 
     throws PipelineException
   {
-    /* read the existing queue jobs files (in oldest to newest order) */ 
-    
     Map<Long, String> running = Collections.synchronizedMap(new TreeMap<Long,String>());
     AtomicBoolean missingGroup = new AtomicBoolean(false);
+    AtomicBoolean uponError = new AtomicBoolean(false);
 
+    /* initialize the jobs */ 
     {
-      TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Loading Jobs...");   
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Jobs...");   
 
-      File dir = new File(pQueueDir, "queue/jobs");
-      File files[] = dir.listFiles(); 
-	      
-      LinkedBlockingQueue<File> fileQueue = 
-        new LinkedBlockingQueue<File>(Arrays.asList(files));
+      Semaphore trigger = new Semaphore(0);
+      LinkedBlockingQueue<File> found = new LinkedBlockingQueue<File>(); 
 
-      ArrayList<JobReaderThread> threads = new ArrayList<JobReaderThread>();
-      for (int i = 0; i < jobReaderThreads; i++) {
-        JobReaderThread readThread = new JobReaderThread(fileQueue, running, missingGroup);
-        readThread.start();
-        threads.add(readThread);
+      JobScannerTask scanner = 
+        new JobScannerTask(jobReaderThreads, trigger, found, uponError);
+      scanner.start();
+      
+      ArrayList<JobReaderTask> readers = new ArrayList<JobReaderTask>();
+      int wk;
+      for(wk=0; wk<jobReaderThreads; wk++) {
+        JobReaderTask task = 
+          new JobReaderTask(trigger, found, running, missingGroup, uponError);
+        task.start();
+        readers.add(task); 
       }
-	    
-      for (JobReaderThread thread : threads) {
+      
+      try {
+        scanner.join();
+      }
+      catch(InterruptedException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Interrupted while scanning job files:\n" + ex.getMessage());
+        uponError.set(true); 
+      }
+      
+      for(JobReaderTask task : readers) {
         try {
-          thread.join();
+          if(uponError.get()) 
+            task.interrupt();
+          task.join();
         }
         catch(InterruptedException ex) {
-	    LogMgr.getInstance().logAndFlush
-	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-            "Interrupted while reading jobs.\n" + ex.getMessage());
-	}
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+             "Interrupted while reading job files:\n" + ex.getMessage());
+          uponError.set(true); 
+        }
       }
+      
+      if(uponError.get()) 
+        throw new PipelineException
+          ("Job Intialization Aborted."); 
 
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    } // End job reading.  This is the part that should be multi-threaded.
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "All Loaded"); 
+    } 
+
 
     /* initialize the job groups */ 
     {
-      TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Loading Job Groups...");   
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Job Groups...");   
 
       File dir = new File(pQueueDir, "queue/job-groups");
       File files[] = dir.listFiles(); 
@@ -481,18 +477,13 @@ class QueueMgr
 	}
       }
 
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
     }
     
     /* fix the job group id in all the jobs that are missing the id */
-    if (missingGroup.get()) {
-      TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Ops, LogMgr.Level.Info,
-         "Updating the JobGroupIDs in Jobs...");
+    if (missingGroup.get()) { 
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Updating the JobGroupIDs in Jobs...");
       
       for (Entry<Long, QueueJobGroup> entry: pJobGroups.entrySet()) {
         Long id = entry.getKey();
@@ -505,33 +496,23 @@ class QueueMgr
         }
       }
       
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Ops, LogMgr.Level.Info,
-         "  Updated in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Updated"); 
     }
 
     /* garbage collect all jobs no longer referenced by a job group */ 
     {
-      TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Cleaning Old Jobs...");   
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Cleaning Old Jobs...");   
 
       garbageCollectJobs(timer);
       
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "  Cleaned in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Cleaned"); 
     }
 
     /* initialize the job counters */ 
     {
-      TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Initializing Job Counters...");   
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Initializing Job Counters...");   
 
       synchronized(pJobGroups) {
 	for(QueueJobGroup group : pJobGroups.values()) 
@@ -543,10 +524,7 @@ class QueueMgr
 	  pJobCounters.update(timer, null, info);
       }
 
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "  Initialized in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Initialized"); 
     }
 
     /* create tasks to manage the previously started jobs which will be started when
@@ -7041,6 +7019,10 @@ class QueueMgr
       pDatabaseLock.readLock().unlock();
     }
 
+    LogMgr.getInstance().logStage
+      (LogMgr.Kind.Usr, LogMgr.Level.Fine,
+       timer); 
+
     long nap = pBalanceSampleInterval.get() - timer.getTotalDuration();
     if(nap > 0) {
       LogMgr.getInstance().logAndFlush
@@ -9633,7 +9615,8 @@ class QueueMgr
     }
     
     /* if we're ahead of schedule, take a nap */ 
-    {
+    { 
+      timer.suspend();
       long nap = pBackupSyncInterval.get() - timer.getTotalDuration();
       if(nap > 0) {
 	try {
@@ -11621,141 +11604,230 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   T A S K S                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Thread to read jobs from disk, allowing for multiple reads to be done in parallel.
-   */
-  private class
-  JobReaderThread
+   * Search the jobs directory adding the files found to a FIFO to be processed by multiple 
+   * JobReaderTask threads.
+   */ 
+  private 
+  class JobScannerTask
     extends Thread
   {
-    /*-- CONSTRUCTOR -----------------------------------------------------------------------*/
-
-    public 
-    JobReaderThread
-    (
-      LinkedBlockingQueue<File> filesToRead,
-      Map<Long, String> runningJobs,
-      AtomicBoolean missingGroup
-    )
+    public
+    JobScannerTask
+    ( 
+     int numReaders, 
+     Semaphore trigger, 
+     LinkedBlockingQueue<File> found,
+     AtomicBoolean uponError
+    ) 
     {
-      pFilesToRead = filesToRead;
+      super("QueueMgr:JobScannerTask"); 
+
+      pNumReaders = numReaders; 
+      pTrigger = trigger;
+      pFound = found;
+      pUponError = uponError;
+      pCounter = 0L; 
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer(); 
+      try {
+        File dir = new File(pQueueDir, "queue/jobs");
+        for(File file : dir.listFiles()) {
+          pFound.add(file);   
+          if(pCounter < pNumReaders) 
+            pTrigger.release();
+          pCounter++;
+        }
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Job Scan Aborted:", ex));
+        pUponError.set(true);
+        return;
+      }
+
+      LogMgr.getInstance().taskEnd
+        (timer, LogMgr.Kind.Ops, 
+         "Scanned " + ByteSize.longToFloatString(pCounter) + " Jobs"); 
+    }
+
+    private int pNumReaders; 
+    private Semaphore pTrigger; 
+    private LinkedBlockingQueue<File> pFound;
+    private AtomicBoolean pUponError;
+    private long pCounter;
+  }
+
+  /**
+   * Read jobs from disk, allowing for multiple reads to be done in parallel.
+   */
+  private class
+  JobReaderTask
+    extends Thread
+  {
+    public 
+    JobReaderTask
+    (
+     Semaphore trigger, 
+     LinkedBlockingQueue<File> found,
+     Map<Long, String> runningJobs,
+     AtomicBoolean missingGroup, 
+     AtomicBoolean uponError
+    )
+    { 
+      super("QueueMgr:JobReaderTask"); 
+
+      pTrigger = trigger;
+      pFound = found;
       pRunningJobs = runningJobs;
       pMissingGroup = missingGroup;
+      pUponError = uponError;
     }
-    
-    /*-- THREAD RUN ------------------------------------------------------------------------*/
     
     @Override
     public void 
     run()
     {
-      while (true) {
-        File file = pFilesToRead.poll();
-        if (file == null)
-          break;
-        if (file.isFile()) {
-          try {
-            Long jobID = new Long(file.getName());
-
-            QueueJob job = readJob(jobID);
-            if(job.getJobGroupID() == -1)
-              pMissingGroup.set(true);
-
-            QueueJobInfo info = null;
+      TaskTimer timer = new TaskTimer(); 
+      long counter = 0L;
+      try {
+        pTrigger.acquire();
+        while (true) {
+          File file = pFound.poll();
+          if(file == null)
+            break;
+        
+          if(file.isFile()) {
             try {
-              info = readJobInfo(jobID);
+              Long jobID = new Long(file.getName());
+            
+              QueueJob job = readJob(jobID);
+              if(job.getJobGroupID() == -1)
+                pMissingGroup.set(true);
+
+              QueueJobInfo info = null;
+              try {
+                info = readJobInfo(jobID);
+              }
+              catch(PipelineException ex) {
+                LogMgr.getInstance().logAndFlush
+                  (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+                   "Unable to load the job info (" + jobID + "), since nothing is known " + 
+                   "about the job we'll mark it as Aborted."); 
+
+                info = new QueueJobInfo(jobID);
+              
+                info.aborted();
+                writeJobInfo(info);
+              }
+
+              /* initialize the table of working area files to the jobs which create them */ 
+              {
+                ActionAgenda agenda = job.getActionAgenda();
+                NodeID nodeID = agenda.getNodeID();
+                FileSeq fseq = agenda.getPrimaryTarget();
+              
+                synchronized(pNodeJobIDs) {
+                  TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+                  if(table == null) {
+                    table = new TreeMap<File,Long>();
+                    pNodeJobIDs.put(nodeID, table);
+                  }
+                
+                  for(File f : fseq.getFiles()) 
+                    table.put(f, jobID);
+                }
+              }
+            
+              /* determine if the job is still active */ 
+              switch(info.getState()) {
+              case Queued:
+              case Preempted:
+              case Paused:
+                pWaiting.add(jobID);
+                break;
+              
+              case Running:
+                info.limbo();
+                writeJobInfo(info);
+                pRunningJobs.put(jobID, info.getHostname());
+                break;
+
+              case Limbo:
+                {
+                  String hname = info.getHostname();
+                  if(hname != null) {
+                    pRunningJobs.put(jobID, info.getHostname());
+                  }
+                  else {
+                    /* This is to catch the case where we find a Limbo job without an 
+                       assigned hostname.  In that case, its best just to Abort the job.  
+                       This might not strictly be needed since we've added a version of 
+                       QueueJobInfo.limbo() which takes a hostname parameter, but it 
+                       protects against existing jobs which might not have the hostname 
+                       data in them. */ 
+                    info.aborted();
+                    writeJobInfo(info);
+                  }
+                }
+              }
+            
+              synchronized(pJobs) {
+                pJobs.put(jobID, job);
+              }
+            
+              synchronized(pJobInfo) {
+                pJobInfo.put(jobID, info); 
+              }
+
+              counter++;
+            }
+            catch(NumberFormatException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                 "Illegal job file encountered (" + file + ")! Ignoring...");
             }
             catch(PipelineException ex) {
-              LogMgr.getInstance().logAndFlush
-                (LogMgr.Kind.Glu, LogMgr.Level.Warning,
-                 "Unable to load the job info (" + jobID + "), since nothing is known " + 
-                 "about the job we'll mark it as Aborted."); 
-
-              info = new QueueJobInfo(jobID);
-              
-              info.aborted();
-              writeJobInfo(info);
-            }
-
-            /* initialize the table of working area files to the jobs which create them */ 
-            {
-              ActionAgenda agenda = job.getActionAgenda();
-              NodeID nodeID = agenda.getNodeID();
-              FileSeq fseq = agenda.getPrimaryTarget();
-              
-              synchronized(pNodeJobIDs) {
-                TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
-                if(table == null) {
-                  table = new TreeMap<File,Long>();
-                  pNodeJobIDs.put(nodeID, table);
-                }
-                
-                for(File f : fseq.getFiles()) 
-                  table.put(f, jobID);
-              }
-            }
-            
-            /* determine if the job is still active */ 
-            switch(info.getState()) {
-            case Queued:
-            case Preempted:
-            case Paused:
-              pWaiting.add(jobID);
-              break;
-              
-            case Running:
-              info.limbo();
-              writeJobInfo(info);
-              pRunningJobs.put(jobID, info.getHostname());
-              break;
-
-            case Limbo:
-              {
-                String hname = info.getHostname();
-                if(hname != null) {
-                  pRunningJobs.put(jobID, info.getHostname());
-                }
-                else {
-                  /* This is to catch the case where we find a Limbo job without an assigned 
-                     hostname.  In that case, its best just to Abort the job.  This might not 
-                     strictly be needed since we've added a version of QueueJobInfo.limbo() 
-                     which takes a hostname parameter, but it protects against existing jobs
-                     which might not have the hostname data in them. */ 
-                  info.aborted();
-                  writeJobInfo(info);
-                }
-              }
-            }
-            
-            synchronized(pJobs) {
-              pJobs.put(jobID, job);
-            }
-            
-            synchronized(pJobInfo) {
-              pJobInfo.put(jobID, info); 
-            }
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+                 ex.getMessage());
+            } 
           }
-          catch(NumberFormatException ex) {
-            LogMgr.getInstance().log
-              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-               "Illegal job file encountered (" + file + ")! Ignoring...");
-          }
-          catch(PipelineException ex) {
-            LogMgr.getInstance().log
-              (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-               ex.getMessage());
-          } 
         }
       }
+      catch(InterruptedException ex) {
+        pUponError.set(true);
+        return;
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Job Reading Aborted:", ex));
+        pUponError.set(true);
+        return;
+      }
+      
+      LogMgr.getInstance().taskEnd
+        (timer, LogMgr.Kind.Ops, 
+         "Processed " + ByteSize.longToFloatString(counter) + " Jobs");
     }
-    
-    /*-- INTERNALS -------------------------------------------------------------------------*/
-    
-    
-    private LinkedBlockingQueue<File> pFilesToRead;
+
+    private Semaphore pTrigger; 
+    private LinkedBlockingQueue<File> pFound;
     private Map<Long,String> pRunningJobs;
     private AtomicBoolean pMissingGroup;
+    private AtomicBoolean pUponError;
   }
+
   
   /*----------------------------------------------------------------------------------------*/
   
@@ -11800,6 +11872,7 @@ class QueueMgr
     private long pTimeStamp;
   }
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -11809,8 +11882,6 @@ class QueueMgr
   class DemandSchedulerTask
     extends Thread
   {
-    /*-- THREAD RUN ------------------------------------------------------------------------*/
-
     public void 
     run() 
     {
@@ -11832,7 +11903,10 @@ class QueueMgr
       }
     }
   }
+
   
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Collects resource stats from a subset of the enabled job servers.
    */
@@ -11989,6 +12063,9 @@ class QueueMgr
     private TreeMap<String,Long>            pTotalMemory; 
     private TreeMap<String,Long>            pTotalDisk; 
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Monitors the progress of a job from start to finish. 
@@ -12860,6 +12937,8 @@ class QueueMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Kills the given job running on a job server.
    */
@@ -12917,6 +12996,10 @@ class QueueMgr
     private String   pHostname; 
     private long     pJobID; 
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Tell the job servers to cleanup any resources associated with dead jobs.
