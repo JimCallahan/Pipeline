@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.102 2009/12/14 21:48:22 jim Exp $
+// $Id: FileMgr.java,v 1.103 2009/12/15 12:40:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4198,7 +4198,13 @@ class FileMgr
 
       return new FileGetOfflinedRsp(timer, offlined);
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
     catch(Exception ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         Exceptions.getFullMessage(ex));
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -4236,7 +4242,12 @@ class FileMgr
    TreeMap<String,TreeSet<VersionID>> offlined, 
    OfflineProgressTask task
   )
+    throws PipelineException
   {
+    if(Thread.interrupted()) 
+      throw new PipelineException
+        ("Interrupted during Offlined Cache Rebuild."); 
+
     /* ignore any aborted check-in recovery directories */ 
     if(dir.getName().endsWith(".recover")) 
       return;
