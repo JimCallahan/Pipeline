@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.325 2009/12/14 21:48:22 jim Exp $
+// $Id: MasterMgr.java,v 1.326 2009/12/15 12:38:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -203,6 +203,12 @@ class MasterMgr
    * @param rebuildCache
    *   Whether to rebuild cache files and ignore existing lock files.
    * 
+   * @param nodeReaderThreads
+   *   The number of node reader threads to spawn.
+   * 
+   * @param nodeWriterThreads
+   *   The number of node writer threads to spawn.
+   * 
    * @param preserveOfflinedCache
    *   Whether to keep the offlined versions cache file after startup and reread instead of 
    *   rebuilding it during a database rebuild.
@@ -220,6 +226,8 @@ class MasterMgr
   MasterMgr
   (
    boolean rebuildCache, 
+   int nodeReaderThreads, 
+   int nodeWriterThreads, 
    boolean preserveOfflinedCache, 
    boolean internalFileMgr, 
    MasterControls controls
@@ -231,6 +239,16 @@ class MasterMgr
     pRebuildCache          = rebuildCache;
     pPreserveOfflinedCache = preserveOfflinedCache;
     pInternalFileMgr       = internalFileMgr;
+
+    if(nodeReaderThreads < 1) 
+      throw new PipelineException
+        ("The number of node read threads (" + nodeReaderThreads + ") must be at least (1)!");
+    pNodeReaderThreads = nodeReaderThreads;
+
+    if(nodeWriterThreads < 1) 
+      throw new PipelineException
+        ("The number of node read threads (" + nodeWriterThreads + ") must be at least (1)!");
+    pNodeWriterThreads = nodeWriterThreads;
 
     /* init runtime controls */ 
     {
@@ -306,14 +324,15 @@ class MasterMgr
 
     /* validate startup state */ 
     if(pRebuildCache) {
-      LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Net, LogMgr.Level.Info,
-         "Removing Stale Caches...");
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Removing Stale Caches...");
 
       removeLockFile();
       removeDownstreamLinksCache(); 
       removeNodeTreeCache();
       removeArchivesCache();
+
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Removed"); 
     }
     else {
       File lock  = new File(pNodeDir, "lock");
@@ -343,8 +362,9 @@ class MasterMgr
       pOfflinedLock       = new Object();
       pOfflined           = null;
       pRestoreReqs        = new TreeMap<String,TreeMap<VersionID,RestoreRequest>>();
-      pIntermediateReady  = new AtomicBoolean(false); 
-      pIntermediate       = new TreeMap<String,TreeSet<VersionID>>(); 
+
+      pIntermediateTrigger = new Semaphore(0); 
+      pIntermediate        = new TreeMap<String,TreeSet<VersionID>>(); 
 
       pBackupSyncTrigger = new Semaphore(0);
       pBackupSyncTarget  = new AtomicReference<Path>();
@@ -441,20 +461,15 @@ class MasterMgr
   initPrivileges()
     throws PipelineException
   {
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading Privileges...");   
+    TaskTimer timer = 
+      LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Privileges...");   
 
     {
       pAdminPrivileges.readAll();
       updateAdminPrivileges();
     }
 
-    timer.suspend();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
   }
 
   /**
@@ -584,10 +599,8 @@ class MasterMgr
 
       /* scan archive volume GLUE files */ 
       {
-	TaskTimer timer = new TaskTimer();
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   "Rebuilding ArchiveOn Cache...");   
+        TaskTimer timer = 
+          LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Rebuilding ArchiveOn Cache...");   
 	
 	{
 	  File dir = new File(pNodeDir, "archives/manifests");
@@ -618,18 +631,13 @@ class MasterMgr
 	  }
 	}
 	
-	timer.suspend();
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+        LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Rebuilt"); 
       }
  
       /* scan restore output files */ 
       {
-	TaskTimer timer = new TaskTimer();
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   "Rebuilding RestoredOn Cache...");   
+        TaskTimer timer = 
+          LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Rebuilding RestoredOn Cache...");   
 
 	{
 	  File dir = new File(pNodeDir, "archives/output/restore");
@@ -656,17 +664,12 @@ class MasterMgr
 	  }    
 	}      
 
-	timer.suspend();
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+        LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Rebuilt"); 
       }
     }
     else {
-      TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Loading Archive Caches...");   
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Archive Caches...");   
 
       readOfflined();
       readArchivedIn();
@@ -675,10 +678,7 @@ class MasterMgr
 
       removeArchivesCache();
 
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
     }
 
     readRestoreReqs();
@@ -727,10 +727,8 @@ class MasterMgr
   initToolsets()
     throws PipelineException
   {
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading Toolsets...");   
+    TaskTimer timer = 
+      LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Toolsets...");   
 
     readDefaultToolset();
     readActiveToolsets();
@@ -894,10 +892,7 @@ class MasterMgr
       }
     }
 
-    timer.suspend();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
   }
 
 
@@ -910,10 +905,8 @@ class MasterMgr
   initMasterExtensions()
     throws PipelineException
   {
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading Extensions...");   
+    TaskTimer timer = 
+      LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Extensions...");   
 
     {
       readMasterExtensions();
@@ -924,10 +917,7 @@ class MasterMgr
       }
     }
 
-    timer.suspend();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
   }
   
 
@@ -939,10 +929,8 @@ class MasterMgr
   private void 
   initWorkingAreas() 
   {
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading Working Areas...");   
+    TaskTimer timer = 
+      LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Working Areas...");   
 
     {
       File dir = new File(pNodeDir, "working");
@@ -975,10 +963,7 @@ class MasterMgr
       }
     }
     
-    timer.suspend();
-    LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
   }
 
 
@@ -1036,9 +1021,7 @@ class MasterMgr
   initNodeDatabase() 
     throws PipelineException 
   {
-    TaskTimer timer = new TaskTimer();
     if(pRebuildCache) {
-      
       {
         File dir = new File(pNodeDir, "downstream");
         if(dir.isDirectory()) 
@@ -1050,200 +1033,133 @@ class MasterMgr
             ("Unable to create the downstream links directory (" + dir + ")!");
       }
 
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Rebuilding Node Tree and Downstream Link Caches...");    
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Rebuilding Node Related Caches...");
 
-      {
-	File dir = new File(pNodeDir, "repository");
-	initCheckedInNodeDatabase(dir.getPath(), dir); 
-        pIntermediateReady.set(true); 
-      }
-      
-      {
-	File dir = new File(pNodeDir, "working");
-	File authors[] = dir.listFiles(); 
-	int ak;
-	for(ak=0; ak<authors.length; ak++) {
-	  if(!authors[ak].isDirectory())
-	    throw new IllegalStateException
-	      ("Non-directory file found in the root working area directory!"); 
-	  String author = authors[ak].getName();
-	  
-	  File views[] = authors[ak].listFiles();  
-	  int vk;
-	  for(vk=0; vk<views.length; vk++) {
-	    if(!views[vk].isDirectory())
-	      throw new IllegalStateException
-		("Non-directory file found in the user (" + author + ") root working " + 
-		 "area directory!"); 
-	    String view = views[vk].getName();
-	    
-	    initWorkingNodeDatabase(author, view, views[vk].getPath(), views[vk]);
-	  }
-	}
-      } 
+      initCheckedInNodeDatabase();
+      pIntermediateTrigger.release(); 
+      initWorkingNodeDatabase(); 
 
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "All Rebuilt"); 
     }
     else {
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Loading Node Tree Cache...");   
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Node Tree Cache...");   
 
       pNodeTree.readGlueFile(new File(pNodeDir, "etc/node-tree"));
       removeNodeTreeCache();
 
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
     }
     
     pNodeTree.logNodeTree();
   }
 
   /**
-   * Recursively search the checked-in node directories for node name and downstream 
-   * link information. <P> 
-   * 
-   * No locks are aquired because this method is only called by the constructor.
-   * 
-   * @param prefix 
-   *   The root directory of checked-in versions.
-   * 
-   * @param dir
-   *   The current directory to process.
+   * Spawn multiple threads to read the checked-in node directories in order to rebuild
+   * the cached for node names and downstream links.
    */ 
   private void 
-  initCheckedInNodeDatabase
-  (
-   String prefix, 
-   File dir
-  ) 
+  initCheckedInNodeDatabase() 
     throws PipelineException
   {
-    boolean allDirs  = true;
-    boolean allFiles = true;
+    Semaphore trigger = new Semaphore(0);
+    LinkedBlockingQueue<String> found = new LinkedBlockingQueue<String>();
+    AtomicBoolean uponError = new AtomicBoolean(false);
 
-    File files[] = dir.listFiles(); 
-
-    for(File file : files) {
-      if(file.isDirectory()) 
-        allFiles = false;
-      else if(file.isFile()) 
-        allDirs = false;
-      else
-        throw new IllegalStateException(); 
+    CheckedInScannerTask scanner = new CheckedInScannerTask(trigger, found, uponError);
+    scanner.start();
+    
+    ArrayList<CheckedInReaderTask> readers = new ArrayList<CheckedInReaderTask>();
+    int wk;
+    for(wk=0; wk<pNodeReaderThreads; wk++) {
+      CheckedInReaderTask task = new CheckedInReaderTask(trigger, found, uponError);
+      task.start();
+      readers.add(task); 
     }
 
-    if(allFiles) {
-      String full = dir.getPath();
-      String name = full.substring(prefix.length());
-      TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
-      for(VersionID vid : table.keySet()) {
-	NodeVersion vsn = table.get(vid).getVersion();
-      
-	for(LinkVersion link : vsn.getSources()) {
-	  DownstreamLinks dsl = pDownstream.get(link.getName());
-	  if(dsl == null) {
-	    dsl = new DownstreamLinks(link.getName());
-	    pDownstream.put(dsl.getName(), dsl);
-	  }
-	  
-	  dsl.addCheckedIn(link.getVersionID(), name, vid);
-	}
+    try {
+      scanner.join();
+    }
+    catch(InterruptedException ex) {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         "Interrupted while scanning checked-in node files:\n" + ex.getMessage());
+      uponError.set(true); 
+    }
 
-        pNodeTree.addCheckedInNodeTreePath(vsn);
-
-        if(vsn.isIntermediate()) {
-          TreeSet<VersionID> vids = pIntermediate.get(name); 
-          if(vids == null) {
-            vids = new TreeSet<VersionID>();
-            pIntermediate.put(name, vids);
-          }
-
-          vids.add(vid);             
-        }
+    for(CheckedInReaderTask task : readers) {
+      try {
+        if(uponError.get()) 
+          task.interrupt();
+        task.join();
+      }
+      catch(InterruptedException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Interrupted while reading checked-in node files:\n" + ex.getMessage());
+        uponError.set(true); 
       }
     }
-    else if(allDirs) {
-      for(File file : files) 
-	initCheckedInNodeDatabase(prefix, file);
+
+    if(uponError.get())
+      throw new PipelineException
+        ("Checked-In Node Intialization Aborted."); 
+  }
+
+  /**
+   * Spawn multiple threads to read the working node directories in order to rebuild
+   * the cached for node names and downstream links.
+   */ 
+  private void 
+  initWorkingNodeDatabase() 
+    throws PipelineException
+  {
+    Semaphore trigger = new Semaphore(0);
+    LinkedBlockingQueue<NodeID> found = new LinkedBlockingQueue<NodeID>();
+    AtomicBoolean uponError = new AtomicBoolean(false);
+
+    WorkingScannerTask scanner = new WorkingScannerTask(trigger, found, uponError);
+    scanner.start();
+    
+    ArrayList<WorkingReaderTask> readers = new ArrayList<WorkingReaderTask>();
+    int wk;
+    for(wk=0; wk<pNodeReaderThreads; wk++) {
+      WorkingReaderTask task = new WorkingReaderTask(trigger, found, uponError);
+      task.start();
+      readers.add(task); 
     }
-    else {
-      throw new IllegalStateException(); 
-    } 
+
+    try {
+      scanner.join();
+    }
+    catch(InterruptedException ex) {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         "Interrupted while scanning working node files:\n" + ex.getMessage());
+      uponError.set(true); 
+    }
+
+    for(WorkingReaderTask task : readers) {
+      try {
+        if(uponError.get()) 
+          task.interrupt();
+        task.join();
+      }
+      catch(InterruptedException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Interrupted while reading working node files:\n" + ex.getMessage());
+        uponError.set(true); 
+      }
+    }
+
+    if(uponError.get()) 
+      throw new PipelineException
+        ("Working Node Intialization Aborted."); 
   }
   
-  /**
-   * Recursively search the working node directories for node name and downstream 
-   * link information. <P> 
-   * 
-   * No locks are aquired because this method is only called by the constructor.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param prefix 
-   *   The root directory of a particular user's view. 
-   * 
-   * @param dir
-   *   The current directory to process.
-   */
-  private void 
-  initWorkingNodeDatabase
-  (
-   String author, 
-   String view, 
-   String prefix, 
-   File dir
-  ) 
-    throws PipelineException 
-  {
-    for(File file : dir.listFiles()) {
-      if(file.isDirectory()) 
-        initWorkingNodeDatabase(author, view, prefix, file);
-      else {
-	String path = file.getPath();
-	if(!path.endsWith(".backup")) {
-          String name = path.substring(prefix.length());
-
-          NodeID nodeID = new NodeID(author, view, name);
-	  NodeMod mod = readWorkingVersion(nodeID); 
-	  if(mod == null) 
-	    throw new PipelineException
-	      ("I/O ERROR:\n" + 
-	       "  Somehow the working version (" + nodeID + ") was missing!");
-
-          CheckSumCache cache = readCheckSumCache(nodeID); 
-          if(cache == null) 
-            upgradeDeprecatedCheckSumCache(nodeID, mod); 
-	  
-	  for(LinkMod link : mod.getSources()) {
-	    DownstreamLinks dsl = pDownstream.get(link.getName());
-	    if(dsl == null) {
-	      dsl = new DownstreamLinks(link.getName());
-	      pDownstream.put(dsl.getName(), dsl);
-	    }
-	    
-	    dsl.addWorking(author, view, name); 
-	  }  
-
-	  addWorkingNodeTreePath(nodeID, mod.getPrimarySequence(), mod.getSequences());
-	}
-      }
-    }
-  }
-
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S H U T D O W N                                                                      */
@@ -1348,51 +1264,68 @@ class MasterMgr
 
     /* write the cache files */ 
     try {
-      TaskTimer timer = new TaskTimer();
-      LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Glu, LogMgr.Level.Info,
-         "Writing Updated Caches...");
-      
-      writeArchivedIn();
-      writeArchivedOn();
-      writeRestoredOn();
+      {
+        TaskTimer timer = 
+          LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Writing Archive Caches...");
 
-      if(pRebuildOfflinedCacheTask != null) {
-        try {
-          LogMgr.getInstance().logAndFlush
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
-	     "Waiting on Offline Cache Rebuild...");
-          pRebuildOfflinedCacheTask.join();
+        writeArchivedIn();
+        writeArchivedOn();
+        writeRestoredOn();
 
-          LogMgr.getInstance().logAndFlush
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
-	     "Writing Offline Cache...");
+        LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Saved"); 
+      }
+
+      {
+        boolean saveOffline = false;
+        if(pRebuildOfflinedCacheTask != null) {
+          if(pRebuildOfflinedCacheTask.isAlive()) {
+            try {
+              pRebuildOfflinedCacheTask.interrupt();
+              pRebuildOfflinedCacheTask.join();  
+            }
+            catch(InterruptedException ex) {
+            }
+          }
+          else {
+            saveOffline = true;
+          }
+        }
+        else {
+          saveOffline = true;
+        }
+        
+        if(saveOffline) {
+          TaskTimer timer = 
+            LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Writing Offline Cache...");
+
           writeOfflined();
-        }
-        catch(InterruptedException ex) {
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-             "Interrupted while waiting for the offline cache rebuild to complete:\n  " + 
-             ex.getMessage());
+          
+          LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Saved"); 
         }
       }
-      else {
-        writeOfflined();
+
+      {
+        TaskTimer timer = 
+          LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Writing Downstream Cache...");
+
+        writeAllDownstreamLinks();
+
+        LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "All Saved"); 
       }
 
-      writeAllDownstreamLinks();
+      {
+        TaskTimer timer = 
+          LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Writing Node Tree Cache...");
 
-      pNodeTree.writeGlueFile(new File(pNodeDir, "etc/node-tree"));
+        pNodeTree.writeGlueFile(new File(pNodeDir, "etc/node-tree"));
 
-      timer.suspend();
-      LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Glu, LogMgr.Level.Info,
-         "  Saved in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+        LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Saved"); 
+      }
     }
     catch(Exception ex) {
       LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-         "  Failed to Save Caches:  " + ex.getMessage());
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         "Failed to Save Caches:\n  " + ex.getMessage());
 
       removeArchivesCache();
        
@@ -1414,7 +1347,7 @@ class MasterMgr
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().logAndFlush
-	(LogMgr.Kind.Net, LogMgr.Level.Warning,
+	(LogMgr.Kind.Ops, LogMgr.Level.Warning,
 	 ex.getMessage());
     }
 
@@ -1445,8 +1378,7 @@ class MasterMgr
   /**
    * Write all of the cached downstream links to disk. <P> 
    * 
-   * No locks are aquired because this method is only called by {@link #shutdown shutdown} 
-   * when only a single thread should be able to access this instance.
+   * This should only be called by {@link #shutdown shutdown}.
    * 
    * If any I/O problems are encountered, the entire downstream links directory is removed
    * so that it will be rebuilt from scratch the next time the server is started. 
@@ -1454,17 +1386,34 @@ class MasterMgr
   private void 
   writeAllDownstreamLinks()
   {
-    /* write the entire cache */ 
-    try {
-      for(DownstreamLinks links : pDownstream.values()) 
-	writeDownstreamLinks(links);
+    LinkedBlockingQueue<DownstreamLinks> found = 
+      new LinkedBlockingQueue<DownstreamLinks>(pDownstream.values());
+    AtomicBoolean uponError = new AtomicBoolean(false);
+
+    ArrayList<DownstreamWriterTask> writers = new ArrayList<DownstreamWriterTask>();
+    int wk;
+    for(wk=0; wk<pNodeWriterThreads; wk++) {
+      DownstreamWriterTask task = new DownstreamWriterTask(found, uponError);
+      task.start();
+      writers.add(task); 
     }
-    catch(PipelineException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 ex.getMessage());
-      
-      /* remove the entire downstream directory on failure */ 
+
+    for(DownstreamWriterTask task : writers) {
+      try {
+        if(uponError.get()) 
+          task.interrupt();
+        task.join();
+      }
+      catch(InterruptedException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Interrupted while writing downstream files:\n" + ex.getMessage());
+        uponError.set(true); 
+      }
+    }
+
+    /* remove the entire downstream directory on failure */ 
+    if(uponError.get()) {
       try {
 	removeDownstreamLinksCache();
       }
@@ -1476,7 +1425,7 @@ class MasterMgr
     }
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   O F F L I N E D   H E L P E R S                                                      */
@@ -21316,6 +21265,7 @@ class MasterMgr
     
     /* if we're ahead of schedule, take a nap */ 
     {
+      timer.suspend();
       long nap = pBackupSyncInterval.get() - timer.getTotalDuration();
       if(nap > 0) {
 	try {
@@ -21349,10 +21299,6 @@ class MasterMgr
   ) 
   {
     try {
-      /* write cached downstream links */ 
-      if(needsLock) 
-        writeAllDownstreamLinks();
-
       TaskTimer tm = new TaskTimer("Database Backup Synchronized " + 
                                    "(" + (needsLock ? "locked" : "live") + ")");
       tm.aquire();
@@ -23980,7 +23926,478 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   T A S K S                                                                            */
   /*----------------------------------------------------------------------------------------*/
- 
+
+  /**
+   * Recursively search the checked-in node database directories adding the names of all
+   * nodes found to a FIFO to be processed by multiple CheckedInReaderTask threads.
+   */ 
+  private 
+  class CheckedInScannerTask
+    extends Thread
+  {
+    public
+    CheckedInScannerTask
+    ( 
+     Semaphore trigger, 
+     LinkedBlockingQueue<String> found,
+     AtomicBoolean uponError
+    ) 
+    {
+      super("MasterMgr:CheckedInScannerTask"); 
+
+      pTrigger = trigger;
+      pFound = found;
+      pUponError = uponError;
+      pNumNodes = 0L;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer(); 
+      try {
+        File root = new File(pNodeDir, "repository"); 
+        collectNodeNames(root.getPath(), root);
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           ex.getMessage());
+        pUponError.set(true);
+        return;
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Checked-In Scan Aborted:", ex));
+        pUponError.set(true);
+        return;
+      }
+
+      LogMgr.getInstance().taskEnd
+        (timer, LogMgr.Kind.Ops, 
+         "Scanned " + ByteSize.longToFloatString(pNumVersions) + " Checked-In Versions"); 
+    }
+
+    private void 
+    collectNodeNames
+    (
+     String prefix, 
+     File dir
+    ) 
+      throws PipelineException
+    {
+      boolean allDirs  = true;
+      boolean allFiles = true;
+      
+      File files[] = dir.listFiles(); 
+      
+      for(File file : files) {
+        if(file.isDirectory()) 
+          allFiles = false;
+        else if(file.isFile()) 
+          allDirs = false;
+        else {
+          throw new PipelineException
+            ("Unknown type of file (" + file + ") encountered in the checked-in node " + 
+             "database!");
+        }
+      }
+      
+      if(allFiles) {
+        String full = dir.getPath();  
+        pFound.add(full.substring(prefix.length()));
+        if(pNumNodes < pNodeReaderThreads) 
+          pTrigger.release();
+        pNumNodes++;
+        pNumVersions += files.length;
+      }
+      else if(allDirs) {
+        for(File file : files) 
+          collectNodeNames(prefix, file); 
+      }
+      else {
+        throw new PipelineException
+          ("Somehow, the checked-in node database directory (" + dir + ") contained " + 
+           "mixtures of files and directories when it should have been either all files " + 
+           "or all directories!"); 
+      }
+    }
+
+    private Semaphore pTrigger; 
+    private LinkedBlockingQueue<String> pFound;
+    private AtomicBoolean pUponError;
+    private long pNumNodes;
+    private long pNumVersions;
+  }
+
+  /**
+   * Read the checked-in node database files for nodes previously identified by the 
+   * CheckedInScannerTask thread to initialize the node naming and downstream caches.
+   */ 
+  private 
+  class CheckedInReaderTask
+    extends Thread
+  {
+    public
+    CheckedInReaderTask
+    ( 
+     Semaphore trigger, 
+     LinkedBlockingQueue<String> found,
+     AtomicBoolean uponError
+    ) 
+    {
+      super("MasterMgr:CheckedInReaderTask"); 
+      pTrigger = trigger;
+      pFound = found;
+      pUponError = uponError;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer(); 
+      long counter = 0L;
+      try {
+        pTrigger.acquire();
+        while(true) {
+          String name = pFound.poll();
+          if(name == null) 
+            break;
+
+          TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
+          for(VersionID vid : table.keySet()) {
+            NodeVersion vsn = table.get(vid).getVersion();
+            
+            for(LinkVersion link : vsn.getSources()) { 
+              timer.aquire();
+              synchronized(pDownstream) {
+                timer.resume();
+
+                DownstreamLinks dsl = pDownstream.get(link.getName());
+                if(dsl == null) {
+                  dsl = new DownstreamLinks(link.getName());
+                  pDownstream.put(dsl.getName(), dsl);
+                }
+
+                dsl.addCheckedIn(link.getVersionID(), name, vid);
+              }
+            }
+            
+            pNodeTree.addCheckedInNodeTreePath(vsn);
+            
+            if(vsn.isIntermediate()) {
+              timer.aquire();
+              synchronized(pIntermediate) {
+                timer.resume();
+
+                TreeSet<VersionID> vids = pIntermediate.get(name); 
+                if(vids == null) {
+                  vids = new TreeSet<VersionID>();
+                  pIntermediate.put(name, vids);
+                }
+              
+                vids.add(vid);             
+              }
+            }
+
+            counter++;
+          }
+        }
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           ex.getMessage());
+        pUponError.set(true);
+        return;
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Checked-In Cache Rebuild Aborted:", ex));
+        pUponError.set(true);
+        return;
+      }
+
+      LogMgr.getInstance().taskEnd
+        (timer, LogMgr.Kind.Ops, 
+         "Processed " + ByteSize.longToFloatString(counter) + " Checked-In Versions"); 
+    }
+
+    private Semaphore pTrigger; 
+    private LinkedBlockingQueue<String> pFound;
+    private AtomicBoolean pUponError;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Recursively search the working node database directories adding the names of all
+   * nodes found to a FIFO to be processed by multiple WorkingReaderTask threads.
+   */ 
+  private 
+  class WorkingScannerTask
+    extends Thread
+  {
+    public
+    WorkingScannerTask
+    ( 
+     Semaphore trigger, 
+     LinkedBlockingQueue<NodeID> found,
+     AtomicBoolean uponError
+    ) 
+    {
+      super("MasterMgr:WorkingScannerTask"); 
+
+      pTrigger = trigger;
+      pFound = found;
+      pUponError = uponError;
+      pCounter = 0L;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer(); 
+      try {
+        File root = new File(pNodeDir, "working"); 
+        
+	File authors[] = root.listFiles(); 
+	int ak;
+	for(ak=0; ak<authors.length; ak++) {
+          File afile = authors[ak];
+	  if(!afile.isDirectory()) 
+	    throw new PipelineException
+	      ("Non-directory file found (" + afile +") in the root working area " + 
+               "directory (" + root + ")!"); 
+
+	  String author = afile.getName();
+	  
+	  File views[] = afile.listFiles();  
+	  int vk;
+	  for(vk=0; vk<views.length; vk++) { 
+            File vfile = views[vk];
+	    if(!vfile.isDirectory())
+	      throw new PipelineException
+		("Non-directory file found (" + vfile +") in the root working area " + 
+                 "directory (" + root + ") for user (" + author + ")!"); 
+	    String view = vfile.getName();
+	    
+	    collectNodeIDs(author, view, vfile.getPath(), vfile);
+	  }
+        }
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           ex.getMessage());
+        pUponError.set(true);
+        return;
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Working Scan Aborted:", ex));
+        pUponError.set(true);
+        return;
+      }
+
+      LogMgr.getInstance().taskEnd
+        (timer, LogMgr.Kind.Ops, 
+         "Scanned " + ByteSize.longToFloatString(pCounter) + " Working Versions"); 
+    }
+
+    private void 
+    collectNodeIDs
+    (
+     String author, 
+     String view, 
+     String prefix, 
+     File dir
+    ) 
+      throws PipelineException
+    {
+      for(File file : dir.listFiles()) {
+        if(file.isDirectory()) 
+          collectNodeIDs(author, view, prefix, file);
+        else {
+          String path = file.getPath();
+          if(!path.endsWith(".backup")) {
+            String name = path.substring(prefix.length());
+            NodeID nodeID = new NodeID(author, view, name);
+            pFound.add(nodeID);
+            if(pCounter < pNodeReaderThreads) 
+              pTrigger.release();
+            pCounter++;
+          }
+        }
+      }
+    }
+
+    private Semaphore pTrigger; 
+    private LinkedBlockingQueue<NodeID> pFound;
+    private AtomicBoolean pUponError;
+    private long pCounter;
+  }
+
+  /**
+   * Read the working node database files for nodes previously identified by the 
+   * WorkingScannerTask thread to initialize the node naming and downstream caches.
+   */ 
+  private 
+  class WorkingReaderTask
+    extends Thread
+  {
+    public
+    WorkingReaderTask
+    ( 
+     Semaphore trigger, 
+     LinkedBlockingQueue<NodeID> found,
+     AtomicBoolean uponError
+    ) 
+    {
+      super("MasterMgr:WorkingReaderTask"); 
+      pTrigger = trigger;
+      pFound = found;
+      pUponError = uponError;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer(); 
+      long counter = 0L;
+      try {
+        pTrigger.acquire();
+        while(true) {
+          NodeID nodeID = pFound.poll();
+          if(nodeID == null) 
+            break;
+
+          NodeMod mod = readWorkingVersion(nodeID); 
+	  if(mod != null) {
+            CheckSumCache cache = readCheckSumCache(nodeID); 
+            if(cache == null) 
+              upgradeDeprecatedCheckSumCache(nodeID, mod); 
+            
+            for(LinkMod link : mod.getSources()) { 
+              timer.aquire();
+              synchronized(pDownstream) {
+                timer.resume();
+                
+                DownstreamLinks dsl = pDownstream.get(link.getName());
+                if(dsl == null) {
+                  dsl = new DownstreamLinks(link.getName());
+                  pDownstream.put(dsl.getName(), dsl);
+                }
+                
+                dsl.addWorking(nodeID.getAuthor(), nodeID.getView(), nodeID.getName()); 
+              }  
+            }
+            
+            addWorkingNodeTreePath(nodeID, mod.getPrimarySequence(), mod.getSequences());
+
+            counter++;
+          }
+        }
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           ex.getMessage());
+        pUponError.set(true);
+        return;
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Working Cache Rebuild Aborted:", ex));
+        pUponError.set(true);
+        return;
+      }
+
+      LogMgr.getInstance().taskEnd
+        (timer, LogMgr.Kind.Ops, 
+         "Processed " + ByteSize.longToFloatString(counter) + " Working Versions"); 
+    }
+
+    private Semaphore pTrigger; 
+    private LinkedBlockingQueue<NodeID> pFound;
+    private AtomicBoolean pUponError;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the currently cached downstream links from a FIFO at shutdown time.
+   */ 
+  private 
+  class DownstreamWriterTask
+    extends Thread
+  {
+    public
+    DownstreamWriterTask
+    ( 
+     LinkedBlockingQueue<DownstreamLinks> found,
+     AtomicBoolean uponError
+    ) 
+    {
+      super("MasterMgr:DownstreamWriterTask"); 
+      pFound = found;
+      pUponError = uponError;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer(); 
+      long counter = 0L;
+      try {
+        while(true) {
+          DownstreamLinks links = pFound.poll();
+          if(links == null) 
+            break;
+          
+          writeDownstreamLinks(links);
+
+          counter++;
+        }
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           ex.getMessage());
+        pUponError.set(true);
+        return;
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           Exceptions.getFullMessage("Downstream Links Write Aborted:", ex));
+        pUponError.set(true);
+        return;
+      }
+
+      LogMgr.getInstance().taskEnd
+        (timer, LogMgr.Kind.Ops, 
+         "Processed " + ByteSize.longToFloatString(counter) + " Nodes"); 
+    }
+
+    private LinkedBlockingQueue<DownstreamLinks> pFound;
+    private AtomicBoolean pUponError;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   private 
   class RebuildOfflinedCacheTask
     extends Thread
@@ -24005,14 +24422,8 @@ class MasterMgr
           /* scan the repository production data directories for offlined versions */ 
           TreeMap<String,TreeSet<VersionID>> offlined = fclient.getOfflined();
 
-          /* wait until all node versions have been read */ 
-          while(!pIntermediateReady.get()) {
-            try {
-              Thread.sleep(30000);
-            }
-            catch(InterruptedException ex) {
-            }
-          }
+          /* wait until all checked-in node versions have been processed */ 
+          pIntermediateTrigger.acquire();
 
           /* remove any intermediate node versions from those offlined */ 
           for(Map.Entry<String,TreeSet<VersionID>> entry : pIntermediate.entrySet()) {
@@ -24024,7 +24435,6 @@ class MasterMgr
           }
 
           pIntermediate = null;
-          pIntermediateReady.set(false); 
 
           synchronized(pOfflinedLock) {
             pOfflined = offlined;
@@ -24036,15 +24446,25 @@ class MasterMgr
 
         timer.suspend();
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Net, LogMgr.Level.Info,
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
            "--- Offlined Task (Finished) ---\n" + 
            "  Offlined Cache Rebuild Succeeded.\n" + 
            "    Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()) + "\n" +
            "--------------------------------");
       }
-      catch(Exception ex) {
+      catch(InterruptedException ex) {
+        timer.suspend();
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Net, LogMgr.Level.Info,
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+           "--- Offlined Task (Finished) ---\n" + 
+           "  Offlined Cache Rebuild Interrupted.\n" + 
+           "    Time Spent " + TimeStamps.formatInterval(timer.getTotalDuration()) + "\n" + 
+           "--------------------------------"); 
+      }
+      catch(Exception ex) {
+        timer.suspend();
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
            "--- Offlined Task (Finished) ---\n" + 
            "  Offlined Cache Rebuild Aborted.\n" + 
            "    Time Spent " + TimeStamps.formatInterval(timer.getTotalDuration()) + "\n" +
@@ -25044,6 +25464,16 @@ class MasterMgr
    */
   private boolean  pPreserveOfflinedCache; 
 
+  /**
+   * The number of node reader threads to spawn during rebuild.
+   */
+  private int  pNodeReaderThreads; 
+
+  /**
+   * The number of node writer threads to spawn during shutdown.
+   */
+  private int  pNodeWriterThreads; 
+
 
   /*----------------------------------------------------------------------------------------*/
  
@@ -25169,10 +25599,10 @@ class MasterMgr
 
 
   /**
-   * Whether all checked-in versions have been read so that the table of intermediate 
-   * versions (pIntermediate) is complete.
+   * Used to block the RebuildOfflinedCacheTask until the table of intermediate versions 
+   * (pIntermediate) is complete.
    */ 
-  private AtomicBoolean pIntermediateReady; 
+  private Semaphore  pIntermediateTrigger; 
 
   /**
    * The fully resolved node names and revision numbers of the checked-in versions which

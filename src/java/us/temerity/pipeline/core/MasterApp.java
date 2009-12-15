@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.26 2009/11/05 21:21:28 jim Exp $
+// $Id: MasterApp.java,v 1.27 2009/12/15 12:38:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -130,19 +130,22 @@ class MasterApp
        "  plmaster --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
+       "  [--rebuild] [--node-reader-threads=...] [--node-writer-threads=...]\n" +
+       "  [--rebuild] [--preserve-offlined] [--file-mgr]\n" +
+       "  [--file-stat-dir=...] [--checksum-dir=...]\n" + 
        "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
        "  [--log-backups=...] [--log=...]\n" +
-       "  [--rebuild] [--preserve-offlined] [--file-mgr]\n" +
-       "  [--file-stat-dir=...] [--checksum-dir=...]\n" +
        "\n" + 
        "PERFORMANCE TUNING OPTIONS:\n" +
-       "  [--restore-cleanup-interval=...]\n" + 
-       "  [--node-gc-interval=...] [--node-cache-limit=...]\n" +
+       "  [--min-free-memory=...] [--cache-factor=...]\n" + 
+       "  [--gc-interval=...] [--gc-misses=...]\n" + 
+       "  [--repo-cache-size=...] [--work-cache-size=...]\n" + 
+       "  [--check-cache-size=...] [--annot-cache-size=...]\n" + 
+       "  [--restore-cleanup-interval=...] [--backup-sync-interval=...]\n" +
        "\n" + 
        "\n" +  
        "Use \"plmaster --html-help\" to browse the full documentation.\n");
   }
-
 
   
   /*----------------------------------------------------------------------------------------*/

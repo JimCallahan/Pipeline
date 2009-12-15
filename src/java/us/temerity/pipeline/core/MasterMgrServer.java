@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.111 2009/12/14 21:48:22 jim Exp $
+// $Id: MasterMgrServer.java,v 1.112 2009/12/15 12:38:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,6 +41,12 @@ class MasterMgrServer
    * @param rebuildCache
    *   Whether to rebuild cache files and ignore existing lock files.
    * 
+   * @param nodeReaderThreads
+   *   The number of node reader threads to spawn.
+   * 
+   * @param nodeWriterThreads
+   *   The number of node writer threads to spawn.
+   * 
    * @param preserveOfflinedCache
    *   Whether to keep the offlined versions cache file after startup and reread instead of 
    *   rebuilding it during a database rebuild.
@@ -58,7 +64,9 @@ class MasterMgrServer
   MasterMgrServer
   (
    MasterApp app, 
-   boolean rebuildCache, 
+   boolean rebuildCache,
+   int nodeReaderThreads, 
+   int nodeWriterThreads, 
    boolean preserveOfflinedCache, 
    boolean internalFileMgr,
    MasterControls controls
@@ -71,8 +79,8 @@ class MasterMgrServer
 
     pMasterApp = app;
 
-    pMasterMgr = new MasterMgr(rebuildCache, preserveOfflinedCache, 
-                               internalFileMgr, controls); 
+    pMasterMgr = new MasterMgr(rebuildCache, nodeReaderThreads, nodeWriterThreads, 
+                               preserveOfflinedCache, internalFileMgr, controls); 
 
     pTasks = new TreeSet<HandlerTask>();
   }

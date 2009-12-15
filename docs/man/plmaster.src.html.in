@@ -118,6 +118,51 @@ div.c7 {margin-left: 80px;}
       given.<BR>
       <BR>
     </DIV><SPAN class="c2"><A name=
+    "--node-reader-threads"></A>--node-reader-threads</SPAN>=<SPAN class="c4">num</SPAN><BR>
+
+    <BR>
+
+    <DIV class="c3">
+      The number of threads (<EM>num</EM>) the Master Manager
+      should use to read node versions from disk during a cache
+      rebuld.&nbsp;During normal operation, node version reading is
+      inherently multi-threaded as each operation is capable of
+      reading as database file as needed.<BR>
+      <BR>
+      Using more threads could lead to increased throughput in
+      cases where the operation is not already file I/O
+      limited.&nbsp;However, increasing the number of threads could
+      also potentiallly lead to a decrease in performance, in cases
+      where reading is file I/O limited. So some experimentation
+      will may be necessary with a particular hardware
+      configuration to determine the ideal number of threads. In
+      most cases, the default value is probably sufficient.<BR>
+      <BR>
+      The default value is (2).
+    </DIV><BR>
+    <SPAN class="c2"><A name=
+    "--node-writer-threads"></A>--node-writer-threads</SPAN>=<SPAN class="c4">num</SPAN><BR>
+
+    <BR>
+
+    <DIV class="c3">
+      The number of threads (<EM>num</EM>) the Master Manager
+      should use to write node related cache information to disk
+      during a clean shutdown.&nbsp;<BR>
+      <BR>
+      Using more threads could lead to increased throughput in
+      cases where the operation is not already file I/O
+      limited.&nbsp;However, increasing the number of threads could
+      also potentiallly lead to a decrease in performance, in cases
+      where reading is file I/O limited. So some experimentation
+      will may be necessary with a particular hardware
+      configuration to determine the ideal number of threads. In
+      most cases, the default value is probably sufficient.<BR>
+      <BR>
+      The default value is (2).
+    </DIV><BR>
+    <BR>
+    <SPAN class="c2"><A name=
     "--preserve-offlined"></A>--preserve-offlined<BR></SPAN>
 
     <DIV class="c3">
@@ -254,6 +299,7 @@ div.c7 {margin-left: 80px;}
       "#--file-mgr"><SPAN class="c2">--file-mgr</SPAN></A> is not
       also specified.
     </DIV><BR>
+    <BR>
     <SPAN class="c2"><A name=
     "--log-file"></A>--log-file</SPAN>=<SPAN class=
     "c4">filename<BR>
@@ -466,8 +512,7 @@ div.c7 {margin-left: 80px;}
   </DIV>
 
   <H3><A name="Performance_Tuning_Options" id=
-  "Performance_Tuning_Options"></A>Performance Tuning
-  Options<BR></H3>
+  "Performance_Tuning_Options"></A>Performance Tuning Options</H3>
 
   <DIV class="c3">
     <H4><SPAN class="postbody"><SPAN class="c2"><A name=
@@ -646,7 +691,7 @@ div.c7 {margin-left: 80px;}
 
   <DIV class="c3">
     <H4><SPAN class="c2">Miscellaneous Tuning
-    Parameters<BR></SPAN></H4><SPAN class="c2"><A name=
+    Parameters</SPAN></H4><SPAN class="c2"><A name=
     "--restore-cleanup-interval"></A>-</SPAN><SPAN class=
     "postbody"><SPAN class=
     "c2">-restore-cleanup-interval</SPAN>=<SPAN class="c4">msec<BR>

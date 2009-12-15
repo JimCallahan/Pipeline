@@ -49,6 +49,8 @@ MasterOptsParser
   {
     pControls = new MasterControls(PackageInfo.sProdPath, PackageInfo.sProdPath); 
     pLogBackups = 10;
+    pNodeReaderThreads = 2;
+    pNodeWriterThreads = 2;
   }
  
 
@@ -73,7 +75,17 @@ MasterOptsParser
   /**
    * Whether to rebuild cache files and ignore existing lock files.
    */ 
-  private boolean  pRebuildCache; 
+  private boolean  pRebuild; 
+
+  /**
+   * The number of node reader threads to spawn during rebuild.
+   */
+  private int  pNodeReaderThreads; 
+
+  /**
+   * The number of node writer threads to spawn during shutdown.
+   */
+  private int  pNodeWriterThreads; 
 
   /**
    * Whether to keep the offlined versions cache file after startup and reread instead of 
@@ -122,15 +134,17 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <REBUILD:           "--rebuild"> 
-| <PRESERVE_OFFLINED: "--preserve-offlined"> 
-| <FILE_MGR:          "--file-mgr">   
+| <REBUILD:             "--rebuild"> 
+| <NODE_READER_THREADS: "--node-reader-threads"> : INTEGER_SEP
+| <NODE_WRITER_THREADS: "--node-writer-threads"> : INTEGER_SEP
+| <PRESERVE_OFFLINED:   "--preserve-offlined"> 
+| <FILE_MGR:            "--file-mgr">   
 
-| <LOG_FILE:          "--log-file">           : PATH_SEP
-| <STANDARD_LOG_DIR:  "--standard-log-dir">   : PATH_SEP
-| <STANDARD_LOG_FILE: "--standard-log-file"> 
-| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
-| <LOG:               "--log">                : LOG_SEP
+| <LOG_FILE:            "--log-file">           : PATH_SEP
+| <STANDARD_LOG_DIR:    "--standard-log-dir">   : PATH_SEP
+| <STANDARD_LOG_FILE:   "--standard-log-file"> 
+| <LOG_BACKUPS:         "--log-backups">        : INTEGER_SEP
+| <LOG:                 "--log">                : LOG_SEP
 
   /* performance tuning options */ 
 | <MIN_FREE_MEMORY:           "--min-free-memory">           : BYTE_SIZE_SEP
@@ -355,8 +369,8 @@ CommandLine()
            "host (" + PackageInfo.sMasterServer + ")!");
 
       /* create the server */ 
-      return new MasterMgrServer(pApp, pRebuildCache, pPreserveOfflinedCache, 
-                                 pInternalFileMgr, pControls); 
+      return new MasterMgrServer(pApp, pRebuild, pNodeReaderThreads, pNodeWriterThreads, 
+                                 pPreserveOfflinedCache, pInternalFileMgr, pControls); 
     }
 
     return null;
@@ -460,7 +474,7 @@ GlobalOpts()
   throws PipelineException : 
 {}
 {
-  (Rebuild() | PreserveOfflined() | FileMgr() |
+  (Rebuild() | NodeReaderThreads() | NodeWriterThreads() | PreserveOfflined() | FileMgr() |
    Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
    MinFreeMemory() | GCInterval() | GCMisses() | CacheFactor() | 
    RepoCacheSize() | WorkCacheSize() | CheckCacheSize() | AnnotCacheSize() |
@@ -473,7 +487,29 @@ void Rebuild() :
 {
   <REBUILD>
   { 
-    pRebuildCache = true; 
+    pRebuild = true; 
+  }
+}
+
+void NodeReaderThreads() : 
+{
+  Token t;
+}
+{
+  <NODE_READER_THREADS> EQ() t=<INTEGER>
+  {
+    pNodeReaderThreads = Integer.parseInt(t.image);
+  }
+}
+
+void NodeWriterThreads() : 
+{
+  Token t;
+}
+{
+  <NODE_WRITER_THREADS> EQ() t=<INTEGER>
+  {
+    pNodeWriterThreads = Integer.parseInt(t.image);
   }
 }
 
