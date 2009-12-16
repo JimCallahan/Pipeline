@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.326 2009/12/15 12:38:29 jim Exp $
+// $Id: MasterMgr.java,v 1.327 2009/12/16 17:59:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1063,17 +1063,17 @@ class MasterMgr
   initCheckedInNodeDatabase() 
     throws PipelineException
   {
-    Semaphore trigger = new Semaphore(0);
     LinkedBlockingQueue<String> found = new LinkedBlockingQueue<String>();
     AtomicBoolean uponError = new AtomicBoolean(false);
+    AtomicBoolean doneScanning = new AtomicBoolean(false);
 
-    CheckedInScannerTask scanner = new CheckedInScannerTask(trigger, found, uponError);
+    CheckedInScannerTask scanner = new CheckedInScannerTask(found, uponError, doneScanning);
     scanner.start();
     
     ArrayList<CheckedInReaderTask> readers = new ArrayList<CheckedInReaderTask>();
     int wk;
     for(wk=0; wk<pNodeReaderThreads; wk++) {
-      CheckedInReaderTask task = new CheckedInReaderTask(trigger, found, uponError);
+      CheckedInReaderTask task = new CheckedInReaderTask(found, uponError, doneScanning);
       task.start();
       readers.add(task); 
     }
@@ -1115,17 +1115,17 @@ class MasterMgr
   initWorkingNodeDatabase() 
     throws PipelineException
   {
-    Semaphore trigger = new Semaphore(0);
     LinkedBlockingQueue<NodeID> found = new LinkedBlockingQueue<NodeID>();
     AtomicBoolean uponError = new AtomicBoolean(false);
+    AtomicBoolean doneScanning = new AtomicBoolean(false);
 
-    WorkingScannerTask scanner = new WorkingScannerTask(trigger, found, uponError);
+    WorkingScannerTask scanner = new WorkingScannerTask(found, uponError, doneScanning);
     scanner.start();
     
     ArrayList<WorkingReaderTask> readers = new ArrayList<WorkingReaderTask>();
     int wk;
     for(wk=0; wk<pNodeReaderThreads; wk++) {
-      WorkingReaderTask task = new WorkingReaderTask(trigger, found, uponError);
+      WorkingReaderTask task = new WorkingReaderTask(found, uponError, doneScanning);
       task.start();
       readers.add(task); 
     }
@@ -23938,16 +23938,16 @@ class MasterMgr
     public
     CheckedInScannerTask
     ( 
-     Semaphore trigger, 
      LinkedBlockingQueue<String> found,
-     AtomicBoolean uponError
+     AtomicBoolean uponError, 
+     AtomicBoolean doneScanning
     ) 
     {
       super("MasterMgr:CheckedInScannerTask"); 
 
-      pTrigger = trigger;
       pFound = found;
       pUponError = uponError;
+      pDoneScanning = doneScanning; 
       pNumNodes = 0L;
     }
 
@@ -23973,6 +23973,9 @@ class MasterMgr
            Exceptions.getFullMessage("Checked-In Scan Aborted:", ex));
         pUponError.set(true);
         return;
+      }
+      finally {
+        pDoneScanning.set(true);
       }
 
       LogMgr.getInstance().taskEnd
@@ -24008,8 +24011,6 @@ class MasterMgr
       if(allFiles) {
         String full = dir.getPath();  
         pFound.add(full.substring(prefix.length()));
-        if(pNumNodes < pNodeReaderThreads) 
-          pTrigger.release();
         pNumNodes++;
         pNumVersions += files.length;
       }
@@ -24025,9 +24026,9 @@ class MasterMgr
       }
     }
 
-    private Semaphore pTrigger; 
     private LinkedBlockingQueue<String> pFound;
     private AtomicBoolean pUponError;
+    private AtomicBoolean pDoneScanning;
     private long pNumNodes;
     private long pNumVersions;
   }
@@ -24043,15 +24044,16 @@ class MasterMgr
     public
     CheckedInReaderTask
     ( 
-     Semaphore trigger, 
      LinkedBlockingQueue<String> found,
-     AtomicBoolean uponError
+     AtomicBoolean uponError, 
+     AtomicBoolean doneScanning
     ) 
     {
       super("MasterMgr:CheckedInReaderTask"); 
-      pTrigger = trigger;
+
       pFound = found;
       pUponError = uponError;
+      pDoneScanning = doneScanning; 
     }
 
     @Override
@@ -24061,49 +24063,51 @@ class MasterMgr
       TaskTimer timer = new TaskTimer(); 
       long counter = 0L;
       try {
-        pTrigger.acquire();
         while(true) {
-          String name = pFound.poll();
-          if(name == null) 
-            break;
-
-          TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
-          for(VersionID vid : table.keySet()) {
-            NodeVersion vsn = table.get(vid).getVersion();
-            
-            for(LinkVersion link : vsn.getSources()) { 
-              timer.aquire();
-              synchronized(pDownstream) {
-                timer.resume();
-
-                DownstreamLinks dsl = pDownstream.get(link.getName());
-                if(dsl == null) {
-                  dsl = new DownstreamLinks(link.getName());
-                  pDownstream.put(dsl.getName(), dsl);
-                }
-
-                dsl.addCheckedIn(link.getVersionID(), name, vid);
-              }
-            }
-            
-            pNodeTree.addCheckedInNodeTreePath(vsn);
-            
-            if(vsn.isIntermediate()) {
-              timer.aquire();
-              synchronized(pIntermediate) {
-                timer.resume();
-
-                TreeSet<VersionID> vids = pIntermediate.get(name); 
-                if(vids == null) {
-                  vids = new TreeSet<VersionID>();
-                  pIntermediate.put(name, vids);
-                }
+          String name = pFound.poll(10L, TimeUnit.MILLISECONDS);
+          if(name == null) {
+            if(pDoneScanning.get()) 
+              break;
+          }
+          else {
+            TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
+            for(VersionID vid : table.keySet()) {
+              NodeVersion vsn = table.get(vid).getVersion();
               
-                vids.add(vid);             
+              for(LinkVersion link : vsn.getSources()) { 
+                timer.aquire();
+                synchronized(pDownstream) {
+                  timer.resume();
+                  
+                  DownstreamLinks dsl = pDownstream.get(link.getName());
+                  if(dsl == null) {
+                    dsl = new DownstreamLinks(link.getName());
+                    pDownstream.put(dsl.getName(), dsl);
+                  }
+                  
+                  dsl.addCheckedIn(link.getVersionID(), name, vid);
+                }
               }
+              
+              pNodeTree.addCheckedInNodeTreePath(vsn);
+              
+              if(vsn.isIntermediate()) {
+                timer.aquire();
+                synchronized(pIntermediate) {
+                  timer.resume();
+                  
+                  TreeSet<VersionID> vids = pIntermediate.get(name); 
+                  if(vids == null) {
+                    vids = new TreeSet<VersionID>();
+                    pIntermediate.put(name, vids);
+                  }
+                  
+                  vids.add(vid);             
+                }
+              }
+              
+              counter++;
             }
-
-            counter++;
           }
         }
       }
@@ -24127,9 +24131,9 @@ class MasterMgr
          "Processed " + ByteSize.longToFloatString(counter) + " Checked-In Versions"); 
     }
 
-    private Semaphore pTrigger; 
     private LinkedBlockingQueue<String> pFound;
     private AtomicBoolean pUponError;
+    private AtomicBoolean pDoneScanning;
   }
 
 
@@ -24146,16 +24150,16 @@ class MasterMgr
     public
     WorkingScannerTask
     ( 
-     Semaphore trigger, 
      LinkedBlockingQueue<NodeID> found,
-     AtomicBoolean uponError
+     AtomicBoolean uponError, 
+     AtomicBoolean doneScanning
     ) 
     {
       super("MasterMgr:WorkingScannerTask"); 
 
-      pTrigger = trigger;
       pFound = found;
       pUponError = uponError;
+      pDoneScanning = doneScanning; 
       pCounter = 0L;
     }
 
@@ -24206,6 +24210,9 @@ class MasterMgr
         pUponError.set(true);
         return;
       }
+      finally {
+        pDoneScanning.set(true);
+      }
 
       LogMgr.getInstance().taskEnd
         (timer, LogMgr.Kind.Ops, 
@@ -24231,17 +24238,15 @@ class MasterMgr
             String name = path.substring(prefix.length());
             NodeID nodeID = new NodeID(author, view, name);
             pFound.add(nodeID);
-            if(pCounter < pNodeReaderThreads) 
-              pTrigger.release();
             pCounter++;
           }
         }
       }
     }
 
-    private Semaphore pTrigger; 
     private LinkedBlockingQueue<NodeID> pFound;
     private AtomicBoolean pUponError;
+    private AtomicBoolean pDoneScanning;
     private long pCounter;
   }
 
@@ -24256,14 +24261,15 @@ class MasterMgr
     public
     WorkingReaderTask
     ( 
-     Semaphore trigger, 
      LinkedBlockingQueue<NodeID> found,
-     AtomicBoolean uponError
+     AtomicBoolean uponError, 
+     AtomicBoolean doneScanning
     ) 
     {
       super("MasterMgr:WorkingReaderTask"); 
-      pTrigger = trigger;
+
       pFound = found;
+      pDoneScanning = doneScanning; 
       pUponError = uponError;
     }
 
@@ -24274,36 +24280,38 @@ class MasterMgr
       TaskTimer timer = new TaskTimer(); 
       long counter = 0L;
       try {
-        pTrigger.acquire();
         while(true) {
-          NodeID nodeID = pFound.poll();
-          if(nodeID == null) 
-            break;
-
-          NodeMod mod = readWorkingVersion(nodeID); 
-	  if(mod != null) {
-            CheckSumCache cache = readCheckSumCache(nodeID); 
-            if(cache == null) 
-              upgradeDeprecatedCheckSumCache(nodeID, mod); 
-            
-            for(LinkMod link : mod.getSources()) { 
-              timer.aquire();
-              synchronized(pDownstream) {
-                timer.resume();
-                
-                DownstreamLinks dsl = pDownstream.get(link.getName());
-                if(dsl == null) {
-                  dsl = new DownstreamLinks(link.getName());
-                  pDownstream.put(dsl.getName(), dsl);
-                }
-                
-                dsl.addWorking(nodeID.getAuthor(), nodeID.getView(), nodeID.getName()); 
-              }  
+          NodeID nodeID = pFound.poll(10L, TimeUnit.MILLISECONDS);
+          if(nodeID == null) {
+            if(pDoneScanning.get()) 
+              break;
+          }
+          else {
+            NodeMod mod = readWorkingVersion(nodeID); 
+            if(mod != null) {
+              CheckSumCache cache = readCheckSumCache(nodeID); 
+              if(cache == null) 
+                upgradeDeprecatedCheckSumCache(nodeID, mod); 
+              
+              for(LinkMod link : mod.getSources()) { 
+                timer.aquire();
+                synchronized(pDownstream) {
+                  timer.resume();
+                  
+                  DownstreamLinks dsl = pDownstream.get(link.getName());
+                  if(dsl == null) {
+                    dsl = new DownstreamLinks(link.getName());
+                    pDownstream.put(dsl.getName(), dsl);
+                  }
+                  
+                  dsl.addWorking(nodeID.getAuthor(), nodeID.getView(), nodeID.getName()); 
+                }  
+              }
+              
+              addWorkingNodeTreePath(nodeID, mod.getPrimarySequence(), mod.getSequences());
+              
+              counter++;
             }
-            
-            addWorkingNodeTreePath(nodeID, mod.getPrimarySequence(), mod.getSequences());
-
-            counter++;
           }
         }
       }
@@ -24327,9 +24335,9 @@ class MasterMgr
          "Processed " + ByteSize.longToFloatString(counter) + " Working Versions"); 
     }
 
-    private Semaphore pTrigger; 
     private LinkedBlockingQueue<NodeID> pFound;
     private AtomicBoolean pUponError;
+    private AtomicBoolean pDoneScanning;
   }
 
 

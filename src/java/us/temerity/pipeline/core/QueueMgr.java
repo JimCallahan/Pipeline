@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.148 2009/12/16 04:13:33 jesse Exp $
+// $Id: QueueMgr.java,v 1.149 2009/12/16 17:59:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -398,25 +398,25 @@ class QueueMgr
   {
     Map<Long, String> running = Collections.synchronizedMap(new TreeMap<Long,String>());
     AtomicBoolean missingGroup = new AtomicBoolean(false);
-    AtomicBoolean uponError = new AtomicBoolean(false);
 
     /* initialize the jobs */ 
     {
       TaskTimer timer = 
         LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Jobs...");   
 
-      Semaphore trigger = new Semaphore(0);
       LinkedBlockingQueue<File> found = new LinkedBlockingQueue<File>(); 
+      AtomicBoolean uponError = new AtomicBoolean(false);
+      AtomicBoolean doneScanning = new AtomicBoolean(false);
 
       JobScannerTask scanner = 
-        new JobScannerTask(jobReaderThreads, trigger, found, uponError);
+        new JobScannerTask(jobReaderThreads, found, uponError, doneScanning);
       scanner.start();
       
       ArrayList<JobReaderTask> readers = new ArrayList<JobReaderTask>();
       int wk;
       for(wk=0; wk<jobReaderThreads; wk++) {
         JobReaderTask task = 
-          new JobReaderTask(trigger, found, running, missingGroup, uponError);
+          new JobReaderTask(found, running, missingGroup, uponError, doneScanning);
         task.start();
         readers.add(task); 
       }
@@ -11862,17 +11862,17 @@ class QueueMgr
     JobScannerTask
     ( 
      int numReaders, 
-     Semaphore trigger, 
      LinkedBlockingQueue<File> found,
-     AtomicBoolean uponError
+     AtomicBoolean uponError, 
+     AtomicBoolean doneScanning
     ) 
     {
       super("QueueMgr:JobScannerTask"); 
 
       pNumReaders = numReaders; 
-      pTrigger = trigger;
       pFound = found;
       pUponError = uponError;
+      pDoneScanning = doneScanning; 
       pCounter = 0L; 
     }
 
@@ -11885,8 +11885,6 @@ class QueueMgr
         File dir = new File(pQueueDir, "queue/jobs");
         for(File file : dir.listFiles()) {
           pFound.add(file);   
-          if(pCounter < pNumReaders) 
-            pTrigger.release();
           pCounter++;
         }
       }
@@ -11897,6 +11895,9 @@ class QueueMgr
         pUponError.set(true);
         return;
       }
+      finally {
+        pDoneScanning.set(true);
+      }
 
       LogMgr.getInstance().taskEnd
         (timer, LogMgr.Kind.Ops, 
@@ -11904,9 +11905,9 @@ class QueueMgr
     }
 
     private int pNumReaders; 
-    private Semaphore pTrigger; 
     private LinkedBlockingQueue<File> pFound;
     private AtomicBoolean pUponError;
+    private AtomicBoolean pDoneScanning;
     private long pCounter;
   }
 
@@ -11920,20 +11921,20 @@ class QueueMgr
     public 
     JobReaderTask
     (
-     Semaphore trigger, 
      LinkedBlockingQueue<File> found,
      Map<Long, String> runningJobs,
      AtomicBoolean missingGroup, 
-     AtomicBoolean uponError
+     AtomicBoolean uponError,
+     AtomicBoolean doneScanning
     )
     { 
       super("QueueMgr:JobReaderTask"); 
 
-      pTrigger = trigger;
       pFound = found;
       pRunningJobs = runningJobs;
       pMissingGroup = missingGroup;
       pUponError = uponError;
+      pDoneScanning = doneScanning; 
     }
     
     @Override
@@ -11943,107 +11944,109 @@ class QueueMgr
       TaskTimer timer = new TaskTimer(); 
       long counter = 0L;
       try {
-        pTrigger.acquire();
         while (true) {
-          File file = pFound.poll();
-          if(file == null)
-            break;
-        
-          if(file.isFile()) {
-            try {
-              Long jobID = new Long(file.getName());
-            
-              QueueJob job = readJob(jobID);
-              if(job.getJobGroupID() == -1)
-                pMissingGroup.set(true);
-
-              QueueJobInfo info = null;
+          File file = pFound.poll(10L, TimeUnit.MILLISECONDS);
+          if(file == null) {
+            if(pDoneScanning.get()) 
+              break;
+          }
+          else {        
+            if(file.isFile()) {
               try {
-                info = readJobInfo(jobID);
+                Long jobID = new Long(file.getName());
+                
+                QueueJob job = readJob(jobID);
+                if(job.getJobGroupID() == -1)
+                  pMissingGroup.set(true);
+                
+                QueueJobInfo info = null;
+                try {
+                  info = readJobInfo(jobID);
+                }
+                catch(PipelineException ex) {
+                  LogMgr.getInstance().logAndFlush
+                    (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+                     "Unable to load the job info (" + jobID + "), since nothing is known " + 
+                     "about the job we'll mark it as Aborted."); 
+
+                  info = new QueueJobInfo(jobID);
+              
+                  info.aborted();
+                  writeJobInfo(info);
+                }
+
+                /* initialize the table of working area files to the jobs which create them */ 
+                {
+                  ActionAgenda agenda = job.getActionAgenda();
+                  NodeID nodeID = agenda.getNodeID();
+                  FileSeq fseq = agenda.getPrimaryTarget();
+              
+                  synchronized(pNodeJobIDs) {
+                    TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+                    if(table == null) {
+                      table = new TreeMap<File,Long>();
+                      pNodeJobIDs.put(nodeID, table);
+                    }
+                
+                    for(File f : fseq.getFiles()) 
+                      table.put(f, jobID);
+                  }
+                }
+            
+                /* determine if the job is still active */ 
+                switch(info.getState()) {
+                case Queued:
+                case Preempted:
+                case Paused:
+                  pWaiting.add(jobID);
+                  break;
+              
+                case Running:
+                  info.limbo();
+                  writeJobInfo(info);
+                  pRunningJobs.put(jobID, info.getHostname());
+                  break;
+
+                case Limbo:
+                  {
+                    String hname = info.getHostname();
+                    if(hname != null) {
+                      pRunningJobs.put(jobID, info.getHostname());
+                    }
+                    else {
+                      /* This is to catch the case where we find a Limbo job without an 
+                         assigned hostname.  In that case, its best just to Abort the job.  
+                         This might not strictly be needed since we've added a version of 
+                         QueueJobInfo.limbo() which takes a hostname parameter, but it 
+                         protects against existing jobs which might not have the hostname 
+                         data in them. */ 
+                      info.aborted();
+                      writeJobInfo(info);
+                    }
+                  }
+                }
+            
+                synchronized(pJobs) {
+                  pJobs.put(jobID, job);
+                }
+            
+                synchronized(pJobInfo) {
+                  pJobInfo.put(jobID, info); 
+                }
+
+                counter++;
+              }
+              catch(NumberFormatException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                   "Illegal job file encountered (" + file + ")! Ignoring...");
               }
               catch(PipelineException ex) {
-                LogMgr.getInstance().logAndFlush
-                  (LogMgr.Kind.Glu, LogMgr.Level.Warning,
-                   "Unable to load the job info (" + jobID + "), since nothing is known " + 
-                   "about the job we'll mark it as Aborted."); 
-
-                info = new QueueJobInfo(jobID);
-              
-                info.aborted();
-                writeJobInfo(info);
-              }
-
-              /* initialize the table of working area files to the jobs which create them */ 
-              {
-                ActionAgenda agenda = job.getActionAgenda();
-                NodeID nodeID = agenda.getNodeID();
-                FileSeq fseq = agenda.getPrimaryTarget();
-              
-                synchronized(pNodeJobIDs) {
-                  TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
-                  if(table == null) {
-                    table = new TreeMap<File,Long>();
-                    pNodeJobIDs.put(nodeID, table);
-                  }
-                
-                  for(File f : fseq.getFiles()) 
-                    table.put(f, jobID);
-                }
-              }
-            
-              /* determine if the job is still active */ 
-              switch(info.getState()) {
-              case Queued:
-              case Preempted:
-              case Paused:
-                pWaiting.add(jobID);
-                break;
-              
-              case Running:
-                info.limbo();
-                writeJobInfo(info);
-                pRunningJobs.put(jobID, info.getHostname());
-                break;
-
-              case Limbo:
-                {
-                  String hname = info.getHostname();
-                  if(hname != null) {
-                    pRunningJobs.put(jobID, info.getHostname());
-                  }
-                  else {
-                    /* This is to catch the case where we find a Limbo job without an 
-                       assigned hostname.  In that case, its best just to Abort the job.  
-                       This might not strictly be needed since we've added a version of 
-                       QueueJobInfo.limbo() which takes a hostname parameter, but it 
-                       protects against existing jobs which might not have the hostname 
-                       data in them. */ 
-                    info.aborted();
-                    writeJobInfo(info);
-                  }
-                }
-              }
-            
-              synchronized(pJobs) {
-                pJobs.put(jobID, job);
-              }
-            
-              synchronized(pJobInfo) {
-                pJobInfo.put(jobID, info); 
-              }
-
-              counter++;
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+                   ex.getMessage());
+              } 
             }
-            catch(NumberFormatException ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-                 "Illegal job file encountered (" + file + ")! Ignoring...");
-            }
-            catch(PipelineException ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-                 ex.getMessage());
-            } 
           }
         }
       }
@@ -12064,11 +12067,11 @@ class QueueMgr
          "Processed " + ByteSize.longToFloatString(counter) + " Jobs");
     }
 
-    private Semaphore pTrigger; 
     private LinkedBlockingQueue<File> pFound;
     private Map<Long,String> pRunningJobs;
     private AtomicBoolean pMissingGroup;
     private AtomicBoolean pUponError;
+    private AtomicBoolean pDoneScanning;
   }
 
   
