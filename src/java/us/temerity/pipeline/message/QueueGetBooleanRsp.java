@@ -1,20 +1,18 @@
-// $Id: QueueGetKeyDescriptionsRsp.java,v 1.3 2009/12/16 04:13:33 jesse Exp $
+// $Id: QueueGetBooleanRsp.java,v 1.1 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*;
 
-import java.util.*;
-
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   K E Y   D E S C R I P T I O N S   R S P                            */
+/*   Q U E U E   G E T   B O O L E A N   R S P                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The names and descriptions of the currently defined selection, license or hardware keys. 
+ * Get a boolean response from the queue.
  */
-public
-class QueueGetKeyDescriptionsRsp
+public 
+class QueueGetBooleanRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,49 +25,53 @@ class QueueGetKeyDescriptionsRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param desc
-   *   The key descriptions indexed by key name.
+   * @param bool
+   *   The boolean value.
+   *   
+   * @param methodName
+   *   The name of the method being called, for use in the logger.
    */ 
   public
-  QueueGetKeyDescriptionsRsp
+  QueueGetBooleanRsp
   (
    TaskTimer timer, 
-   TreeMap<String,String> desc
+   Boolean bool,
+   String methodName
   )
   { 
     super(timer);
 
-    if(desc == null) 
-      throw new IllegalArgumentException("The key descriptions cannot be (null)!");
-    pKeyDescriptions = desc;
+    if(bool == null) 
+      throw new IllegalArgumentException("The boolean value cannot be (null)!");
+    pBooleanValue = bool;
 
     LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "QueueMgr.getKeyDescriptions():\n  " + getTimer());
+       "QueueMgr." + methodName + "():\n  " + getTimer());
   }
 
-
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the key descriptions indexed by key name.
+   * Get the boolean value.
    */
-  public TreeMap<String,String>
-  getKeyDescriptions() 
+  public Boolean
+  getBooleanValue()
   {
-    return pKeyDescriptions;
+    return pBooleanValue;
   }
   
-
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 4624550580818694848L;
+  private static final long serialVersionUID = -4776341635412078460L;
 
   
 
@@ -77,10 +79,5 @@ class QueueGetKeyDescriptionsRsp
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * The key descriptions indexed by key name.
-   */ 
-  private TreeMap<String,String>  pKeyDescriptions; 
-
+  private Boolean pBooleanValue;
 }
-  

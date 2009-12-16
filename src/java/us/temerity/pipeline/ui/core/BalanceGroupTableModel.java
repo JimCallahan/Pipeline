@@ -1,4 +1,4 @@
-// $Id: BalanceGroupTableModel.java,v 1.3 2009/12/11 23:27:01 jesse Exp $
+// $Id: BalanceGroupTableModel.java,v 1.4 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -299,7 +299,7 @@ class BalanceGroupTableModel
   {
     switch(col) {
     case 0:
-      return new Vector3i(140);
+      return new Vector3i(140, 140, Integer.MAX_VALUE);
       
     default:
       return new Vector3i(sDataWidth);

@@ -1,4 +1,4 @@
-// $Id: JManageBalanceGroupsDialog.java,v 1.3 2009/12/11 23:27:01 jesse Exp $
+// $Id: JManageBalanceGroupsDialog.java,v 1.4 2009/12/16 04:13:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -18,7 +18,9 @@ import us.temerity.pipeline.ui.core.BalanceGroupTableModel.*;
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   B A L A N C E   G R O U P S   D I A L O G                                */
 /*------------------------------------------------------------------------------------------*/
-
+/**
+ * Dialog for managing user balance groups.
+ */
 public 
 class JManageBalanceGroupsDialog
   extends JTopLevelDialog 
@@ -105,8 +107,7 @@ class JManageBalanceGroupsDialog
       }
     }
     
-    JPanel parent = new JPanel();
-    parent.setLayout(new BoxLayout(parent, BoxLayout.PAGE_AXIS));
+    JVertSplitPanel parent = new JVertSplitPanel();  
     
     {
       Box upper = Box.createHorizontalBox();
@@ -198,6 +199,9 @@ class JManageBalanceGroupsDialog
           defaults.add(Box.createHorizontalStrut(6));
           defaults.add(Box.createHorizontalGlue());
           defaults.add(Box.createRigidArea(new Dimension(5,0)));
+          Dimension maxSize = defaults.getPreferredSize();
+          maxSize.setSize(Integer.MAX_VALUE, maxSize.height);
+          defaults.setMaximumSize(maxSize);
           
           right.add(defaults);
         }
@@ -297,18 +301,16 @@ class JManageBalanceGroupsDialog
         right.add(Box.createRigidArea(new Dimension(0,5)));
         upper.add(right);
       }
-      parent.add(upper);
+      parent.setTopComponent(upper);
     }
-    parent.add(UIFactory.createPanelBreak());
     {
       JBalanceGroupHistPanel bottom = new JBalanceGroupHistPanel();
       
       Dimension size = new Dimension(600, 200);
       bottom.setMinimumSize(size);
       bottom.setPreferredSize(size);
-      bottom.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
       
-      parent.add(bottom);
+      parent.setBottomComponent(bottom);
       
       pHistogramPanel = bottom;
     }
@@ -319,7 +321,9 @@ class JManageBalanceGroupsDialog
       { "Update", "update"},
     };
 
-    JButton btns[] = super.initUI("Manage Balance Groups:", parent, "Confirm", "Apply", 
+    Box tempBox = new Box(BoxLayout.LINE_AXIS);
+    tempBox.add(parent);
+    JButton btns[] = super.initUI("Manage Balance Groups:", tempBox, "Confirm", "Apply", 
                                   extra, "Close");
     
     pUpdateButton = btns[1];
@@ -664,23 +668,9 @@ class JManageBalanceGroupsDialog
       TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
       
       TreeSet<Double> allShares = new TreeSet<Double>(userShares.values());
-      Double low = round2(allShares.first() * 100);
-      Double high = round2(allShares.last() * 100);
       
-      if (!low.equals(high)) {
-        double lerp = round2((high - low) / maxSlices);
-        double start = low;
-        double end = round2(low + lerp);
-        
-        for (int i = 0; i < maxSlices-1; i++) {
-          ranges.add(new HistogramRange(start, end));
-          start = end;
-          end = round2(lerp + end);
-        }
-        ranges.add(new HistogramRange(start, high + .5));
-      }
-      else
-        ranges.add(new HistogramRange(low));
+      for (Double share : allShares)
+        ranges.add(new HistogramRange(round2(share * 100)));
         
       HistogramSpec spec = new HistogramSpec("Users ByShare", ranges);
       usersByShareHist = new Histogram(spec);

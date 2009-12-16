@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.32 2009/12/12 01:17:27 jim Exp $
+// $Id: QueueRequest.java,v 1.33 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -24,6 +24,11 @@ enum QueueRequest
    * An instance of {@link MiscUpdateAdminPrivilegesReq MiscUpdateAdminPrivilegesReq} is next.
    */
   UpdateAdminPrivileges, 
+  
+  /**
+   * An instance of {@link MiscPluginIDReq} is next.
+   */
+  NewKeyChooserInstalled,
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -438,6 +443,16 @@ enum QueueRequest
    * Updates the keys set by plugins for the jobs with the given IDs.
    */
   UpdateJobKeys,
+  
+  /**
+   * Check if all the jobs need to have their keys set by plugins update.
+   */
+  DoJobKeysNeedUpdate,
+  
+  /**
+   * Updates the keys set by plugins for all the jobs.
+   */
+  UpdateAllJobKeys,
 
   /**
    * Kill and requeue all jobs associated with the given working version.<P> 

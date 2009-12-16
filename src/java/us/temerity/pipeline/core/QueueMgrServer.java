@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.78 2009/12/14 21:48:22 jim Exp $
+// $Id: QueueMgrServer.java,v 1.79 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -322,7 +322,17 @@ class QueueMgrServer
                   objOut.flush(); 
                 }
                 break;
+                
+              /*-- KEYCHOOSER UPDATE ------------------------------------------------------*/
 
+              case NewKeyChooserInstalled:
+                {
+                  MiscPluginIDReq req =
+                    (MiscPluginIDReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.newKeyChooserInstalled(req));
+                  objOut.flush();
+                }
+                break;
 
               /*-- LOGGING -----------------------------------------------------------------*/
               case GetLogControls:
@@ -961,6 +971,21 @@ class QueueMgrServer
                 {
                   QueueJobsReq req = (QueueJobsReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.updateJobKeys(req));
+                  objOut.flush();
+                }
+                break;
+                
+              case DoJobKeysNeedUpdate:
+                {
+                  objOut.writeObject(pQueueMgr.doJobKeysNeedUpdate());
+                  objOut.flush();
+                }
+                break;
+                
+              case UpdateAllJobKeys:
+                {
+                  PrivilegedReq req = (PrivilegedReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.updateAllJobKeys(req));
                   objOut.flush();
                 }
                 break;

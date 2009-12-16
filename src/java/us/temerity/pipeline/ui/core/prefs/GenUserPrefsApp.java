@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.85 2009/12/09 05:05:55 jesse Exp $
+// $Id: GenUserPrefsApp.java,v 1.86 2009/12/16 04:13:34 jesse Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1607,6 +1607,7 @@ class GenUserPrefsApp
       pPrefs.put("Panels|Queue Slots|Hot Keys", prefs);
     }
 
+    /* Panels | Job Browser | Hot Keys */
     {
       BasePref prefs[] = {
 	new DuplicateHotKeyPref
@@ -1656,7 +1657,15 @@ class GenUserPrefsApp
 
 	new DuplicateHotKeyPref
 	("Kill all jobs associated with the selected groups.",
-	 "JobBrowserGroupsKillJobs", "Kill Jobs:", "KillJobs"), 
+	 "JobBrowserGroupsKillJobs", "Kill Jobs:", "KillJobs"),
+	 
+	new DuplicateHotKeyPref
+	("Change the jobs requirements for the selected job groups.", 
+	 "JobBrowserGroupsChangeJobReqs", "Change Job Reqs:", "ChangeJobReqs"),
+	         
+	new DuplicateHotKeyPref
+	("Update the keys for the selected job groups.", 
+	 "JobBrowserGroupsUpdateJobKeys", "Update Job Keys:", "UpdateJobKeys"),
 
 	new HotKeyPref
 	("Delete the selected completed job groups.",
@@ -1671,6 +1680,7 @@ class GenUserPrefsApp
       pPrefs.put("Panels|Job Browser|Hot Keys", prefs);
     }
 
+    /* Panels | Job Viewer | Job | Hot Keys */  
     {
       BasePref prefs[] = {
 	new DuplicateHotKeyPref
@@ -1710,7 +1720,15 @@ class GenUserPrefsApp
 
 	new DuplicateHotKeyPref
 	("Kill all selected jobs.", 
-	 "JobKillJobs", "Kill Jobs:", "KillJobs"), 
+	 "JobKillJobs", "Kill Jobs:", "KillJobs"),
+	 
+	new DuplicateHotKeyPref
+	("Change the jobs requirements for the selected jobs.", 
+	 "JobChangeJobReqs", "Change Job Reqs:", "ChangeJobReqs"),
+	 
+	new DuplicateHotKeyPref
+	("Update the keys for the selected jobs.", 
+	 "JobUpdateJobKeys", "Update Job Keys:", "UpdateJobKeys"), 
 
 	new BasePref(),
 
@@ -1722,6 +1740,7 @@ class GenUserPrefsApp
       pPrefs.put("Panels|Job Viewer|Job|Hot Keys", prefs);
     }
 
+    /* Panels | Job Viewer | Job Group | Hot Keys */
     {
       BasePref prefs[] = {	
 	new DuplicateHotKeyPref
@@ -1757,8 +1776,16 @@ class GenUserPrefsApp
 
 	new DuplicateHotKeyPref
 	("Kill all selected jobs.", 
-	 "JobGroupKillJobs", "Kill Jobs:", "KillJobs"), 
+	 "JobGroupKillJobs", "Kill Jobs:", "KillJobs"),
+	 
+	new HotKeyPref
+	("Change the jobs requirements for the selected jobs.", 
+	 "ChangeJobReqs", "Change Job Reqs:"), 
 
+	new HotKeyPref
+	("Update the keys for the selected jobs.", 
+	 "UpdateJobKeys", "Update Job Keys:"),
+	
 	new BasePref(),
 
 	new DuplicateHotKeyPref
@@ -2327,8 +2354,8 @@ class GenUserPrefsApp
       pPrefPanels.add("Panels|Queue Slots|Hot Keys");
 
       pPrefPanels.add("Panels|Job Browser|Hot Keys");
-      pPrefPanels.add("Panels|Job Viewer|Job|Hot Keys");
 
+      pPrefPanels.add("Panels|Job Viewer|Job|Hot Keys");
       pPrefPanels.add("Panels|Job Viewer|Job Group|Hot Keys");
       pPrefPanels.add("Panels|Job Viewer|Appearance");
       pPrefPanels.add("Panels|Job Viewer|Hot Keys");
@@ -2445,6 +2472,12 @@ class GenUserPrefsApp
 	jobs.add("ResumeJobs");
 	jobs.add("PreemptJobs");
 	jobs.add("KillJobs");
+      }
+      
+      TreeSet<String> jobReqs = new TreeSet<String>();
+      {
+        jobReqs.add("ChangeJobReqs");
+        jobReqs.add("UpdateJobKeys");
       }
       
       TreeSet<String> camera = new TreeSet<String>();
@@ -2666,6 +2699,7 @@ class GenUserPrefsApp
 	group.add("JobBrowserOwnedViewsFilter");
 	group.add("JobBrowserAllViewsFilter");
 	group.addAll(jobs);
+	group.addAll(jobReqs);
 	group.add("JobBrowserGroupsDelete");
 	group.add("JobBrowserGroupsDeleteCompleted");
       }
@@ -2694,6 +2728,7 @@ class GenUserPrefsApp
 	group.add(edit);
 	group.add(editDefault);
 	group.addAll(jobs);
+	group.addAll(jobReqs);
 	group.add(showNode);
       }
     
@@ -2705,6 +2740,7 @@ class GenUserPrefsApp
 	group.add(edit);
 	group.add(editDefault);
 	group.addAll(jobs);
+	group.addAll(jobReqs);
 	group.add(hideSelected);
 	group.add("DeleteJobGroups");
 	group.add(showNode);
@@ -2830,7 +2866,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.85 2009/12/09 05:05:55 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.86 2009/12/16 04:13:34 jesse Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3085,7 +3121,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.85 2009/12/09 05:05:55 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.86 2009/12/16 04:13:34 jesse Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4463,7 +4499,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.85 2009/12/09 05:05:55 jesse Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.86 2009/12/16 04:13:34 jesse Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

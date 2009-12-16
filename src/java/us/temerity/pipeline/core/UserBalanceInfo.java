@@ -1,10 +1,11 @@
-// $Id: UserBalanceInfo.java,v 1.9 2009/12/11 04:21:11 jesse Exp $
+// $Id: UserBalanceInfo.java,v 1.10 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline.core;
 
 import java.util.*;
 import java.util.Map.*;
 import java.util.concurrent.atomic.*;
+import java.util.concurrent.locks.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.BaseOpMap.*;
@@ -35,6 +36,7 @@ class UserBalanceInfo
     pSamples = new TreeMap<String, ArrayDeque<UserBalanceSample>>();
     pCurrentUsage = new DoubleMap<String, String, Double>();
     pSampleStart = System.currentTimeMillis();
+    pCachedSampleStart = pSampleStart;
     
     pHostInfos = new TreeMap<String, HostInfo>();
     
@@ -47,7 +49,7 @@ class UserBalanceInfo
     pHostChangesLock = new Object();
     pJobChangesLock = new Object();
     pGroupChangesLock = new Object();
-    pCurrentUsageLock = new Object();
+    pCurrentUsageLock = new ReentrantLock();
     
     pSamplesToKeep = new AtomicInteger(30);
   }
@@ -315,10 +317,13 @@ class UserBalanceInfo
       }
       
       tm.aquire();
-      synchronized (pCurrentUsageLock) {
+      {
+        pCurrentUsageLock.lock(); 
         tm.resume();
         pCurrentUsage = currentUsage;
         pSlotWeight = slotWeight;
+        pCachedSampleStart = pSampleStart;
+        pCurrentUsageLock.unlock();
       }
       LogMgr.getInstance().logSubStage
         (LogMgr.Kind.Usr, LogMgr.Level.Finer,
@@ -344,7 +349,9 @@ class UserBalanceInfo
    * {@link #calculateUsage(TaskTimer)}.<P>
    * 
    * This is a live data-structure (it is not copied before returning) so any code that uses
-   * this should not modify its contents.
+   * this should not modify its contents. <p>
+   * 
+   * {@link #lockCurrentUsage()} needs to be called before calling this method.
    * 
    * @return
    *   A {@link DoubleMap} with the first key being the user balance group, the second key
@@ -352,7 +359,7 @@ class UserBalanceInfo
    *   resources that the user has used.
    */
   public DoubleMap<String, String, Double>
-  getCurrentUsage()
+  getActualShares()
   {
     synchronized (pCurrentUsageLock) {
       return pCurrentUsage;   
@@ -364,7 +371,9 @@ class UserBalanceInfo
    * 
    * This number is used to generate estimates of queue use in between balancer() runs. 
    * Balance groups that have had no slots assigned to them during the entire sample history 
-   * will have <code>null</code> entries in this table.
+   * will have <code>null</code> entries in this table. <p>
+   * 
+   * {@link #lockCurrentUsage()} needs to be called before calling this method.
    */
   public TreeMap<String, Double>
   getSlotWeight()
@@ -373,6 +382,8 @@ class UserBalanceInfo
       return pSlotWeight;
     }
   }
+  
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Add a change to a host.
@@ -496,6 +507,8 @@ class UserBalanceInfo
          "Removed the balance group (" + name + ").");
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Get the number of samples that are being saved for each user balance group.
    */
@@ -528,6 +541,47 @@ class UserBalanceInfo
       throw new IllegalArgumentException
         ("setSamplesToKeep can only be called with positive integers");
     pSamplesToKeep.set(samplesToKeep);
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the time (in milliseconds) the current user balance sample started.<p>
+   * 
+   * {@link #lockCurrentUsage()} needs to be called before calling this method.
+   */
+  public long
+  getSampleStart()
+  {
+    return pCachedSampleStart;
+  }
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O C K I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Acquire the lock that protects the current usage information. <p>
+   * 
+   * This lock needs to be acquired before calling {@link #getActualShares()}, 
+   * {@link #getSlotWeight()}, and {@link #getSampleStart()} if consistency between the 
+   * results of those methods is needed.
+   */
+  public void 
+  lockCurrentUsage()
+  {
+    pCurrentUsageLock.lock();
+  }
+
+  /**
+   * Release the lock once data acquisition is done.
+   */
+  public void
+  unlockCurrentUsage()
+  {
+    pCurrentUsageLock.unlock();
   }
   
   
@@ -810,5 +864,6 @@ class UserBalanceInfo
    */
   private DoubleMap<String, String, Double> pCurrentUsage;
   private TreeMap<String, Double> pSlotWeight;
-  private Object pCurrentUsageLock;
+  private long pCachedSampleStart;
+  private ReentrantLock pCurrentUsageLock;
 }

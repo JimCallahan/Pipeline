@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.54 2009/12/14 03:20:56 jim Exp $
+// $Id: QueueMgrClient.java,v 1.55 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -2280,7 +2280,7 @@ class QueueMgrClient
    *   The unique job identifiers.
    * 
    * @throws PipelineException 
-   *   If unable to resume the jobs.
+   *   If unable to update the jobs keys.
    */  
   public synchronized void
   updateJobKeys
@@ -2293,6 +2293,53 @@ class QueueMgrClient
 
     QueueJobsReq req = new QueueJobsReq(jobIDs);
     Object obj = performTransaction(QueueRequest.UpdateJobKeys, req); 
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Get a boolean which reflects whether key choosers need to be rerun for all jobs in the 
+   * queue. 
+   * 
+   * @throws PipelineException 
+   *   If unable to get the boolean value.
+   */
+  public synchronized Boolean
+  doJobKeysNeedUpdate()
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    Object obj = performTransaction(QueueRequest.DoJobKeysNeedUpdate, null);
+    if(obj instanceof QueueGetBooleanRsp) {
+      QueueGetBooleanRsp rsp = (QueueGetBooleanRsp) obj;
+      return rsp.getBooleanValue();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+  
+  /**
+   * Updates the generated keys for all jobs in the queue. <P> 
+   * 
+   * This method will fail unless the current user has QueueAdmin privileges. <P>
+   * 
+   * This method will return before it updates any of the jobs, so it does not cause the 
+   * client to have to wait while all the jobs in the queue are processed.  Any errors which 
+   * occur will be written into the QueueMgr log, but not be returned.<p>
+   * 
+   * @throws PipelineException 
+   *   If the user does not have permission to update the keys.
+   */  
+  public synchronized void
+  updateAllJobKeys() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    PrivilegedReq req = new PrivilegedReq();
+    Object obj = performTransaction(QueueRequest.UpdateAllJobKeys, req); 
     handleSimpleResponse(obj);
   }
 

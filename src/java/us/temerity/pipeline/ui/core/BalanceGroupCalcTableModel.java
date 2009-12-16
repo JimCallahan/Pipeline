@@ -1,4 +1,4 @@
-// $Id: BalanceGroupCalcTableModel.java,v 1.3 2009/12/11 23:27:01 jesse Exp $
+// $Id: BalanceGroupCalcTableModel.java,v 1.4 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7,7 +7,6 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.ui.*;
 
@@ -182,7 +181,7 @@ class BalanceGroupCalcTableModel
   {
     switch(ColumnType.typeFromOrdinal(col)) {
     case Name:
-      return new Vector3i(140);
+      return new Vector3i(140, 140, Integer.MAX_VALUE);
       
     case MaxSlots:
       return new Vector3i(80);

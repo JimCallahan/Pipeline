@@ -1,7 +1,9 @@
-// $Id: JBalanceGroupHistPanel.java,v 1.1 2009/12/11 23:29:39 jesse Exp $
+// $Id: JBalanceGroupHistPanel.java,v 1.2 2009/12/16 04:13:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 
 import javax.media.opengl.*;
@@ -78,7 +80,7 @@ class JBalanceGroupHistPanel
     pViewerPies.clear();
     {
       Point2d pos = new Point2d();
-      double dx = 12; 
+      double dx = 7.5; 
       {
         ViewerPie pie = new ViewerPie(pUsersByShareHistogram, false);
         pViewerPies.add(pie);
@@ -223,6 +225,26 @@ class JBalanceGroupHistPanel
   {
     for(ViewerPie vpie : pViewerPies) 
       vpie.render(gl);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
+  
+  @Override
+  public void 
+  mouseReleased
+  (
+    MouseEvent e
+  )
+  {
+    super.mouseReleased(e);
+    
+    pGLComponent.setCursor(Cursor.getDefaultCursor());
   }
   
 

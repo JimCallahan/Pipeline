@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.14 2009/12/09 05:05:55 jesse Exp $
+// $Id: QueueHost.java,v 1.15 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -83,7 +83,7 @@ class QueueHost
     pGroupState = qinfo.getGroupState();
     pDispatchState = qinfo.getDispatchState();
     pFavorState = qinfo.getFavorState();
-    pUserState = qinfo.getUserBalanceState();
+    pBalanceState = qinfo.getUserBalanceState();
   }
 
 
@@ -110,7 +110,7 @@ class QueueHost
     pOrderState = EditableState.Manual;
     pDispatchState = EditableState.Manual;
     pFavorState = EditableState.Manual;
-    pUserState = EditableState.Manual;
+    pBalanceState = EditableState.Manual;
   }
 
 
@@ -381,21 +381,21 @@ class QueueHost
    * Is the user balance group on the host editable.
    */
   public synchronized EditableState 
-  getUserBalanceState()
+  getBalanceState()
   {
-    return pUserState;
+    return pBalanceState;
   }
 
   /**
    * Set whether the user balance state of the host is editable.
    */
   public synchronized void 
-  setUserBalanceState
+  setBalanceState
   (
-    EditableState userState
+    EditableState balanceState
   )
   {
-    pUserState = userState;
+    pBalanceState = balanceState;
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -829,7 +829,7 @@ class QueueHost
    *   The user balance group or <CODE>null</CODE> not a member of any user balance group.
    */ 
   public synchronized String
-  getUserBalanceGroup() 
+  getBalanceGroup() 
   {
     return pUserBalanceGroup;
   }
@@ -838,7 +838,7 @@ class QueueHost
    * Set the name of the current user balance group or <CODE>null</CODE> to clear.
    */ 
   public synchronized void
-  setUserBalanceGroup
+  setBalanceGroup
   (
     String name
   ) 
@@ -974,7 +974,7 @@ class QueueHost
        pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
        getHold(), pSample, pDispatchControl, pSelectionGroup, pSelectionSchedule, 
        pHardwareGroup, pUserBalanceGroup, pFavorMethod, pGroupState, pStatusState, 
-       pReservationState, pOrderState, pSlotState, pDispatchState, pUserState, pFavorState); 
+       pReservationState, pOrderState, pSlotState, pDispatchState, pBalanceState, pFavorState); 
   }
 
 
@@ -1308,5 +1308,5 @@ class QueueHost
    * <p>
    * This is being set by the scheduler when the schedule on the machine is being applied. 
    */
-  private EditableState pUserState;
+  private EditableState pBalanceState;
 }

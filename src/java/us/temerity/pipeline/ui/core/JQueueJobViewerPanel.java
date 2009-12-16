@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.72 2009/11/06 21:53:12 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.73 2009/12/16 04:13:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -266,7 +266,13 @@ class JQueueJobViewerPanel
       pChangeJobReqsItem = item;
       item.setActionCommand("change-job-reqs");
       item.addActionListener(this);
-      pJobPopup.add(item);      
+      pJobPopup.add(item);
+      
+      item = new JMenuItem("Update Job Keys");
+      pUpdateJobKeysItem = item;
+      item.setActionCommand("update-job-keys");
+      item.addActionListener(this);
+      pJobPopup.add(item);     
 
       pJobPopup.addSeparator();
 
@@ -338,8 +344,14 @@ class JQueueJobViewerPanel
       pGroupPopup.add(item);
       
       item = new JMenuItem("Change Job Reqs");
-      pGroupKillJobsItem = item;
+      pGroupChangeJobReqs = item;
       item.setActionCommand("change-job-reqs");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+      
+      item = new JMenuItem("Update Job Keys");
+      pGroupUpdateJobKeys = item;
+      item.setActionCommand("update-job-keys");
       item.addActionListener(this);
       pGroupPopup.add(item);
       
@@ -618,6 +630,7 @@ class JQueueJobViewerPanel
     pJobPreemptJobsItem.setEnabled(!isLocked());
     pJobKillJobsItem.setEnabled(!isLocked());
     pChangeJobReqsItem.setEnabled(!isLocked());
+    pUpdateJobKeysItem.setEnabled(!isLocked());
 
     updateEditorMenus();
   }
@@ -634,6 +647,8 @@ class JQueueJobViewerPanel
     pGroupResumeJobsItem.setEnabled(!isLocked());
     pGroupPreemptJobsItem.setEnabled(!isLocked());
     pGroupKillJobsItem.setEnabled(!isLocked());
+    pGroupChangeJobReqs.setEnabled(!isLocked());
+    pGroupUpdateJobKeys.setEnabled(!isLocked());
 
     updateEditorMenus();
   }
@@ -770,7 +785,10 @@ class JQueueJobViewerPanel
       (pJobKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
     updateMenuToolTip
-      (pChangeJobReqsItem, null, 
+      (pUpdateJobKeysItem, prefs.getUpdateJobKeys(), 
+       "Update the keys for the selected jobs.");
+    updateMenuToolTip
+      (pChangeJobReqsItem, prefs.getChangeJobReqs(), 
        "Changes the job requirements for the selected jobs.");
     updateMenuToolTip
       (pJobShowNodeItem, prefs.getShowNode(), 
@@ -801,6 +819,12 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pGroupKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pGroupChangeJobReqs, prefs.getChangeJobReqs(), 
+       "Change the jobs requirements for the selected jobs.");
+    updateMenuToolTip
+      (pGroupUpdateJobKeys, prefs.getUpdateJobKeys(), 
+        "Update the keys for the selected jobs.");
     updateMenuToolTip
       (pGroupHideGroupsItem, prefs.getHideSelected(), 
        "Hide the selected job groups.");
@@ -3789,6 +3813,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pJobPreemptJobsItem;
   private JMenuItem  pJobKillJobsItem;
   private JMenuItem  pChangeJobReqsItem;
+  private JMenuItem  pUpdateJobKeysItem;
   private JMenuItem  pJobShowNodeItem;
 
   /**
@@ -3816,6 +3841,8 @@ class JQueueJobViewerPanel
   private JMenuItem  pGroupHideGroupsItem;
   private JMenuItem  pGroupDeleteGroupsItem;
   private JMenuItem  pGroupShowNodeItem;
+  private JMenuItem  pGroupChangeJobReqs;
+  private JMenuItem  pGroupUpdateJobKeys;
 
   /**
    * The view with group submenu.

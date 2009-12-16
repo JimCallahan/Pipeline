@@ -1,13 +1,12 @@
-// $Id: QueueMgrControlClient.java,v 1.24 2009/12/14 03:20:56 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.25 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline.core;
 
+import java.io.*;
+import java.util.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
-
-import java.io.*;
-import java.net.*;
-import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R   C O N T R O L   C L I E N T                                        */
@@ -108,6 +107,41 @@ class QueueMgrControlClient
   }
 
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   N E W   K E Y C H O O S E R                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Notify the queue manager that a new key chooser has been installed. <p>
+   * 
+   * This is trigger the queue manager to look at all the queue controls that use 
+   * key-choosers, and if the chooser is being used by an existing control, set the flag that
+   * will notify users that all jobs needs to have their key choosers rerun.  This can be done
+   * with the {@link #updateAllJobKeys()} method.
+   * 
+   * @param pluginID
+   *   The pluginID of the newly installed keychooser.
+   *   
+   * @throws PipelineException
+   *   If unable to notify the queue manager of the update.
+   */
+  public synchronized void
+  newKeyChooserInstalled
+  (
+    PluginID pluginID  
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    MiscPluginIDReq req = new MiscPluginIDReq(pluginID);
+    Object obj = performTransaction(QueueRequest.NewKeyChooserInstalled, req); 
+    handleSimpleResponse(obj);
+  }
+
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A D M I N I S T R A T I O N                                                          */
   /*----------------------------------------------------------------------------------------*/

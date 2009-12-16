@@ -1,4 +1,4 @@
-// $Id: UserBalanceGroup.java,v 1.5 2009/12/11 23:27:01 jesse Exp $
+// $Id: UserBalanceGroup.java,v 1.6 2009/12/16 04:13:33 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -51,7 +51,7 @@ class UserBalanceGroup
     init();
     
     pDefaultBias = 0;
-    pDefaultMaxShare = 0;
+    pDefaultMaxShare = 1;
   }
   
   /**
@@ -510,9 +510,19 @@ class UserBalanceGroup
   {
     super.fromGlue(decoder);
     
-    pDefaultBias = (Integer) decoder.decode("DefaultBias");
+    {
+      Object o = decoder.decode("DefaultBias");
+      if (o == null)
+        throw new GlueException("A UserBalanceGroup must contain a DefaultBias value");
+      pDefaultBias = (Integer) o;
+    }
     
-    pDefaultMaxShare = (Double) decoder.decode("DefaultMaxShare");
+    {
+      Object o = decoder.decode("DefaultMaxShare");
+      if (o == null)
+        throw new GlueException("A UserBalanceGroup must contain a DefaultMaxShare value");
+      pDefaultMaxShare = (Double) o;
+    }
     
     {
       TreeMap<String, Integer> temp = 
