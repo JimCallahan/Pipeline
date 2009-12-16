@@ -1,8 +1,6 @@
-// $Id: BaseOpDoubleMap.java,v 1.1 2009/12/15 21:05:29 jesse Exp $
+// $Id: BaseOpDoubleMap.java,v 1.2 2009/12/16 04:14:39 jesse Exp $
 
 package us.temerity.pipeline;
-
-import java.util.*;
 
 import us.temerity.pipeline.BaseOpMap.*;
 
