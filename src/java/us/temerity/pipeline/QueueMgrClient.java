@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.55 2009/12/16 04:13:33 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.56 2009/12/18 07:20:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -39,8 +39,8 @@ class QueueMgrClient
    * Construct a new queue manager client.
    * 
    * @param forceLongTransactions
-   *   Whether to treat all uses of {@link performTransaction} like 
-   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   Whether to treat all uses of {@link #performTransaction} like 
+   *   {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    *   response retry interval with infinite retries.
    */
   public
@@ -1373,7 +1373,7 @@ class QueueMgrClient
   /**
    * Get the current user weighting for a single user balance groups. 
    * 
-   * @param
+   * @param groupName
    *   The name of the group.
    * 
    * @return

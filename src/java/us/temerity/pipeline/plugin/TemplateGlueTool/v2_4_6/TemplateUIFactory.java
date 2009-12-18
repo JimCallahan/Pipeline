@@ -1,4 +1,4 @@
-// $Id: TemplateUIFactory.java,v 1.1 2009/06/11 19:41:22 jesse Exp $
+// $Id: TemplateUIFactory.java,v 1.2 2009/12/18 07:19:18 jim Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -62,7 +62,6 @@ class TemplateUIFactory
   /**
    * @param parent
    * @param actionCommand
-   * @return
    */
   public static JButton 
   createRemoveButton

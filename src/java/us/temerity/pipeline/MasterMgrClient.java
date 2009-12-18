@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.154 2009/12/14 03:20:56 jim Exp $
+// $Id: MasterMgrClient.java,v 1.155 2009/12/18 07:20:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -51,8 +51,8 @@ class MasterMgrClient
    * Construct a new master manager client.
    * 
    * @param forceLongTransactions
-   *   Whether to treat all uses of {@link performTransaction} like 
-   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   Whether to treat all uses of {@link #performTransaction} like 
+   *   {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    *   response retry interval with infinite retries.
    */
   public

@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.39 2009/12/14 21:48:22 jim Exp $
+// $Id: BaseMgrClient.java,v 1.40 2009/12/18 07:16:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -32,8 +32,8 @@ class BaseMgrClient
    *   The network port listened to by server.
    * 
    * @param forceLongTransactions
-   *   Whether to treat all uses of {@link performTransaction} like 
-   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   Whether to treat all uses of {@link #performTransaction} like 
+   *   {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    *   response retry interval with infinite retries.
    * 
    * @param disconnect
@@ -102,8 +102,8 @@ class BaseMgrClient
   }
 
   /**
-   * Get whether to treat all uses of {@link performTransaction} like 
-   * {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   * Get whether to treat all uses of {@link #performTransaction} like 
+   * {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    * response retry interval with infinite retries.
    */
   public boolean 
@@ -113,8 +113,8 @@ class BaseMgrClient
   }
 
   /**
-   * Set whether to treat all uses of {@link performTransaction} like 
-   * {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   * Set whether to treat all uses of {@link #performTransaction} like 
+   * {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    * response retry interval with infinite retries.
    */ 
   public void 

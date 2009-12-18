@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.29 2009/12/12 23:12:49 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.30 2009/12/18 07:20:55 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -31,8 +31,8 @@ class BasePluginMgrClient
    * Construct the sole instance.
    * 
    * @param forceLongTransactions
-   *   Whether to treat all uses of {@link performTransaction} like 
-   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   Whether to treat all uses of {@link #performTransaction} like 
+   *   {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    *   response retry interval with infinite retries.
    * 
    * @param clientID

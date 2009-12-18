@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.27 2009/09/18 21:01:17 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.28 2009/12/18 07:22:16 jim Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -335,9 +335,8 @@ class TemplateBuilder
   /**
    * Check if the src node is ignorable from the perspective of the target node.
    * <p>
-   * The node is considered ignorable if the target node has a 
-   * {@link TemplateIgnoreProductAnnotation} with the LinkName parameter set to the
-   * value of the src node.
+   * The node is considered ignorable if the target node has a TemplateIgnoreProductAnnotation
+   * with the LinkName parameter set to the value of the src node.
    * 
    * @param target
    *   The target node, which should be part of the template.

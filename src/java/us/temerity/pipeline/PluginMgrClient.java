@@ -1,4 +1,4 @@
-// $Id: PluginMgrClient.java,v 1.11 2009/12/12 23:12:49 jim Exp $
+// $Id: PluginMgrClient.java,v 1.12 2009/12/18 07:20:55 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -24,7 +24,7 @@ import java.util.*;
  * As opposed to the other Pipeline client classes, the PluginMgrClient is not initialized 
  * with a constructor.  Instead, an instance is retrieved using the 
  * {@link #getInstance()} method, which returns a connection to the server.  Attempting to 
- * make a connecting using {@link #PluginMgrClient()} will not succeed. <P> 
+ * make a connecting using {@link #PluginMgrClient} will not succeed. <P> 
  * 
  * In stand alone Pipeline applications which need to deal with plugins, it is necessary to 
  * call the {@link #init()} method before any method calls that manipulate any data structures
@@ -45,8 +45,8 @@ class PluginMgrClient
    * Construct the sole instance.
    * 
    * @param forceLongTransactions
-   *   Whether to treat all uses of {@link performTransaction} like 
-   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   Whether to treat all uses of {@link #performTransaction} like 
+   *   {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    *   response retry interval with infinite retries.
    **/
   protected 
@@ -97,8 +97,8 @@ class PluginMgrClient
    *   Whether to abort immediately if unable to connect to the plugin manager.
    * 
    * @param forceLongTransactions
-   *   Whether to treat all uses of {@link performTransaction} like 
-   *   {@link performLongTransaction} with an infinite request timeout and a 60-second 
+   *   Whether to treat all uses of {@link #performTransaction} like 
+   *   {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    *   response retry interval with infinite retries.
    */
   public static void 
