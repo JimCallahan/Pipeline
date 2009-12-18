@@ -1,4 +1,4 @@
-// $Id: PanelProxy.java,v 1.1 2009/12/18 08:44:26 jim Exp $
+// $Id: PanelProxy.java,v 1.2 2009/12/18 19:57:04 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -35,6 +35,20 @@ interface PanelProxy
    */ 
   public ManagerPanelProxy
   getManager()
+    throws PipelineException;
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  C O N T E N T                                                                         */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initiate an update from the server of the contents of all panels which share the 
+   * same update channel as this panel.<P> 
+   */ 
+  public void
+  update() 
     throws PipelineException;
 
 }
