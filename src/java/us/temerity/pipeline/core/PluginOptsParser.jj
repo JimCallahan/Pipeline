@@ -510,23 +510,59 @@ CommandLine()
             throw new ParseException
               ("No plugins where installed, since no Java class or JAR files were given!");
 	
-          File plugindir = new File(".");
-          Iterator iter = pPluginFiles.iterator();
-          while(iter.hasNext()) {
-            File pluginfile = (File) iter.next();
-	  
-            LogMgr.getInstance().log
-              (LogMgr.Kind.Ops, LogMgr.Level.Info,
-               (pDryRun ? "Dry run install: " : "Installing: ") + pluginfile); 
-            LogMgr.getInstance().flush();
-	  
-            try {
-              client.installPlugin(plugindir, pluginfile, pExternal, pRename, pDryRun);
-            }
-            catch(PipelineException ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+          boolean success = true;
+          try {
+            File plugindir = new File(".");
+            Iterator iter = pPluginFiles.iterator();
+            while(iter.hasNext()) {
+              File pluginfile = (File) iter.next();
+              
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Ops, LogMgr.Level.Info,
+                 "\n" + 
+                 "------------------------------------------------------------------------\n" +
+                 (pDryRun ? "Testing Installation: " : "Installing: ") + pluginfile); 
+              
+              try {
+                client.installPlugin(plugindir, pluginfile, pExternal, pRename, pDryRun);
+              }
+              catch(PipelineException ex) {
+                success = false;
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Ops, pDryRun ? LogMgr.Level.Warning : LogMgr.Level.Severe, 
                  ex.getMessage());
+              }
+              catch(Exception ex) {
+                success = false;
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+                   Exceptions.getFullMessage(ex));
+              }
+            }
+          }
+          finally { 
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Info,
+               "\n" + 
+               "------------------------------------------------------------------------");
+            
+            if(success) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Ops, LogMgr.Level.Info,
+                 (pDryRun ? "Testing" : "Installation") + " Complete."); 
+            }
+            else {
+              if(pDryRun) {
+                throw new PipelineException
+                  ("While testing the installtion of plugins, problems were encountered " + 
+                   "that would have prevented some of the given plugins from being " + 
+                   "installed successfully.");
+              }
+              else {
+                throw new PipelineException
+                ("While installing plugins, problems were encountered that prevented " + 
+                 "some of the given plugins from being installed successfully.");
+              }
             }
           }
         }
