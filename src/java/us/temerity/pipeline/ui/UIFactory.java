@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.37 2009/12/11 04:21:11 jesse Exp $
+// $Id: UIFactory.java,v 1.38 2009/12/18 08:44:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -35,6 +35,84 @@ class UIFactory
   UIFactory() 
   {}
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N I T I A L I Z A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Method to allow a standalone application to have a UI matching Pipeline.
+   * <p>
+   * Pipeline has a host of its own UI settings that control how it looks. When plui starts
+   * all of these settings are loaded as part of its startup. However, standalone applications
+   * do not have this initialization feature, which means they will be using Java's default
+   * look-and-feel. For the sake of consistency and aesthetics, it is preferable to use the
+   * Pipeline look-and-feel for standalone applications. Calling this method will set things
+   * up suitable for that to happen.
+   */
+  public static void
+  initializePipelineUI()
+  {
+    /* load the look-and-feel */
+    {
+      try {
+	SynthLookAndFeel synth = new SynthLookAndFeel();
+	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
+	  LookAndFeelLoader.class);
+	UIManager.setLookAndFeel(synth);
+      } 
+      catch(java.text.ParseException ex) {
+	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	  "Unable to parse the look-and-feel XML file (synth.xml):\n" + "  "
+	  + ex.getMessage());
+	System.exit(1);
+      } 
+      catch(UnsupportedLookAndFeelException ex) {
+	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	  "Unable to load the Pipeline look-and-feel:\n" + "  " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+
+    /* application wide UI settings */
+    if(!PackageInfo.sUseJava2dGLPipeline) {
+      JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+      ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L I E N T   I N T E R F A C E                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the interface for managing the top-level windows of plui(1) containing node, queue 
+   * and job related panels.
+   */ 
+  public static UIClient
+  getUIClient()
+  {
+    return pUIClient; 
+  }
+  
+  /**
+   * Sets the implementation which managings the top-level windows of plui(1) containing 
+   * node, queue and job related panels.<P> 
+   * 
+   * This method is called by the plui(1) internals to initialize the UIClient, but has 
+   * no utility in user code.
+   */ 
+  public static void 
+  setUIClient
+  (
+   UIClient client
+  )
+  {
+    pUIClient = client; 
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4442,53 +4520,6 @@ class UIFactory
   
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Method to allow a standalone application to have a UI matching Pipeline.
-   * <p>
-   * Pipeline has a host of its own UI settings that control how it looks. When plui starts
-   * all of these settings are loaded as part of its startup. However, standalone applications
-   * do not have this initialization feature, which means they will be using Java's default
-   * look-and-feel. For the sake of consistency and aesthetics, it is preferable to use the
-   * Pipeline look-and-feel for standalone applications. Calling this method will set things
-   * up suitable for that to happen.
-   */
-  public static void
-  initializePipelineUI()
-  {
-    /* load the look-and-feel */
-    {
-      try {
-	SynthLookAndFeel synth = new SynthLookAndFeel();
-	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
-	  LookAndFeelLoader.class);
-	UIManager.setLookAndFeel(synth);
-      } 
-      catch(java.text.ParseException ex) {
-	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	  "Unable to parse the look-and-feel XML file (synth.xml):\n" + "  "
-	  + ex.getMessage());
-	System.exit(1);
-      } 
-      catch(UnsupportedLookAndFeelException ex) {
-	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	  "Unable to load the Pipeline look-and-feel:\n" + "  " + ex.getMessage());
-	System.exit(1);
-      }
-    }
-
-    /* application wide UI settings */
-    if(!PackageInfo.sUseJava2dGLPipeline) {
-      JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-      ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   B E E P   P R E F E R E N C E                                                        */
   /*----------------------------------------------------------------------------------------*/
 
@@ -4515,6 +4546,18 @@ class UIFactory
   {
     pBeepPreference.set(beep);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The interface for managing the top-level windows of plui(1) containing node, queue and 
+   * job related panels.
+   */
+  private static UIClient pUIClient;
 
   /**
    * Beep preference boolean.
