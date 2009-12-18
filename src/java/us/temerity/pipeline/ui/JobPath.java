@@ -1,4 +1,4 @@
-// $Id: JobPath.java,v 1.3 2009/12/18 07:05:53 jim Exp $
+// $Id: JobPath.java,v 1.4 2009/12/18 08:43:30 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -12,8 +12,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The path from the root job of a {@link JQueueJobViewerPanel JQueueJobViewerPanel} to a 
- * specific upstream job.
+ * The path from the root job of a Job Viewer panel to a specific upstream job.
  */
 public
 class JobPath
@@ -174,7 +173,7 @@ class JobPath
   /**
    * Compares this <CODE>JobPath</CODE> with the given <CODE>JobPath</CODE> for order.
    * 
-   * @param id 
+   * @param path
    *   The <CODE>JobPath</CODE> to be compared.
    */
   public int

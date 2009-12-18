@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.6 2009/12/18 07:05:53 jim Exp $
+// $Id: NodePath.java,v 1.7 2009/12/18 08:43:30 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -12,8 +12,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The path from the root node of a {@link JNodeViewerPanel JNodeViewerPanel} to a 
- * specific upstream/downstream node.
+ * The path from the root node of a Node Viewer panel to a specific upstream/downstream node.
  */
 public
 class NodePath
@@ -227,7 +226,7 @@ class NodePath
   /**
    * Compares this <CODE>NodePath</CODE> with the given <CODE>NodePath</CODE> for order.
    * 
-   * @param id 
+   * @param path
    *   The <CODE>NodePath</CODE> to be compared.
    */
   public int
