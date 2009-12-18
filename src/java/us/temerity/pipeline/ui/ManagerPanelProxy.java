@@ -1,4 +1,4 @@
-// $Id: ManagerPanelProxy.java,v 1.1 2009/12/18 08:44:26 jim Exp $
+// $Id: ManagerPanelProxy.java,v 1.2 2009/12/18 19:54:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -203,5 +203,6 @@ interface ManagerPanelProxy
   public void
   update()
     throws PipelineException;
+
     
 }
