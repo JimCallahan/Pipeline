@@ -1,4 +1,4 @@
-// $Id: NodeViewerProxy.java,v 1.1 2009/12/18 08:44:26 jim Exp $
+// $Id: NodeViewerProxy.java,v 1.2 2009/12/18 19:55:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,7 +65,10 @@ interface NodeViewerProxy
 
   /**
    * Initiate an update from the server of the contents of all panels which share the 
-   * same update channel as this panel.
+   * same update channel as this panel.<P> 
+   * 
+   * @param lightweight
+   *   Whether perform lightweight node status (true) or heavyweight node status (false). 
    */ 
   public void
   update
@@ -74,7 +77,7 @@ interface NodeViewerProxy
   ) 
     throws PipelineException;
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*  S E L E C T I O N                                                                     */
@@ -83,7 +86,7 @@ interface NodeViewerProxy
   /**
    * Get the paths from the root node of each network to the currently selected nodes.<P> 
    * 
-   * Note that the same node by be displayed multiple times but with different paths from 
+   * Note that the same node may be displayed multiple times but with different paths from 
    * the root node of the network.  The {@link NodePath} identifies this unique path for 
    * each node.
    */ 
@@ -241,7 +244,7 @@ interface NodeViewerProxy
     throws PipelineException;
     
   /**
-   * Get the horizontal/vertical spacing between nodes and redisplay.
+   * Set the horizontal/vertical spacing between nodes and redisplay.
    */ 
   public void 
   setNodeSpacing
@@ -251,6 +254,26 @@ interface NodeViewerProxy
     throws PipelineException;
     
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the display alignment of root nodes of each node network displayed.
+   */ 
+  public LayoutOrientation
+  getOrientation() 
+    throws PipelineException;
+
+  /**
+   * Set the display alignment of root nodes of each node network displayed.
+   */ 
+  public void 
+  setOrientation
+  (
+   LayoutOrientation orient
+  )
+    throws PipelineException;
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -306,9 +329,139 @@ interface NodeViewerProxy
     throws PipelineException;
     
 
-
   /*----------------------------------------------------------------------------------------*/
-  /*  E D I T I N G                                                                         */
+
+  /**
+   * Get whether downstream node networks are being displayed. 
+   */ 
+  public boolean
+  getShowDownstream() 
+    throws PipelineException;
+  
+  /**
+   * Set whether to display downstream node networks. 
+   */ 
+  public void 
+  setShowDownstream
+  (
+   boolean show
+  )
+    throws PipelineException;
+
+  
+  /**
+   * Get the criteria used to determine which downstream paths are displayed. 
+   */ 
+  public DownstreamMode
+  getDownstreamMode() 
+    throws PipelineException;
+  
+  /**
+   * Set the criteria used to determine which downstream paths are displayed. 
+   */ 
+  public void 
+  setDownstreamMode
+  (
+   DownstreamMode mode 
+  )
+    throws PipelineException;
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get whether node detail hints should be displayed.
+   */ 
+  public boolean 
+  getShowNodeDetailHints() 
+    throws PipelineException;
+
+  /**
+   * Set whether node detail hints should be displayed.
+   */ 
+  public void
+  setShowNodeDetailHints
+  (
+   boolean show
+  ) 
+    throws PipelineException;
+    
+
+  /**
+   * Get whether toolset hints should be displayed.
+   */ 
+  public boolean 
+  getShowToolsetHints() 
+    throws PipelineException;
+
+  /**
+   * Set whether toolset hints should be displayed.
+   */ 
+  public void
+  setShowToolsetHints
+  (
+   boolean show
+  ) 
+    throws PipelineException;
+
+  
+  /**
+   * Get whether editor plugin hints should be displayed.
+   */ 
+  public boolean 
+  getShowEditorHints() 
+    throws PipelineException;
+
+  /**
+   * Set whether editor plugin hints should be displayed.
+   */ 
+  public void
+  setShowEditorHints
+  (
+   boolean show
+  ) 
+    throws PipelineException;
+
+
+  /**
+   * Get whether user editing hints should be displayed.
+   */ 
+  public boolean 
+  getShowEditingHints() 
+    throws PipelineException;
+
+  /**
+   * Set whether user editing hints should be displayed.
+   */ 
+  public void
+  setShowEditingHints
+  (
+   boolean show
+  ) 
+    throws PipelineException;
+
+
+  /**
+   * Get whether action plugin hints should be displayed.
+   */ 
+  public boolean 
+  getShowActionHints() 
+    throws PipelineException;
+
+  /**
+   * Set whether action plugin hints should be displayed.
+   */ 
+  public void
+  setShowActionHints
+  (
+   boolean show
+  ) 
+    throws PipelineException;
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  E D I T O R   P L U G I N S                                                           */
   /*----------------------------------------------------------------------------------------*/
 
   /**
