@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.45 2009/12/12 01:17:27 jim Exp $
+// $Id: PluginMgr.java,v 1.46 2009/12/18 23:00:35 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2457,6 +2457,26 @@ class PluginMgr
 	else {
 	  loadValidatedPlugin(pKeyChoosers, cname, plg, 
 			      contents, resources, checksums, isStartup);
+	
+	  /* Tell the queue manager that there is something new so it can take steps.*/
+	  QueueMgrControlClient qclient = null;
+	  try {
+	    boolean isConnected = true;
+	    try {
+	      qclient = new QueueMgrControlClient();
+	      qclient.verifyConnection();
+	    } 
+	    catch (PipelineException ex) {
+	      isConnected = false;
+	    }
+	    if (isConnected) {
+	      qclient.newKeyChooserInstalled(plg.getPluginID());
+	    }
+	  }
+	  finally {
+	    if (qclient != null)
+	      qclient.disconnect();
+	  }
 	}
       }
       else if(plg instanceof BaseBuilderCollection) {

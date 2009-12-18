@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.149 2009/12/16 17:59:22 jim Exp $
+// $Id: QueueMgr.java,v 1.150 2009/12/18 23:00:35 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9,8 +9,6 @@ import java.util.Map.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
-
-import org.python.modules.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -120,6 +118,9 @@ class QueueMgr
       pAdminPrivileges = new AdminPrivileges();
       pMasterMgrClient = new MasterMgrClient();
       
+      pChooserUpdateTime = new AtomicLong();
+      pLastUpdateAllTime = new AtomicLong();
+      
       pLicenseKeys = new TreeMap<String,LicenseKey>();
 
       pHardwareKeys         = new TreeMap<String, HardwareKey>();
@@ -191,6 +192,7 @@ class QueueMgr
       pJobs         = new TreeMap<Long,QueueJob>();
       
       pJobReqsChanges = new TreeMap<Long, JobReqs>();
+      pJobReqsChangesLock = new Object();
 
       pJobInfoFileLocks = new TreeMap<Long,Object>();
       pJobInfo          = new TreeMap<Long,QueueJobInfo>();
@@ -221,6 +223,9 @@ class QueueMgr
 
       /* create the lock file */ 
       createLockFile();
+      
+      /* read the Key Chooser Update time. */
+      readChooserUpdateTime();
 
       /* load and initialize the server extensions */ 
       initQueueExtensions();
@@ -529,6 +534,62 @@ class QueueMgr
 
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Initialized"); 
     }
+    
+    /* Update the job key chooser status for all the job groups */
+    {
+      TaskTimer timer = 
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Updating Key Chooser State...");
+      
+      TreeSet<Long> jobGroupIDs = new TreeSet<Long>();
+      synchronized (pJobGroups) {
+        jobGroupIDs = new TreeSet<Long>(pJobGroups.keySet());
+      }
+      
+      for (Long jobGroupID : jobGroupIDs) {
+        TreeSet<Long> jobIDs = null; 
+        synchronized (pJobGroups) {
+          QueueJobGroup group = pJobGroups.get(jobGroupID);
+          if (group != null) {
+            if (group.getCompletedStamp() != null) {
+              LogMgr.getInstance().log
+                (Kind.Ops, Level.Finest, 
+                 "Setting the Job Group (" + group.getGroupID() +") Key Chooser state to " +
+                 "(Finished)");
+              group.setJobKeysNeedUpdate(false);
+              continue;
+            }
+            jobIDs = new TreeSet<Long>(group.getJobIDs());
+          }
+        }
+        if (jobIDs != null) {
+          boolean upToDate = true;
+          long chooserUpdate = pChooserUpdateTime.get();
+          synchronized (pJobs) {
+            for (Long jobID : jobIDs) {
+              QueueJob job = pJobs.get(jobID);
+              if (job.doKeysNeedUpdate(chooserUpdate)) {
+                upToDate = false;
+                break;
+              }
+            }
+          }
+          synchronized (pJobGroups) {
+            QueueJobGroup group = pJobGroups.get(jobGroupID);
+            if (group != null) {
+              group.setJobKeysNeedUpdate(!upToDate);
+              String state = "Stale";
+              if (upToDate)
+                state = "Finished";
+              LogMgr.getInstance().log
+                (Kind.Ops, Level.Finest, 
+                 "Setting the Job Group (" + group.getGroupID() +") Key Chooser state to " +
+                 "(" + state +")");
+            }
+          }
+        }
+      }
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Updated");
+    }
 
     /* create tasks to manage the previously started jobs which will be started when
        the host is re-Enabled */ 
@@ -609,6 +670,7 @@ class QueueMgr
   }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S H U T D O W N                                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -692,10 +754,21 @@ class QueueMgr
 	   ex.getMessage());
       }
     }
+    
+    /* write the chooser update time. */
+    try {
+      writeChooserUpdateTime();
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         ex.getMessage()); 
+    }
 
     /* remove the lock file */ 
     removeLockFile();   
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -823,8 +896,10 @@ class QueueMgr
       }
     }
     
-    if (changed)
-      pDoJobKeysNeedUpdate.set(true);
+    if (changed) {
+      pChooserUpdateTime.set(System.currentTimeMillis());
+      new FlagAllJobGroupsThread().start();
+    }
     
     return new SuccessRsp(timer);
   }
@@ -1275,8 +1350,10 @@ class QueueMgr
 	pLicenseKeys.put(key.getName(), key);
 	writeLicenseKeys();
 	
-	if (key.getKeyChooser() != null)
-	  pDoJobKeysNeedUpdate.set(true);
+	if (key.getKeyChooser() != null) {
+	  pChooserUpdateTime.set(System.currentTimeMillis());
+	  new FlagAllJobGroupsThread().start();
+	}
 
 	return new SuccessRsp(timer);
       }
@@ -1558,8 +1635,10 @@ class QueueMgr
 	pSelectionKeys.put(key.getName(), key);
 	writeSelectionKeys();
 	
-	if (key.hasKeyChooser())
-	  pDoJobKeysNeedUpdate.set(true);
+	if (key.hasKeyChooser()) {
+	  pChooserUpdateTime.set(System.currentTimeMillis());
+	  new FlagAllJobGroupsThread().start();
+	}
 
 	return new SuccessRsp(timer);
       }
@@ -2231,8 +2310,10 @@ class QueueMgr
 	pHardwareKeys.put(key.getName(), key);
 	writeHardwareKeys();
 
-	if (key.getKeyChooser() != null)
-	  pDoJobKeysNeedUpdate.set(true);
+	if (key.getKeyChooser() != null) {
+	  pChooserUpdateTime.set(System.currentTimeMillis());
+	  new FlagAllJobGroupsThread().start();
+	}
 
 	return new SuccessRsp(timer);
       }
@@ -5831,7 +5912,9 @@ class QueueMgr
         new TreeMap<String, BaseKeyChooser>();
       TreeMap<String, BaseKeyChooser> hardwareKeys = 
         new TreeMap<String, BaseKeyChooser>();
-    
+
+      long keyUpdateTime = System.currentTimeMillis();
+      
       timer.aquire();
       synchronized(pSelectionKeys) {
         timer.resume();
@@ -5855,7 +5938,7 @@ class QueueMgr
           hardwareKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
         }
       }
-    
+      
       try {
         DoubleMap<NodeID, String, BaseAnnotation> annots = 
           pMasterMgrClient.getAnnotations(nodeIDs);
@@ -5873,13 +5956,13 @@ class QueueMgr
               TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
               timer.suspend();
               ArrayList<String> msgs = 
-                adjustJobRequirements(subTimer, job, reqs, annot, 
+                adjustJobRequirements(job, reqs, keyUpdateTime, annot, 
                   selectionKeys, hardwareKeys, licenseKeys);
               exceptions.addAll(msgs);
               timer.accum(subTimer);
 
               timer.aquire();
-              synchronized (pJobReqsChanges) {
+              synchronized (pJobReqsChangesLock) {
                 timer.resume();
                 pJobReqsChanges.put(jobID, reqs);
               }
@@ -5966,6 +6049,8 @@ class QueueMgr
         new TreeMap<String, BaseKeyChooser>();
       TreeMap<String, BaseKeyChooser> hardwareKeys = 
         new TreeMap<String, BaseKeyChooser>();
+      
+      long keyUpdateTime = System.currentTimeMillis();
     
       timer.aquire();
       synchronized(pSelectionKeys) {
@@ -5990,7 +6075,7 @@ class QueueMgr
           hardwareKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
         }
       }
-    
+      
       try {
         DoubleMap<NodeID, String, BaseAnnotation> annots = 
           pMasterMgrClient.getAnnotations(nodeIDs);
@@ -6005,13 +6090,13 @@ class QueueMgr
             timer.suspend();
             TreeMap<String, BaseAnnotation> annot = annots.get(job.getNodeID());
             ArrayList<String> msgs = 
-              adjustJobRequirements(subTimer, job, reqs, annot, 
+              adjustJobRequirements(job, reqs, keyUpdateTime, annot,  
                 selectionKeys, hardwareKeys, licenseKeys); 
             exceptions.addAll(msgs);
             timer.accum(subTimer);
        
-              timer.aquire();
-            synchronized (pJobReqsChanges) {
+            timer.aquire();
+            synchronized (pJobReqsChangesLock) {
               timer.resume();
               pJobReqsChanges.put(entry.getKey(), reqs);
             }
@@ -6065,6 +6150,9 @@ class QueueMgr
    * @param jreqs
    *   The current job requirements that are going to be modified.
    *   
+   * @param updateTimestamp
+   *   The time stamp to write into the job as its update time.
+   *   
    * @param annots
    *   The list of annotations associated with the nodeID of the current job.  
    *   Should NEVER be <code>null</code>
@@ -6084,9 +6172,9 @@ class QueueMgr
   private ArrayList<String> 
   adjustJobRequirements
   (
-    TaskTimer timer,
     QueueJob job,
     JobReqs jreqs,
+    long updateTimestamp,
     TreeMap<String, BaseAnnotation> annots,
     TreeMap<String, BaseKeyChooser> selectionKeys,
     TreeMap<String, BaseKeyChooser> hardwareKeys,
@@ -6163,6 +6251,8 @@ class QueueMgr
       jreqs.removeAllHardwareKeys();
       jreqs.addHardwareKeys(finalKeys);
     }
+    
+    jreqs.setJobKeysUpdateTime(updateTimestamp);
     return toReturn;
   }
   
@@ -6177,8 +6267,12 @@ class QueueMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();
+      
+      long lastUpdate = pLastUpdateAllTime.get();
+      long chooserUpdate = pChooserUpdateTime.get();
+      
       return new QueueGetBooleanRsp
-        (timer, pDoJobKeysNeedUpdate.get(), "doJobKeysNeedUpdate"); 
+        (timer, (chooserUpdate > lastUpdate), "doJobKeysNeedUpdate"); 
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -6218,6 +6312,13 @@ class QueueMgr
         allJobIds.addAll(pJobs.keySet());
       }
       
+      long lastUpdate = pLastUpdateAllTime.get();
+      long chooserUpdate = pChooserUpdateTime.get();
+
+      if (lastUpdate > chooserUpdate)
+        throw new PipelineException
+          ("It is not necessary to update all the job keys at this time");
+      
       for (Long jobID : allJobIds) {
         timer.aquire();
         synchronized (pJobInfo) {
@@ -6244,6 +6345,48 @@ class QueueMgr
       pDatabaseLock.readLock().unlock();
     }
     return new SuccessRsp(timer);
+  }
+  
+  /**
+   * Get the timestamp that reflects the last time a keychoosers or a key that uses a 
+   * keychooser was updated. 
+   * <p>
+   * This value can then be compared against the value saved in jobs to determine if the job 
+   * needs to have its keys re-evaluated. 
+   */
+  public Object
+  getChooserUpdateTime()
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      long time = pChooserUpdateTime.get();
+      
+      return new MiscGetLongRsp(timer, time, "QueueMgr.getChooserUpdateTime()");
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  /**
+   * Set the flag for jobs needing key chooser updates to <code>true</code> in all job groups 
+   * that still have waiting jobs.
+   */
+  private void
+  flagAllJobGroups()
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.flagAllJobGroups()");
+    synchronized (pJobGroups) {
+     for (Entry<Long, QueueJobGroup> entry : pJobGroups.entrySet()) {
+       Long groupID = entry.getKey();
+       QueueJobGroup group = entry.getValue();
+       double percent = pJobCounters.percentPendingByGroup(timer, groupID);
+       if (percent > 0d)
+         group.setJobKeysNeedUpdate(true);
+     }
+    }
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -7673,20 +7816,20 @@ class QueueMgr
     timer.suspend();
     TaskTimer tm = new TaskTimer("Dispatcher [Change Job Requirements]");
     
+    TreeMap<Long, JobReqs> changes;
+    tm.aquire();
+    synchronized (pJobReqsChangesLock) {
+      tm.resume();
+      changes = pJobReqsChanges;
+      pJobReqsChanges = new TreeMap<Long, JobReqs>();
+    }
+
+    TreeSet<Long> updatedJobGroups = new TreeSet<Long>();
+    
     boolean trigger = false;
-    while (true) {
-      long jobID;
-      JobReqs reqs;
-      
-      tm.aquire();
-      synchronized (pJobReqsChanges) {
-        tm.resume();
-        if (pJobReqsChanges.isEmpty())
-          break;
-        jobID = pJobReqsChanges.firstKey();
-        reqs = pJobReqsChanges.remove(jobID);
-      }
-      
+    for (Entry<Long, JobReqs> entry : changes.entrySet()) {
+      long jobID = entry.getKey();
+      JobReqs reqs = entry.getValue();
       QueueJobInfo info = getJobInfo(tm, jobID);       
       if(info != null) {
         switch(info.getState()) {
@@ -7702,9 +7845,38 @@ class QueueMgr
               changedIDs.add(jobID);
               pWriteJobList.add(jobID);
               trigger = true;
+              updatedJobGroups.add(job.getJobGroupID());
             }
           }
-          break;
+        }
+      }
+    }
+    
+    for (Long jobGroupID : updatedJobGroups) {
+      TreeSet<Long> jobIDs = null; 
+      synchronized (pJobGroups) {
+        QueueJobGroup group = pJobGroups.get(jobGroupID);
+        if (group != null) {
+          jobIDs = new TreeSet<Long>(group.getJobIDs());
+        }
+      }
+      if (jobIDs != null) {
+        boolean upToDate = true;
+        long chooserUpdate = pChooserUpdateTime.get();
+        synchronized (pJobs) {
+          for (Long jobID : jobIDs) {
+            QueueJob job = pJobs.get(jobID);
+            if (job.doKeysNeedUpdate(chooserUpdate)) {
+              upToDate = false;
+              break;
+            }
+          }
+        }
+        synchronized (pJobGroups) {
+          QueueJobGroup group = pJobGroups.get(jobGroupID);
+          if (group != null) {
+            group.setJobKeysNeedUpdate(!upToDate);
+          }
         }
       }
     }
@@ -7715,7 +7887,7 @@ class QueueMgr
     if (!changedIDs.isEmpty())
       LogMgr.getInstance().log
         (Kind.Wri, Level.Finest, 
-      "Adding jobs with ids " + changedIDs + " to the write list");
+        "Adding jobs with ids " + changedIDs + " to the write list");
     if (trigger)
       pWriterSemaphore.release();
   }
@@ -9383,6 +9555,7 @@ class QueueMgr
           /* update the completed group */ 
           if(done && (latest != null)) {
             group.completed(latest);
+            group.setJobKeysNeedUpdate(false);
             try {
               writeJobGroup(group);
             }
@@ -10612,7 +10785,7 @@ class QueueMgr
    * Write the user balance groups to disk. <P> 
    * 
    * @throws PipelineException
-   *   If unable to write the selection groups file.
+   *   If unable to write the user balance groups file.
    */ 
   private void 
   writeUserBalanceGroups() 
@@ -10681,6 +10854,84 @@ class QueueMgr
           pUserBalanceInfo.addGroupChange(group.getName(), true);
         }
       }
+    }
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Write the chooser update time to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the timestamp.
+   */ 
+  private void 
+  writeChooserUpdateTime() 
+    throws PipelineException
+  {
+    Long timeStamp = pChooserUpdateTime.get();
+
+    File file = new File(pQueueDir, "queue/etc/update-time");
+    if(file.exists()) {
+      if(!file.delete())
+        throw new PipelineException
+          ("Unable to remove the old update time file (" + file + ")!");
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Chooser Update Time.");
+
+    try {
+      GlueEncoderImpl.encodeFile("ChooserUpdateTime", timeStamp, file);
+    }
+    catch(GlueException ex) {
+      throw new PipelineException(ex);
+    }
+  }
+  
+  /**
+   * Read the chooser update time to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If an error occurs while reading the timestamp.
+   */
+  private void
+  readChooserUpdateTime()
+    throws PipelineException
+  {
+    File file = new File(pQueueDir, "queue/etc/update-time");
+    if(file.exists()) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+         "Reading Chooser Update Time.");
+      
+      Long timeStamp= null;
+      try {
+        timeStamp = 
+          (Long) GlueDecoderImpl.decodeFile("ChooserUpdateTime", file);
+      }       
+      catch(GlueException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+           "Unable to successfully read the ChooserUpdateTime.  " + ex.getMessage());
+      }
+      if (timeStamp == null)
+        pChooserUpdateTime.set(System.currentTimeMillis());
+      else
+        pChooserUpdateTime.set(timeStamp);
+      
+      if (!file.delete()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+           "Unable to delete the ChooserUpdateTime file.");
+      }
+    }
+    else {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+         "No ChooserUpdateTime file exists.  Using current time.");
+      pChooserUpdateTime.set(System.currentTimeMillis());
     }
   }
 
@@ -12074,6 +12325,19 @@ class QueueMgr
     private AtomicBoolean pDoneScanning;
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  private 
+  class FlagAllJobGroupsThread
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      flagAllJobGroups();
+    }
+  }
   
   /*----------------------------------------------------------------------------------------*/
   
@@ -12098,7 +12362,14 @@ class QueueMgr
     run()
     {
       QueueJobsReq req = new QueueJobsReq(pJobIDs);
-      updateJobKeys(req);
+      pLastUpdateAllTime.set(System.currentTimeMillis());
+      Object o = updateJobKeys(req);
+      if (o instanceof FailureRsp) {
+        FailureRsp rsp = (FailureRsp) o;
+        LogMgr.getInstance().logAndFlush
+          (Kind.Ops, Level.Warning, 
+           "Errors occured while updating job keys:\n" + rsp.getMessage());
+      }
     }
     
     private TreeSet<Long> pJobIDs;
@@ -13483,11 +13754,20 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * A boolean that is set to <code>true</code> whenever conditions have changed so that all
-   * jobs in the queue will need to have key-choosers run on them to update their 
-   * selection, hardware, and license keys.
+   * A long that is set whenever keychoosers or a key that uses a keychooser is updated. <p>
+   * 
+   * This value can then be compared against the value saved in jobs to determine if the job 
+   * needs to have its keys re-evaluated. <p>
+   * 
+   * This value will be set to <code>null</code> when the Queue Manager is initialized, 
+   * indicating that no changes have been made. 
    */
-  private AtomicBoolean pDoJobKeysNeedUpdate;
+  private AtomicLong pChooserUpdateTime;
+  
+  /**
+   * The last time that {@link #updateAllJobKeys(PrivilegedReq)} was run.
+   */
+  private AtomicLong pLastUpdateAllTime;
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -14041,6 +14321,7 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<Long,JobReqs>  pJobReqsChanges;
+  private Object pJobReqsChangesLock;
 
   /*----------------------------------------------------------------------------------------*/
 

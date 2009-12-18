@@ -1,4 +1,4 @@
-// $Id: QueueJobCounters.java,v 1.6 2009/12/08 22:20:03 jim Exp $
+// $Id: QueueJobCounters.java,v 1.7 2009/12/18 23:00:35 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -226,6 +226,36 @@ class QueueJobCounters
       LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
          "Somehow the job (" + jobID + ") was not in the state counts table!");
+      return 0.0;
+    }
+  }
+  
+  /**
+   * Get the percentage of jobs in the job group which are currently Queued or Preempted. 
+   */ 
+  public double 
+  percentPendingByGroup
+  (
+   TaskTimer timer,
+   long jobGroupID
+  ) 
+  {
+    Counters counters = null;
+    timer.aquire();
+    synchronized(pCountersByGroup) {
+      timer.resume();
+      counters = pCountersByGroup.get(jobGroupID);
+    }
+
+    if(counters != null) {
+      double percent = counters.percentPending();
+
+      return percent;
+    }
+    else {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+         "Somehow the job group (" + jobGroupID + ") was not in the state counts table!");
       return 0.0;
     }
   }

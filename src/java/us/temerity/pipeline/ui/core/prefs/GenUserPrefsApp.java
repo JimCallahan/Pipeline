@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.86 2009/12/16 04:13:34 jesse Exp $
+// $Id: GenUserPrefsApp.java,v 1.87 2009/12/18 23:00:36 jesse Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1878,7 +1878,11 @@ class GenUserPrefsApp
 
 	new BooleanPref
 	("Whether to show job timing information as part of the job detail hints by default.",
-	 "ShowJobTimingHints", "Show Timing Hints:", true), 
+	 "ShowJobTimingHints", "Show Timing Hints:", true),
+	 
+	 new BooleanPref
+	 ("Whether to show key state information as part of the job detail hints by default.",
+	   "ShowKeyStateHints", "Show Key State Hints:", true), 
 
 	new BasePref(),
 
@@ -1993,7 +1997,11 @@ class GenUserPrefsApp
 	
 	new HotKeyPref
 	("Show/hide job timing information as part of the job detail hints.",
-	 "JobViewerShowHideTimingHint", "Show/Hide Timing Hint:"), 
+	 "JobViewerShowHideTimingHint", "Show/Hide Timing Hint:"),
+	 
+	new HotKeyPref
+	("Show/hide key state information as part of the job detail hints.",
+	 "JobViewerShowHideKeyStateHint", "Show/Hide Key State Hint:"), 
 
 	new BasePref(),
 
@@ -2866,7 +2874,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.86 2009/12/16 04:13:34 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.87 2009/12/18 23:00:36 jesse Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3121,7 +3129,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.86 2009/12/16 04:13:34 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.87 2009/12/18 23:00:36 jesse Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4499,7 +4507,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.86 2009/12/16 04:13:34 jesse Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.87 2009/12/18 23:00:36 jesse Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

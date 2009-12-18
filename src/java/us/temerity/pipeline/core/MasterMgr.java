@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.327 2009/12/16 17:59:22 jim Exp $
+// $Id: MasterMgr.java,v 1.328 2009/12/18 23:00:35 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13898,6 +13898,7 @@ class MasterMgr
       ArrayList<LicenseKey>   allLicenseKeys   = null;
       ArrayList<HardwareKey>  allHardwareKeys  = null;
       QueueMgrControlClient qclient = acquireQueueMgrClient();
+      long timeStamp = System.currentTimeMillis();
       try {
         allSelectionKeys = qclient.getSelectionKeys(); 
         allLicenseKeys   = qclient.getLicenseKeys();   
@@ -13963,14 +13964,14 @@ class MasterMgr
         if(rootNodeID.equals(nodeID)) {
           group = submitJobsCommon(status, indices, batchSize, priority, rampUp,
             			   maxLoad, minMemory, minDisk,
-                                   selectionKeys, licenseKeys, hardwareKeys, 
+                                   selectionKeys, licenseKeys, hardwareKeys, timeStamp,
                                    allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                                    assocRoots, exceptions, timer);
         }
         else {
           group = submitJobsCommon(status, indices, null, null, null,
             			   null, null, null,
-                                   null, null, null, 
+                                   null, null, null, timeStamp, 
                                    allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                                    assocRoots, exceptions, timer);
         }
@@ -14041,6 +14042,9 @@ class MasterMgr
    *   Overrides the set of hardware keys required by them job associated with the root 
    *   node of the job submission.
    * 
+   * @param timeStamp
+   *   The timestamp of the key chooser updates to write into the job file. 
+   * 
    * @param allSelectionKeys
    *   A cache of all currently defined selection keys.
    * 
@@ -14074,6 +14078,7 @@ class MasterMgr
    Set<String> selectionKeys,
    Set<String> licenseKeys,
    Set<String> hardwareKeys,
+   long timeStamp, 
    ArrayList<SelectionKey> allSelectionKeys, 
    ArrayList<LicenseKey> allLicenseKeys, 
    ArrayList<HardwareKey> allHardwareKeys,
@@ -14095,7 +14100,7 @@ class MasterMgr
       
       submitJobs(status, jobGroupID, indices, 
 		 true, batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
-		 selectionKeys, licenseKeys, hardwareKeys,
+		 selectionKeys, licenseKeys, hardwareKeys, timeStamp,
                  allSelectionKeys, allLicenseKeys, allHardwareKeys, 
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, assocRoots, 
 		 exceptions, timer);
@@ -14222,6 +14227,9 @@ class MasterMgr
    * @param licenseKeys 
    *   Overrides the set of license keys required by them job associated with the root 
    *   node of the job submission.
+   *   
+   * @param timeStamp
+   *   The timestamp of the key chooser updates to write into the job file.
    * 
    * @param allSelectionKeys
    *   A cache of all currently defined selection keys.
@@ -14272,6 +14280,7 @@ class MasterMgr
     Set<String> selectionKeys,
     Set<String> licenseKeys,
     Set<String> hardwareKeys,
+    long timeStamp,
     ArrayList<SelectionKey> allSelectionKeys, 
     ArrayList<LicenseKey> allLicenseKeys, 
     ArrayList<HardwareKey> allHardwareKeys,
@@ -14325,7 +14334,7 @@ class MasterMgr
       }
       
       if(anyRef || !work.isActionEnabled()) {
-        collectNoActionJobs(status, jobGroupID, isRoot, 
+        collectNoActionJobs(status, jobGroupID, isRoot, timeStamp,
                             allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                             extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                             jobs, assocRoots, exceptions, timer);
@@ -14622,7 +14631,7 @@ class MasterMgr
                 NodeStatus lstatus = status.getSource(link.getName());
                 submitJobs(lstatus, jobGroupID, lindices, 
                            false, null, null, null, null, null, null, null, null, null,
-                           allSelectionKeys, allLicenseKeys, allHardwareKeys, 
+                           timeStamp, allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                            extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                            jobs, assocRoots, exceptions, timer);
               }
@@ -14793,7 +14802,7 @@ class MasterMgr
             timer.suspend();
             try {
               ArrayList<String> keyExceptions = 
-                adjustJobRequirements(subTimer, job.queryOnlyCopy(), jreqs, 
+                adjustJobRequirements(subTimer, job.queryOnlyCopy(), jreqs, timeStamp,
                                       allSelectionKeys, allLicenseKeys, allHardwareKeys);
               job.setJobRequirements(jreqs);
               exceptions.addAll(keyExceptions);
@@ -14845,6 +14854,9 @@ class MasterMgr
    *
    * @param jreqs
    *   The current job requirements that are going to be modified.
+   *   
+   * @param updateTimestamp
+   *   The time stamp to write into the job as its update time.
    * 
    * @param allSelectionKeys
    *   A cache of all currently defined selection keys.
@@ -14864,6 +14876,7 @@ class MasterMgr
     TaskTimer timer,
     QueueJob job,
     JobReqs jreqs, 
+    long updateTimestamp,
     ArrayList<SelectionKey> allSelectionKeys, 
     ArrayList<LicenseKey> allLicenseKeys, 
     ArrayList<HardwareKey> allHardwareKeys
@@ -14959,6 +14972,8 @@ class MasterMgr
       jreqs.removeAllHardwareKeys();
       jreqs.addHardwareKeys(finalKeys);
     }
+    
+    jreqs.setJobKeysUpdateTime(updateTimestamp);
     return toReturn;
   }
   
@@ -14978,6 +14993,9 @@ class MasterMgr
    * 
    * @param isRoot
    *   The this the root node of the job submission tree?
+   *
+   * @param timeStamp
+   *   The timestamp of the key chooser updates to write into the job file.
    * 
    * @param allSelectionKeys
    *   A cache of all currently defined selection keys.
@@ -15018,6 +15036,7 @@ class MasterMgr
    NodeStatus status, 
    Long jobGroupID,
    boolean isRoot, 
+   long timeStamp,
    ArrayList<SelectionKey> allSelectionKeys, 
    ArrayList<LicenseKey> allLicenseKeys, 
    ArrayList<HardwareKey> allHardwareKeys,
@@ -15066,7 +15085,7 @@ class MasterMgr
           
           submitJobs(lstatus, jobGroupID, null, 
                      false, null, null, null, null, null, null, null, null, null,
-                     allSelectionKeys, allLicenseKeys, allHardwareKeys, 
+                     timeStamp, allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                      extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                      jobs, assocRoots, exceptions, timer);
            

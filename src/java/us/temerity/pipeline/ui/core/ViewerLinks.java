@@ -1,9 +1,10 @@
-// $Id: ViewerLinks.java,v 1.11 2009/05/16 02:06:19 jim Exp $
+// $Id: ViewerLinks.java,v 1.12 2009/12/18 23:00:36 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.*;
 
 import java.io.*;
 import java.util.*;

@@ -1,9 +1,10 @@
-// $Id: ViewerJob.java,v 1.5 2007/06/26 05:18:57 jim Exp $
+// $Id: ViewerJob.java,v 1.6 2009/12/18 23:00:36 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.*;
 
 import java.io.*;
 import java.util.*;

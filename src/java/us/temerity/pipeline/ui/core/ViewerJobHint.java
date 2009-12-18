@@ -1,4 +1,4 @@
-// $Id: ViewerJobHint.java,v 1.2 2007/06/26 05:18:57 jim Exp $
+// $Id: ViewerJobHint.java,v 1.3 2009/12/18 23:00:36 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,17 +35,19 @@ class ViewerJobHint
    boolean showToolset, 
    boolean showAction, 
    boolean showHost, 
-   boolean showTiming 
+   boolean showTiming,
+   boolean showKeyState
   ) 
   {
     super();
 
     pParent = parent; 
 
-    pShowToolset = showToolset; 
-    pShowAction  = showAction; 
-    pShowHost    = showHost; 
-    pShowTiming  = showTiming; 
+    pShowToolset  = showToolset; 
+    pShowAction   = showAction; 
+    pShowHost     = showHost; 
+    pShowTiming   = showTiming;
+    pShowKeyState = showKeyState;
   }
 
 
@@ -97,6 +99,15 @@ class ViewerJobHint
   showTiming()
   {
     return pShowTiming; 
+  }
+  
+  /**
+   * Whether to display the Key State hint.
+   */
+  public boolean
+  showKeyState()
+  {
+    return pShowKeyState;
   }
 
 
@@ -164,6 +175,18 @@ class ViewerJobHint
   {
     pShowTiming = tf;
   }
+  
+  /**
+   * Set whether to display the Key State hint.
+   */
+  public void
+  setShowKeyState
+  (
+    boolean tf  
+  )
+  {
+    pShowKeyState = tf;
+  }
 
   
 
@@ -176,19 +199,23 @@ class ViewerJobHint
   updateHint
   (
    QueueJob job, 
-   QueueJobInfo info
+   QueueJobInfo info,
+   Long queueTimestamp
   ) 
   {              
     pJob     = job;
     pJobInfo = info; 
+    
+    pKeysNeedUpdate = job.doKeysNeedUpdate(queueTimestamp);
 
     /* reinitialize the cached node properties and display lists */ 
     {
-      pTargetDL  = null;
-      pToolsetDL = null; 
-      pActionDLs = null;
-      pHostDLs   = null;
-      pTimingDLs = null;
+      pTargetDL   = null;
+      pToolsetDL  = null; 
+      pActionDLs  = null;
+      pHostDLs    = null;
+      pTimingDLs  = null;
+      pKeyStateDL = null;
     }
   }
 
@@ -363,8 +390,6 @@ class ViewerJobHint
 	pTimingTitleDLs[1] = 
 	  mgr.getTextDL(gl, PackageInfo.sGLFont, "Running:", 
 			GeometryMgr.TextAlignment.Right, 0.05);
-
-        pTitleWidth = mgr.getTextWidth(PackageInfo.sGLFont, "Running:", 0.05) * sTextHeight;
       }
       
       /* timing info */ 
@@ -420,6 +445,29 @@ class ViewerJobHint
           }
         }
       }
+      
+      /* key state title */ 
+      if(pKeyStateTitleDL == null) {
+        pKeyStateTitleDL = 
+          mgr.getTextDL(gl, PackageInfo.sGLFont, "Key State:", 
+                        GeometryMgr.TextAlignment.Right, 0.05);
+        
+        pTitleWidth = mgr.getTextWidth(PackageInfo.sGLFont, "Key State:", 0.05) * sTextHeight;
+      }
+
+      /* toolset */ 
+      if(pShowKeyState) {
+        String value = "Finished";
+        if (pKeysNeedUpdate)
+          value = "Stale";
+        if(pKeyStateDL == null) {
+          pKeyStateDL = 
+            mgr.getTextDL(gl, PackageInfo.sGLFont, value, 
+                          GeometryMgr.TextAlignment.Left, 0.05);
+        }
+
+        pKeyStateWidth = mgr.getTextWidth(PackageInfo.sGLFont, value, 0.05);
+      }
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
@@ -461,7 +509,10 @@ class ViewerJobHint
           valueWidth = Math.max(valueWidth, pHostWidth);  
 
 	if((pShowTiming) && (pTimingDLs != null)) 
-          valueWidth = Math.max(valueWidth, pTimingWidth);  
+          valueWidth = Math.max(valueWidth, pTimingWidth);
+	
+	if((pShowKeyState) && (pKeyStateDL != null))
+	  valueWidth = Math.max(valueWidth, pKeyStateWidth);
 
         valueWidth *= sTextHeight;
       }
@@ -506,6 +557,11 @@ class ViewerJobHint
 
 	  if(pShowTiming) {
 	    orows += (pTimingDLs != null) ? 2.0 : 1.0;
+	    oborders += 2.0;
+	  }
+	  
+	  if (pShowKeyState) {
+	    orows += 1.0;
 	    oborders += 2.0;
 	  }
 	  
@@ -566,6 +622,13 @@ class ViewerJobHint
 	    if(pShowTiming) {
 	      gl.glVertex2d(-x, y); 
 	      gl.glVertex2d( x, y); 
+	      
+	      y -= sTextHeight + sBorder*2.0;
+	    }
+	    
+	    if (pShowKeyState) {
+	      gl.glVertex2d(-x, y); 
+              gl.glVertex2d( x, y);
 	    }
 	  }
 	  gl.glEnd();
@@ -742,6 +805,40 @@ class ViewerJobHint
 
 	  y -= sBorder*2.0;
 	}
+	
+	       /* key state*/ 
+        if(pShowKeyState) {
+          if(pKeyStateTitleDL!= null) {
+            gl.glPushMatrix();
+            {
+              gl.glTranslated(toffset, y, 0.0);
+              gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+              gl.glCallList(pKeyStateTitleDL); 
+            }
+            gl.glPopMatrix();
+          }
+
+          if(pKeyStateDL != null) {
+            gl.glPushMatrix();
+            {
+              gl.glTranslated(voffset, y, 0.0);
+              gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+              gl.glCallList(pKeyStateDL); 
+            }
+            gl.glPopMatrix();
+          }
+          else if(pNullDL != null) {
+            gl.glPushMatrix();
+            {
+              gl.glTranslated(noffset, y, 0.0);
+              gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+              gl.glCallList(pNullDL); 
+            }
+            gl.glPopMatrix();
+          }
+
+          y -= sTextHeight + sBorder*2.0;
+        }
         
 	/* timing */ 
 	if(pShowTiming) {
@@ -783,7 +880,7 @@ class ViewerJobHint
 	  else {
 	    y -= sTextHeight*2.0;
 	  }
-	}
+	} // show timing
       }
       gl.glPopMatrix();
     }
@@ -824,14 +921,16 @@ class ViewerJobHint
   private boolean  pShowToolset; 
   private boolean  pShowAction; 
   private boolean  pShowHost; 
-  private boolean  pShowTiming; 
+  private boolean  pShowTiming;
+  private boolean  pShowKeyState;
 
   /**
    * The job details. 
    */ 
   private QueueJob     pJob; 
-  private QueueJobInfo pJobInfo; 
-
+  private QueueJobInfo pJobInfo;
+  
+  private boolean      pKeysNeedUpdate;
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -867,5 +966,9 @@ class ViewerJobHint
   private int[]    pTimingTitleDLs; 
   private int[]    pTimingDLs; 
   private double   pTimingWidth; 
+  
+  private Integer  pKeyStateTitleDL;
+  private Integer  pKeyStateDL;
+  private double   pKeyStateWidth;
   
 }

@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.25 2009/10/30 04:44:35 jesse Exp $
+// $Id: JobReqs.java,v 1.26 2009/12/18 23:00:35 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -212,6 +212,8 @@ class JobReqs
     setMaxLoad(reqs.getMaxLoad());
     setMinMemory(reqs.getMinMemory());
     setMinDisk(reqs.getMinDisk());
+    
+    setJobKeysUpdateTime(reqs.getJobKeysUpdateTime());
 
     pLicenseKeys = new TreeSet<String>();
     pLicenseKeys.addAll(reqs.getLicenseKeys());
@@ -338,6 +340,7 @@ class JobReqs
     pRampUp = interval;
   }
 
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Set the maximum allowable system load on an eligible host.
@@ -385,8 +388,46 @@ class JobReqs
     pMinDisk = bytes;
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Set the time (in milliseconds) when key-choosers were last used to generate the 
+   * selection, hardware, and license keys for these job requirements. <p>
+   * 
+   * If this time is earlier than the time that the key-choosers were last updated in the 
+   * queue manager, then the job these requirement belong to will be flagged as being 
+   * out-of-date.
+   * 
+   *  @param timeStamp
+   *    The time the keys were update at.
+   */
+  public void
+  setJobKeysUpdateTime
+  (
+    Long timeStamp
+  )
+  {
+    pJobKeysUpdateTime = timeStamp;
+  }
 
-
+  /**
+   * Get the time (in milliseconds) when key-choosers were last used to generate the 
+   * selection, hardware, and license keys for these job requirements. <p>
+   * 
+   * If this time is earlier than the time that the key-choosers were last updated in the 
+   * queue manager, then this job will be flagged as being out-of-date. 
+   * 
+   * @return
+   *   The key update time or <code>null</code> if there was no update time save in the job
+   *   GLUE file.
+   */
+  public Long
+  getJobKeysUpdateTime()
+  {
+    return pJobKeysUpdateTime;
+  }
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -424,8 +465,59 @@ class JobReqs
   
   
   /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  @Override
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+    
+    encoder.encode("JobKeysUpdateTime", pJobKeysUpdateTime);
+  }
+  
+  @Override
+  public void 
+  fromGlue
+  (
+    GlueDecoder decoder
+  )
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+    
+    {
+      Object o = decoder.decode("JobKeysUpdateTime");
+      if (o != null)
+        pJobKeysUpdateTime = (Long) o;
+    }
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -5597354970617647694L;
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The time (in milliseconds) when key-choosers were last used to generate the selection, 
+   * hardware, and license keys for these job requirements. <p>
+   * 
+   * If this time is earlier than the time that the key-choosers were last updated in the 
+   * queue manager, then this job will be flagged as being out-of-date. <p>
+   */
+  private Long pJobKeysUpdateTime;
 }

@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.56 2009/12/18 07:20:55 jim Exp $
+// $Id: QueueMgrClient.java,v 1.57 2009/12/18 23:00:35 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -2313,6 +2313,33 @@ class QueueMgrClient
     if(obj instanceof QueueGetBooleanRsp) {
       QueueGetBooleanRsp rsp = (QueueGetBooleanRsp) obj;
       return rsp.getBooleanValue();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+  
+  /**
+   * Get the timestamp that reflects the last time a keychoosers or a key that uses a 
+   * keychooser was updated. 
+   * <p>
+   * This value can then be compared against the value saved in jobs to determine if the job 
+   * needs to have its keys re-evaluated. 
+   * 
+   * @throws PipelineException 
+   *   If unable to get the long value.
+   */
+  public synchronized Long
+  getChooserUpdateTime()
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    Object obj = performTransaction(QueueRequest.GetChooserUpdateTime, null);
+    if(obj instanceof MiscGetLongRsp) {
+      MiscGetLongRsp rsp = (MiscGetLongRsp) obj;
+      return rsp.getLongValue();
     }
     else {
       handleFailure(obj);

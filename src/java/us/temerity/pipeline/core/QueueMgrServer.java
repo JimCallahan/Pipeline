@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.79 2009/12/16 04:13:33 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.80 2009/12/18 23:00:36 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -978,6 +978,13 @@ class QueueMgrServer
               case DoJobKeysNeedUpdate:
                 {
                   objOut.writeObject(pQueueMgr.doJobKeysNeedUpdate());
+                  objOut.flush();
+                }
+                break;
+                
+              case GetChooserUpdateTime:
+                {
+                  objOut.writeObject(pQueueMgr.getChooserUpdateTime());
                   objOut.flush();
                 }
                 break;

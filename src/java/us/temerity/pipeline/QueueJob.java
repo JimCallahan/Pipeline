@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.18 2009/10/30 04:44:35 jesse Exp $
+// $Id: QueueJob.java,v 1.19 2009/12/18 23:00:35 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -82,8 +82,8 @@ class QueueJob
    * Lightweight copy constructor for use by the writer() thread in the QueueMgr.
    * <p>
    * Makes a deep copy of the job requirements, but just shallow copies of everything else in
-   * the job. If jobs are every changed to make things besides the job requirements modifiable,
-   * those will also have to be made into deep copies in this constructor.
+   * the job. If jobs are every changed to make things besides the job requirements 
+   * modifiable, those will also have to be made into deep copies in this constructor.
    * 
    * @param job
    *  The Job to copy
@@ -177,6 +177,8 @@ class QueueJob
     return Collections.unmodifiableSortedSet(pSourceJobIDs);
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Get the ID of the parent job group or <code>-1</code> if the job group was not set when 
    * the job was submitted.
@@ -206,6 +208,33 @@ class QueueJob
     // REMOVE THIS METHOD ONCE EVERY STUDIO HAS REBUILT THEIR JOBS
     pJobGroupID = id;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Do the selection, hardware, and license keys in this job need to be updated.<p>
+   * 
+   * Keys needs to be updated if they were generated before the most recent change to key 
+   * choosers in the queue manager.
+   * 
+   * @param chooserUpdateTime
+   *   The timestamp (in milliseconds) of the most recent change to key choosers.
+   */
+  public boolean
+  doKeysNeedUpdate
+  (
+    long chooserUpdateTime  
+  )
+  {
+    if (chooserUpdateTime == 0)
+      return true;
+    Long jobUpdateTime = pJobReqs.getJobKeysUpdateTime();
+    if (jobUpdateTime == null)
+      return true;
+    return (chooserUpdateTime > jobUpdateTime);
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Returns a copy of this job that can only be used for querying information.

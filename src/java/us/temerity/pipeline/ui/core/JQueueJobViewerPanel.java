@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.73 2009/12/16 04:13:34 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.74 2009/12/18 23:00:36 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -16,7 +16,7 @@ import javax.swing.event.PopupMenuListener;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
-import us.temerity.pipeline.ui.UIFactory;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   V I E W E R   P A N E L                                            */
@@ -82,7 +82,8 @@ class JQueueJobViewerPanel
                           prefs.getShowJobToolsetHints(), 
                           prefs.getShowJobActionHints(), 
                           prefs.getShowJobHostHints(), 
-                          prefs.getShowJobTimingHints());
+                          prefs.getShowJobTimingHints(),
+                          prefs.getShowKeyStateHints());
 
       pJobGroups = new TreeMap<Long,QueueJobGroup>(); 
       pMaxVisibleJobs = 10000L;
@@ -192,6 +193,12 @@ class JQueueJobViewerPanel
       item.setActionCommand("show-hide-timing-hint");
       item.addActionListener(this);
       pPanelPopup.add(item);   
+      
+      item = new JMenuItem();
+      pShowHideKeyStateHintItem = item;
+      item.setActionCommand("show-hide-key-state-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item);
     }
     
     /* job popup menu */ 
@@ -753,7 +760,11 @@ class JQueueJobViewerPanel
        "Show/hide job server host information as part of the job detail hints."); 
     updateMenuToolTip
       (pShowHideTimingHintItem, prefs.getJobViewerShowHideTimingHint(), 
-       "Show/hide job timing information as part of the job detail hints."); 
+       "Show/hide job timing information as part of the job detail hints.");
+    updateMenuToolTip
+      (pShowHideKeyStateHintItem, prefs.getJobViewerShowHideKeyStateHint(), 
+       "Show/hide key state information as part of the job detail hints."); 
+
 
     /* job menu */ 
     updateMenuToolTip
@@ -865,6 +876,10 @@ class JQueueJobViewerPanel
       pShowHideTimingHintItem.setText
 	((pViewerJobHint.showTiming() ? "Hide" : "Show") + " Timing Hint");
       pShowHideTimingHintItem.setEnabled(true);
+      
+      pShowHideKeyStateHintItem.setText
+        ((pViewerJobHint.showKeyState() ? "Hide" : "Show") + " Key State Hint");
+      pShowHideKeyStateHintItem.setEnabled(true);
     }
     else {
       pShowHideToolsetHintItem.setText("Show Toolset Hint");
@@ -878,6 +893,10 @@ class JQueueJobViewerPanel
 
       pShowHideTimingHintItem.setText("Show Timing Hint");
       pShowHideTimingHintItem.setEnabled(false);
+      
+      pShowHideKeyStateHintItem.setText("Show KeyState Hint");
+      pShowHideKeyStateHintItem.setEnabled(false);
+
     }
   }
 
@@ -1953,8 +1972,9 @@ class JQueueJobViewerPanel
           try {
             QueueJob job = qclient.getJob(jobID);
             QueueJobInfo info = qclient.getJobInfo(jobID);
+            Long timeStamp = qclient.getChooserUpdateTime();
             
-            pViewerJobHint.updateHint(job, info); 
+            pViewerJobHint.updateHint(job, info, timeStamp); 
             pViewerJobHint.setPosition(vunder.getPosition());
             pViewerJobHint.setVisible(true);
             
@@ -2286,6 +2306,8 @@ class JQueueJobViewerPanel
       doShowHideHostHint();
     else if(cmd.equals("show-hide-timing-hint"))
       doShowHideTimingHint();
+    else if(cmd.equals("show-hide-key-state-hint"))
+      doShowHideKeyStateHint();
 
     /* job/group events */ 
     else if(cmd.equals("details"))
@@ -2318,6 +2340,8 @@ class JQueueJobViewerPanel
       doShowNode();
     else if (cmd.equals("change-job-reqs"))
       doChangeJobReqs();
+    else if (cmd.equals("update-job-keys"))
+      doUpdateJobKeys();
 
     else {
       clearSelection();
@@ -2489,6 +2513,18 @@ class JQueueJobViewerPanel
     clearSelection();
     if(pViewerJobHint != null) 
       pViewerJobHint.setShowTiming(!pViewerJobHint.showTiming());
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide key state information as part of the job detail hints.
+   */ 
+  private synchronized void
+  doShowHideKeyStateHint()
+  {
+    clearSelection();
+    if(pViewerJobHint != null) 
+      pViewerJobHint.setShowKeyState(!pViewerJobHint.showKeyState());
     updateUniverse();
   }
   
@@ -2847,6 +2883,36 @@ class JQueueJobViewerPanel
   }
   
   /**
+   * Update jobs keys associated with the selected jobs.
+   */ 
+  @SuppressWarnings("incomplete-switch")
+  private synchronized void 
+  doUpdateJobKeys() 
+  {
+    if (pSelected.size() > 0) {
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      for(ViewerJob vjob : pSelected.values()) {
+        JobStatus status = vjob.getJobStatus();
+        long jobID = status.getJobID();
+        switch(status.getState()) {
+        case Queued:
+        case Paused:
+        case Preempted:
+          jobIDs.add(jobID);
+          break;
+        }
+      }
+      
+      if (!jobIDs.isEmpty()) {
+        UpdateJobKeysTask task = new UpdateJobKeysTask(jobIDs);
+        task.start();
+      }
+    }
+    clearSelection();
+    refresh();
+  }
+  
+  /**
    * Change the jobs requirements associated with the selected jobs.
    */ 
   @SuppressWarnings("incomplete-switch")
@@ -3031,6 +3097,7 @@ class JQueueJobViewerPanel
       encoder.encode("ShowActionHints", pViewerJobHint.showAction());
       encoder.encode("ShowHostHints", pViewerJobHint.showHost());
       encoder.encode("ShowTimingHints", pViewerJobHint.showTiming());
+      encoder.encode("ShowKeyStateHints", pViewerJobHint.showKeyState());
     }
 
     /* initial layout orientation */
@@ -3069,6 +3136,10 @@ class JQueueJobViewerPanel
 	Boolean timing = (Boolean) decoder.decode("ShowTimingHints");
 	if(timing != null) 
 	  pViewerJobHint.setShowTiming(timing);
+	
+	Boolean keyState = (Boolean) decoder.decode("ShowKeyStateHints");
+	if (keyState != null)
+	  pViewerJobHint.setShowKeyState(keyState);
       }
     }
 
@@ -3606,6 +3677,50 @@ class JQueueJobViewerPanel
     private LinkedList<JobReqsDelta> pJobReqChanges;
   }
 
+  
+  /** 
+   * Update the job keys for the given jobs.
+   */ 
+  private
+  class UpdateJobKeysTask
+    extends Thread
+  {
+    public 
+    UpdateJobKeysTask
+    (   
+      TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JQueueJobsViewerPanel:UpdateJobKeysTask");
+
+      pJobIDs= jobIDs;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Updating Job Keys...")) {
+        QueueMgrClient client = master.acquireQueueMgrClient();
+        try {
+          client.updateJobKeys(pJobIDs);
+        }
+        catch(PipelineException ex) {
+          master.showErrorDialog(ex);
+          return;
+        }
+        finally {
+          master.releaseQueueMgrClient(client);
+          master.endPanelOp(pGroupID, "Done.");
+        }
+
+        updatePanels();
+      }
+    }
+
+    private TreeSet<Long> pJobIDs;
+  }
 
   /** 
    * Delete the completed job group.
@@ -3794,6 +3909,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pShowHideActionHintItem;
   private JMenuItem  pShowHideHostHintItem;
   private JMenuItem  pShowHideTimingHintItem;
+  private JMenuItem  pShowHideKeyStateHintItem;
 
   /**
    * The job popup menu.

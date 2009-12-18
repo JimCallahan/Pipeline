@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.15 2009/05/14 22:54:09 jim Exp $
+// $Id: QueueJobGroup.java,v 1.16 2009/12/18 23:00:35 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -29,7 +29,9 @@ class QueueJobGroup
    */
   public
   QueueJobGroup()
-  {}
+  {
+    pJobKeysNeedUpdate = false;
+  }
 
   /**
    * Construct a new group of jobs. <P> 
@@ -104,6 +106,8 @@ class QueueJobGroup
       pJobIDs.addAll(jobIDs);
 
     pSubmittedStamp = TimeStamps.now();
+    
+    pJobKeysNeedUpdate = false;
   }
 
   
@@ -262,9 +266,31 @@ class QueueJobGroup
     return jobIDs;
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Do any of the jobs in this job group need to have their key-choosers rerun?
+   */
+  public boolean
+  doJobKeysNeedUpdate()
+  {
+    return pJobKeysNeedUpdate;
+  }
+
+  /**
+   * Set if any of the jobs in this job group need to have their key-choosers rerun.
+   */
+  public void
+  setJobKeysNeedUpdate
+  (
+    boolean jobKeysNeedUpdate  
+  )
+  {
+    pJobKeysNeedUpdate = jobKeysNeedUpdate;
+  }
 
 
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A G E S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -444,5 +470,11 @@ class QueueJobGroup
    * The unique identifiers of all jobs which are memebers of the group. 
    */
   private TreeSet<Long>  pJobIDs; 
-
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether any of the jobs in this job group need to have their key-choosers rerun.
+   */
+  private boolean pJobKeysNeedUpdate;
 }

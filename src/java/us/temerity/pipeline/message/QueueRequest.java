@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.33 2009/12/16 04:13:33 jesse Exp $
+// $Id: QueueRequest.java,v 1.34 2009/12/18 23:00:36 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -448,6 +448,12 @@ enum QueueRequest
    * Check if all the jobs need to have their keys set by plugins update.
    */
   DoJobKeysNeedUpdate,
+  
+  /**
+   * Get the timestamp that reflects the last time a keychoosers or a key that uses a 
+   * keychooser was updated. 
+   */
+  GetChooserUpdateTime,
   
   /**
    * Updates the keys set by plugins for all the jobs.
