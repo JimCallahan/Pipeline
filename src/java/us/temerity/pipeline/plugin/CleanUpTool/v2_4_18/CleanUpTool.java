@@ -1,4 +1,4 @@
-// $Id: CleanUpTool.java,v 1.1 2009/12/14 03:20:56 jim Exp $
+// $Id: CleanUpTool.java,v 1.2 2009/12/18 07:21:45 jim Exp $
 
 package us.temerity.pipeline.plugin.CleanUpTool.v2_4_18;
 
@@ -206,6 +206,8 @@ class CleanUpTool
           super.actionPerformed(e);
         }
       }
+
+      static final long serialVersionUID = 1572851047777252916L;
     }
 
     private boolean pKeepJobs;
