@@ -1,6 +1,6 @@
-// $Id: JobPath.java,v 1.4 2009/11/06 21:53:12 jim Exp $
+// $Id: JobPath.java,v 1.3 2009/12/18 07:05:53 jim Exp $
 
-package us.temerity.pipeline.ui.core;
+package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.glue.*;
 

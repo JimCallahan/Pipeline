@@ -1,6 +1,6 @@
-// $Id: NodePath.java,v 1.6 2009/10/14 02:23:18 jim Exp $
+// $Id: NodePath.java,v 1.6 2009/12/18 07:05:53 jim Exp $
 
-package us.temerity.pipeline.ui.core;
+package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.glue.*;
 
