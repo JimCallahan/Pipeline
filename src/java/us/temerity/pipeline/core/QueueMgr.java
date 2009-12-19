@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.150 2009/12/18 23:00:35 jesse Exp $
+// $Id: QueueMgr.java,v 1.151 2009/12/19 21:14:27 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6264,6 +6264,7 @@ class QueueMgr
   doJobKeysNeedUpdate()
   {
     TaskTimer timer = new TaskTimer();
+    timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();
@@ -6300,17 +6301,18 @@ class QueueMgr
     
     TreeSet<Long> allJobIds = new TreeSet<Long>();
     TreeSet<Long> jobIDsToFix = new TreeSet<Long>();
-    
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      if(!pAdminPrivileges.isQueueAdmin(req))
-        throw new PipelineException
-          ("Only a user with Queue Admin privileges may update all the job keys!");
       synchronized (pJobs) {
         timer.resume();
         allJobIds.addAll(pJobs.keySet());
       }
+      
+      if(!pAdminPrivileges.isQueueAdmin(req))
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may update all the job keys!");
       
       long lastUpdate = pLastUpdateAllTime.get();
       long chooserUpdate = pChooserUpdateTime.get();
@@ -6318,6 +6320,8 @@ class QueueMgr
       if (lastUpdate > chooserUpdate)
         throw new PipelineException
           ("It is not necessary to update all the job keys at this time");
+      
+      pLastUpdateAllTime.set(System.currentTimeMillis());
       
       for (Long jobID : allJobIds) {
         timer.aquire();
@@ -6335,8 +6339,10 @@ class QueueMgr
         }
       }
 
-      UpdateAllJobKeysThread thread = new UpdateAllJobKeysThread(jobIDsToFix);
-      thread.start();
+      if (!jobIDsToFix.isEmpty() ) {
+        UpdateAllJobKeysThread thread = new UpdateAllJobKeysThread(jobIDsToFix);
+        thread.start();
+      }
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());      
@@ -12362,7 +12368,6 @@ class QueueMgr
     run()
     {
       QueueJobsReq req = new QueueJobsReq(pJobIDs);
-      pLastUpdateAllTime.set(System.currentTimeMillis());
       Object o = updateJobKeys(req);
       if (o instanceof FailureRsp) {
         FailureRsp rsp = (FailureRsp) o;

@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.44 2009/12/09 05:05:55 jesse Exp $
+// $Id: PanelUpdater.java,v 1.45 2009/12/19 21:14:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -700,6 +700,7 @@ class PanelUpdater
                 TreeSet<Long> groupIDs = new TreeSet<Long>(pJobGroups.keySet());
                 pJobStateDist = qclient.getJobStateDistribution(groupIDs);
               }
+              pDoJobKeysNeedUpdate = qclient.doJobKeysNeedUpdate();
 	      
 	      if((pSelectedJobGroupIDs != null) && !pSelectedJobGroupIDs.isEmpty() &&
                  (pQueueJobViewerPanel != null)) {
@@ -821,6 +822,10 @@ class PanelUpdater
 		
 		if(pDetailedJobInfo == null) 
 		  pDetailedJobInfo = qclient.getJobInfo(pDetailedJobID);
+		
+		pChooserUpdateTime = qclient.getChooserUpdateTime();
+		if (pChooserUpdateTime == null)
+		  pChooserUpdateTime = 0l;
 	      }
 	      catch(PipelineException ex) {
 		// ignore jobs which may no longer exist...
@@ -1029,7 +1034,7 @@ class PanelUpdater
 	  /* job browser */ 
 	  if(pQueueJobBrowserPanel != null) 
 	    pQueueJobBrowserPanel.applyPanelUpdates
-	      (pAuthor, pView, pJobGroups, pJobStateDist);
+	      (pAuthor, pView, pJobGroups, pJobStateDist, pDoJobKeysNeedUpdate);
 	  
 	  /* job viewer */ 
 	  if(pQueueJobViewerPanel != null) 
@@ -1041,7 +1046,7 @@ class PanelUpdater
 	if(pQueueJobDetailsPanel != null) 
 	  pQueueJobDetailsPanel.applyPanelUpdates
 	    (pAuthor, pView, pDetailedJob, pDetailedJobInfo, 
-	     pLicenseKeys, pSelectionKeys, pHardwareKeys);
+	     pLicenseKeys, pSelectionKeys, pHardwareKeys, pChooserUpdateTime);
       }
     }
   }
@@ -1267,9 +1272,15 @@ class PanelUpdater
   private TreeMap<Long,double[]>  pJobStateDist; 
 
   /**
-   * The abreviated status of all jobs associated with the current job groups.
+   * The abbreviated status of all jobs associated with the current job groups.
    */
   private TreeMap<Long,JobStatus>  pJobStatus; 
+  
+  /**
+   * A boolean which reflects whether key choosers need to be rerun for all jobs in the 
+   * queue.
+   */
+  private boolean pDoJobKeysNeedUpdate;
 
   /**
    * More detailed timing and exit status information for running jobs.
@@ -1389,11 +1400,15 @@ class PanelUpdater
   private QueueJob  pDetailedJob; 
 
   /**
-   * More detailed timing and exit status inforation for the job displayed in the 
+   * More detailed timing and exit status information for the job displayed in the 
    * job details panel.
    */ 
   private QueueJobInfo  pDetailedJobInfo; 
 
+  /**
+   * The key chooser update time that is used to determine if the job's Key State is Stale. 
+   */
+  private Long pChooserUpdateTime;
 
 
 }

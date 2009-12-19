@@ -1,4 +1,4 @@
-// $Id: JManageBalanceGroupsDialog.java,v 1.4 2009/12/16 04:13:34 jesse Exp $
+// $Id: JManageBalanceGroupsDialog.java,v 1.5 2009/12/19 21:14:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -583,15 +583,17 @@ class JManageBalanceGroupsDialog
       TreeSet<String> includedUsers = new TreeSet<String>();
       { 
         Entry<Double, TreeSet<String>> entry = byValue.lastEntry();
-        while (includedUsers.size() < maxSlices) {
+        while (true) {
           if (entry == null)
             break;
+          double d = entry.getKey();
+          if (d < .02)
+            break;
+          
           TreeSet<String> value = entry.getValue();
           if (value != null) {
             for (String v : value) {
               includedUsers.add(v);
-              if(includedUsers.size() >= maxSlices)
-                break;
             }
           }
           entry = byValue.lowerEntry(entry.getKey());
@@ -627,15 +629,18 @@ class JManageBalanceGroupsDialog
       TreeSet<String> includedUsers = new TreeSet<String>();
       { 
         Entry<Double, TreeSet<String>> entry = byValue.lastEntry();
-        while (includedUsers.size() < maxSlices) {
+        while (true) {
           if (entry == null)
             break;
+          
+          double d = entry.getKey();
+          if (d < .02)
+            break;
+          
           TreeSet<String> value = entry.getValue();
           if (value != null) {
             for (String v : value) {
               includedUsers.add(v);
-              if(includedUsers.size() >= maxSlices)
-                break;
             }
           }
           entry = byValue.lowerEntry(entry.getKey());

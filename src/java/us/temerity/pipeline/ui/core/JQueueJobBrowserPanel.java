@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.44 2009/12/16 04:13:34 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.45 2009/12/19 21:14:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -172,6 +172,12 @@ class JQueueJobBrowserPanel
 	item.setActionCommand("delete-completed");
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
+	
+	item = new JMenuItem("Update All Job Keys");
+        pUpdateAllJobKeysItem = item;
+        item.setActionCommand("update-all-job-keys");
+        item.addActionListener(this);
+        pGroupsPopup.add(item);
       }    
 
       updateMenuToolTips();  
@@ -202,6 +208,28 @@ class JQueueJobBrowserPanel
 	}
 	  
 	panel.add(Box.createHorizontalGlue());
+	
+	{
+          JButton btn = new JButton();          
+          pUpdateAllJobKeysButton = btn;
+          btn.setName("StaleKeyChooserButton");
+            
+          btn.setSelected(true);
+            
+          Dimension size = new Dimension(19, 19);
+          btn.setMinimumSize(size);
+          btn.setMaximumSize(size);
+          btn.setPreferredSize(size);
+            
+          btn.setActionCommand("update-all-job-keys");
+          btn.addActionListener(this);
+          
+          btn.setEnabled(false);
+            
+          panel.add(btn);
+        } 
+          
+        panel.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	{
 	  JButton btn = new JButton();		
@@ -522,6 +550,10 @@ class JQueueJobBrowserPanel
    * 
    * @param dist
    *   The distribution of job states indexed by job group ID.
+   *   
+   * @param doJobKeysNeedUpdate
+   *   A boolean which reflects whether key choosers need to be rerun for all jobs in the 
+   *   queue.
    */
   public synchronized void 
   applyPanelUpdates
@@ -529,12 +561,15 @@ class JQueueJobBrowserPanel
    String author, 
    String view, 
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,double[]> dist
+   TreeMap<Long,double[]> dist,
+   boolean doJobKeysNeedUpdate
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
+    pDoJobKeysNeedUpdate = doJobKeysNeedUpdate;
+    
     updateJobs(groups, dist);
   }
 
@@ -602,7 +637,15 @@ class JQueueJobBrowserPanel
     case AllViews:
       pDeleteCompletedButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
     }
-
+    
+    /* deal with the job keys need update button.*/
+    if (!pDoJobKeysNeedUpdate) 
+      pUpdateAllJobKeysButton.setEnabled(false);
+    else if (pPrivilegeDetails.isQueueAdmin())
+      pUpdateAllJobKeysButton.setEnabled(true);
+    else
+      pUpdateAllJobKeysButton.setEnabled(false);
+    
     /* update the groups */ 
     pJobGroups.clear();
     if(groups != null) 
@@ -678,6 +721,13 @@ class JQueueJobBrowserPanel
       pGroupsDeleteItem.setEnabled(selected);
       pGroupsDeleteCompletedItem.setEnabled(true);
     }
+
+    if (!pDoJobKeysNeedUpdate) 
+      pUpdateAllJobKeysItem.setEnabled(false);
+    else if (pPrivilegeDetails.isQueueAdmin())
+      pUpdateAllJobKeysItem.setEnabled(true);
+    else
+      pUpdateAllJobKeysItem.setEnabled(false);
   }
 
 
@@ -982,6 +1032,9 @@ class JQueueJobBrowserPanel
       doGroupsDelete();
     else if(cmd.equals("delete-completed")) 
       doGroupsDeleteCompleted();
+    
+    else if (cmd.equals("update-all-job-keys"))
+      doUpdateAllJobKeys();
   }
 
 
@@ -1331,6 +1384,18 @@ class JQueueJobBrowserPanel
     }
     if(!changed.isEmpty()) {
       UpdateJobKeysTask task = new UpdateJobKeysTask(changed);
+      task.start();
+    }
+  }
+  
+  /**
+   * Update the key choosers on all the jobs in the queue.
+   */
+  private void
+  doUpdateAllJobKeys()
+  {
+    if (pPrivilegeDetails.isQueueAdmin()) {
+      UpdateAllJobKeysTask task = new UpdateAllJobKeysTask();
       task.start();
     }
   }
@@ -1973,7 +2038,7 @@ class JQueueJobBrowserPanel
   }
   
   /** 
-   * Change the job requirements for the given jobs.
+   * Rerun the key choosers for the given jobs.
    */ 
   private
   class UpdateJobKeysTask
@@ -2014,6 +2079,37 @@ class JQueueJobBrowserPanel
     }
 
     private TreeSet<Long> pSelectedJobs;
+  }
+
+  /** 
+   * Rerun the key choosers for the all jobs in the queue..
+   */ 
+  private class
+  UpdateAllJobKeysTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Updating All Job Keys...")) {
+        QueueMgrClient client = master.acquireQueueMgrClient();
+        try {
+          client.updateAllJobKeys();
+        }
+        catch(PipelineException ex) {
+          master.showErrorDialog(ex);
+          return;
+        }
+        finally {
+          master.releaseQueueMgrClient(client);
+          master.endPanelOp(pGroupID, "Done.");
+        }
+
+        updatePanels();
+      }
+    }
   }
 
   /** 
@@ -2125,12 +2221,14 @@ class JQueueJobBrowserPanel
   }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = -507775432755443313L;
 
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -2157,6 +2255,11 @@ class JQueueJobBrowserPanel
    */
   private ViewFilter  pViewFilter; 
 
+  /**
+   * A boolean which reflects whether key choosers need to be rerun for all jobs in the 
+   * queue.
+   */
+  private boolean pDoJobKeysNeedUpdate;
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2182,6 +2285,7 @@ class JQueueJobBrowserPanel
   private JMenuItem  pGroupsUpdateJobKeysItem;
   private JMenuItem  pGroupsDeleteItem;
   private JMenuItem  pGroupsDeleteCompletedItem;
+  private JMenuItem  pUpdateAllJobKeysItem;
 
 
   /**
@@ -2198,6 +2302,11 @@ class JQueueJobBrowserPanel
    * Deletes completed job groups when pressed.
    */ 
   private JButton  pDeleteCompletedButton;
+  
+  /**
+   * Button which updates all the job keys when pressed.
+   */
+  private JButton  pUpdateAllJobKeysButton;
 
   /**
    * The job groups table model.

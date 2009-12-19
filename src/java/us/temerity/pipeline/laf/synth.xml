@@ -244,6 +244,23 @@
   <bind style="DeleteCompletedButton" type="name" key="DeleteCompletedButton"/>
 
 
+<!--  S T A L E   K E Y   C H O O S E R   B U T T O N  -->
+  
+  <style id="StaleKeyChooserButton"> 
+	  <state>
+		  <imagePainter path="StaleKeyChooserButton.png"
+				sourceInsets="0 0 0 0"/>
+	  </state> 
+	  <state value="PRESSED">
+		  <imagePainter path="StaleKeyChooserButtonPressed.png"
+				sourceInsets="0 0 0 0"/>
+	  </state>
+	  <state value="DISABLED">
+		  <imagePainter path="StaleKeyChooserButtonDisabled.png"
+				sourceInsets="0 0 0 0"/>
+	  </state>
+  </style>
+  <bind style="StaleKeyChooserButton" type="name" key="StaleKeyChooserButton"/>
 
   <!--  B R O W S E   B U T T O N  -->
 

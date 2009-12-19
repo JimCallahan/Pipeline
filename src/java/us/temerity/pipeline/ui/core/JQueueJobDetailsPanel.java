@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.21 2009/07/01 16:43:14 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.22 2009/12/19 21:14:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -425,7 +425,7 @@ class JQueueJobDetailsPanel
 		pMaxLoadField = UIFactory.createTitledFloatField
 		  (tpanel, "Maximum Load:", sTSize, 
 		   vpanel, null, sVSize, 
-		   "The maxmimum system load allowed on an eligable host.");
+		   "The maximum system load allowed on an eligable host.");
 		pMaxLoadField.setEditable(false);
 	      }
 	      
@@ -436,7 +436,7 @@ class JQueueJobDetailsPanel
 		pMinMemoryField = UIFactory.createTitledByteSizeField
 		  (tpanel, "Minimum Memory:", sTSize, 
 		   vpanel, null, sVSize, 
-		   "The minimum amount of free memory required on an eligable host.");
+		   "The minimum amount of free memory required on an eligible host.");
 		pMinMemoryField.setEditable(false);
 	      }
 
@@ -448,8 +448,19 @@ class JQueueJobDetailsPanel
 		  (tpanel, "Minimum Disk:", sTSize, 
 		   vpanel, null, sVSize, 
 		   "The minimum amount of free temporary local disk space required " +
-		   "on an eligable host.");
+		   "on an eligible host.");
 		pMinDiskField.setEditable(false);
+	      }
+	      
+	      UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+	      
+	      /* key state */
+	      {
+                pKeyStateField = UIFactory.createTitledTextField
+                  (tpanel, "Key State:", sTSize, 
+                   vpanel, null, sVSize, 
+                   "Whether key choosers need to be run to update the keys on this job.");
+	        
 	      }
 	    }
 	    
@@ -465,7 +476,7 @@ class JQueueJobDetailsPanel
 	
 	    {
 	      Box dbox = new Box(BoxLayout.Y_AXIS);
-
+	      
 	      /* selection keys */ 
 	      {
 		JDrawer drawer = new JDrawer("Selection Keys:",  new JPanel(), false);
@@ -629,7 +640,7 @@ class JQueueJobDetailsPanel
       addMouseListener(this); 
     }
 
-    updateJob(null, null, null, null, null);
+    updateJob(null, null, null, null, null, null);
   }
 
   /**
@@ -780,6 +791,12 @@ class JQueueJobDetailsPanel
    * 
    * @param selectionKeys
    *   The current selection keys.
+   *   
+   * @param hardwareKeys
+   *   The current hardware keys.
+   *   
+   * @param chooserUpdateTime
+   *   The key chooser update time that is used to determine if the job's Key State is Stale.
    */
   public synchronized void 
   applyPanelUpdates
@@ -790,13 +807,14 @@ class JQueueJobDetailsPanel
    QueueJobInfo info, 
    ArrayList<LicenseKey> licenseKeys, 
    ArrayList<SelectionKey> selectionKeys,
-   ArrayList<HardwareKey> hardwareKeys
+   ArrayList<HardwareKey> hardwareKeys,
+   Long chooserUpdateTime
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
-    updateJob(job, info, licenseKeys, selectionKeys, hardwareKeys);
+    updateJob(job, info, licenseKeys, selectionKeys, hardwareKeys, chooserUpdateTime);
   }
 
 
@@ -816,6 +834,12 @@ class JQueueJobDetailsPanel
    * 
    * @param selectionKeys
    *   The current selection keys.
+   *   
+   * @param hardwareKeys
+   *   The current hardware keys.
+   *   
+   * @param chooserUpdateTime
+   *    The key chooser update time that is used to determine if the job's Key State is Stale.
    */
   private synchronized void 
   updateJob
@@ -824,7 +848,8 @@ class JQueueJobDetailsPanel
    QueueJobInfo info, 
    ArrayList<LicenseKey> licenseKeys, 
    ArrayList<SelectionKey> selectionKeys,
-   ArrayList<HardwareKey> hardwareKeys
+   ArrayList<HardwareKey> hardwareKeys,
+   Long chooserUpdateTime
   ) 
   {
     updatePrivileges();
@@ -1070,6 +1095,11 @@ class JQueueJobDetailsPanel
 	pMaxLoadField.setValue(jreqs.getMaxLoad());
 	pMinMemoryField.setValue(jreqs.getMinMemory());
 	pMinDiskField.setValue(jreqs.getMinDisk());
+	
+	if (pJob.doKeysNeedUpdate(chooserUpdateTime)) 
+	  pKeyStateField.setText("Stale");
+	else
+	  pKeyStateField.setText("Finished");
       }
       else {
 	pPriorityField.setValue(null);
@@ -1077,6 +1107,8 @@ class JQueueJobDetailsPanel
 	pMaxLoadField.setValue(null);
 	pMinMemoryField.setValue(null);
 	pMinDiskField.setValue(null);
+	
+	pKeyStateField.setText(null);
       }
 
       /* selection keys */ 
@@ -2361,6 +2393,10 @@ class JQueueJobDetailsPanel
    */ 
   private JByteSizeField pMinDiskField;
 
+  /**
+   * The key state field.
+   */
+  private JTextField  pKeyStateField;
 
   /**
    * The drawer containing the job requirements components.
