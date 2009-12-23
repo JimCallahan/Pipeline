@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.38 2009/12/18 08:44:26 jim Exp $
+// $Id: UIFactory.java,v 1.39 2009/12/23 09:05:55 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -81,38 +81,6 @@ class UIFactory
     }
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   C L I E N T   I N T E R F A C E                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Get the interface for managing the top-level windows of plui(1) containing node, queue 
-   * and job related panels.
-   */ 
-  public static UIClient
-  getUIClient()
-  {
-    return pUIClient; 
-  }
-  
-  /**
-   * Sets the implementation which managings the top-level windows of plui(1) containing 
-   * node, queue and job related panels.<P> 
-   * 
-   * This method is called by the plui(1) internals to initialize the UIClient, but has 
-   * no utility in user code.
-   */ 
-  public static void 
-  setUIClient
-  (
-   UIClient client
-  )
-  {
-    pUIClient = client; 
-  }
-  
 
 
   /*----------------------------------------------------------------------------------------*/
