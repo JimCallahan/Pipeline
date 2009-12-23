@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.39 2009/12/23 09:05:55 jim Exp $
+// $Id: UIFactory.java,v 1.40 2009/12/23 09:10:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4521,12 +4521,6 @@ class UIFactory
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * The interface for managing the top-level windows of plui(1) containing node, queue and 
-   * job related panels.
-   */
-  private static UIClient pUIClient;
-
   /**
    * Beep preference boolean.
    */
