@@ -1,0 +1,70 @@
+DailyUsers <TreeMap> #1 {
+  {
+    Key <Long> #2 { 1214809200000 }
+    Val <Integer> #3 { 1 }
+  }
+  {
+    Key <Long> #4 { 1214895600000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #5 { 1215241200000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #6 { 1215327600000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #7 { 1215414000000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #8 { 1215500400000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #9 { 1215586800000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #10 { 1215673200000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #11 { 1215846000000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #12 { 1215932400000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #13 { 1216018800000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #14 { 1216191600000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #15 { 1216450800000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #16 { 1216537200000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #17 { 1216623600000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #18 { 1217055600000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #19 { 1217228400000 }
+    Val <REF> #3
+  }
+}
