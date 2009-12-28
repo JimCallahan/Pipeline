@@ -1,0 +1,6 @@
+DailyUsers <TreeMap> #1 {
+  {
+    Key <Long> #2 { 1260921600000 }
+    Val <Integer> #3 { 1 }
+  }
+}
