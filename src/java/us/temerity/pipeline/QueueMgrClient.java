@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.57 2009/12/18 23:00:35 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.58 2010/01/01 22:49:32 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -2032,6 +2032,10 @@ class QueueMgrClient
     throws PipelineException  
   {
     verifyConnection();
+    
+    if (jobIDs == null || jobIDs.isEmpty())
+      throw new PipelineException
+        ("At least one job must be requested");
 
     QueueGetJobReq req = new QueueGetJobReq(jobIDs);
 
