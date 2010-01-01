@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.151 2009/12/19 21:14:27 jesse Exp $
+// $Id: QueueMgr.java,v 1.152 2010/01/01 22:44:31 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9,6 +9,8 @@ import java.util.Map.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
+
+import org.python.modules.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -5411,6 +5413,9 @@ class QueueMgr
         timer.resume();
         try {
           Set<Long> jobIDs = req.getJobIDs();
+          if (jobIDs.isEmpty())
+            throw new PipelineException
+              ("At least one job must be requested");
           TreeMap<Long, QueueJob> toReturn = new TreeMap<Long, QueueJob>();
           for (Long jobID : jobIDs) {
             QueueJob job = pJobs.get(jobID);
@@ -6031,7 +6036,8 @@ class QueueMgr
         timer.resume();
         for (Long id : ids) {
           QueueJob job = pJobs.get(id);
-          if (job != null) {
+          long chooserStamp = pChooserUpdateTime.get();
+          if (job != null && job.doKeysNeedUpdate(chooserStamp)) {
             QueueJob copy = job.queryOnlyCopy(); 
             jobs.put(id, copy);
             NodeID nodeID = copy.getNodeID();
@@ -8989,8 +8995,10 @@ class QueueMgr
                     }
                     
                     String author = profile.getAuthor();
-                    double balanceGroupShare = 
-                      pDispUserUsage.getCalculatedShare(balanceGroupName, author);
+                    double balanceGroupShare = Double.MAX_VALUE;
+                    if (balanceGroupName != null)
+                      balanceGroupShare = 
+                        pDispUserUsage.getCalculatedShare(balanceGroupName, author);
                     
                     /* create a new rank entry for the job */ 
                     {

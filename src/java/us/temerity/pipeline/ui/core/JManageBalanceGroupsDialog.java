@@ -1,4 +1,4 @@
-// $Id: JManageBalanceGroupsDialog.java,v 1.5 2009/12/19 21:14:28 jesse Exp $
+// $Id: JManageBalanceGroupsDialog.java,v 1.6 2010/01/01 22:44:31 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -401,8 +401,10 @@ class JManageBalanceGroupsDialog
       for (QueueHostInfo info : hosts.values()) {
         if (info.getStatus() == QueueHostStatus.Enabled) {
           String bgName = info.getBalanceGroup();
-          int slots = info.getJobSlots();
-          pCurrentBalanceGroupSize.apply(bgName, slots);
+          if (bgName != null) {
+            int slots = info.getJobSlots();
+            pCurrentBalanceGroupSize.apply(bgName, slots);
+          }
         }
       }
       selected = updateList(selected);  
