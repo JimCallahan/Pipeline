@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.58 2010/01/01 22:49:32 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.59 2010/01/01 22:51:42 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -2022,7 +2022,8 @@ class QueueMgrClient
    *   The set of unique job identifiers.
    * 
    * @throws PipelineException
-   *   If no jobs exists with the given IDs.
+   *   If no jobs exists with the given IDs or if the set of jobIDs is empty or 
+   *   <code>null</code>.
    */ 
   public synchronized Map<Long, QueueJob>
   getJobs
