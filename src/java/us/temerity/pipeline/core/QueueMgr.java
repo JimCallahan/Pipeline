@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.152 2010/01/01 22:44:31 jesse Exp $
+// $Id: QueueMgr.java,v 1.153 2010/01/03 05:10:02 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -566,8 +566,25 @@ class QueueMgr
         if (jobIDs != null) {
           boolean upToDate = true;
           long chooserUpdate = pChooserUpdateTime.get();
-          synchronized (pJobs) {
+          TreeSet<Long> notFinished = new TreeSet<Long>();
+          timer.aquire();
+          synchronized (pJobInfo) {
+            timer.resume();
             for (Long jobID : jobIDs) {
+              QueueJobInfo info = pJobInfo.get(jobID);
+              JobState state = info.getState();
+              switch (state) {
+              case Paused:
+              case Preempted:
+              case Queued:
+                notFinished.add(jobID);
+              }
+            }
+          }
+          timer.aquire();
+          synchronized (pJobs) {
+            timer.resume();
+            for (Long jobID : notFinished) {
               QueueJob job = pJobs.get(jobID);
               if (job.doKeysNeedUpdate(chooserUpdate)) {
                 upToDate = false;
@@ -7865,8 +7882,10 @@ class QueueMgr
     }
     
     for (Long jobGroupID : updatedJobGroups) {
-      TreeSet<Long> jobIDs = null; 
+      TreeSet<Long> jobIDs = null;
+      tm.aquire();
       synchronized (pJobGroups) {
+        tm.resume();
         QueueJobGroup group = pJobGroups.get(jobGroupID);
         if (group != null) {
           jobIDs = new TreeSet<Long>(group.getJobIDs());
@@ -7875,8 +7894,25 @@ class QueueMgr
       if (jobIDs != null) {
         boolean upToDate = true;
         long chooserUpdate = pChooserUpdateTime.get();
-        synchronized (pJobs) {
+        TreeSet<Long> notFinished = new TreeSet<Long>();
+        tm.aquire();
+        synchronized (pJobInfo) {
+          tm.resume();
           for (Long jobID : jobIDs) {
+            QueueJobInfo info = pJobInfo.get(jobID);
+            JobState state = info.getState();
+            switch (state) {
+            case Paused:
+            case Preempted:
+            case Queued:
+              notFinished.add(jobID);
+            }
+          }
+        }
+        tm.aquire();
+        synchronized (pJobs) {
+          tm.resume();
+          for (Long jobID : notFinished) {
             QueueJob job = pJobs.get(jobID);
             if (job.doKeysNeedUpdate(chooserUpdate)) {
               upToDate = false;
@@ -7884,7 +7920,9 @@ class QueueMgr
             }
           }
         }
+        tm.aquire();
         synchronized (pJobGroups) {
+          tm.resume();
           QueueJobGroup group = pJobGroups.get(jobGroupID);
           if (group != null) {
             group.setJobKeysNeedUpdate(!upToDate);
