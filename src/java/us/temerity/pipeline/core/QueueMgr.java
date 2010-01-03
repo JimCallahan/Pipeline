@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.153 2010/01/03 05:10:02 jesse Exp $
+// $Id: QueueMgr.java,v 1.154 2010/01/03 06:22:38 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6397,6 +6397,37 @@ class QueueMgr
     finally {
       pDatabaseLock.readLock().unlock();
     }
+  }
+  
+  /**
+   * Set the Key State in every non-executed job to Stale, prompting users to rerun the key
+   * choosers on the jobs.
+   */
+  public Object
+  invalidateAllJobKeys
+  (
+    PrivilegedReq req  
+  )
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may update all the job keys!");
+      
+      pChooserUpdateTime.set(System.currentTimeMillis());
+      new FlagAllJobGroupsThread().start();
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+    return new SuccessRsp(timer); 
+    
   }
   
   /**

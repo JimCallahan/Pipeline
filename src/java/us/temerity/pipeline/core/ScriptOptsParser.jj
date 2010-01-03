@@ -1663,7 +1663,8 @@ TOKEN :
 | <KEY_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
 | <KEY_ADD:            "--add">                   : KEY_NAME_SEP 
 | <KEY_SET:            "--set">                   : KEY_NAME_SEP 
-| <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP 
+| <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP
+| <INVALIDATE_ALL_JOB_KEYS: "--invalidate-all-job-keys">
 | <AE28:               ["\0"]>    
 | <UNKNOWN_OPTION5:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN5:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE           
@@ -3689,7 +3690,7 @@ RuntimeQueueOpts()
 {}
 {
   (RemoteLog() | CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval() | 
-   QueueBackupSyncInterval() | BalanceSampleInterval() | BalanceSamplesToKeep() ) 
+   QueueBackupSyncInterval() | BalanceSampleInterval() | BalanceSamplesToKeep()) 
   {}
 }
 
@@ -4082,7 +4083,7 @@ LicenseKeyCmds()
 {
   <LICENSE_KEY1> AE() 
      (LicenseKeyGet() | LicenseKeyGetInfo() | LicenseKeyGetInfoAll() | 
-      LicenseKeyAdd() | LicenseKeySet() | LicenseKeyRemove())
+      LicenseKeyAdd() | LicenseKeySet() | LicenseKeyRemove() | InvalidateAllJobKeys())
   {}
 }
 
@@ -4212,7 +4213,7 @@ SelectionKeyCmds()
 {
   <SELECTION_KEY1> AE() 
      (SelectionKeyGet() | SelectionKeyGetInfo() | SelectionKeyGetInfoAll() | 
-      SelectionKeyAdd() | SelectionKeyRemove())
+      SelectionKeyAdd() | SelectionKeyRemove() | InvalidateAllJobKeys())
   {}
 }
 
@@ -4310,7 +4311,7 @@ HardwareKeyCmds()
 {
   <HARDWARE_KEY1> AE() 
      (HardwareKeyGet() | HardwareKeyGetInfo() | HardwareKeyGetInfoAll() | 
-      HardwareKeyAdd() | HardwareKeyRemove())
+      HardwareKeyAdd() | HardwareKeyRemove() | InvalidateAllJobKeys())
   {}
 }
 
@@ -4398,6 +4399,16 @@ HardwareKeyRemove()
   }
 }
 
+/*------------------------------------------------------------------------------------------*/
+void
+InvalidateAllJobKeys()
+  throws PipelineException :
+{}
+{	<INVALIDATE_ALL_JOB_KEYS> AE()
+	{	  pQueueMgrClient.invalidateAllJobKeys();
+	}
+}
+  
 
 /*------------------------------------------------------------------------------------------*/
 

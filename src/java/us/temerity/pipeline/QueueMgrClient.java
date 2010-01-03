@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.59 2010/01/01 22:51:42 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.60 2010/01/03 06:22:38 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -2372,6 +2372,26 @@ class QueueMgrClient
 
     PrivilegedReq req = new PrivilegedReq();
     Object obj = performTransaction(QueueRequest.UpdateAllJobKeys, req); 
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Set the Key State in every non-executed job to Stale, prompting users to rerun the key
+   * choosers on the jobs. <P>
+   * 
+   * This method will fail unless the current user has QueueAdmin privileges. <P>
+   * 
+   * @throws PipelineException 
+   *   If the user does not have permission to update the keys.
+   */ 
+  public synchronized void 
+  invalidateAllJobKeys()
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    PrivilegedReq req = new PrivilegedReq();
+    Object obj = performTransaction(QueueRequest.InvalidateAllJobKeys, req); 
     handleSimpleResponse(obj);
   }
 

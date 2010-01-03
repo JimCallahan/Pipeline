@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.80 2009/12/18 23:00:36 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.81 2010/01/03 06:22:38 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -996,6 +996,13 @@ class QueueMgrServer
                   objOut.flush();
                 }
                 break;
+                
+              case InvalidateAllJobKeys:
+                {
+                  PrivilegedReq req = (PrivilegedReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.invalidateAllJobKeys(req));
+                  objOut.flush();
+                }
 	      
               case PreemptNodeJobs:
                 {
