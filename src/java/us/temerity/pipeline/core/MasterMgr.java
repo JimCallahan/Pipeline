@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.328 2009/12/18 23:00:35 jesse Exp $
+// $Id: MasterMgr.java,v 1.329 2010/01/05 23:13:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21331,6 +21331,7 @@ class MasterMgr
         args.add("--quiet");
         args.add("--delete");
         args.add("--delete-excluded");
+        args.add("--exclude=/pipeline/events");
         args.add("--exclude=/pipeline/lock");
         args.add("--exclude=/pipeline/plugins");
         args.add("--exclude=/pipeline/queue");
