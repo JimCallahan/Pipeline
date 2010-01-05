@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.42 2009/12/14 21:48:22 jim Exp $
+// $Id: JobMgrServer.java,v 1.43 2010/01/05 02:25:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -518,7 +518,7 @@ class JobMgrServer
 
       try {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Collector Started.");	
 	
 	while(!pShutdown.get()) {
@@ -527,12 +527,12 @@ class JobMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("Collector Failed:", ex)); 
       }
       finally {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Collector Finished.");	
       }
     }

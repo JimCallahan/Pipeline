@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.112 2009/12/15 12:38:29 jim Exp $
+// $Id: MasterMgrServer.java,v 1.113 2010/01/05 02:25:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1955,7 +1955,7 @@ class MasterMgrServer
     {
       try {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Cache Garbage Collector Started.");	
 
 	while(!pShutdown.get()) {
@@ -1964,12 +1964,12 @@ class MasterMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Cache Garbage Collector Failed:", ex)); 
       }
       finally {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Cache Garbage Collector Finished.");	
       }
     }
@@ -2005,12 +2005,12 @@ class MasterMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Database Backup Synchronizer Failed:", ex)); 
       }
       finally {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Database Backup Synchronizer Finished.");	
       }
     }

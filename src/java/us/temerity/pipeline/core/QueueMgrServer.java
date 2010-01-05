@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.82 2010/01/03 18:01:00 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.83 2010/01/05 02:25:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1321,7 +1321,7 @@ class QueueMgrServer
     {
       try {
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Usr, LogMgr.Level.Fine,
+          (LogMgr.Kind.Ops, LogMgr.Level.Fine,
            "Balancer Started.");       
 
         while(!pShutdown.get()) {
@@ -1330,12 +1330,12 @@ class QueueMgrServer
       }
       catch (Exception ex) {
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Usr, LogMgr.Level.Severe,
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Balancer Failed:", ex)); 
       }
       finally {
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Usr, LogMgr.Level.Fine,
+          (LogMgr.Kind.Ops, LogMgr.Level.Fine,
            "Balancer Finished.");      
       }
     }
@@ -1360,7 +1360,7 @@ class QueueMgrServer
     {
       try {
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Wri, LogMgr.Level.Fine,
+          (LogMgr.Kind.Ops, LogMgr.Level.Fine,
            "Job Writer Started.");       
 
         while(!pShutdown.get()) {
@@ -1369,12 +1369,12 @@ class QueueMgrServer
       }
       catch (Exception ex) {
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Job Writer Failed:", ex)); 
       }
       finally {
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Wri, LogMgr.Level.Fine,
+          (LogMgr.Kind.Ops, LogMgr.Level.Fine,
            "Job Writer Finished.");      
       }
     }
@@ -1399,7 +1399,7 @@ class QueueMgrServer
     {
       try {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Dispatcher Started.");	
 
 	pQueueMgr.establishMasterConnection();
@@ -1410,12 +1410,12 @@ class QueueMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("Dispatcher Failed:", ex)); 
       }
       finally {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Dispatcher Finished.");	
       }
     }
@@ -1479,7 +1479,7 @@ class QueueMgrServer
     {
       try {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "JVM Memory Statistics Started.");	
 
 	while(!pShutdown.get()) {
@@ -1488,12 +1488,12 @@ class QueueMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage("JVM Memory Statistics Failed:", ex)); 
       }
       finally {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "JVM Memory Statistics Finished.");	
       }
     }
@@ -1529,12 +1529,12 @@ class QueueMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
            Exceptions.getFullMessage("Database Backup Synchronizer Failed:", ex)); 
       }
       finally {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Database Backup Synchronizer Finished.");	
       }
     }
