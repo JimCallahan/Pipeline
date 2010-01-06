@@ -1,4 +1,4 @@
-// $Id: QueueMgrApp.java,v 1.16 2009/12/15 12:42:11 jim Exp $
+// $Id: QueueMgrApp.java,v 1.17 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -89,7 +89,7 @@ class QueueMgrApp
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      LogMgr.getInstance().cleanup();
+      LogMgr.getInstance().cleanupAll();
     }
 
     System.exit(success ? 0 : 1);

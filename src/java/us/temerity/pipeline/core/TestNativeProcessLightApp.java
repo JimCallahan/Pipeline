@@ -1,4 +1,4 @@
-// $Id: TestNativeProcessLightApp.java,v 1.6 2009/12/14 21:48:22 jim Exp $
+// $Id: TestNativeProcessLightApp.java,v 1.7 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -121,7 +121,7 @@ class TestNativeProcessLightApp
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      LogMgr.getInstance().cleanup();
+      LogMgr.getInstance().cleanupAll();
     }
 
     System.exit(success ? 0 : 1);

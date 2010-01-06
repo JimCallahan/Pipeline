@@ -1,4 +1,4 @@
-// $Id: TestNativeProcessHeavyApp.java,v 1.7 2009/07/06 10:25:26 jim Exp $
+// $Id: TestNativeProcessHeavyApp.java,v 1.8 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -94,7 +94,7 @@ class TestNativeProcessHeavyApp
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      LogMgr.getInstance().cleanup();
+      LogMgr.getInstance().cleanupAll();
     }
 
     while(true) {

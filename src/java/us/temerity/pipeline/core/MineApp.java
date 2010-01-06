@@ -1,4 +1,4 @@
-// $Id: MineApp.java,v 1.3 2009/12/14 21:48:22 jim Exp $
+// $Id: MineApp.java,v 1.4 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -101,7 +101,7 @@ class MineApp
       if(pclient != null) 
 	pclient.disconnect();
 
-      LogMgr.getInstance().cleanup();
+      LogMgr.getInstance().cleanupAll();
     }
 
     System.exit(success ? 0 : 1);

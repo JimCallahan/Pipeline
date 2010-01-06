@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.21 2009/07/06 10:25:26 jim Exp $
+// $Id: FileMgrApp.java,v 1.22 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -99,7 +99,7 @@ class FileMgrApp
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      LogMgr.getInstance().cleanup();
+      LogMgr.getInstance().cleanupAll();
     }
 
     System.exit(success ? 0 : 1);

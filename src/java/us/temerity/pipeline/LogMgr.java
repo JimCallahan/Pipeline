@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.16 2009/12/15 12:36:28 jim Exp $
+// $Id: LogMgr.java,v 1.17 2010/01/06 23:34:09 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -27,8 +27,15 @@ class LogMgr
    * Construct the sole instance.
    */ 
   private 
-  LogMgr()
+  LogMgr
+  (
+   String name
+  )
   {
+    if(name == null) 
+      throw new IllegalArgumentException("The name cannot be (null)!");
+    pName = name;
+
     pLevels = new EnumMap<Kind,Level>(Kind.class);
     setLevels(Level.Info);
     pTextAreaLock = new Object();
@@ -59,21 +66,66 @@ class LogMgr
     return (pLevels.get(kind).ordinal() >= level.ordinal());
   }
 
-
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the LogMgr instance.
+   * Get the name of this LogMgr.
+   */ 
+  public String
+  getName()
+  {
+    return pName;
+  }
+  
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the "Default" LogMgr instance.
    */ 
   public static LogMgr
   getInstance() 
   {
-    return sLogMgr;
+    return getInstance("Default"); 
   }
 
+  /**
+   * Get the LogMgr instance with the given name or create one if none exists.
+   */ 
+  public static LogMgr
+  getInstance
+  (
+   String name
+  ) 
+  {
+    if(name == null) 
+      throw new IllegalArgumentException("The name cannot be (null)!");
+
+    LogMgr mgr = sLogMgrs.get(name);
+    if(mgr == null) {
+      mgr = new LogMgr(name); 
+      sLogMgrs.put(name, mgr); 
+    }
+
+    return mgr;
+  }
+
+  /**
+   * Whether a LogMgr with the given name has already been created.
+   */ 
+  public static boolean
+  exists
+  (
+   String name
+  ) 
+  {
+    return sLogMgrs.containsKey(name);
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -469,7 +521,23 @@ class LogMgr
       }
     }
 
-    sLogMgr = null;
+    sLogMgrs.remove(pName); 
+  }
+
+  /** 
+   * Close down logging facilities for all LogMgr instances. <P> 
+   * 
+   * Flushes any cached messages and closes down the output stream or log file.
+   */ 
+  public static void
+  cleanupAll()
+  {
+    LinkedList<String> names = new LinkedList<String>(sLogMgrs.keySet());
+    for(String name : names) {
+      LogMgr mgr = LogMgr.getInstance();
+      if(mgr != null) 
+        mgr.cleanup(); 
+    }
   }
 
 
@@ -831,7 +899,7 @@ class LogMgr
   /**
    * The sole instance of this class.
    */ 
-  private static LogMgr sLogMgr = new LogMgr();
+  private static TreeMap<String,LogMgr> sLogMgrs = new TreeMap<String,LogMgr>();
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -887,6 +955,11 @@ class LogMgr
   
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The name of the log manager.
+   */ 
+  private String pName; 
 
   /**
    * The abstract pathname prefix of the rotating log files.

@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.10 2009/12/14 21:48:22 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.11 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -890,7 +890,7 @@ LogMasterActivityExt
     try {
       Integer delay = (Integer) getParamValue(aEnableDelay); 
       if((delay != null) && (delay > 0)) {
-	LogMgr.getInstance().logAndFlush
+	getLogMgr().logAndFlush
 	  (LogMgr.Kind.Ext, LogMgr.Level.Info, 
 	   "LogMasterActivity Enabling - " + 
 	   "Please Wait (" + delay + ") milliseconds..."); 
@@ -899,12 +899,12 @@ LogMasterActivityExt
       }
     }
     catch(Exception ex) {
-      LogMgr.getInstance().log
+      getLogMgr().logAndFlush
 	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
 	 ex.getMessage()); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        "LogMasterActivity Enabled!"); 
   }
@@ -937,7 +937,7 @@ LogMasterActivityExt
     try {
       Integer delay = (Integer) getParamValue(aDisableDelay); 
       if((delay != null) && (delay > 0)) {
-	LogMgr.getInstance().logAndFlush
+	getLogMgr().logAndFlush
 	  (LogMgr.Kind.Ext, LogMgr.Level.Info, 
 	   "LogMasterActivity Disabling - " + 
 	   "Please Wait (" + delay + ") milliseconds..."); 
@@ -946,12 +946,12 @@ LogMasterActivityExt
       }
     }
     catch(Exception ex) {
-      LogMgr.getInstance().log
+      getLogMgr().logAndFlush
 	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
 	 ex.getMessage()); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        "LogMasterActivity Disabled!"); 
   }
@@ -1032,7 +1032,7 @@ LogMasterActivityExt
       }
     }    
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
   }
@@ -1124,7 +1124,7 @@ LogMasterActivityExt
        "  Package : " + pkg.getName() + " v" + pkg.getVersionID() + "\n" + 
        "  OS Type : " + os);
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg); 
   }
@@ -1210,7 +1210,7 @@ LogMasterActivityExt
        "   Toolset : " + tset.getName() + "\n" + 
        "   OS Type : " + os);
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg); 
   }
@@ -1285,7 +1285,7 @@ LogMasterActivityExt
       ("CREATE WORKING AREA\n" +
        "  Working Area : " + author + "|" + view); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -1357,7 +1357,7 @@ LogMasterActivityExt
       ("REMOVE WORKING AREA\n" +
        "  Working Area : " + author + "|" + view); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -1444,7 +1444,7 @@ LogMasterActivityExt
        "   Plugin Version : v" + annot.getVersionID() + "\n" + 
        "    Plugin Vendor : " + annot.getVendor());
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -1517,7 +1517,7 @@ LogMasterActivityExt
        "        Node Name : " + nname + "\n" + 
        "  Annotation Name : " + aname);
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -1593,7 +1593,7 @@ LogMasterActivityExt
        "  Modified Node : " + nodeID.getName() + "\n" +
        "   Working Area : " + nodeID.getAuthor() + "|" + nodeID.getView());
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -1718,7 +1718,7 @@ LogMasterActivityExt
        "  Relationship : " + relationship + "\n" +
        "  Frame Offset : " + ((offset != null) ? offset : "-"));
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -1810,7 +1810,7 @@ LogMasterActivityExt
        "   Source Node : " + target + "\n" +
        "  Working Area : " + author + "|" + view);
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -1886,7 +1886,7 @@ LogMasterActivityExt
        "    Working Area : " + nodeID.getAuthor() + "|" + nodeID.getView() + "\n" + 
        "  Added Sequence : " + fseq); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -1962,7 +1962,7 @@ LogMasterActivityExt
        "      Working Area : " + nodeID.getAuthor() + "|" + nodeID.getView() + "\n" + 
        "  Removed Sequence : " + fseq); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2050,7 +2050,7 @@ LogMasterActivityExt
        "        New Name : " + pattern + "\n" + 
        "    Rename Files : " + renameFiles); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2140,7 +2140,7 @@ LogMasterActivityExt
        "        New Frame Range : " + range + "\n" + 
        "  Remove Obsolete Files : " + removeFiles); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2185,7 +2185,7 @@ LogMasterActivityExt
        "  Editor Version : " + event.getEditorVersionID() + "\n" + 
        "   Editor Vendor : " + event.getEditorVendor()); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2237,7 +2237,7 @@ LogMasterActivityExt
        "  Editor Version : " + event.getEditorVersionID() + "\n" + 
        "   Editor Vendor : " + event.getEditorVendor()); 
        
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2316,7 +2316,7 @@ LogMasterActivityExt
        "      New Node : " + nodeID.getName() + "\n" + 
        "  Working Area : " + nodeID.getAuthor() + "|" + nodeID.getView());
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2420,7 +2420,7 @@ LogMasterActivityExt
       buf.append(name); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
   }
@@ -2497,7 +2497,7 @@ LogMasterActivityExt
        "  Deleted Node : " + name + "\n" + 
        "  Remove Files : " + removeFiles); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2579,7 +2579,7 @@ LogMasterActivityExt
       ("CHECKED-IN NODE\n" +
        "  Node Version : " + vsn.getName() + " v" + vsn.getVersionID());
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2663,7 +2663,7 @@ LogMasterActivityExt
        "  Node Version : " + nodeID.getName() + " v" + mod.getWorkingID() + "\n" + 
        "  Working Area : " + nodeID.getAuthor() + "|" + nodeID.getView());
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2742,7 +2742,7 @@ LogMasterActivityExt
       ("LOCKED NODE\n" +
        "  Node Version : " + nodeID.getName() + " v" + vid); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2821,7 +2821,7 @@ LogMasterActivityExt
       ("EVOLVED NODE\n" +
        "  Node Version : " + nodeID.getName() + " v" + vid); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -2956,7 +2956,7 @@ LogMasterActivityExt
       }
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());    
   }
@@ -3226,7 +3226,7 @@ LogMasterActivityExt
       }
     }
     
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());    
   }
@@ -3315,7 +3315,7 @@ LogMasterActivityExt
       buf.append(name + " v" + files.get(name)); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
   }
@@ -3395,7 +3395,7 @@ LogMasterActivityExt
        "   Target Node : " + targetID.getName() + "\n" + 
        "  Working Area : " + sourceID.getAuthor() + "|" + sourceID.getView());
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -3472,7 +3472,7 @@ LogMasterActivityExt
        "   Parent Node : " + nodeID.getName() + "\n" + 
        "  Working Area : " + nodeID.getAuthor() + "|" + nodeID.getView()); 
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -3539,7 +3539,7 @@ LogMasterActivityExt
       ("DATABASE BACKED-UP\n" + 
        "  Backup File : " + file);
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        msg);
   }
@@ -3645,7 +3645,7 @@ LogMasterActivityExt
       buf.append(vname + " v" + versions.get(vname)); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
   }
@@ -3723,7 +3723,7 @@ LogMasterActivityExt
       buf.append(name + " v" + versions.get(name)); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
   }
@@ -3797,7 +3797,7 @@ LogMasterActivityExt
       buf.append(name + " v" + versions.get(name)); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
   }
@@ -3875,7 +3875,7 @@ LogMasterActivityExt
       buf.append(name + " v" + versions.get(name)); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
   }
@@ -3983,7 +3983,7 @@ LogMasterActivityExt
       buf.append(vname + " v" + versions.get(vname)); 
     }
 
-    LogMgr.getInstance().log
+    getLogMgr().logAndFlush
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
   }
@@ -4008,12 +4008,26 @@ LogMasterActivityExt
       return ((tf != null) && tf);
     }
     catch(PipelineException ex) {
-      LogMgr.getInstance().log
+      getLogMgr().logAndFlush
 	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
 	 ex.getMessage()); 
       
       return false;
     }
+  }
+
+  /**
+   * Get and optionally initialize the logger.
+   */ 
+  private LogMgr
+  getLogMgr()
+  { 
+    boolean first = !LogMgr.exists("MasterActivity");
+    LogMgr log = LogMgr.getInstance("MasterActivity");
+    if(first)
+      log.logToFile(new Path(PackageInfo.sInstPath, "/logs/master-activity.log"), 
+                    4, 10485760L);
+    return log;
   }
 
 

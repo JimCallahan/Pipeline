@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.27 2009/12/15 12:38:29 jim Exp $
+// $Id: MasterApp.java,v 1.28 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -99,7 +99,7 @@ class MasterApp
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      LogMgr.getInstance().cleanup();
+      LogMgr.getInstance().cleanupAll();
     }
 
     System.exit(success ? 0 : 1);

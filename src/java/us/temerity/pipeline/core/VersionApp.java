@@ -1,4 +1,4 @@
-// $Id: VersionApp.java,v 1.9 2009/07/06 10:25:27 jim Exp $
+// $Id: VersionApp.java,v 1.10 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -192,7 +192,7 @@ class VersionApp
     catch(InterruptedException ex) {
     }
 
-    LogMgr.getInstance().cleanup();
+    LogMgr.getInstance().cleanupAll();
     System.exit(0);
   }  
 

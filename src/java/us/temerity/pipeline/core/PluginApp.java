@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.24 2009/07/06 10:25:26 jim Exp $
+// $Id: PluginApp.java,v 1.25 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -81,7 +81,7 @@ class PluginApp
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      LogMgr.getInstance().cleanup();
+      LogMgr.getInstance().cleanupAll();
     }
 
     System.exit(success ? 0 : 1);

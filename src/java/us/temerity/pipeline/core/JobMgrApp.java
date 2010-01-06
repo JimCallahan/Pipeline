@@ -1,4 +1,4 @@
-// $Id: JobMgrApp.java,v 1.12 2009/07/06 10:25:26 jim Exp $
+// $Id: JobMgrApp.java,v 1.13 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -88,7 +88,7 @@ class JobMgrApp
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      LogMgr.getInstance().cleanup();
+      LogMgr.getInstance().cleanupAll();
     }
 
     System.exit(success ? 0 : 1);

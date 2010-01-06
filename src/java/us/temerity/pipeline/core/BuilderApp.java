@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.34 2009/12/12 23:12:50 jim Exp $
+// $Id: BuilderApp.java,v 1.35 2010/01/06 23:34:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -218,7 +218,7 @@ public class BuilderApp
     }
     finally {
       if (!pGui)
-	LogMgr.getInstance().cleanup();
+	LogMgr.getInstance().cleanupAll();
     }
     if (!pGui)
       System.exit(success ? 0 : 1);
