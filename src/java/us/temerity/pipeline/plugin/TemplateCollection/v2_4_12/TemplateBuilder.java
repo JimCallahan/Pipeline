@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.2 2010/01/07 22:30:47 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateCollection.v2_4_12;
 
@@ -23,6 +23,12 @@ class TemplateBuilder
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
    
+  /**
+   * Constructor which exists to permit installation of the template builder as a plugin. <p>
+   * 
+   * This should never be called from user code.  The template builder will not function 
+   * correctly if it is invoked.
+   */
   public
   TemplateBuilder
   (
@@ -34,10 +40,6 @@ class TemplateBuilder
   {
     super("Template", "Instantiate a node network from an existing network", 
           mclient, qclient, builderInformation);
-    
-    pLog.log(Kind.Ops, Level.Severe, 
-             "This constructor only exists to support installation as a plugin.  It should " +
-             "never be invoked from user code.");
     
     pInvokedCorrectly = false;
     
