@@ -1,4 +1,4 @@
-// $Id: MiscPluginIDReq.java,v 1.1 2009/12/16 04:14:14 jesse Exp $
+// $Id: MiscPluginIDReq.java,v 1.2 2010/01/07 19:19:09 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -33,7 +33,7 @@ class MiscPluginIDReq
   {
     super();
     
-    if (pPluginID == null)
+    if (pluginID == null)
       throw new IllegalArgumentException("The pluginID cannot be null.");
     
     pPluginID = pluginID;
