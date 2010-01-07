@@ -66,7 +66,7 @@ class ProjectTurntableBuilder
 	UtilityParam param = 
 	  new OptionalEnumUtilityParam
 	  (aProjectName,
-	   "The name of the project to build the asset in.", 
+	   "The name of the project to build the turntables in.", 
 	   projects.get(0), 
 	   projects); 
 	addParam(param);
@@ -75,7 +75,7 @@ class ProjectTurntableBuilder
 	UtilityParam param = 
 	  new StringUtilityParam
 	  (aProjectName,
-	   "The name of the project to build the asset in.", 
+	   "The name of the project to build the turntables in.", 
 	   "projects"); 
 	addParam(param);
       }

@@ -66,7 +66,7 @@ class ProjectScriptBuilder
 	UtilityParam param = 
 	  new OptionalEnumUtilityParam
 	  (aProjectName,
-	   "The name of the project to build the asset in.", 
+	   "The name of the project to build the scripts in.", 
 	   projects.get(0), 
 	   projects); 
 	addParam(param);
@@ -75,7 +75,7 @@ class ProjectScriptBuilder
 	UtilityParam param = 
 	  new StringUtilityParam
 	  (aProjectName,
-	   "The name of the project to build the asset in.", 
+	   "The name of the project to build the scripts in.", 
 	   "projects"); 
 	addParam(param);
       }

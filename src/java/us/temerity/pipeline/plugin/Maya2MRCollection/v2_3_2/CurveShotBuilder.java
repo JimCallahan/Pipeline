@@ -54,13 +54,23 @@ class CurveShotBuilder
 
     {
       ArrayList<String> projects = pBuilderQueries.getProjectList();
-      UtilityParam param = 
-        new OptionalEnumUtilityParam
-        (aProjectName,
-         "The name of the project to build the shot in.", 
-         projects.get(0), 
-         projects); 
-      addParam(param);
+      if (projects != null && projects.size() > 0) {
+        UtilityParam param = 
+          new OptionalEnumUtilityParam
+          (aProjectName,
+           "The name of the project to build the asset in.", 
+           projects.get(0), 
+           projects); 
+        addParam(param);
+      }
+      else {
+        UtilityParam param = 
+          new StringUtilityParam
+          (aProjectName,
+           "The name of the project to build the asset in.",
+           null);
+        addParam(param);
+      }
     }
     
     {

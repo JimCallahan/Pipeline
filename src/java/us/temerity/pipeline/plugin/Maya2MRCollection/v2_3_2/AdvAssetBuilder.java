@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.5 2008/05/22 20:34:31 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.6 2010/01/07 19:19:49 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -72,13 +72,23 @@ class AdvAssetBuilder
     // Globals parameters
     {
       ArrayList<String> projects = pBuilderQueries.getProjectList();
-      UtilityParam param = 
-        new OptionalEnumUtilityParam
-        (aProjectName,
-         "The name of the project to build the asset in.", 
-         projects.get(0), 
-         projects); 
-      addParam(param);
+      if (projects != null && projects.size() > 0) {
+        UtilityParam param = 
+          new OptionalEnumUtilityParam
+          (aProjectName,
+           "The name of the project to build the asset in.", 
+           projects.get(0), 
+           projects); 
+        addParam(param);
+      }
+      else {
+        UtilityParam param = 
+          new StringUtilityParam
+          (aProjectName,
+           "The name of the project to build the asset in.",
+           null);
+        addParam(param);
+      }
     }
     {
       UtilityParam param = 
