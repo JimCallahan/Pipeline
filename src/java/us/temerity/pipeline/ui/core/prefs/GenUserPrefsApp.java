@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.87 2009/12/18 23:00:36 jesse Exp $
+// $Id: GenUserPrefsApp.java,v 1.88 2010/01/07 08:01:12 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1159,6 +1159,11 @@ class GenUserPrefsApp
 	 false, false, false, 70),  /* F */ 
 	
 	new HotKeyPref
+	("Move the camera to frame the nodes from the seleted networks.",
+	 "FrameNetwork", "Frame Network:", 
+	 false, false, false, 78),  /* N */ 
+
+	new HotKeyPref
 	("Move the camera to frame all active nodes.",
 	 "FrameAll", "Frame All:", 
 	 false, false, false, 71),  /* G */ 
@@ -1914,6 +1919,10 @@ class GenUserPrefsApp
 	("Move the camera to frame the bounds of the currently selected jobs.",
 	 "JobViewerFrameSelection", "Frame Selection:", "FrameSelection"), 
 	
+	new DuplicateHotKeyPref
+	("Move the camera to frame the jobs from the seleted job groups.",
+	 "FrameGroup", "Frame Group:", "FrameNetwork"), 
+
 	new DuplicateHotKeyPref
 	("Move the camera to frame all active jobs.",
 	 "JobViewerFrameAll", "Frame All:", "FrameAll"), 
@@ -2874,7 +2883,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.87 2009/12/18 23:00:36 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.88 2010/01/07 08:01:12 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3129,7 +3138,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.87 2009/12/18 23:00:36 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.88 2010/01/07 08:01:12 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4507,7 +4516,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.87 2009/12/18 23:00:36 jesse Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.88 2010/01/07 08:01:12 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

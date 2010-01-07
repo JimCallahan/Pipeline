@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.155 2009/12/12 23:12:50 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.156 2010/01/07 08:01:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -167,6 +167,12 @@ class JNodeViewerPanel
       item = new JMenuItem("Frame Selection");
       pFrameSelectionItem = item;
       item.setActionCommand("frame-selection");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+      
+      item = new JMenuItem("Frame Network");
+      pFrameNetworkItem = item;
+      item.setActionCommand("frame-network");
       item.addActionListener(this);
       pPanelPopup.add(item);  
       
@@ -1172,10 +1178,13 @@ class JNodeViewerPanel
 
     updateMenuToolTip
       (pFrameSelectionItem, prefs.getFrameSelection(), 
-       "Move the camera to frame the bounds of the currently selected nodes.");
+       "Move the camera to frame the bounds of the currently selected nodes.");  
+    updateMenuToolTip
+      (pFrameNetworkItem, prefs.getFrameNetwork(), 
+       "Move the camera to frame the nodes from the selected networks.");
     updateMenuToolTip
       (pFrameAllItem, prefs.getFrameAll(), 
-       "Move the camera to frame all active nodes.");
+       "Move the camera to frame all active nodes."); 
     updateMenuToolTip
       (pAutomaticExpandItem, prefs.getAutomaticExpand(), 
        "Automatically expand the first occurance of a node.");
@@ -3464,6 +3473,9 @@ class JNodeViewerPanel
       else if((prefs.getFrameSelection() != null) &&
 	      prefs.getFrameSelection().wasPressed(e))
 	doFrameSelection();
+      else if((prefs.getFrameNetwork() != null) &&
+	      prefs.getFrameNetwork().wasPressed(e))
+	doFrameNetwork();
       else if((prefs.getFrameAll() != null) &&
 	      prefs.getFrameAll().wasPressed(e))
 	doFrameAll();
@@ -3735,6 +3747,8 @@ class JNodeViewerPanel
       doRegister();
     else if(cmd.equals("frame-selection"))
       doFrameSelection();
+    else if(cmd.equals("frame-network"))
+      doFrameNetwork();
     else if(cmd.equals("frame-all"))
       doFrameAll();
     else if(cmd.equals("automatic-expand"))
@@ -5370,6 +5384,29 @@ class JNodeViewerPanel
   doFrameSelection() 
   {
     doFrameNodes(pSelected.values());
+  }
+
+  /**
+   * Move the camera to frame the nodes from the selected networks.
+   */ 
+  private synchronized void 
+  doFrameNetwork() 
+  {
+    LinkedList<ViewerNode> found = new LinkedList<ViewerNode>(pSelected.values());
+
+    TreeSet<NodePath> roots = new TreeSet<NodePath>(); 
+    for(NodePath vpath : pSelected.keySet()) 
+      roots.add(new NodePath(vpath.getRootName()));
+
+    for(ViewerNode vnode : pViewerNodes.values()) {
+      NodePath vpath = vnode.getNodePath();
+      for(NodePath rpath : roots) {
+        if(vpath.equals(rpath) || vpath.isDescendent(rpath))
+          found.add(vnode);
+      }
+    }
+
+    doFrameNodes(found);
   }
 
   /**
@@ -8112,8 +8149,9 @@ class JNodeViewerPanel
   private JMenuItem  pReleaseViewItem;
   private JMenuItem  pPanelRestoreItem;
   private JMenuItem  pUnpackBundleItem;
-  private JMenuItem  pFrameAllItem;
   private JMenuItem  pFrameSelectionItem;
+  private JMenuItem  pFrameNetworkItem;
+  private JMenuItem  pFrameAllItem;
   private JMenuItem  pAutomaticExpandItem;
   private JMenuItem  pExpandAllItem;
   private JMenuItem  pCollapseAllItem;

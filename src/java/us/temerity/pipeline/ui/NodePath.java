@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.7 2009/12/18 08:43:30 jim Exp $
+// $Id: NodePath.java,v 1.8 2010/01/07 08:01:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -127,8 +127,34 @@ class NodePath
 
     return true;
   }
-  
 
+  /**
+   * Whether the this node is a descendent of the given node.<P> 
+   * 
+   * In other words, whether the given node's path is a prefix of this node's path.
+   */ 
+  public boolean
+  isDescendent
+  (
+   NodePath path
+  )
+  {
+    ArrayList<String> onames = new ArrayList<String>(path.getNames());
+    if(pNames.size() <= onames.size()) 
+      return false;
+
+    int idx = 0;
+    for(String oname : onames) {
+      if(!oname.equals(pNames.get(idx)))
+        return false;
+      
+      idx++;
+    }
+
+    return true;
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */

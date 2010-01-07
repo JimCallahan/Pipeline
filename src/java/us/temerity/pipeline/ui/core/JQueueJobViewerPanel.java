@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.74 2009/12/18 23:00:36 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.75 2010/01/07 08:01:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -120,6 +120,12 @@ class JQueueJobViewerPanel
       item = new JMenuItem("Frame Selection");
       pFrameSelectionItem = item;
       item.setActionCommand("frame-selection");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+      
+      item = new JMenuItem("Frame Group");
+      pFrameGroupItem = item;
+      item.setActionCommand("frame-group");
       item.addActionListener(this);
       pPanelPopup.add(item);  
       
@@ -727,6 +733,9 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pFrameSelectionItem, prefs.getFrameSelection(), 
        "Move the camera to frame the bounds of the currently selected jobs.");
+    updateMenuToolTip
+      (pFrameGroupItem, prefs.getFrameNetwork(), 
+       "Move the camera to frame the jobs from the selected job groups.");
     updateMenuToolTip
       (pFrameAllItem, prefs.getFrameAll(), 
        "Move the camera to frame all active jobs.");
@@ -2140,6 +2149,9 @@ class JQueueJobViewerPanel
       else if((prefs.getFrameSelection() != null) &&
 	      prefs.getFrameSelection().wasPressed(e))
 	doFrameSelection();
+      else if((prefs.getFrameNetwork() != null) &&
+	      prefs.getFrameNetwork().wasPressed(e))
+	doFrameGroup();
       else if((prefs.getFrameAll() != null) &&
 	      prefs.getFrameAll().wasPressed(e))
 	doFrameAll();
@@ -2284,6 +2296,8 @@ class JQueueJobViewerPanel
       updatePanels();
     else if(cmd.equals("frame-selection"))
       doFrameSelection();
+    else if(cmd.equals("frame-group"))
+      doFrameGroup();
     else if(cmd.equals("frame-all"))
       doFrameAll();
     else if(cmd.equals("automatic-expand"))
@@ -2362,6 +2376,24 @@ class JQueueJobViewerPanel
   doFrameSelection() 
   {
     doFrameJobs(pSelected.values(), pSelectedGroups.values());
+  }
+
+  /**
+   * Move the camera to frame the jobs from the selected job groups.
+   */ 
+  private synchronized void 
+  doFrameGroup() 
+  {
+    TreeSet<Long> groupIDs = new TreeSet<Long>(pSelectedGroups.keySet());
+
+    for(JobPath jpath : pSelected.keySet()) 
+      groupIDs.add(jpath.getRootJobID());
+
+    LinkedList<ViewerJobGroup> vgroups = new LinkedList<ViewerJobGroup>();
+    for(Long groupID : groupIDs) 
+      vgroups.add(pViewerJobGroups.get(groupID));
+
+    doFrameJobs(new LinkedList<ViewerJob>(), vgroups); 
   }
 
   /**
@@ -3897,8 +3929,9 @@ class JQueueJobViewerPanel
    * The panel popup menu items.
    */
   private JMenuItem  pUpdateItem;
-  private JMenuItem  pFrameAllItem;
   private JMenuItem  pFrameSelectionItem;
+  private JMenuItem  pFrameGroupItem;
+  private JMenuItem  pFrameAllItem;
   private JMenuItem  pAutomaticExpandItem;
   private JMenuItem  pExpandAllItem;
   private JMenuItem  pCollapseAllItem;
