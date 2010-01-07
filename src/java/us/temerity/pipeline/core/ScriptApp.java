@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.111 2010/01/06 23:34:09 jim Exp $
+// $Id: ScriptApp.java,v 1.112 2010/01/07 21:54:05 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1857,6 +1857,13 @@ class ScriptApp
    boolean noSelectionSchedule,
    String  selectionGroup,
    boolean noSelectionGroup,
+   String  hardwareGroup,
+   boolean noHardwareGroup,
+   String  balanceGroup,
+   boolean noBalanceGroup,
+   String  dispatchControl,
+   boolean noDispatchControl,
+   JobGroupFavorMethod favorMethod,
    QueueMgrClient client
   )
     throws PipelineException 
@@ -1881,12 +1888,41 @@ class ScriptApp
       }
       else if(noSelectionSchedule)
 	scheduleModified = true;
+      
+      String hardware = null;
+      boolean hardwareModified = false;
+      if (hardwareGroup != null) {
+        hardware = hardwareGroup;
+        hardwareModified = true;
+      }
+      else if (noHardwareGroup)
+        hardwareModified = true;
+      
+      String balance = null;
+      boolean balanceModified = false;
+      if (balanceGroup != null) {
+        balance = balanceGroup;
+        balanceModified = true;
+      }
+      else if (noBalanceGroup)
+        balanceModified = true;
+      
+      String dispatch = null;
+      boolean dispatchModified = false;
+      if (dispatchControl!= null) {
+        dispatch = dispatchControl;
+        dispatchModified = true;
+      }
+      else if (noDispatchControl)
+        dispatchModified = true;
+      
 
       //FIXME fix this so that you can set hardware keys from plscript.
       QueueHostMod change = 
 	new QueueHostMod(status, reserve, setReserve,  order, slots, 
 			 group, groupModified, schedule, scheduleModified, 
-			 null, false, null, false, null, false, null); 
+			 hardware, hardwareModified, dispatch, dispatchModified, 
+			 balance, balanceModified, favorMethod); 
 
       TreeMap<String,QueueHostMod> changes = new TreeMap<String,QueueHostMod>();
       changes.put(hname, change);

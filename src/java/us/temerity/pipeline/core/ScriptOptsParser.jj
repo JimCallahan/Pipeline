@@ -225,7 +225,13 @@ ScriptOptsParser
   private boolean  pJobNoSelectionSchedule;
   private String   pJobSelectionGroup;
   private boolean  pJobNoSelectionGroup;
-
+  private String   pJobHardwareGroup;
+  private boolean  pJobNoHardwareGroup;
+  private String   pJobBalanceGroup;
+  private boolean  pJobNoBalanceGroup;
+  private String   pJobDispatchControl;
+  private boolean  pJobNoDispatchControl;
+  private JobGroupFavorMethod pJobGroupFavorMethod;
 
   private String         pMessage;
   private LicenseScheme  pLicenseScheme;
@@ -437,13 +443,20 @@ TOKEN :
 | <ENABLE:             "--enable"> 
 | <SHUTDOWN1:          "--shutdown">  
 | <RESERVE:            "--reserve">         	: USER_NAME_SEP           
-| <OPEN:               "--open">  	    				      
+| <NO_RESERVATION:     "--no-reservation">  	    				      
 | <SLOTS:              "--slots">           	: INTEGER_SEP  	      
 | <ORDER:              "--order">           	: INTEGER_SEP  	      
 | <SEL_SCHEDULE:       "--selection-schedule">  : SCHEDULE_NAME_SEP
 | <NO_SEL_SCHEDULE:    "--no-selection-schedule">  	      
 | <SEL_GROUP:          "--selection-group">     : GROUP_NAME_SEP
-| <NO_SEL_GROUP:       "--no-selection-group">  	      
+| <NO_SEL_GROUP:       "--no-selection-group">
+| <HW_GROUP:           "--hardware-group">      : GROUP_NAME_SEP
+| <NO_HW_GROUP:        "--no-hardware-group">
+| <BAL_GROUP:          "--balance-group">       : GROUP_NAME_SEP
+| <NO_BAL_GROUP:       "--no-balance-group">
+| <DIS_CONTROL:        "--dispatch-control">    : GROUP_NAME_SEP
+| <NO_DIS_CONTROL:     "--no-dispatch-control"> 
+| <FAVOR_METHOD:       "--favor-method">        : FAVOR_NAME_SEP
 | <EDITOR2:            "--editor">          	: EDITOR_NAME_SEP 	      
 | <VERSION2:           "--version">         	: REVISION_NUMBER_SEP     
 | <LATEST:             "--latest"> 	    		    		      
@@ -818,6 +831,24 @@ TOKEN :
 	              (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
 | <AE7:             ["\0"]>                                  : OPTIONS
 | <ILLEGAL_GROUP:   (~[":","\0"])+>                          : IGNORE_STATE
+}
+
+/* group arguments */ 
+<FAVOR_NAME_SEP> 
+TOKEN :
+{
+  <EQ49:                "=">   : FAVOR_NAME_STATE
+| <MISSING_FAVOR_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<FAVOR_NAME_STATE> 
+TOKEN :
+{
+  <NONE:            "None">
+| <MOST_ENGAGED:    "MostEngaged">
+| <MOST_PENDING:    "MostPending" > 
+| <AE68:                 ["\0"]>                              : OPTIONS
+| <ILLEGAL_FAVOR_NAME: (~[":","\0"])+>                        : IGNORE_STATE
 }
 
 /* key name arguments */ 
@@ -4510,6 +4541,13 @@ JobServerSet()
   pJobNoSelectionSchedule = false;
   pJobSelectionGroup      = null;
   pJobNoSelectionGroup    = false;
+  pJobHardwareGroup       = null;
+  pJobNoHardwareGroup     = false;
+  pJobBalanceGroup        = null;
+  pJobNoBalanceGroup      = false;
+  pJobDispatchControl     = null;
+  pJobNoDispatchControl   = false;
+  pJobGroupFavorMethod    = null;
 }
 {
   <JOB_SET> EQ() hname=HostName() AE() (JobServerSetOption())+
@@ -4522,11 +4560,27 @@ JobServerSet()
     if((pJobSelectionGroup != null) && pJobNoSelectionGroup) 
       throw new PipelineException
         ("The --selection-group and --no-selection-group options are mutually exclusive!");
+
+	if((pJobHardwareGroup != null) && pJobNoHardwareGroup) 
+      throw new PipelineException
+        ("The --hardware-group and --no-hardware-group options are mutually exclusive!");
+
+    if((pJobBalanceGroup != null) && pJobNoBalanceGroup) 
+      throw new PipelineException
+        ("The --balance-group and --no-balance-group options are mutually exclusive!");
+
+    if((pJobDispatchControl != null) && pJobNoDispatchControl) 
+      throw new PipelineException
+        ("The --dispatch-control and --no-dispatch-control options are mutually exclusive!");
     
     pApp.editHost(hname, 
 		  pJobStatus, pJobReserve, pSetJobReserve, pJobOrder, pJobSlots,
 		  pJobSelectionSchedule, pJobNoSelectionSchedule, 
-		  pJobSelectionGroup, pJobNoSelectionGroup, 
+		  pJobSelectionGroup, pJobNoSelectionGroup,
+		  pJobHardwareGroup, pJobNoHardwareGroup,
+		  pJobBalanceGroup, pJobNoBalanceGroup,
+		  pJobDispatchControl, pJobNoDispatchControl,
+		  pJobGroupFavorMethod,    
 		  pQueueMgrClient);
 
     LogMgr.getInstance().log
@@ -4544,7 +4598,11 @@ JobServerSetOption()
   (JobServerShutdown() | JobServerEnable() | JobServerDisable() | 
    JobServerReserve() | JobServerOrder() | JobServerSlots() | 
    JobServerSelectionSchedule() | JobServerNoSelectionSchedule() |
-   JobServerSelectionGroup() | JobServerNoSelectionGroup())
+   JobServerSelectionGroup() | JobServerNoSelectionGroup() |
+   JobServerHardwareGroup() | JobServerNoHardwareGroup() |
+   JobServerBalanceGroup() | JobServerNoBalanceGroup() |
+   JobServerDispatchControl() | JobServerNoDispatchControl() |
+   JobServerFavorMethod())
   {}
 }
 
@@ -4594,7 +4652,7 @@ JobServerReserve() :
   pSetJobReserve = true;
 }
 {
-  ((<RESERVE> EQ() name=UserName()) | <OPEN>) AE()
+  ((<RESERVE> EQ() name=UserName()) | <NO_RESERVATION>) AE()
   {
     pJobReserve = name;
   }
@@ -4672,6 +4730,117 @@ JobServerNoSelectionGroup() :
   }
 }
   
+void 
+JobServerHardwareGroup()
+  throws PipelineException : 
+{
+  String hname;
+}
+{
+  <HW_GROUP> EQ() hname=SelectionGroupName() AE()
+  {
+    pJobHardwareGroup = hname; 
+  }  
+}
+
+void 
+JobServerNoHardwareGroup() : 
+{}
+{
+  <NO_HW_GROUP> AE()
+  {
+    pJobNoHardwareGroup = true; 
+  }
+}
+
+void 
+JobServerBalanceGroup()
+  throws PipelineException : 
+{
+  String bname;
+}
+{
+  <BAL_GROUP> EQ() bname=SelectionGroupName() AE()
+  {
+    pJobBalanceGroup = bname; 
+  }  
+}
+
+void 
+JobServerNoBalanceGroup() : 
+{}
+{
+  <NO_BAL_GROUP> AE()
+  {
+    pJobNoBalanceGroup = true; 
+  }
+}
+
+void 
+JobServerDispatchControl()
+  throws PipelineException : 
+{
+  String cname;
+}
+{
+  <DIS_CONTROL> EQ() cname=SelectionGroupName() AE()
+  {
+    pJobDispatchControl = cname; 
+  }  
+}
+
+void 
+JobServerNoDispatchControl() : 
+{}
+{
+  <NO_DIS_CONTROL> AE()
+  {
+    pJobNoDispatchControl = true; 
+  }
+}
+
+void 
+JobServerFavorMethod()
+  throws PipelineException : 
+{
+  JobGroupFavorMethod fmethod;
+}
+{
+  <FAVOR_METHOD> EQ()
+  (fmethod=FavorNone() | fmethod=FavorEngaged() | fmethod=FavorPending() ) AE()
+  {
+    pJobGroupFavorMethod = fmethod; 
+  }  
+}
+
+JobGroupFavorMethod
+FavorEngaged()
+  throws PipelineException :
+{}{  <MOST_ENGAGED>
+  {    return JobGroupFavorMethod.MostEngaged;
+  }}
+
+JobGroupFavorMethod
+FavorPending()
+  throws PipelineException :
+{}
+{
+  <MOST_PENDING>
+  {
+    return JobGroupFavorMethod.MostPending;
+  }
+}
+
+JobGroupFavorMethod
+FavorNone()
+  throws PipelineException :
+{}
+{
+  <NONE>
+  {
+    return JobGroupFavorMethod.None;
+  }
+}
 
 void 
 JobServerRemove() 
@@ -8732,7 +8901,7 @@ AE() :
    t=<AE51> | t=<AE52> | t=<AE53> | t=<AE54> | t=<AE55> | 
    t=<AE56> | t=<AE57> | t=<AE58> | t=<AE59> | t=<AE60> | 
    t=<AE61> | t=<AE62> | t=<AE63> | t=<AE64> | t=<AE65> | 
-   t=<AE66> | t=<AE67>)
+   t=<AE66> | t=<AE67> | t=<AE68>)
   { 
     return t; 
   }
@@ -8832,7 +9001,7 @@ EQ() :
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
    t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39> | t=<EQ40> | 
    t=<EQ41> | t=<EQ42> | t=<EQ43> | t=<EQ44> | t=<EQ45> | 
-   t=<EQ46> | t=<EQ47> | t=<EQ48>)
+   t=<EQ46> | t=<EQ47> | t=<EQ48> | t=<EQ49>)
   { 
     return t; 
   }
