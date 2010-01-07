@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.156 2010/01/07 08:01:12 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.157 2010/01/07 10:17:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -224,9 +224,17 @@ class JNodeViewerPanel
         }
       }
     
+      pPanelPopup.addSeparator();
+
       item = new JMenuItem("Hide All Roots");
       pRemoveAllRootsItem = item;
       item.setActionCommand("remove-all-roots");
+      item.addActionListener(this);
+      pPanelPopup.add(item); 
+
+      item = new JMenuItem("Show All Roots");
+      pShowAllRootsItem = item;
+      item.setActionCommand("show-all-roots");
       item.addActionListener(this);
       pPanelPopup.add(item); 
 
@@ -1218,7 +1226,10 @@ class JNodeViewerPanel
 
     updateMenuToolTip
       (pRemoveAllRootsItem, prefs.getHideAll(), 
-       "Hide all of the root nodes.");
+       "Hide all of the currently displayed root nodes.");
+    updateMenuToolTip
+      (pShowAllRootsItem, prefs.getShowAll(), 
+       "Show all of the root nodes checked-out in the current working area.");
 
     updateMenuToolTip
       (pShowHideDetailHintsItem, prefs.getShowHideDetailHints(), 
@@ -3535,6 +3546,9 @@ class JNodeViewerPanel
       else if((prefs.getHideAll() != null) &&
 	      prefs.getHideAll().wasPressed(e))
 	doRemoveAllRoots();
+      else if((prefs.getShowAll() != null) &&
+	      prefs.getShowAll().wasPressed(e))
+	doShowAllRoots();
 
       else if((prefs.getShowHideDetailHints() != null) &&
 	      prefs.getShowHideDetailHints().wasPressed(e))
@@ -3656,8 +3670,11 @@ class JNodeViewerPanel
       doReplaceRoot();
     else if(cmd.equals("remove-root"))
       doRemoveRoot();
+
     else if(cmd.equals("remove-all-roots"))
       doRemoveAllRoots();
+    else if(cmd.equals("show-all-roots"))
+      doShowAllRoots();
 
     else if(cmd.startsWith("author-view:")) 
       doChangeAuthorView(cmd.substring(12));    
@@ -3914,13 +3931,26 @@ class JNodeViewerPanel
     clearSelection();
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Remove all of the roots nodes.
+   * Remove all of the currently displayed root nodes.
    */ 
   private synchronized void
   doRemoveAllRoots()
   {
     setRoots(new TreeSet<String>());
+  }
+
+  /**
+   * Show all of the root nodes checked-out in the current working area.
+   */ 
+  private synchronized void
+  doShowAllRoots()
+  {
+    FindAllRootsTask task = new FindAllRootsTask();
+    task.start();
   }
 
   
@@ -5866,6 +5896,91 @@ class JNodeViewerPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Find the names of the root nodes checked-out in the current working area.
+   */ 
+  private
+  class FindAllRootsTask
+    extends Thread
+  {
+    public 
+    FindAllRootsTask()
+    {
+      super("JNodeViewerPanel:FindAllRoots");
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Finding Root Nodes...")) {
+        TreeSet<String> roots = new TreeSet<String>();
+
+        MasterMgrClient client = master.acquireMasterMgrClient();
+	try {
+          roots = client.getWorkingRootNames(pAuthor, pView); 
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.releaseMasterMgrClient(client);
+	  master.endPanelOp(pGroupID, "Done.");
+	}
+
+        if(roots.isEmpty()) 
+          master.showErrorDialog("Warning:", 
+                                 "Nothing appears to be checked-out in this working area."); 
+
+        if(roots.size() > 10) {
+          ConfirmShowAllRootsTask task = new ConfirmShowAllRootsTask(roots);
+          SwingUtilities.invokeLater(task);
+        }
+        else {
+          setRoots(roots);
+        }
+      }
+    }
+  }
+
+  /** 
+   * Confirm whether to show more than 10 root nodes found to be checked-out in the 
+   * current working area.
+   */ 
+  private
+  class ConfirmShowAllRootsTask
+    extends Thread
+  {
+    public 
+    ConfirmShowAllRootsTask
+    (
+     TreeSet<String> roots
+    )
+    {
+      super("JNodeViewerPanel:ConfirmShowAllRootsTask");
+      pRoots = roots;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      JConfirmListDialog confirm = 
+        new JConfirmListDialog(getTopFrame(), "Are you sure?", 
+                               "Root Nodes to Display:", pRoots); 
+      confirm.setVisible(true);
+      if(confirm.wasConfirmed()) 
+        setRoots(pRoots);
+    }
+
+    private TreeSet<String> pRoots;
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
   
   /** 
@@ -8160,6 +8275,8 @@ class JNodeViewerPanel
   private JPopupMenuItem[]  pDownstreamModeItems; 
 
   private JMenuItem  pRemoveAllRootsItem;
+  private JMenuItem  pShowAllRootsItem;
+
   private JMenuItem  pShowHideDetailHintsItem;
   private JMenuItem  pShowHideToolsetHintItem;
   private JMenuItem  pShowHideEditorHintItem;

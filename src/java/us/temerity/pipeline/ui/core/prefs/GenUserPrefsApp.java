@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.88 2010/01/07 08:01:12 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.89 2010/01/07 10:17:06 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1283,8 +1283,12 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
-	("Hide all of the roots nodes.",
-	 "HideAll", "Hide All Roots:")
+	("Hide all of the the currently displayed root nodes.", 
+	 "HideAll", "Hide All Roots:"),
+
+	new HotKeyPref
+	("Show all of the root nodes checked-out in the current working area.", 
+	 "ShowAll", "Show All Roots:")
       };
 
       pPrefs.put("Panels|Node Viewer|Hot Keys", prefs);
@@ -1944,8 +1948,12 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new DuplicateHotKeyPref
-	("Hide all of the job groups.",
+	("Hide all of the currently displayed job groups.",
 	 "JobViewerHideAll", "Hide All Groups:", "HideAll"), 
+
+	new DuplicateHotKeyPref
+	("Show all of the job groups for the current working area.",
+	 "JobViewerShowAll", "Show All Groups:", "ShowAll"), 
 
 	new BasePref(),
 
@@ -2526,6 +2534,7 @@ class GenUserPrefsApp
       String removeFiles  = "RemoveFiles";
       String showNode     = "ShowNode"; 
       String hideAll      = "HideAll"; 
+      String showAll      = "ShowAll"; 
       String hideSelected = "HideSelected"; 
 
       pHotKeyGroups = new TreeMap<String,TreeSet<String>>();
@@ -2549,6 +2558,7 @@ class GenUserPrefsApp
 	group.add("NodeViewerLaunchBuilder");
 	group.add(update);
 	group.addAll(camera);
+        group.add("FrameNetwork"); 
 	group.add("ShowHideDetailHints"); 
 	group.add("ShowHideToolsetHint"); 
 	group.add("NodeViewerShowHideEditorHint"); 
@@ -2558,6 +2568,7 @@ class GenUserPrefsApp
 	group.add("NodeViewerDownstreamCheckedInOnly");
 	group.add("NodeViewerDownstreamAll");
 	group.add(hideAll);
+	group.add(showAll);
       }
 
       {
@@ -2728,12 +2739,14 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(update);
 	group.addAll(camera);
+        group.add("FrameGroup"); 
 	group.add("ShowHideDetailHints"); 
 	group.add("ShowHideToolsetHint"); 
 	group.add("ShowHideActionHint"); 
 	group.add("JobViewerShowHideHostHint"); 
 	group.add("JobViewerShowHideTimingHint"); 
 	group.add(hideAll);
+	group.add(showAll);
       }
     
       {
@@ -2883,7 +2896,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.88 2010/01/07 08:01:12 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.89 2010/01/07 10:17:06 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3138,7 +3151,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.88 2010/01/07 08:01:12 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.89 2010/01/07 10:17:06 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4516,7 +4529,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.88 2010/01/07 08:01:12 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.89 2010/01/07 10:17:06 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

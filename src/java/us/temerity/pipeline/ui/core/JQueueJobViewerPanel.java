@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.75 2010/01/07 08:01:12 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.76 2010/01/07 10:17:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -163,11 +163,20 @@ class JQueueJobViewerPanel
       item.addActionListener(this);
       pPanelPopup.add(item);  
 
+      pPanelPopup.addSeparator();
+      
       item = new JMenuItem("Hide All Groups");
       pHideAllItem = item;
       item.setActionCommand("hide-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
+
+      item = new JMenuItem("Show All Groups");
+      pShowAllItem = item;
+      item.setActionCommand("show-all");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
       pPanelPopup.addSeparator();
 
       item = new JMenuItem();
@@ -753,7 +762,10 @@ class JQueueJobViewerPanel
        "Toggle the job group orientation between Horizontal and Vertical.");
     updateMenuToolTip
       (pHideAllItem, prefs.getHideAll(), 
-       "Hide all of the job groups.");
+       "Hide all of the currently displayed job groups."); 
+    updateMenuToolTip
+      (pShowAllItem, prefs.getShowAll(), 
+       "Show all of the job groups for the current working area."); 
 
     updateMenuToolTip
       (pShowHideDetailHintsItem, prefs.getShowHideDetailHints(), 
@@ -2197,9 +2209,13 @@ class JQueueJobViewerPanel
       else if((prefs.getToggleOrientation() != null) &&
               prefs.getToggleOrientation().wasPressed(e))
 	doToggleOrientation();     
+
       else if((prefs.getHideAll() != null) &&
 	      prefs.getHideAll().wasPressed(e))
 	doHideAll();
+      else if((prefs.getShowAll() != null) &&
+	      prefs.getShowAll().wasPressed(e))
+	doShowAll();
 
       else if((prefs.getShowHideDetailHints() != null) &&
 	      prefs.getShowHideDetailHints().wasPressed(e))
@@ -2310,6 +2326,8 @@ class JQueueJobViewerPanel
       doToggleOrientation();
     else if(cmd.equals("hide-all"))
       doHideAll();
+    else if(cmd.equals("show-all"))
+      doShowAll();
     else if(cmd.equals("show-hide-detail-hints"))
       doShowHideDetailHints();
     else if(cmd.equals("show-hide-toolset-hint"))
@@ -2565,7 +2583,7 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Hide all job groups.
+   * Hide all of the currently displayed job groups.
    */ 
   private synchronized void 
   doHideAll() 
@@ -2574,6 +2592,18 @@ class JQueueJobViewerPanel
     JQueueJobBrowserPanel panel = master.getQueueJobBrowserPanels().getPanel(pGroupID);
     if(panel != null) 
       panel.deselectAllGroups();
+  }
+
+  /**
+   * Show all of the job groups for the current working area.
+   */ 
+  private synchronized void 
+  doShowAll() 
+  {
+    UIMaster master = UIMaster.getInstance();
+    JQueueJobBrowserPanel panel = master.getQueueJobBrowserPanels().getPanel(pGroupID);
+    if(panel != null) 
+      panel.selectAllGroupsInWorkingArea();
   }
 
 
@@ -3936,6 +3966,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pExpandAllItem;
   private JMenuItem  pCollapseAllItem;
   private JMenuItem  pHideAllItem; 
+  private JMenuItem  pShowAllItem; 
   private JMenuItem  pToggleOrientationItem;
   private JMenuItem  pShowHideDetailHintsItem;
   private JMenuItem  pShowHideToolsetHintItem;

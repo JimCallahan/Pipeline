@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.45 2009/12/19 21:14:28 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.46 2010/01/07 10:17:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -147,6 +147,8 @@ class JQueueJobBrowserPanel
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
 	
+	pGroupsPopup.addSeparator();
+
 	item = new JMenuItem("Change Job Reqs");
 	pGroupsChangeJobReqsItem = item;
 	item.setActionCommand("groups-change-job-reqs");
@@ -156,6 +158,12 @@ class JQueueJobBrowserPanel
 	item = new JMenuItem("Update Job Keys");
 	pGroupsUpdateJobKeysItem = item;
 	item.setActionCommand("groups-update-job-keys");
+        item.addActionListener(this);
+        pGroupsPopup.add(item);
+
+	item = new JMenuItem("Update All Job Keys");
+        pUpdateAllJobKeysItem = item;
+        item.setActionCommand("update-all-job-keys");
         item.addActionListener(this);
         pGroupsPopup.add(item);
 
@@ -171,13 +179,7 @@ class JQueueJobBrowserPanel
 	pGroupsDeleteCompletedItem = item;
 	item.setActionCommand("delete-completed");
 	item.addActionListener(this);
-	pGroupsPopup.add(item);
-	
-	item = new JMenuItem("Update All Job Keys");
-        pUpdateAllJobKeysItem = item;
-        item.setActionCommand("update-all-job-keys");
-        item.addActionListener(this);
-        pGroupsPopup.add(item);
+	pGroupsPopup.add(item);	
       }    
 
       updateMenuToolTips();  
@@ -439,6 +441,40 @@ class JQueueJobBrowserPanel
     if(pGroupsListSelector != null) 
       return pGroupsListSelector.getJustSelected();
     return null;
+  }
+
+  /**
+   * Select all job groups which are in the current working area.
+   */ 
+  public void 
+  selectAllGroupsInWorkingArea()
+  {
+    JTable table = pGroupsTablePanel.getTable();
+    ListSelectionModel smodel = table.getSelectionModel();
+    
+    smodel.removeListSelectionListener(pGroupsListSelector);
+    { 
+      pSelectedIDs.clear();
+      table.clearSelection();
+      
+      int row; 
+      for(row=0; row<table.getRowCount(); row++) {
+        Long groupID = pGroupsTableModel.getGroupID(row);
+        if(groupID != null) {
+          QueueJobGroup group = pJobGroups.get(groupID);
+          if(group != null) {
+            NodeID nodeID = group.getNodeID();
+            if(nodeID.getAuthor().equals(pAuthor) && nodeID.getView().equals(pView)) {
+              pSelectedIDs.add(groupID);
+              table.addRowSelectionInterval(row, row); 
+            }
+          }
+        }
+      }
+    }      
+    smodel.addListSelectionListener(pGroupsListSelector);
+
+    updatePanels(); 
   }
 
   /**
