@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.154 2010/01/03 06:22:38 jesse Exp $
+// $Id: QueueMgr.java,v 1.155 2010/01/07 02:42:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8965,18 +8965,17 @@ class QueueMgr
     /* a cache of the percent pending/engaged per job-group*/
     TreeMap<Long, Double> percentCache = new TreeMap<Long, Double>();
 
-    /* cache latest resource samples */ 
+    /* cache per-hosts information */ 
     ResourceSample sample = host.getLatestSample();
-    if(sample != null) {
+    OsType os = host.getOsType();
+    if((sample != null) && (os != null)) {
      
       if(selFine) 
         lmgr.logAndFlush
           (LogMgr.Kind.Sel, LogMgr.Level.Fine, 
            hostMsg + ": Qualifying Jobs..."); 
 
-      /* cache other per-hosts information */ 
       String reservation = host.getReservation(); 
-      OsType os = host.getOsType();
       
       String balanceGroupName = host.getBalanceGroup();
       TreeSet<String> usersOverMax = null;
@@ -9036,8 +9035,8 @@ class QueueMgr
 
                   /* make sure the host provides the type of operating system, reservation and 
                      dynamic resources required by the job */                
-                  if(profile.isEligible
-                      (sample, os, reservation, pAdminPrivileges, usersOverMax)) {
+                  if(profile.isEligible(sample, os, reservation, 
+                                        pAdminPrivileges, usersOverMax)) {
                     
                     /* compute the percentage of jobs within the job group
                        which are engaged/pending according to the policy of 
