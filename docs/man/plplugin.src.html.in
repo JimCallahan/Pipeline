@@ -3,7 +3,7 @@
 <HTML>
 <HEAD>
   <META name="generator" content=
-  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  "HTML Tidy for Linux (vers 7 December 2008), see www.w3.org">
   <META content="text/html; charset=us-ascii" http-equiv=
   "content-type">
 
@@ -1148,7 +1148,7 @@ div.c12 {margin-left: 40px; font-weight: bold;}
       </DIV><BR>
       <SPAN class="c1"><A name="Extract--vendor" id=
       "Extract--vendor"></A>--vendor</SPAN>=<SPAN class=
-      "c2"><SPAN class="c2">plugin-vendor</SPAN></SPAN><BR>
+      "c2 c2">plugin-vendor</SPAN><BR>
       <BR>
 
       <DIV class="c5">
@@ -1158,7 +1158,7 @@ div.c12 {margin-left: 40px; font-weight: bold;}
       </DIV><BR>
       <SPAN class="c1"><A name="Extract--name" id=
       "Extract--name"></A>--name</SPAN>=<SPAN class=
-      "c2"><SPAN class="c2">plugin-name</SPAN></SPAN><BR>
+      "c2 c2">plugin-name</SPAN><BR>
       <BR>
 
       <DIV class="c5">
@@ -1168,8 +1168,8 @@ div.c12 {margin-left: 40px; font-weight: bold;}
       </DIV><BR>
       <A name="Extract--version" id=
       "Extract--version"></A><SPAN class=
-      "c1">--version</SPAN>=<SPAN class="c2"><SPAN class=
-      "c2">plugin-version</SPAN></SPAN><BR>
+      "c1">--version</SPAN>=<SPAN class=
+      "c2 c2">plugin-version</SPAN><BR>
       <BR>
 
       <DIV class="c5">

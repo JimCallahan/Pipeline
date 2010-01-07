@@ -3,7 +3,7 @@
 <HTML>
 <HEAD>
   <META name="generator" content=
-  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  "HTML Tidy for Linux (vers 7 December 2008), see www.w3.org">
   <META content="text/html; charset=us-ascii" http-equiv=
   "content-type">
 
@@ -19,6 +19,9 @@ div.c9 {margin-left: 40px; font-weight: bold;}
   span.c2 {font-style: italic;}
   a.c1 {font-weight: bold;}
   </STYLE>
+  <STYLE type="text/css">
+a.c1 {font-style: italic}
+  </STYLE>
 </HEAD>
 
 <BODY>
@@ -31,10 +34,10 @@ div.c9 {margin-left: 40px; font-weight: bold;}
   <H3><A name="Synopsis" id="Synopsis"></A>Synopsis</H3>
 
   <BLOCKQUOTE>
-    <B>plpluginmgr</B> [<A href=
-    "#Global_Options"><I>options</I></A>]<BR>
-    <B>plpluginmgr</B> [<A href=
-    "#Global_Options"><I>options</I></A>] <A class="c1" href=
+    <B>plpluginmgr</B> [<A class="c1" href=
+    "#Global_Options">options</A>]<BR>
+    <B>plpluginmgr</B> [<A class="c1" href=
+    "#Global_Options">options</A>] <A class="c1" href=
     "#--bootstrap">--bootstrap</A>=<SPAN class=
     "c2">dirname</SPAN><BR>
     <BR>

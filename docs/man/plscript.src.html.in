@@ -3,7 +3,7 @@
 <HTML>
 <HEAD>
   <META name="generator" content=
-  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  "HTML Tidy for Linux (vers 7 December 2008), see www.w3.org">
 
   <TITLE>plscript</TITLE>
   <META content="text/html; charset=us-ascii" http-equiv=
@@ -37,6 +37,9 @@ ul.c24 {margin-left: 40px;}
   <STYLE type="text/css">
 li.c1 {list-style: none}
   </STYLE>
+  <STYLE type="text/css">
+a.c1 {font-style: italic}
+  </STYLE>
 </HEAD>
 
 <BODY>
@@ -49,12 +52,12 @@ li.c1 {list-style: none}
   <H3><A name="Synopsis" id="Synopsis"></A>Synopsis</H3>
 
   <BLOCKQUOTE>
-    <B>plscript</B> [<A href=
-    "#Global_Options"><I>global-options</I></A>] <A href=
-    "#Commands"><I>command</I></A> [<A href=
-    "#Shared_Options"><I>command-options</I></A>]<BR>
-    <B>plscript</B> [<A href=
-    "#Global_Options"><I>global-options</I></A>] <A href=
+    <B>plscript</B> [<A class="c1" href=
+    "#Global_Options">global-options</A>] <A class="c1" href=
+    "#Commands">command</A> [<A class="c1" href=
+    "#Shared_Options">command-options</A>]<BR>
+    <B>plscript</B> [<A class="c1" href=
+    "#Global_Options">global-options</A>] <A href=
     "#--batch"><SPAN class="c1">--batch</SPAN></A>=<SPAN class=
     "c2">batchfile</SPAN><A href="#--batch"></A><BR>
     <BR>
@@ -114,8 +117,8 @@ li.c1 {list-style: none}
 
             <LI class="c1"><BR></LI>
 
-            <LI class="c4"><SPAN class="c5"><SPAN class=
-            "c1">work-group</SPAN></SPAN></LI>
+            <LI class="c4"><SPAN class=
+            "c5 c1">work-group</SPAN></LI>
 
             <LI class="c6">
               <UL>
@@ -136,7 +139,7 @@ li.c1 {list-style: none}
                 "#work-group_--add">--add</A><SPAN class=
                 "c5">=<SPAN class=
                 "c2">group-name</SPAN></SPAN><SPAN class=
-                "c5"><SPAN class="c2"><BR></SPAN></SPAN></LI>
+                "c5 c2"><BR></SPAN></LI>
 
                 <LI class="c4"><A href=
                 "#work-group_--remove">--remove</A><SPAN class=
@@ -157,8 +160,8 @@ li.c1 {list-style: none}
 
             <LI class="c1"><BR></LI>
 
-            <LI class="c4"><SPAN class="c5"><SPAN class=
-            "c1">privilege</SPAN></SPAN></LI>
+            <LI class="c4"><SPAN class=
+            "c5 c1">privilege</SPAN></LI>
 
             <LI class="c6">
               <UL>
@@ -169,8 +172,7 @@ li.c1 {list-style: none}
 
                 <LI class="c4"><A href=
                 "#privilege_--get-info-all"><SPAN class=
-                "c5"><SPAN class=
-                "c1">--get-info-all</SPAN></SPAN></A></LI>
+                "c5 c1">--get-info-all</SPAN></A></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#privilege_--grant"><SPAN class=
@@ -185,18 +187,17 @@ li.c1 {list-style: none}
                 "c1">--node-manager</SPAN><BR></SPAN></LI>
 
                 <LI class="c4"><A href=
-                "#privilege_--revoke"><SPAN class="c5"><SPAN class=
-                "c1">--revoke</SPAN></SPAN></A><SPAN class=
+                "#privilege_--revoke"><SPAN class=
+                "c5 c1">--revoke</SPAN></A><SPAN class=
                 "c5">=<SPAN class="c2">user-name</SPAN>
                 <SPAN class="c1">--master-admin</SPAN> |
                 <SPAN class="c1">--developer</SPAN> |</SPAN>
-                <SPAN class="c5"><SPAN class=
-                "c1">--annotator</SPAN></SPAN> <SPAN class=
+                <SPAN class="c5 c1">--annotator</SPAN> <SPAN class=
                 "c5">|</SPAN> <SPAN class="c5"><SPAN class=
                 "c1">--queue-admin</SPAN> | <SPAN class=
                 "c1">--queue-manager</SPAN> | <SPAN class=
                 "c1">--node-manager</SPAN></SPAN><SPAN class=
-                "c5"><SPAN class="c2"><BR></SPAN></SPAN></LI>
+                "c5 c2"><BR></SPAN></LI>
               </UL>
             </LI>
           </UL>
@@ -228,8 +229,8 @@ li.c1 {list-style: none}
               <UL>
                 <LI class="c4"><A href=
                 "#admin_--archive">--archive</A><SPAN class=
-                "c5">=</SPAN><SPAN class="c5"><SPAN class=
-                "c2">archive-prefix</SPAN></SPAN> <SPAN class=
+                "c5">=</SPAN><SPAN class=
+                "c5 c2">archive-prefix</SPAN> <SPAN class=
                 "c5">[<SPAN class=
                 "c1">--pattern</SPAN>=</SPAN><SPAN class=
                 "c5"><SPAN class=
@@ -310,27 +311,26 @@ li.c1 {list-style: none}
                 "c7">msec</SPAN><SPAN class="c5">]
                 [</SPAN></SPAN><SPAN class=
                 "c1">--min-overhead</SPAN>=<SPAN class=
-                "c7">min</SPAN><SPAN class="postbody"><SPAN class=
-                "c5">] [</SPAN></SPAN><SPAN class=
+                "c7">min</SPAN><SPAN class="postbody c5">]
+                [</SPAN><SPAN class=
                 "c1">--max-overhead</SPAN>=<SPAN class=
-                "c7">max</SPAN><SPAN class="postbody"><SPAN class=
-                "c5">] [</SPAN></SPAN><SPAN class=
+                "c7">max</SPAN><SPAN class="postbody c5">]
+                [</SPAN><SPAN class=
                 "c1">--avg-node-size</SPAN>=<SPAN class=
-                "c7">size</SPAN><SPAN class="postbody"><SPAN class=
-                "c5">] [</SPAN></SPAN><SPAN class=
-                "c1">-</SPAN><SPAN class="postbody"><SPAN class=
+                "c7">size</SPAN><SPAN class="postbody c5">]
+                [</SPAN><SPAN class="c1">-</SPAN><SPAN class=
+                "postbody"><SPAN class=
                 "c1">--restore-cleanup-interval</SPAN>=<SPAN class=
-                "c7">msec</SPAN></SPAN><SPAN class=
-                "postbody"><SPAN class="c5">]
-                [</SPAN></SPAN><SPAN class=
-                "c1">-</SPAN><SPAN class="postbody"><SPAN class=
+                "c7">msec</SPAN></SPAN><SPAN class="postbody c5">]
+                [</SPAN><SPAN class="c1">-</SPAN><SPAN class=
+                "postbody"><SPAN class=
                 "c1">--backup-sync-interval</SPAN>=<SPAN class=
-                "c7">msec</SPAN></SPAN><SPAN class=
-                "postbody"><SPAN class="c5">] [<SPAN class=
+                "c7">msec</SPAN></SPAN><SPAN class="postbody c5">]
+                [<SPAN class=
                 "c1">--file-stat-dir</SPAN>=<SPAN class=
                 "c2">dir</SPAN>]&nbsp; [<SPAN class=
                 "c1">--checksum-dir</SPAN>=<SPAN class=
-                "c2">dir</SPAN>]<BR></SPAN></SPAN></LI>
+                "c2">dir</SPAN>]<BR></SPAN></LI>
 
                 <LI class="c4"><A href=
                 "#runtime_--set_queue">--set-queue</A> <SPAN class=
@@ -358,8 +358,7 @@ li.c1 {list-style: none}
 
                 <LI class="c4"><A href=
                 "#runtime_--get-master"><SPAN class=
-                "postbody"><SPAN class="c5"><SPAN class=
-                "c1">--get-master</SPAN></SPAN></SPAN></A></LI>
+                "postbody c5 c1">--get-master</SPAN></A></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#runtime_--get-queue"><SPAN class=
@@ -467,13 +466,12 @@ li.c1 {list-style: none}
         <LI class="c1"><BR></LI>
 
         <LI class="c4"><A href="#Queue_Administration"><SPAN class=
-        "c5"><SPAN class="c1">Queue
-        Administration</SPAN></SPAN></A><BR></LI>
+        "c5 c1">Queue Administration</SPAN></A><BR></LI>
 
         <LI class="c6">
           <UL>
-            <LI class="c4"><SPAN class="c5"><SPAN class=
-            "c1">license-key</SPAN></SPAN></LI>
+            <LI class="c4"><SPAN class=
+            "c5 c1">license-key</SPAN></LI>
 
             <LI class="c6">
               <UL>
@@ -485,8 +483,7 @@ li.c1 {list-style: none}
 
                 <LI class="c4"><A href=
                 "#license-key_--get-info-all"><SPAN class=
-                "c5"><SPAN class=
-                "c1">--get-info-all</SPAN></SPAN></A></LI>
+                "c5 c1">--get-info-all</SPAN></A></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#license-key_--add"><SPAN class=
@@ -509,11 +506,10 @@ li.c1 {list-style: none}
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#license-key_--set"><SPAN class=
                 "c1">--set</SPAN></A>=</SPAN><SPAN class=
-                "c5"><SPAN class="c2">key-name</SPAN></SPAN>
-                <SPAN class="c5">[</SPAN><SPAN class=
-                "c5"><SPAN class="c1">--</SPAN><SPAN class=
-                "c1">per-slot</SPAN> | <SPAN class=
-                "c1">--per-host</SPAN> | <SPAN class=
+                "c5 c2">key-name</SPAN> <SPAN class=
+                "c5">[</SPAN><SPAN class="c5"><SPAN class=
+                "c1">--</SPAN><SPAN class="c1">per-slot</SPAN> |
+                <SPAN class="c1">--per-host</SPAN> | <SPAN class=
                 "c1">--per-host-slot</SPAN>]</SPAN> <SPAN class=
                 "c5">[<SPAN class=
                 "c1">--max-slots</SPAN>=<SPAN class=
@@ -532,8 +528,8 @@ li.c1 {list-style: none}
           </UL><BR>
 
           <UL>
-            <LI class="c4"><SPAN class="c5"><SPAN class=
-            "c1">selection-key</SPAN></SPAN></LI>
+            <LI class="c4"><SPAN class=
+            "c5 c1">selection-key</SPAN></LI>
 
             <LI class="c6">
               <UL>
@@ -545,8 +541,7 @@ li.c1 {list-style: none}
 
                 <LI class="c4"><A href=
                 "#selection-key_--get-info-all"><SPAN class=
-                "c5"><SPAN class=
-                "c1">--get-info-all</SPAN></SPAN></A></LI>
+                "c5 c1">--get-info-all</SPAN></A></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#selection-key_--add"><SPAN class=
@@ -564,8 +559,8 @@ li.c1 {list-style: none}
 
             <LI class="c1"><BR></LI>
 
-            <LI class="c4"><SPAN class="c5"><SPAN class=
-            "c1">hardware-key</SPAN></SPAN></LI>
+            <LI class="c4"><SPAN class=
+            "c5 c1">hardware-key</SPAN></LI>
 
             <LI class="c6">
               <UL>
@@ -577,8 +572,7 @@ li.c1 {list-style: none}
 
                 <LI class="c4"><A href=
                 "#hardware-key_--get-info-all"><SPAN class=
-                "c5"><SPAN class=
-                "c1">--get-info-all</SPAN></SPAN></A></LI>
+                "c5 c1">--get-info-all</SPAN></A></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#hardware-key_--add"><SPAN class=
@@ -596,8 +590,8 @@ li.c1 {list-style: none}
           </UL><BR>
 
           <UL>
-            <LI class="c4"><SPAN class="c5"><SPAN class=
-            "c1">job-server</SPAN></SPAN></LI>
+            <LI class="c4"><SPAN class=
+            "c5 c1">job-server</SPAN></LI>
 
             <LI class="c6">
               <UL>
@@ -610,13 +604,11 @@ li.c1 {list-style: none}
 
                 <LI class="c4"><A href=
                 "#job-server_--get-info-all"><SPAN class=
-                "c5"><SPAN class=
-                "c1">--get-info-all</SPAN></SPAN></A></LI>
+                "c5 c1">--get-info-all</SPAN></A></LI>
 
-                <LI class="c4"><SPAN class="c5"><SPAN class=
-                "c1"><A href=
+                <LI class="c4"><SPAN class="c5 c1"><A href=
                 "#job-server_--get-histograms">--get-histograms</A><BR>
-                </SPAN></SPAN></LI>
+                </SPAN></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#job-server_--add"><SPAN class=
@@ -632,17 +624,29 @@ li.c1 {list-style: none}
                 "c1">--enable</SPAN>] [<SPAN class=
                 "c1">--reserve</SPAN>=<SPAN class=
                 "c2">user-name</SPAN> | <SPAN class=
-                "c1">--open</SPAN>] [<SPAN class=
+                "c1">--no-reservation</SPAN>] [<SPAN class=
                 "c1">--order</SPAN>=<SPAN class=
                 "c2">integer</SPAN>] [<SPAN class=
                 "c1">--slots</SPAN>=<SPAN class=
                 "c2">integer</SPAN>] [<SPAN class=
                 "c1">--selection-schedule</SPAN>=<SPAN class=
-                "c2">schedule-name</SPAN>]</SPAN> <SPAN class=
-                "c5">[<SPAN class=
-                "c1">--no-selection-schedule</SPAN>]</SPAN><SPAN class="c5">[</SPAN><SPAN class="c1">--selection-group</SPAN><SPAN class="c5">=<SPAN class="c2">group-name</SPAN>]</SPAN>
-                <SPAN class="c5">[<SPAN class=
-                "c1">--no-selection-group</SPAN>]</SPAN></LI>
+                "c2">schedule-name</SPAN></SPAN>|&nbsp;<SPAN class=
+                "c5"><SPAN class=
+                "c1">--no-selection-schedule</SPAN>]</SPAN><SPAN class="c5">[</SPAN><SPAN class="c1">--selection-group</SPAN><SPAN class="c5">=<SPAN class="c2">group-name</SPAN></SPAN>
+                |&nbsp;<SPAN class="c5"><SPAN class=
+                "c1">--no-selection-group</SPAN>]</SPAN>
+                <SPAN class="c5">[</SPAN><SPAN class=
+                "c1">--hardware-group</SPAN><SPAN class=
+                "c5">=<SPAN class="c2">group-name</SPAN></SPAN>
+                |&nbsp;<SPAN class="c5"><SPAN class=
+                "c1">--no-hardware-group</SPAN>]&nbsp;</SPAN><SPAN class="c5">&nbsp;[</SPAN><SPAN class="c1">--balance-group</SPAN><SPAN class="c5">=<SPAN class="c2">group-name</SPAN></SPAN>
+                |&nbsp;<SPAN class="c5"><SPAN class=
+                "c1">--no-balance-group</SPAN>]&nbsp;</SPAN>
+                <SPAN class="c5">[</SPAN><SPAN class=
+                "c1">--dispatch-control</SPAN><SPAN class=
+                "c5">=<SPAN class="c2">-name</SPAN></SPAN>
+                |&nbsp;<SPAN class="c5"><SPAN class=
+                "c1">--no-dispatch-control</SPAN>]&nbsp;</SPAN><SPAN class="c5">[</SPAN><SPAN class="c1">--favor-method</SPAN><SPAN class="c5">=<SPAN class="c2">favor-method</SPAN>]</SPAN></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#job-server_--remove"><SPAN class=
@@ -902,7 +906,7 @@ li.c1 {list-style: none}
                 "#suffix-editor_--get">--get</A></LI>
 
                 <LI class="c4"><A href=
-                "#suffix-editor_--get-info">--get-info</A><SPAN class="c5">=</SPAN><SPAN class="c5"><SPAN class="c2">suffix</SPAN></SPAN></LI>
+                "#suffix-editor_--get-info">--get-info</A><SPAN class="c5">=</SPAN><SPAN class="c5 c2">suffix</SPAN></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#suffix-editor_--get-info-all"><SPAN class=
@@ -915,8 +919,8 @@ li.c1 {list-style: none}
                 "c2">suffix</SPAN></SPAN> <SPAN class=
                 "c1">--msg</SPAN><SPAN class="c5">='<SPAN class=
                 "c2">suffix-description<SPAN class=
-                "c2"><SPAN class="c2">'</SPAN></SPAN></SPAN></SPAN>
-                <SPAN class="c5"><A href="#--editor"><SPAN class=
+                "c2 c2">'</SPAN></SPAN></SPAN> <SPAN class=
+                "c5"><A href="#--editor"><SPAN class=
                 "c1">--editor</SPAN></A>=<SPAN class=
                 "c2">editor-name</SPAN></SPAN><SPAN class=
                 "c5">[:<SPAN class="c2">major</SPAN>.<SPAN class=
@@ -932,8 +936,7 @@ li.c1 {list-style: none}
 
                 <LI class="c4"><A href=
                 "#suffix-editor_--reset"><SPAN class=
-                "c5"><SPAN class=
-                "c1">--reset</SPAN></SPAN></A></LI>
+                "c5 c1">--reset</SPAN></A></LI>
               </UL>
             </LI>
           </UL>
@@ -1018,8 +1021,8 @@ li.c1 {list-style: none}
                 "c2">section</SPAN> ...]]</SPAN></LI>
 
                 <LI class="c4"><A href=
-                "#working_--register"><SPAN class="c5"><SPAN class=
-                "c1">--</SPAN></SPAN>register</A><SPAN class=
+                "#working_--register"><SPAN class=
+                "c5 c1">--</SPAN>register</A><SPAN class=
                 "c5"><A href="#node_--register"></A>=<SPAN class=
                 "c2">node-name</SPAN>&nbsp;</SPAN> <SPAN class=
                 "c5">[</SPAN><A href=
@@ -1118,9 +1121,9 @@ li.c1 {list-style: none}
                 "c1">--clone-source</SPAN>=node-name<BR></SPAN></LI>
 
                 <LI class="c4"><A href=
-                "#working_--release"><SPAN class="c5"><SPAN class=
-                "c1">--</SPAN></SPAN><SPAN class="c5"><SPAN class=
-                "c1">release</SPAN></SPAN></A><SPAN class=
+                "#working_--release"><SPAN class=
+                "c5 c1">--</SPAN><SPAN class=
+                "c5 c1">release</SPAN></A><SPAN class=
                 "c5">=<SPAN class="c2">node-name</SPAN></SPAN>
                 <SPAN class="c5">[</SPAN><A href=
                 "#--author">--author</A><SPAN class=
@@ -1186,8 +1189,8 @@ li.c1 {list-style: none}
                 "c1">--serial</SPAN></A> |</SPAN> <A href=
                 "#--parallel"></A><A href=
                 "#--subdivided">--subdivided</A> <SPAN class=
-                "c5"><SPAN class="c1">|</SPAN></SPAN> <SPAN class=
-                "c5"><A href="#--parallel"><SPAN class=
+                "c5 c1">|</SPAN> <SPAN class="c5"><A href=
+                "#--parallel"><SPAN class=
                 "c1">--parallel</SPAN></A>] [<A href=
                 "#--batch-size"><SPAN class=
                 "c1">--batch-size</SPAN></A>=<SPAN class=
@@ -1251,7 +1254,7 @@ li.c1 {list-style: none}
                 "c2">view-name</SPAN>]</SPAN> <SPAN class=
                 "c5"><SPAN class="c1">--source</SPAN>=<SPAN class=
                 "c2">node-name</SPAN></SPAN> <SPAN class=
-                "c5"><SPAN class="c2">...</SPAN></SPAN></LI>
+                "c5 c2">...</SPAN></LI>
 
                 <LI class="c4"><SPAN class="c5"><A href=
                 "#working_--add-secondary"><SPAN class=
@@ -1273,9 +1276,11 @@ li.c1 {list-style: none}
 
                 <LI class="c4"><A href=
                 "#working_--remove-secondary"><SPAN class=
-                "c5"><SPAN class=
-                "c1">--remove-secondary</SPAN></SPAN></A><SPAN class="c5"><A href="#working_--remove-secondary"></A>=<SPAN class="c2">node-name</SPAN></SPAN>
-                <SPAN class="c5">[</SPAN><A href=
+                "c5 c1">--remove-secondary</SPAN></A><SPAN class=
+                "c5"><A href=
+                "#working_--remove-secondary"></A>=<SPAN class=
+                "c2">node-name</SPAN></SPAN> <SPAN class=
+                "c5">[</SPAN><A href=
                 "#--author">--author</A><SPAN class=
                 "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN>
                 <SPAN class="c5">[</SPAN><A href=
@@ -1294,8 +1299,8 @@ li.c1 {list-style: none}
                 "#working_--rename"></A><SPAN class="c5"><A href=
                 "#working_--rename"><SPAN class=
                 "c1">--rename</SPAN></A>=</SPAN><SPAN class=
-                "c5"><SPAN class="c2">node-name</SPAN></SPAN>
-                <SPAN class="c5">[</SPAN><A href=
+                "c5 c2">node-name</SPAN> <SPAN class=
+                "c5">[</SPAN><A href=
                 "#--author">--author</A><SPAN class=
                 "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN>
                 <SPAN class="c5">[</SPAN><A href=
@@ -1311,11 +1316,10 @@ li.c1 {list-style: none}
                 "c2"><BR></SPAN></SPAN></LI>
 
                 <LI class="c4"><A href=
-                "#working_--renumber"><SPAN class="c5"><SPAN class=
-                "c1">--renumber</SPAN></SPAN></A><SPAN class=
-                "c5">=</SPAN><SPAN class="c5"><SPAN class=
-                "c2">node-name</SPAN></SPAN> <SPAN class=
-                "c5">[</SPAN><A href=
+                "#working_--renumber"><SPAN class=
+                "c5 c1">--renumber</SPAN></A><SPAN class=
+                "c5">=</SPAN><SPAN class="c5 c2">node-name</SPAN>
+                <SPAN class="c5">[</SPAN><A href=
                 "#--author">--author</A><SPAN class=
                 "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN>
                 <SPAN class="c5">[</SPAN><A href=
@@ -1330,8 +1334,8 @@ li.c1 {list-style: none}
                 "c1">--remove-files</SPAN>]</SPAN></LI>
 
                 <LI class="c4"><A href=
-                "#working_--edit"><SPAN class="c5"><SPAN class=
-                "c1">--edit</SPAN></SPAN></A><SPAN class=
+                "#working_--edit"><SPAN class=
+                "c5 c1">--edit</SPAN></A><SPAN class=
                 "c5">=<SPAN class="c2">node-name</SPAN></SPAN>
                 <SPAN class="c5">[</SPAN><A href=
                 "#--author">--author</A><SPAN class=
@@ -1513,14 +1517,12 @@ li.c1 {list-style: none}
         <LI class="c1"><BR></LI>
 
         <LI class="c4"><A href="#Node_Operations"><SPAN class=
-        "c5"><SPAN class="c1">Node
-        Operations</SPAN></SPAN></A></LI>
+        "c5 c1">Node Operations</SPAN></A></LI>
 
         <LI class="c6">
           <UL>
-            <LI class="c4"><SPAN class="c5"><SPAN class=
-            "c1"><SPAN class=
-            "c12">node</SPAN><BR></SPAN></SPAN></LI>
+            <LI class="c4"><SPAN class="c5 c1"><SPAN class=
+            "c12">node</SPAN><BR></SPAN></LI>
           </UL>
 
           <DIV class="c9">
@@ -2003,8 +2005,8 @@ li.c1 {list-style: none}
       <BR>
 
       <DIV class="c14">
-        <A href="#Commands"><I>command</I></A> [<A href=
-        "#Shared_Options"><I>cmd-options</I></A>]<BR>
+        <A class="c1" href="#Commands">command</A> [<A class="c1"
+        href="#Shared_Options">cmd-options</A>]<BR>
       </DIV>
     </DIV>
   </DIV><BR>
@@ -2022,8 +2024,8 @@ li.c1 {list-style: none}
   <BLOCKQUOTE>
     <H4>Administrative Options<BR></H4>
 
-    <H4><SPAN class="c5"><SPAN class="c1"><A name=
-    "--dry-run"></A>--dry-run</SPAN></SPAN></H4>
+    <H4><SPAN class="c5 c1"><A name=
+    "--dry-run"></A>--dry-run</SPAN></H4>
 
     <DIV class="c14">
       Used by several of the admin family of commands to gather
@@ -2110,9 +2112,8 @@ li.c1 {list-style: none}
       Editor of a node is used to launch an external program to
       edit the files associated with a node<BR></SPAN>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "--no-action"></A>--no-action<BR>
-    <BR></SPAN></SPAN>
+    <SPAN class="c5 c1"><A name="--no-action"></A>--no-action<BR>
+    <BR></SPAN>
 
     <DIV class="c14">
       Specifies that no Action plugin should be associated with the
@@ -2171,8 +2172,8 @@ li.c1 {list-style: none}
       "#admin_--restore"><SPAN class="c1">admin
       --restore</SPAN></A> commands.<BR>
       <BR>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "--no-param"></A>--no-param</SPAN></SPAN><SPAN class=
+    </DIV><SPAN class="c5 c1"><A name=
+    "--no-param"></A>--no-param</SPAN><SPAN class=
     "c5">=<SPAN class="c2">source-name</SPAN></SPAN><BR>
     <BR>
 
@@ -2410,8 +2411,8 @@ li.c1 {list-style: none}
     <H4>&nbsp;Versioning Options</H4><SPAN class="c5"><SPAN class=
     "c1"><A name="--version"></A>--version</SPAN>=<SPAN class=
     "c2">major</SPAN>.<SPAN class="c2">minor</SPAN>.<SPAN class=
-    "c2">micro<BR></SPAN></SPAN> <SPAN class="c5"><SPAN class=
-    "c1"><A name="--latest"></A>--latest</SPAN></SPAN><BR>
+    "c2">micro<BR></SPAN></SPAN> <SPAN class="c5 c1"><A name=
+    "--latest"></A>--latest</SPAN><BR>
     <SPAN class="c5"><BR></SPAN>
 
     <DIV class="c14">
@@ -2502,8 +2503,8 @@ li.c1 {list-style: none}
   </DIV>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name="work-group_--get"
-    id="work-group_--get"></A>work-group</SPAN></SPAN> <SPAN class=
+    <SPAN class="c5 c1"><A name="work-group_--get" id=
+    "work-group_--get"></A>work-group</SPAN> <SPAN class=
     "c1">--get</SPAN><BR>
     <BR>
 
@@ -2513,31 +2514,27 @@ li.c1 {list-style: none}
   </DIV><BR>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "work-group_--get-info" id=
-    "work-group_--get-info"></A>work-group</SPAN></SPAN>
-    <SPAN class="c1">--get-info</SPAN><SPAN class=
-    "c5">=<SPAN class="c2">group-name</SPAN></SPAN><BR>
+    <SPAN class="c5 c1"><A name="work-group_--get-info" id=
+    "work-group_--get-info"></A>work-group</SPAN> <SPAN class=
+    "c1">--get-info</SPAN><SPAN class="c5">=<SPAN class=
+    "c2">group-name</SPAN></SPAN><BR>
     <BR>
 
     <DIV class="c14">
       Print the membership status of the users which make up the
       given work group.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "work-group_--get-info-all" id=
-    "work-group_--get-info-all"></A>work-group</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class=
-    "c1">--get-info-all</SPAN></SPAN><BR>
+    <SPAN class="c5 c1"><A name="work-group_--get-info-all" id=
+    "work-group_--get-info-all"></A>work-group</SPAN> <SPAN class=
+    "c5 c1">--get-info-all</SPAN><BR>
     <BR>
 
     <DIV class="c14">
       Print the membership status of all users in all work
       groups.<BR>
       <BR>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "work-group_--add" id=
-    "work-group_--add"></A>work-group</SPAN></SPAN> <SPAN class=
+    </DIV><SPAN class="c5 c1"><A name="work-group_--add" id=
+    "work-group_--add"></A>work-group</SPAN> <SPAN class=
     "c1">--add</SPAN><SPAN class="c5">=<SPAN class=
     "c2">group-name</SPAN></SPAN><BR>
 
@@ -2552,9 +2549,8 @@ li.c1 {list-style: none}
       <SPAN class="c5">This command requires Master Admin
       privileges.</SPAN><BR>
       <BR>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "work-group_--remove" id=
-    "work-group_--remove"></A>work-group</SPAN></SPAN> <SPAN class=
+    </DIV><SPAN class="c5 c1"><A name="work-group_--remove" id=
+    "work-group_--remove"></A>work-group</SPAN> <SPAN class=
     "c1">--remove</SPAN><SPAN class="c5">=<SPAN class=
     "c2">group-name</SPAN></SPAN><BR>
     <BR>
@@ -2563,9 +2559,8 @@ li.c1 {list-style: none}
       <SPAN class="c5">This command requires Master Admin
       privileges.<BR>
       <BR></SPAN>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "work-group_--set" id=
-    "work-group_--set"></A>work-group</SPAN></SPAN> <SPAN class=
+    </DIV><SPAN class="c5 c1"><A name="work-group_--set" id=
+    "work-group_--set"></A>work-group</SPAN> <SPAN class=
     "c1">--set</SPAN>=<SPAN class="c5"><SPAN class=
     "c2">group-name</SPAN> <SPAN class="c1">--manager | --member |
     --not-member --user=</SPAN><SPAN class="c2">user-name</SPAN>
@@ -2609,9 +2604,8 @@ li.c1 {list-style: none}
   </DIV>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "privilege_--get-info" id=
-    "privilege_--get-info"></A>privilege</SPAN></SPAN><SPAN class=
+    <SPAN class="c5 c1"><A name="privilege_--get-info" id=
+    "privilege_--get-info"></A>privilege</SPAN><SPAN class=
     "c5"><SPAN class="c1">--get-info</SPAN>=<SPAN class=
     "c2">user-name</SPAN></SPAN><BR>
     <BR>
@@ -2619,37 +2613,32 @@ li.c1 {list-style: none}
     <DIV class="c14">
       Print the administrative privileges of a user.<BR>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "privilege_--get-info-all" id=
-    "privilege_--get-info-all"></A>privilege</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class=
-    "c1">--get-info-all</SPAN></SPAN><BR>
+    <SPAN class="c5 c1"><A name="privilege_--get-info-all" id=
+    "privilege_--get-info-all"></A>privilege</SPAN> <SPAN class=
+    "c5 c1">--get-info-all</SPAN><BR>
     <BR>
 
     <DIV class="c14">
       Print the administrative privileges of all users.<BR>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="privilege_--grant"
-    id="privilege_--grant"></A>privilege</SPAN></SPAN> <SPAN class=
+    <SPAN class="c5 c1"><A name="privilege_--grant" id=
+    "privilege_--grant"></A>privilege</SPAN> <SPAN class=
     "c5"><SPAN class="c1">--grant</SPAN>=<SPAN class=
     "c2">user-name</SPAN> <SPAN class="c1">--master-admin</SPAN> |
-    <SPAN class="c1">--</SPAN></SPAN> <SPAN class="c5"><SPAN class=
-    "c1">developer</SPAN></SPAN> <SPAN class="c5">|</SPAN>
-    <SPAN class="c5"><SPAN class="c1">--annotator</SPAN></SPAN>
-    <SPAN class="c5">|</SPAN> <SPAN class="c5"><SPAN class=
-    "c1">--queue-admin</SPAN> | <SPAN class=
-    "c1">--queue-manager</SPAN> | <SPAN class=
+    <SPAN class="c1">--</SPAN></SPAN> <SPAN class=
+    "c5 c1">developer</SPAN> <SPAN class="c5">|</SPAN> <SPAN class=
+    "c5 c1">--annotator</SPAN> <SPAN class="c5">|</SPAN>
+    <SPAN class="c5"><SPAN class="c1">--queue-admin</SPAN> |
+    <SPAN class="c1">--queue-manager</SPAN> | <SPAN class=
     "c1">--node-manager</SPAN></SPAN><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="privilege_--revoke"
-    id="privilege_--revoke"></A>privilege</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class=
-    "c1">--revoke</SPAN></SPAN><SPAN class="c5">=<SPAN class=
+    <SPAN class="c5 c1"><A name="privilege_--revoke" id=
+    "privilege_--revoke"></A>privilege</SPAN> <SPAN class=
+    "c5 c1">--revoke</SPAN><SPAN class="c5">=<SPAN class=
     "c2">user-name</SPAN> <SPAN class="c1">--master-admin</SPAN> |
     <SPAN class="c1">--developer</SPAN> |</SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--annotator</SPAN></SPAN> <SPAN class=
-    "c5">|</SPAN> <SPAN class="c5"><SPAN class=
-    "c1">--queue-admin</SPAN> | <SPAN class=
-    "c1">--queue-manager</SPAN> | <SPAN class=
+    "c5 c1">--annotator</SPAN> <SPAN class="c5">|</SPAN>
+    <SPAN class="c5"><SPAN class="c1">--queue-admin</SPAN> |
+    <SPAN class="c1">--queue-manager</SPAN> | <SPAN class=
     "c1">--node-manager</SPAN></SPAN><BR>
   </DIV><BR>
 
@@ -2733,9 +2722,9 @@ li.c1 {list-style: none}
     </DIV><BR>
 
     <DIV class="c14">
-      <SPAN class="postbody"><SPAN class="postbody">Also includes
-      the privileges granted to:<BR>
-      <BR></SPAN></SPAN>
+      <SPAN class="postbody postbody">Also includes the privileges
+      granted to:<BR>
+      <BR></SPAN>
     </DIV>
 
     <DIV class="c16">
@@ -2848,11 +2837,11 @@ li.c1 {list-style: none}
   <DIV class="c14">
     <SPAN class="c1"><A name="admin_--archive" id=
     "admin_--archive"></A>admin --archive</SPAN><SPAN class=
-    "c5">=</SPAN><SPAN class="c5"><SPAN class=
-    "c2">archive-prefix</SPAN></SPAN> <SPAN class=
-    "c5">[<SPAN class="c1">--pattern</SPAN>=</SPAN><SPAN class=
-    "c5"><SPAN class="c2">'node-regex</SPAN>'</SPAN><SPAN class=
-    "c5">]</SPAN> <SPAN class="c5">[<SPAN class=
+    "c5">=</SPAN><SPAN class="c5 c2">archive-prefix</SPAN>
+    <SPAN class="c5">[<SPAN class=
+    "c1">--pattern</SPAN>=</SPAN><SPAN class="c5"><SPAN class=
+    "c2">'node-regex</SPAN>'</SPAN><SPAN class="c5">]</SPAN>
+    <SPAN class="c5">[<SPAN class=
     "c1">--max-archives</SPAN>=<SPAN class=
     "c2">integer</SPAN>]</SPAN> <SPAN class="c5"><BR>
     &nbsp;</SPAN> <SPAN class="c5">[<SPAN class=
@@ -2990,10 +2979,10 @@ li.c1 {list-style: none}
   <DIV class="c14">
     <SPAN class="c1"><A name="admin_--offline" id=
     "admin_--offline"></A>admin</SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--offline</SPAN></SPAN> <SPAN class=
-    "c5">[<SPAN class="c1">--pattern</SPAN>=</SPAN><SPAN class=
-    "c5"><SPAN class="c2">'node-regex</SPAN>'</SPAN><SPAN class=
-    "c5">]</SPAN> <SPAN class="c5">[<SPAN class=
+    "c5 c1">--offline</SPAN> <SPAN class="c5">[<SPAN class=
+    "c1">--pattern</SPAN>=</SPAN><SPAN class="c5"><SPAN class=
+    "c2">'node-regex</SPAN>'</SPAN><SPAN class="c5">]</SPAN>
+    <SPAN class="c5">[<SPAN class=
     "c1">--exclude-latest</SPAN>=<SPAN class="c2">integer</SPAN>]
     [<SPAN class="c1">--min-archives</SPAN>=<SPAN class=
     "c2">integer</SPAN>]</SPAN> <SPAN class="c5">[<A href=
@@ -3160,23 +3149,22 @@ li.c1 {list-style: none}
     "c1">-</SPAN></A><SPAN class="postbody"><A href=
     "plmaster.html#--restore-cleanup-interval"><SPAN class=
     "c1">--restore-cleanup-interval</SPAN></A>=<SPAN class=
-    "c7">msec</SPAN></SPAN><SPAN class="postbody"><SPAN class=
-    "c5">]</SPAN></SPAN> <SPAN class="c5">[</SPAN><A href=
+    "c7">msec</SPAN></SPAN><SPAN class="postbody c5">]</SPAN>
+    <SPAN class="c5">[</SPAN><A href=
     "plmaster.html#--backup-sync-interval"><SPAN class=
     "c1">-</SPAN></A><SPAN class="postbody"><A href=
     "plmaster.html#--backup-sync-interval"><SPAN class=
     "c1">--backup-sync-interval</SPAN></A>=<SPAN class=
-    "c7">msec</SPAN></SPAN><SPAN class="postbody"><SPAN class=
-    "c5">]</SPAN></SPAN> <SPAN class="postbody"><SPAN class=
-    "c5">[<A href="plmaster.html#--file-stat-dir"><SPAN class=
+    "c7">msec</SPAN></SPAN><SPAN class="postbody c5">]</SPAN>
+    <SPAN class="postbody c5">[<A href=
+    "plmaster.html#--file-stat-dir"><SPAN class=
     "c1">--file-stat-dir</SPAN></A>=<SPAN class="c2">dir</SPAN>]
     [<A href="plmaster.html#--checksum-dir"><SPAN class=
     "c1">--checksum-dir</SPAN></A>=<SPAN class=
-    "c2">dir</SPAN>]</SPAN></SPAN><BR>
-    <SPAN class="postbody"><SPAN class="c5"><BR></SPAN></SPAN>
-    <SPAN class="c1"><A name="runtime_--set_queue" id=
-    "runtime_--set_queue"></A>runtime --set-queue</SPAN>
-    <SPAN class="c5">[</SPAN><SPAN class=
+    "c2">dir</SPAN>]</SPAN><BR>
+    <SPAN class="postbody c5"><BR></SPAN> <SPAN class="c1"><A name=
+    "runtime_--set_queue" id="runtime_--set_queue"></A>runtime
+    --set-queue</SPAN> <SPAN class="c5">[</SPAN><SPAN class=
     "c1">--remote-log</SPAN><SPAN class="c5">=</SPAN><SPAN class=
     "c7">logger:level</SPAN><SPAN class="c5">[</SPAN><SPAN class=
     "c7">,logger:level</SPAN><SPAN class="c5">[...]]] &nbsp;
@@ -3330,8 +3318,8 @@ li.c1 {list-style: none}
       "c1">active-toolsets</SPAN></A>). <SPAN class="c5"><BR>
       <BR>
       This command requires Master Admin privileges.</SPAN>
-    </DIV><SPAN class="c5"><SPAN class="c2"><BR></SPAN></SPAN>
-    <SPAN class="c1"><A name="active-toolsets_--get" id=
+    </DIV><SPAN class="c5 c2"><BR></SPAN> <SPAN class="c1"><A name=
+    "active-toolsets_--get" id=
     "active-toolsets_--get"></A>active-toolset</SPAN> <SPAN class=
     "c1">--get<BR>
     <BR></SPAN>
@@ -3344,8 +3332,7 @@ li.c1 {list-style: none}
       active toolsets do not limit the choice of toolset using
       <SPAN class="c1">plscript</SPAN>(1) or the <A href=
       "../javadoc/index.html"><SPAN class="c1">Pipeline Java
-      API</SPAN></A><SPAN class="c1"><SPAN class=
-      "c1">.</SPAN></SPAN><BR>
+      API</SPAN></A><SPAN class="c1 c1">.</SPAN><BR>
     </DIV><BR>
     <SPAN class="c1"><A name="active-toolset_--add" id=
     "active-toolset_--add"></A>active-toolset</SPAN> <SPAN class=
@@ -3433,19 +3420,18 @@ li.c1 {list-style: none}
   "Queue_Administration"></A>Queue Administration</H3>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name="license-key_--get"
-    id="license-key_--get"></A>license-key</SPAN></SPAN>
-    <SPAN class="c1">--get</SPAN><BR>
+    <SPAN class="c5 c1"><A name="license-key_--get" id=
+    "license-key_--get"></A>license-key</SPAN> <SPAN class=
+    "c1">--get</SPAN><BR>
     <BR>
 
     <DIV class="c14">
       Prints the names of the existing license keys.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "license-key_--get-info" id=
-    "license-key_--get-info"></A>license-key</SPAN></SPAN>
-    <SPAN class="c1">--get-info</SPAN><SPAN class=
-    "c5">=<SPAN class="c2">key-name</SPAN></SPAN><BR>
+    <SPAN class="c5 c1"><A name="license-key_--get-info" id=
+    "license-key_--get-info"></A>license-key</SPAN> <SPAN class=
+    "c1">--get-info</SPAN><SPAN class="c5">=<SPAN class=
+    "c2">key-name</SPAN></SPAN><BR>
     <BR>
 
     <DIV class="c14">
@@ -3454,9 +3440,8 @@ li.c1 {list-style: none}
       includes the total and available number of licenses as well
       as a short description of the license key.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "license-key_--get-info-all" id=
-    "license-key_--get-info-all"></A>license-key</SPAN></SPAN>
+    <SPAN class="c5 c1"><A name="license-key_--get-info-all" id=
+    "license-key_--get-info-all"></A>license-key</SPAN>
     <SPAN class="c1">--get-info-all</SPAN><BR>
     <BR>
 
@@ -3466,9 +3451,9 @@ li.c1 {list-style: none}
       "#license-key_--get-info"><SPAN class="c1">license-key
       --get-info</SPAN></A> for each existing license key.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="license-key_--add"
-    id="license-key_--add"></A>license-key</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class="c1">--add</SPAN>=<SPAN class=
+    <SPAN class="c5 c1"><A name="license-key_--add" id=
+    "license-key_--add"></A>license-key</SPAN> <SPAN class=
+    "c5"><SPAN class="c1">--add</SPAN>=<SPAN class=
     "c2">key-name</SPAN></SPAN> <SPAN class=
     "c1">--msg</SPAN><SPAN class="c5">='<SPAN class=
     "c2">key-description</SPAN>'</SPAN> <SPAN class=
@@ -3538,14 +3523,12 @@ li.c1 {list-style: none}
         privileges.</SPAN>
       </DIV>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="license-key_--set"
-    id="license-key_--set"></A>license-key</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class=
-    "c1">--set</SPAN>=</SPAN><SPAN class="c5"><SPAN class=
-    "c2">key-name</SPAN></SPAN> <SPAN class=
-    "c5">[</SPAN><SPAN class="c5"><SPAN class=
-    "c1">--</SPAN><SPAN class="c1">per-slot</SPAN> | <SPAN class=
-    "c1">--per-host</SPAN> | <SPAN class=
+    <SPAN class="c5 c1"><A name="license-key_--set" id=
+    "license-key_--set"></A>license-key</SPAN> <SPAN class=
+    "c5"><SPAN class="c1">--set</SPAN>=</SPAN><SPAN class=
+    "c5 c2">key-name</SPAN> <SPAN class="c5">[</SPAN><SPAN class=
+    "c5"><SPAN class="c1">--</SPAN><SPAN class="c1">per-slot</SPAN>
+    | <SPAN class="c1">--per-host</SPAN> | <SPAN class=
     "c1">--per-host-slot</SPAN>]</SPAN> <SPAN class=
     "c5">[<SPAN class="c1">--max-slots</SPAN>=<SPAN class=
     "c2">integer</SPAN>] [<SPAN class=
@@ -3565,10 +3548,9 @@ li.c1 {list-style: none}
       <SPAN class="c5">This command requires Queue Admin
       privileges.</SPAN>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "license-key_--remove" id=
-    "license-key_--remove"></A>license-key</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class="c1">--remove</SPAN>=<SPAN class=
+    <SPAN class="c5 c1"><A name="license-key_--remove" id=
+    "license-key_--remove"></A>license-key</SPAN> <SPAN class=
+    "c5"><SPAN class="c1">--remove</SPAN>=<SPAN class=
     "c2">key-name<BR>
     <BR></SPAN></SPAN>
 
@@ -3583,17 +3565,16 @@ li.c1 {list-style: none}
 
   <DIV class="c14">
     <BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="selection-key_--get"
-    id="selection-key_--get"></A>selection-key</SPAN></SPAN>
-    <SPAN class="c1">--get<BR></SPAN>
+    <SPAN class="c5 c1"><A name="selection-key_--get" id=
+    "selection-key_--get"></A>selection-key</SPAN> <SPAN class=
+    "c1">--get<BR></SPAN>
 
     <DIV class="c14">
       <BR>
       Prints the names of the existing selection keys.<BR>
       <BR>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "selection-key_--get-info" id=
-    "selection-key_--get-info"></A>selection-key</SPAN></SPAN>
+    </DIV><SPAN class="c5 c1"><A name="selection-key_--get-info"
+    id="selection-key_--get-info"></A>selection-key</SPAN>
     <SPAN class="c1">--get-info</SPAN><SPAN class=
     "c5">=<SPAN class="c2">key-name<BR>
     <BR></SPAN></SPAN>
@@ -3603,9 +3584,9 @@ li.c1 {list-style: none}
       (<SPAN class="c2">key-name</SPAN>).&nbsp; The information
       includes a short description of the selection key.<BR>
       <BR>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
+    </DIV><SPAN class="c5 c1"><A name=
     "selection-key_--get-info-all" id=
-    "selection-key_--get-info-all"></A>selection-key</SPAN></SPAN>
+    "selection-key_--get-info-all"></A>selection-key</SPAN>
     <SPAN class="c1">--get-info-all<BR>
     <BR></SPAN>
 
@@ -3615,9 +3596,9 @@ li.c1 {list-style: none}
       "#selection-key_--get-info"><SPAN class="c1">selection-key
       --get-info</SPAN></A> for each existing selection key.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="selection-key_--add"
-    id="selection-key_--add"></A>selection-key</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class="c1">--add</SPAN>=<SPAN class=
+    <SPAN class="c5 c1"><A name="selection-key_--add" id=
+    "selection-key_--add"></A>selection-key</SPAN> <SPAN class=
+    "c5"><SPAN class="c1">--add</SPAN>=<SPAN class=
     "c2">key-name</SPAN></SPAN> <SPAN class=
     "c1">--msg</SPAN><SPAN class="c5">='<SPAN class=
     "c2">key-description</SPAN>'</SPAN><BR>
@@ -3634,10 +3615,9 @@ li.c1 {list-style: none}
       <SPAN class="c5">This command requires Queue Admin
       privileges.<BR>
       <BR></SPAN>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "selection-key_--remove" id=
-    "selection-key_--remove"></A>selection-key</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class="c1">--remove</SPAN>=<SPAN class=
+    </DIV><SPAN class="c5 c1"><A name="selection-key_--remove" id=
+    "selection-key_--remove"></A>selection-key</SPAN> <SPAN class=
+    "c5"><SPAN class="c1">--remove</SPAN>=<SPAN class=
     "c2">key-name<BR>
     <BR></SPAN></SPAN>
 
@@ -3650,21 +3630,19 @@ li.c1 {list-style: none}
       privileges.<BR></SPAN>
     </DIV><BR>
     <BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="hardware-key_--get"
-    id="hardware-key_--get"></A>hardware-key</SPAN></SPAN>
-    <SPAN class="c1">--get<BR></SPAN>
+    <SPAN class="c5 c1"><A name="hardware-key_--get" id=
+    "hardware-key_--get"></A>hardware-key</SPAN> <SPAN class=
+    "c1">--get<BR></SPAN>
 
     <DIV class="c14">
       <BR>
       Prints the names of the existing hardware keys.<BR>
       <BR>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "hardware-key_--get-info" id=
-    "hardware-key_--get-info"></A></SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">hardware</SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">-key</SPAN></SPAN> <SPAN class=
-    "c1">--get-info</SPAN><SPAN class="c5">=<SPAN class=
-    "c2">key-name<BR>
+    </DIV><SPAN class="c5 c1"><A name="hardware-key_--get-info" id=
+    "hardware-key_--get-info"></A></SPAN><SPAN class=
+    "c5 c1">hardware</SPAN><SPAN class="c5 c1">-key</SPAN>
+    <SPAN class="c1">--get-info</SPAN><SPAN class=
+    "c5">=<SPAN class="c2">key-name<BR>
     <BR></SPAN></SPAN>
 
     <DIV class="c14">
@@ -3672,12 +3650,10 @@ li.c1 {list-style: none}
       (<SPAN class="c2">key-name</SPAN>).&nbsp; The information
       includes a short description of the hardware key.<BR>
       <BR>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "hardware-key_--get-info-all" id=
-    "hardware-key_--get-info-all"></A></SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">hardware</SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">-key</SPAN></SPAN> <SPAN class=
-    "c1">--get-info-all<BR>
+    </DIV><SPAN class="c5 c1"><A name="hardware-key_--get-info-all"
+    id="hardware-key_--get-info-all"></A></SPAN><SPAN class=
+    "c5 c1">hardware</SPAN><SPAN class="c5 c1">-key</SPAN>
+    <SPAN class="c1">--get-info-all<BR>
     <BR></SPAN>
 
     <DIV class="c14">
@@ -3686,11 +3662,10 @@ li.c1 {list-style: none}
       "#hardware-key_--get-info"><SPAN class="c1">hardware-key
       --get-info</SPAN></A> for each existing hardware key.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="hardware-key_--add"
-    id="hardware-key_--add"></A></SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">hardware</SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">-key</SPAN></SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--add</SPAN>=<SPAN class=
+    <SPAN class="c5 c1"><A name="hardware-key_--add" id=
+    "hardware-key_--add"></A></SPAN><SPAN class=
+    "c5 c1">hardware</SPAN><SPAN class="c5 c1">-key</SPAN>
+    <SPAN class="c5"><SPAN class="c1">--add</SPAN>=<SPAN class=
     "c2">key-name</SPAN></SPAN> <SPAN class=
     "c1">--msg</SPAN><SPAN class="c5">='<SPAN class=
     "c2">key-description</SPAN>'</SPAN><BR>
@@ -3707,12 +3682,10 @@ li.c1 {list-style: none}
       <SPAN class="c5">This command requires Queue Admin
       privileges.<BR>
       <BR></SPAN>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "hardware-key_--remove" id=
-    "hardware-key_--remove"></A></SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">hardware</SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">-key</SPAN></SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--remove</SPAN>=<SPAN class=
+    </DIV><SPAN class="c5 c1"><A name="hardware-key_--remove" id=
+    "hardware-key_--remove"></A></SPAN><SPAN class=
+    "c5 c1">hardware</SPAN><SPAN class="c5 c1">-key</SPAN>
+    <SPAN class="c5"><SPAN class="c1">--remove</SPAN>=<SPAN class=
     "c2">key-name<BR>
     <BR></SPAN></SPAN>
 
@@ -3724,10 +3697,9 @@ li.c1 {list-style: none}
       <SPAN class="c5">This command requires Queue Admin
       privileges.<BR>
       <BR></SPAN>
-    </DIV><SPAN class="c5"><BR></SPAN> <SPAN class=
-    "c5"><SPAN class="c1"><A name="job-server_--get" id=
-    "job-server_--get"></A>job-server</SPAN></SPAN> <SPAN class=
-    "c1">--get<BR></SPAN>
+    </DIV><SPAN class="c5"><BR></SPAN> <SPAN class="c5 c1"><A name=
+    "job-server_--get" id="job-server_--get"></A>job-server</SPAN>
+    <SPAN class="c1">--get<BR></SPAN>
 
     <DIV class="c14">
       <BR>
@@ -3737,11 +3709,10 @@ li.c1 {list-style: none}
       "pljobmgr.html"><SPAN class="c1">pljobmgr</SPAN></A>(1) job
       execution daemon.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "job-server_--get-info" id=
-    "job-server_--get-info"></A>job-server</SPAN></SPAN>
-    <SPAN class="c1">--get-info</SPAN><SPAN class=
-    "c5">=<SPAN class="c2">host-name</SPAN></SPAN>
+    <SPAN class="c5 c1"><A name="job-server_--get-info" id=
+    "job-server_--get-info"></A>job-server</SPAN> <SPAN class=
+    "c1">--get-info</SPAN><SPAN class="c5">=<SPAN class=
+    "c2">host-name</SPAN></SPAN>
 
     <DIV class="c14">
       <BR>
@@ -3751,10 +3722,9 @@ li.c1 {list-style: none}
       latest dynamic resource statistics and the biases for all
       supported selection keys.<BR>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "job-server_--get-info-all" id=
-    "job-server_--get-info-all"></A>job-server</SPAN></SPAN>
-    <SPAN class="c1">--get-info-all</SPAN><BR>
+    <SPAN class="c5 c1"><A name="job-server_--get-info-all" id=
+    "job-server_--get-info-all"></A>job-server</SPAN> <SPAN class=
+    "c1">--get-info-all</SPAN><BR>
     <BR>
 
     <DIV class="c14">
@@ -3772,8 +3742,8 @@ li.c1 {list-style: none}
       Prints frequency distribution data about the key information
       of all job servers.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="job-server_--add"
-    id="job-server_--add"></A>job-server</SPAN></SPAN> <SPAN class=
+    <SPAN class="c5 c1"><A name="job-server_--add" id=
+    "job-server_--add"></A>job-server</SPAN> <SPAN class=
     "c5"><SPAN class="c1">--add</SPAN>=<SPAN class=
     "c2">host-name</SPAN></SPAN><BR>
     <BR>
@@ -3787,22 +3757,37 @@ li.c1 {list-style: none}
       <BR>
       This command requires Queue Admin privileges.</SPAN>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="job-server_--set"
-    id="job-server_--set"></A>job-server</SPAN></SPAN> <SPAN class=
+    <SPAN class="c5 c1"><A name="job-server_--set" id=
+    "job-server_--set"></A>job-server</SPAN> <SPAN class=
     "c5"><SPAN class="c1">--set</SPAN>=<SPAN class=
     "c2">host-name</SPAN> [<SPAN class="c1">--shutdown</SPAN> |
     <SPAN class="c1">--disable</SPAN> | <SPAN class=
     "c1">--enable</SPAN>] [<SPAN class=
     "c1">--reserve</SPAN>=<SPAN class="c2">user-name</SPAN> |
-    <SPAN class="c1">--open</SPAN>] [<SPAN class=
+    <SPAN class="c1">--no-reservation</SPAN>] [<SPAN class=
     "c1">--order</SPAN>=<SPAN class="c2">integer</SPAN>]
     [<SPAN class="c1">--slots</SPAN>=<SPAN class=
     "c2">integer</SPAN>]</SPAN> <SPAN class="c5">[<SPAN class=
     "c1">--selection-schedule</SPAN>=<SPAN class=
-    "c2">schedule-name</SPAN>]</SPAN> <SPAN class=
-    "c5">[<SPAN class="c1">--no-selection-schedule</SPAN>]</SPAN><SPAN class="c5">[</SPAN><SPAN class="c1">--selection-group</SPAN><SPAN class="c5">=<SPAN class="c2">group-name</SPAN>]</SPAN>
-    <SPAN class="c5">[<SPAN class=
-    "c1">--no-selection-group</SPAN>]</SPAN><BR>
+    "c2">schedule-name</SPAN> |</SPAN> <SPAN class=
+    "c5"><SPAN class="c1">--no-selection-schedule</SPAN>]</SPAN><SPAN class="c5">[</SPAN><SPAN class="c1">--selection-group</SPAN><SPAN class="c5">=<SPAN class="c2">group-name</SPAN></SPAN>&nbsp;|&nbsp;<SPAN class="c5"><SPAN class="c1">--no-selection-group</SPAN>]</SPAN>
+    <SPAN class="c5">[</SPAN><SPAN class=
+    "c1">--hardware-group</SPAN><SPAN class="c5">=<SPAN class=
+    "c2">group-name</SPAN> |</SPAN> <SPAN class="c5"><SPAN class=
+    "c1">--no-hardware-group</SPAN>]&nbsp;</SPAN><SPAN class=
+    "c5">&nbsp;[</SPAN><SPAN class=
+    "c1">--balance-group</SPAN><SPAN class="c5">=<SPAN class=
+    "c2">group-name</SPAN> |</SPAN> <SPAN class="c5"><SPAN class=
+    "c1">--no-balance-group</SPAN>]&nbsp;</SPAN> <SPAN class=
+    "c5">[</SPAN><SPAN class=
+    "c1">--dispatch-control</SPAN><SPAN class="c5">=<SPAN class=
+    "c2">control-name</SPAN> |</SPAN>&nbsp;<SPAN class=
+    "c5"><SPAN class=
+    "c1">--no-dispatch-control</SPAN>]&nbsp;</SPAN><SPAN class=
+    "c5">[</SPAN><SPAN class="c1">--favor-method</SPAN><SPAN class=
+    "c5">=<SPAN class="c2">favor-method</SPAN>]</SPAN> <SPAN class=
+    "c5"><A href=
+    "plscript.src.html.in#job-server_--remove"></A></SPAN><BR>
     <BR>
 
     <DIV class="c14">
@@ -3841,7 +3826,7 @@ li.c1 {list-style: none}
     <DIV class="c14">
       <SPAN class="c1">--reserve</SPAN>= <SPAN class=
       "c2">user-name</SPAN><BR>
-      <SPAN class="c1">--open<BR>
+      <SPAN class="c1">--no-reservation<BR>
       <BR></SPAN>
 
       <DIV class="c14">
@@ -3849,9 +3834,10 @@ li.c1 {list-style: none}
         Pipeline queue to only dispatch jobs to the server which
         where submitted by the given user (user-name).&nbsp; In
         effect, the job server is reserved for the exclusive use of
-        the given user.&nbsp; The <SPAN class="c1">--open</SPAN>
-        option removes any previous reservation so that all jobs
-        may be potentially dispatched to the job server.<BR>
+        the given user.&nbsp; The <SPAN class=
+        "c1">--no-reservation</SPAN> option removes any previous
+        reservation so that all jobs may be potentially dispatched
+        to the job server.<BR>
         <BR>
       </DIV><SPAN class="c5"><SPAN class=
       "c1">--order</SPAN>=<SPAN class="c2">integer<BR>
@@ -3895,18 +3881,63 @@ li.c1 {list-style: none}
 
       <DIV class="c14">
         Sets or clears the selection group for the job
-        server.&nbsp; A job servers in a selection group share a
-        common set of selection biases and preemption flags.&nbsp;
-        If no selection group is specified for a job server, it
-        will behave as if it was a member of a selection group with
-        no selection keys defined.
+        server.&nbsp; Job servers in a selection group share a
+        common set of selection biases.&nbsp; If no selection group
+        is specified for a job server, it will behave as if it was
+        a member of a selection group with no selection keys
+        defined.
+      </DIV><BR>
+      <SPAN class="c1">--hardware</SPAN><SPAN class=
+      "c5"><SPAN class="c1">-group</SPAN>=<SPAN class=
+      "c2">group-name</SPAN><BR>
+      <SPAN class="c1">--no-hardware-group</SPAN></SPAN><BR>
+      <BR>
+
+      <DIV class="c14">
+        Sets or clears the hardware group for the job server.&nbsp;
+        Job servers in a hardware group share a common set of
+        hardware flags.&nbsp; If no hardware group is specified for
+        a job server, it will behave as if it was a member of a
+        hardware group with no hardware keys defined.
+      </DIV><BR>
+      <SPAN class="c1">--balance</SPAN><SPAN class=
+      "c5"><SPAN class="c1">-group</SPAN>=<SPAN class=
+      "c2">group-name</SPAN><BR>
+      <SPAN class="c1">--no-balance-group</SPAN></SPAN><BR>
+      <BR>
+
+      <DIV class="c14">
+        Sets or clears the user balance group for the job
+        server.&nbsp; Job servers in a balance group share a common
+        set of user biases and user max shares.&nbsp; If no balance
+        group is specified for a job server, then there will be no
+        user balancing applied to the machine.
+      </DIV><BR>
+      <SPAN class="c1">--dispatch-control</SPAN><SPAN class=
+      "c5">=<SPAN class="c2">control-name</SPAN><BR>
+      <SPAN class="c1">--no-dispatch-control</SPAN></SPAN><BR>
+      <BR>
+
+      <DIV class="c14">
+        Sets or clears the dispatch control for the job
+        server.&nbsp; Job servers with a dispatch control will
+        apply Dispatch Criteria in a different order from the
+        default order. &nbsp;Jobs Servers without a dispatch
+        control will apply the Criteria in the default order.
+      </DIV><SPAN class="c5"><BR></SPAN><SPAN class=
+      "c1">--favor-method</SPAN><SPAN class="c5">=[None |
+      MostEngaged | MostPending]</SPAN><BR>
+      <BR>
+
+      <DIV class="c14">
+        Set the favor method for the job server.&nbsp;
       </DIV><BR>
       <SPAN class="c5">This command requires Queue Admin
       privileges.</SPAN>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="job-server_--remove"
-    id="job-server_--remove"></A>job-server</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class="c1">--remove</SPAN>=<SPAN class=
+    <SPAN class="c5 c1"><A name="job-server_--remove" id=
+    "job-server_--remove"></A>job-server</SPAN> <SPAN class=
+    "c5"><SPAN class="c1">--remove</SPAN>=<SPAN class=
     "c2">host-name</SPAN></SPAN><BR>
     <BR>
 
@@ -4451,8 +4482,7 @@ li.c1 {list-style: none}
     <SPAN class="c1"><A name="suffix-editor_--get-info" id=
     "suffix-editor_--get-info"></A>suffix-editor</SPAN>
     <SPAN class="c1">--get-info</SPAN><SPAN class=
-    "c5">=</SPAN><SPAN class="c5"><SPAN class=
-    "c2">suffix</SPAN></SPAN><BR>
+    "c5">=</SPAN><SPAN class="c5 c2">suffix</SPAN><BR>
     <BR>
 
     <DIV class="c14">
@@ -4462,11 +4492,10 @@ li.c1 {list-style: none}
       file type using the suffix and the name of the default Editor
       plugin used to edit files of that type.
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "suffix-editor_--get-info-all" id=
+    <SPAN class="c5 c1"><A name="suffix-editor_--get-info-all" id=
     "suffix-editor_--get-info-all"></A>suffix-editor
     --get-info-all<BR>
-    <BR></SPAN></SPAN>
+    <BR></SPAN>
 
     <DIV class="c14">
       Prints a summary of information for all filename
@@ -4513,7 +4542,7 @@ li.c1 {list-style: none}
     </DIV><BR>
     <SPAN class="c1"><A name="suffix-editor_--reset" id=
     "suffix-editor_--reset"></A>suffix-editor</SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--reset</SPAN></SPAN><BR>
+    "c5 c1">--reset</SPAN><BR>
   </DIV>
 
   <DIV class="c16">
@@ -4673,9 +4702,9 @@ li.c1 {list-style: none}
     </DIV><BR>
     <SPAN class="c1"><A name="working_--register" id=
     "working_--register"></A>working</SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--</SPAN></SPAN><SPAN class=
-    "c1">register</SPAN><SPAN class="c5">=<SPAN class=
-    "c2">node-name</SPAN></SPAN><SPAN class="c5"><BR>
+    "c5 c1">--</SPAN><SPAN class="c1">register</SPAN><SPAN class=
+    "c5">=<SPAN class="c2">node-name</SPAN></SPAN><SPAN class=
+    "c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
@@ -4774,8 +4803,7 @@ li.c1 {list-style: none}
     </DIV><BR>
     <SPAN class="c1"><A name="working_--release" id=
     "working_--release"></A>working</SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--</SPAN></SPAN><SPAN class=
-    "c5"><SPAN class="c1">release</SPAN></SPAN><SPAN class=
+    "c5 c1">--</SPAN><SPAN class="c5 c1">release</SPAN><SPAN class=
     "c5">=<SPAN class="c2">node-name</SPAN></SPAN> <SPAN class=
     "c5">[</SPAN><A class="c3" href=
     "#--author">--author</A><SPAN class="c5">=<SPAN class=
@@ -4883,9 +4911,8 @@ li.c1 {list-style: none}
     "c2">user-name</SPAN>]</SPAN> <SPAN class=
     "c5">[</SPAN><A class="c3" href=
     "#--view">--view</A><SPAN class="c5">=<SPAN class=
-    "c2">view-name</SPAN>]</SPAN> <SPAN class="c5"><SPAN class=
-    "c1"><BR>
-    &nbsp;&nbsp;&nbsp;</SPAN></SPAN> <SPAN class="c5"><SPAN class=
+    "c2">view-name</SPAN>]</SPAN> <SPAN class="c5 c1"><BR>
+    &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5"><SPAN class=
     "c1">--assoc</SPAN>=<SPAN class="c2">node-name |</SPAN></SPAN>
     <SPAN class="c5"><SPAN class="c1">--ref</SPAN>=<SPAN class=
     "c2">node-name</SPAN>[,all|<SPAN class="c2">offset</SPAN>]
@@ -5016,10 +5043,8 @@ li.c1 {list-style: none}
     </DIV><BR>
     <SPAN class="c1"><A name="working_--remove-secondary" id=
     "working_--remove-secondary"></A>working</SPAN> <SPAN class=
-    "c5"><SPAN class=
-    "c1">--remove-secondary</SPAN></SPAN><SPAN class=
-    "c5">=<SPAN class="c2">node-name</SPAN></SPAN> <SPAN class=
-    "c5"><BR>
+    "c5 c1">--remove-secondary</SPAN><SPAN class="c5">=<SPAN class=
+    "c2">node-name</SPAN></SPAN> <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
@@ -5046,16 +5071,14 @@ li.c1 {list-style: none}
     <SPAN class="c1"><A name="working_--rename" id=
     "working_--rename"></A>working</SPAN> <SPAN class=
     "c5"><SPAN class="c1">--rename</SPAN>=</SPAN><SPAN class=
-    "c5"><SPAN class="c2">node-name</SPAN></SPAN> <SPAN class=
-    "c5"><BR>
+    "c5 c2">node-name</SPAN> <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
     "c5">[</SPAN><A class="c3" href=
     "#--view">--view</A><SPAN class="c5">=<SPAN class=
-    "c2">view-name</SPAN>]</SPAN><SPAN class="c5"><SPAN class=
-    "c1"><BR>
-    &nbsp;&nbsp;&nbsp;</SPAN></SPAN> <SPAN class="c5"><SPAN class=
+    "c2">view-name</SPAN>]</SPAN><SPAN class="c5 c1"><BR>
+    &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5"><SPAN class=
     "c1">--file-pattern</SPAN>=<SPAN class=
     "c2">new-node-name</SPAN></SPAN><SPAN class=
     "c5">[.#|@...][.<SPAN class="c2">suffix</SPAN>]</SPAN>
@@ -5073,9 +5096,8 @@ li.c1 {list-style: none}
     </DIV><BR>
     <SPAN class="c1"><A name="working_--renumber" id=
     "working_--renumber"></A>working</SPAN><SPAN class=
-    "c5"><SPAN class="c1">--renumber</SPAN></SPAN><SPAN class=
-    "c5">=</SPAN><SPAN class="c5"><SPAN class=
-    "c2">node-name</SPAN></SPAN> <SPAN class="c5"><BR>
+    "c5 c1">--renumber</SPAN><SPAN class="c5">=</SPAN><SPAN class=
+    "c5 c2">node-name</SPAN> <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
@@ -5105,9 +5127,8 @@ li.c1 {list-style: none}
     </DIV><BR>
     <SPAN class="c1"><A name="working_--edit" id=
     "working_--edit"></A>working</SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--edit</SPAN></SPAN><SPAN class=
-    "c5">=<SPAN class="c2">node-name</SPAN></SPAN> <SPAN class=
-    "c5"><BR>
+    "c5 c1">--edit</SPAN><SPAN class="c5">=<SPAN class=
+    "c2">node-name</SPAN></SPAN> <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
@@ -5163,9 +5184,8 @@ li.c1 {list-style: none}
   </DIV>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "working_--submit-jobs" id=
-    "working_--submit-jobs"></A>working</SPAN></SPAN> <SPAN class=
+    <SPAN class="c5 c1"><A name="working_--submit-jobs" id=
+    "working_--submit-jobs"></A>working</SPAN> <SPAN class=
     "c5"><SPAN class="c1">--submit-jobs</SPAN>=node-name</SPAN><BR>
     <SPAN class="c5">&nbsp;&nbsp;&nbsp;</SPAN> <SPAN class=
     "c5">[</SPAN><A class="c3" href=
@@ -5211,9 +5231,8 @@ li.c1 {list-style: none}
 
   <DIV class="c14">
     <BR>
-    <SPAN class="c5"><SPAN class="c1"><A name=
-    "working_--remove-files" id=
-    "working_--remove-files"></A>working</SPAN></SPAN> <SPAN class=
+    <SPAN class="c5 c1"><A name="working_--remove-files" id=
+    "working_--remove-files"></A>working</SPAN> <SPAN class=
     "c5"><SPAN class="c1">--remove-files</SPAN>=<SPAN class=
     "c2">node-name</SPAN></SPAN><BR>
     <SPAN class="c5">&nbsp;&nbsp;&nbsp;</SPAN> <SPAN class=
@@ -5408,8 +5427,7 @@ li.c1 {list-style: none}
     "c1">--version</SPAN></A><SPAN class="c5">=<SPAN class=
     "c2">major</SPAN>.<SPAN class="c2">minor</SPAN>.<SPAN class=
     "c2">micro</SPAN></SPAN><SPAN class="c5">]</SPAN><SPAN class=
-    "c5"><SPAN class="c1">&nbsp;</SPAN></SPAN> <SPAN class=
-    "c5"><BR>
+    "c5 c1">&nbsp;</SPAN> <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp; [<A href="#--editor"><SPAN class=
     "c1">--editor</SPAN></A>=<SPAN class=
     "c2">editor-name</SPAN></SPAN><SPAN class="c5">[:<SPAN class=
@@ -5461,14 +5479,14 @@ li.c1 {list-style: none}
     </DIV>
   </DIV>
 
-  <H3><SPAN class="c5"><SPAN class="c1"><A name="Node_Operations"
-  id="Node_Operations"></A>Node Operations</SPAN></SPAN></H3>
+  <H3><SPAN class="c5 c1"><A name="Node_Operations" id=
+  "Node_Operations"></A>Node Operations</SPAN></H3>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name="node_--status" id=
-    "node_--status"></A>node</SPAN></SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--status</SPAN>=<SPAN class=
-    "c2">node-name</SPAN></SPAN> <SPAN class="c5"><BR>
+    <SPAN class="c5 c1"><A name="node_--status" id=
+    "node_--status"></A>node</SPAN> <SPAN class="c5"><SPAN class=
+    "c1">--status</SPAN>=<SPAN class="c2">node-name</SPAN></SPAN>
+    <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
@@ -5739,9 +5757,8 @@ li.c1 {list-style: none}
         associated with the working version.<BR>
         <BR>
       </DIV>
-    </DIV><SPAN class="c5"><SPAN class="c1"><A name=
-    "node_--check-in" id="node_--check-in"></A>node</SPAN></SPAN>
-    <SPAN class="c5"><SPAN class=
+    </DIV><SPAN class="c5 c1"><A name="node_--check-in" id=
+    "node_--check-in"></A>node</SPAN> <SPAN class="c5"><SPAN class=
     "c1">--check-in</SPAN>=<SPAN class="c2">node-name</SPAN></SPAN>
     <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
@@ -5770,8 +5787,8 @@ li.c1 {list-style: none}
       specified.&nbsp; Also checks in all modified nodes upstream
       of the target node prior to checking-in the target node.<BR>
     </DIV><BR>
-    <SPAN class="c5"><SPAN class="c1"><A name="node_--check-out"
-    id="node_--check-out"></A>node</SPAN></SPAN> <SPAN class=
+    <SPAN class="c5 c1"><A name="node_--check-out" id=
+    "node_--check-out"></A>node</SPAN> <SPAN class=
     "c5"><SPAN class="c1">--check-out</SPAN>=<SPAN class=
     "c2">node-name</SPAN></SPAN> <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
@@ -5804,8 +5821,8 @@ li.c1 {list-style: none}
       skipped if there exists a modified working version which is
       based on the version being checked-out or on a version which
       is newer than the version being checked-out.&nbsp;</SPAN>
-      <SPAN class="c5">If the</SPAN> <SPAN class="c5"><SPAN class=
-      "c1">--overwrite-all</SPAN></SPAN> <SPAN class="c5">option is
+      <SPAN class="c5">If the</SPAN> <SPAN class=
+      "c5 c1">--overwrite-all</SPAN> <SPAN class="c5">option is
       specified, all upstream nodes will be checked-out regardless
       of the version they are based upon causing all existing
       upstream working versions to be overwritten.<BR>
@@ -5826,10 +5843,10 @@ li.c1 {list-style: none}
   </DIV><BR>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name="node_--evolve" id=
-    "node_--evolve"></A>node</SPAN></SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--evolve</SPAN>=<SPAN class=
-    "c2">node-name</SPAN></SPAN> <SPAN class="c5"><BR>
+    <SPAN class="c5 c1"><A name="node_--evolve" id=
+    "node_--evolve"></A>node</SPAN> <SPAN class="c5"><SPAN class=
+    "c1">--evolve</SPAN>=<SPAN class="c2">node-name</SPAN></SPAN>
+    <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
@@ -5856,10 +5873,10 @@ li.c1 {list-style: none}
   </DIV><BR>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name="node_--lock" id=
-    "node_--lock"></A>node</SPAN></SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--lock</SPAN>=<SPAN class=
-    "c2">node-name</SPAN></SPAN> <SPAN class="c5"><BR>
+    <SPAN class="c5 c1"><A name="node_--lock" id=
+    "node_--lock"></A>node</SPAN> <SPAN class="c5"><SPAN class=
+    "c1">--lock</SPAN>=<SPAN class="c2">node-name</SPAN></SPAN>
+    <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
@@ -5883,10 +5900,10 @@ li.c1 {list-style: none}
   </DIV><BR>
 
   <DIV class="c14">
-    <SPAN class="c5"><SPAN class="c1"><A name="node_--vouch" id=
-    "node_--vouch"></A>node</SPAN></SPAN> <SPAN class=
-    "c5"><SPAN class="c1">--vouch</SPAN>=<SPAN class=
-    "c2">node-name</SPAN></SPAN> <SPAN class="c5"><BR>
+    <SPAN class="c5 c1"><A name="node_--vouch" id=
+    "node_--vouch"></A>node</SPAN> <SPAN class="c5"><SPAN class=
+    "c1">--vouch</SPAN>=<SPAN class="c2">node-name</SPAN></SPAN>
+    <SPAN class="c5"><BR>
     &nbsp;&nbsp;&nbsp;</SPAN> <SPAN class="c5">[</SPAN><A class=
     "c3" href="#--author">--author</A><SPAN class=
     "c5">=<SPAN class="c2">user-name</SPAN>]</SPAN> <SPAN class=
@@ -6005,12 +6022,9 @@ li.c1 {list-style: none}
     <DIV class="c14">
       <SPAN class=
       "c2">root-production-dir</SPAN>/repository<SPAN class=
-      "c2"><SPAN class="c2">/</SPAN></SPAN><SPAN class=
-      "c2">node-name</SPAN>/<SPAN class=
-      "c2">major.minor.micro</SPAN>/<SPAN class=
-      "c2">prefix</SPAN>[.<SPAN class=
-      "c2">frame-number</SPAN>][.<SPAN class=
-      "c2">suffix</SPAN>]<BR>
+      "c2 c2">/</SPAN><SPAN class=
+      "c2">node-name</SPAN>/<SPAN class="c2">major.minor.micro</SPAN>/<SPAN class="c2">prefix</SPAN>[.<SPAN class="c2">frame-number</SPAN>][.<SPAN class="c2">suffix</SPAN>]<BR>
+
       <BR>
     </DIV>
   </DIV>

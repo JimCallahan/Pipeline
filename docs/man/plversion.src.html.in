@@ -3,7 +3,7 @@
 <HTML>
 <HEAD>
   <META name="generator" content=
-  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  "HTML Tidy for Linux (vers 7 December 2008), see www.w3.org">
 
   <TITLE>plversion(1)</TITLE>
   <META http-equiv="content-type" content=
@@ -16,6 +16,9 @@ br.c7 {font-weight: bold;}
   div.c3 {margin-left: 40px;}
   span.c2 {font-weight: bold;}
   a.c1 {font-weight: bold;}
+  </STYLE>
+  <STYLE type="text/css">
+a.c1 {font-style: italic}
   </STYLE>
 </HEAD>
 
@@ -30,8 +33,8 @@ br.c7 {font-weight: bold;}
   <H3>Synopsis</H3>
 
   <BLOCKQUOTE>
-    <B>plversion</B> [<A href=
-    "#Global_Options"><I>options</I></A>]<BR>
+    <B>plversion</B> [<A class="c1" href=
+    "#Global_Options">options</A>]<BR>
     <BR>
     <B>plversion</B> <A href="#--help" class="c1">--help</A><BR>
     <B>plversion</B> <A href="#--html-help" class=

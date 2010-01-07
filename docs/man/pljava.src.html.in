@@ -3,7 +3,7 @@
 <HTML>
 <HEAD>
   <META name="generator" content=
-  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  "HTML Tidy for Linux (vers 7 December 2008), see www.w3.org">
 
   <TITLE>pljava(1)</TITLE>
   <META http-equiv="content-type" content=
@@ -19,6 +19,9 @@ div.c9 {margin-left: 160px;}
   span.c2 {font-style: italic;}
   span.c1 {font-weight: bold;}
   </STYLE>
+  <STYLE type="text/css">
+a.c1 {font-style: italic}
+  </STYLE>
 </HEAD>
 
 <BODY>
@@ -32,23 +35,23 @@ div.c9 {margin-left: 160px;}
   <H3>Synopsis</H3>
 
   <BLOCKQUOTE>
-    <B>pljava</B> [<A href="#Global_Options"><I>options</I></A>]
-    <SPAN class="c1">--jar</SPAN>=<SPAN class=
-    "c2">program.jar</SPAN> [<SPAN class=
-    "c1">--main</SPAN>=<SPAN class="c2">mainclass</SPAN>]&nbsp;
-    [<SPAN class="c1">--</SPAN> <SPAN class="c2">args</SPAN>
-    ...]<BR>
-    <B>pljava</B> [<A href=
-    "pljava.src.html.in#Global_Options"><I>options</I></A>]&nbsp;<SPAN class="c1">--classpath</SPAN>=<SPAN class="c2">classdir</SPAN>
+    <B>pljava</B> [<A class="c1" href=
+    "#Global_Options">options</A>] <SPAN class=
+    "c1">--jar</SPAN>=<SPAN class="c2">program.jar</SPAN>
+    [<SPAN class="c1">--main</SPAN>=<SPAN class=
+    "c2">mainclass</SPAN>]&nbsp; [<SPAN class="c1">--</SPAN>
+    <SPAN class="c2">args</SPAN> ...]<BR>
+    <B>pljava</B> [<A class="c1" href=
+    "pljava.src.html.in#Global_Options">options</A>]&nbsp;<SPAN class="c1">--classpath</SPAN>=<SPAN class="c2">classdir</SPAN>
     [<SPAN class="c1">--classpath</SPAN>=...] <SPAN class=
     "c1">--main</SPAN>=<SPAN class="c2">mainclass&nbsp;</SPAN>
     [<SPAN class="c1">--</SPAN> <SPAN class="c2">args</SPAN>
     ...]<BR>
-    <B>pljava</B> [<A href=
-    "pljava.src.html.in#Global_Options"><I>options</I></A>]
-    <SPAN class="c1">--source</SPAN>=<SPAN class=
-    "c2">program.java&nbsp;</SPAN> [<SPAN class="c1">--</SPAN>
-    <SPAN class="c2">args</SPAN> ...]<BR>
+    <B>pljava</B> [<A class="c1" href=
+    "pljava.src.html.in#Global_Options">options</A>] <SPAN class=
+    "c1">--source</SPAN>=<SPAN class="c2">program.java&nbsp;</SPAN>
+    [<SPAN class="c1">--</SPAN> <SPAN class="c2">args</SPAN>
+    ...]<BR>
     <BR>
     <B>pljava</B> <A href="#--help" class="c3">--help</A><BR>
     <B>pljava</B> <A href="#--html-help" class=

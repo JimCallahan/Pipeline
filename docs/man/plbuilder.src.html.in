@@ -3,7 +3,7 @@
 <HTML>
 <HEAD>
   <META name="generator" content=
-  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  "HTML Tidy for Linux (vers 7 December 2008), see www.w3.org">
 
   <TITLE>plbuilder(1)</TITLE>
   <META http-equiv="content-type" content=
@@ -16,6 +16,10 @@ br.c7 {font-weight: bold;}
   div.c3 {margin-left: 40px;}
   span.c2 {font-weight: bold;}
   a.c1 {font-weight: bold;}
+  </STYLE>
+  <STYLE type="text/css">
+a.c2 {font-weight: bold}
+  a.c1 {font-style: italic}
   </STYLE>
 </HEAD>
 
@@ -30,8 +34,8 @@ br.c7 {font-weight: bold;}
   <H3>Synopsis</H3>
 
   <BLOCKQUOTE>
-    <B>plbuilder</B>&nbsp;[<A href=
-    "#Global_Options"><I>options</I></A>]<BR>
+    <B>plbuilder</B>&nbsp;[<A class="c1" href=
+    "#Global_Options">options</A>]<BR>
     <BR>
     <B>plbuilder</B>&nbsp;<A href="#--help" class=
     "c1">--help</A><BR>
@@ -51,8 +55,8 @@ br.c7 {font-weight: bold;}
 
   <BLOCKQUOTE>
     The <B>plbuilder</B>(1) application allows users to launch a
-    Node Builder without the need to have an instance of <A href=
-    "plui.html"><B>plui</B></A>(1) running.&nbsp; By default, an
+    Node Builder without the need to have an instance of <A class=
+    "c2" href="plui.html">plui</A>(1) running.&nbsp; By default, an
     wizard-like graphical interface is shown which allows users to
     specify all builder parameters and control the phases of
     execution.&nbsp; Alternatively, the builder can be run in batch
