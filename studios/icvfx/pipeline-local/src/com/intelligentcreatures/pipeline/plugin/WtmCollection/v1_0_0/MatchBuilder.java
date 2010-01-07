@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.17 2009/03/17 18:32:06 jesse Exp $
+// $Id: MatchBuilder.java,v 1.18 2010/01/07 19:21:09 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -120,7 +120,7 @@ class MatchBuilder
     initProjectNamer();
 
     /* initialize fields */
-    pFinalStages = new ArrayList<FinalizableStage>();
+//    pFinalStages = new ArrayList<FinalizableStage>();
 
     /* create the setup passes */
     {
