@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.157 2010/01/07 10:17:06 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.158 2010/01/07 11:27:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6928,11 +6928,9 @@ class JNodeViewerPanel
           }
 
 	  if(pRemoveArea) {
-	    client.removeWorkingArea(pAuthor, pView);
-
 	    PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
 
-	    /* Reset to the default view for all node viewer panels with same 
+	    /* reset to the default view for all node viewer panels with same 
 	       author|view prior to releasing the view. */
 	    for(JNodeViewerPanel panel : panels.getPanels()) {
 	      String author = panel.getAuthor();
