@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.46 2010/01/07 10:17:06 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.47 2010/01/07 11:15:58 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -12,9 +12,7 @@ import javax.swing.event.ListSelectionListener;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.ui.AbstractSortableTableModel;
-import us.temerity.pipeline.ui.JTablePanel;
-import us.temerity.pipeline.ui.UIFactory;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   B R O W S E R   P A N E L                                          */
@@ -1330,6 +1328,32 @@ class JQueueJobBrowserPanel
   public void
   doGroupsDeleteCompleted()
   { 
+    String msg = null;
+    switch(pViewFilter) {
+    case SingleView:
+      if((pAuthor != null) && !pAuthor.equals(PackageInfo.sUser) && 
+         pPrivilegeDetails.isQueueManaged(pAuthor))
+        msg = ("This will delete ALL complete Job Groups owned by (" + pAuthor + ") in " + 
+               "the current working area!"); 
+      break;
+
+    case OwnedViews:
+      if((pAuthor != null) && !pAuthor.equals(PackageInfo.sUser) && 
+         pPrivilegeDetails.isQueueManaged(pAuthor))
+      msg = "This will delete ALL completed Job Groups owned by (" + pAuthor + ")!"; 
+      break;
+
+    case AllViews:
+      msg = "This will delete ALL completed Job Groups for ALL users!"; 
+    }
+
+    if(msg != null) {
+      JConfirmDialog diag = new JConfirmDialog(getTopFrame(), "Are you sure?", msg); 
+      diag.setVisible(true);
+      if(!diag.wasConfirmed()) 
+        return;
+    }
+
     DeleteCompletedJobGroupsTask task = new DeleteCompletedJobGroupsTask(pViewFilter); 
     task.start();
   }
