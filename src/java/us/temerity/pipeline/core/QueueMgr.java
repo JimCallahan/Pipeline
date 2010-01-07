@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.156 2010/01/07 03:19:31 jesse Exp $
+// $Id: QueueMgr.java,v 1.157 2010/01/07 06:17:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4383,9 +4383,9 @@ class QueueMgr
 	    /* user reservations */ 
 	    if(qmod.isReservationModified()) {
 	      String rname = qmod.getReservation();
-	      if (rname == null || 
-	          pAdminPrivileges.getWorkGroups().getUsers().contains(rname)) {
-	        host.setReservation(qmod.getReservation());
+	      if((rname == null) || 
+                 pAdminPrivileges.getWorkGroups().getUsers().contains(rname)) {
+	        host.setReservation(rname);
 	        if(modifiedHosts != null) 
 	          modifiedHosts.add(hname);
 	        diskModified = true;
