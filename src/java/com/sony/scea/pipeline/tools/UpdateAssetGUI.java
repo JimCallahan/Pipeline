@@ -13,7 +13,7 @@ import javax.swing.plaf.synth.SynthLookAndFeel;
 import com.sony.scea.pipeline.tools.SonyAsset.AssetType;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
+import us.temerity.pipeline.bootstrap.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 import us.temerity.pipeline.ui.*;
 
@@ -24,7 +24,7 @@ import us.temerity.pipeline.ui.*;
  * @version 1.0.0
  * 
  */
-public class UpdateAssetGUI extends BootApp implements ActionListener
+public class UpdateAssetGUI implements BootableApp, ActionListener
 {
 
 	MasterMgrClient mclient;

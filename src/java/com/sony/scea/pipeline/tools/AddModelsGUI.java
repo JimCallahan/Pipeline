@@ -1,23 +1,21 @@
 package com.sony.scea.pipeline.tools;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.plaf.synth.SynthLookAndFeel;
-
-import com.sony.scea.pipeline.tools.SonyAsset.AssetType;
+import javax.swing.plaf.synth.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
+import us.temerity.pipeline.bootstrap.*;
+import us.temerity.pipeline.laf.*;
 import us.temerity.pipeline.ui.*;
 
-public class AddModelsGUI extends BootApp implements ActionListener
+import com.sony.scea.pipeline.tools.SonyAsset.*;
+
+public class AddModelsGUI implements ActionListener, BootableApp
 {
    MasterMgrClient client;
    PluginMgrClient plug;

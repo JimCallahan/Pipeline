@@ -6,9 +6,9 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
+import us.temerity.pipeline.bootstrap.*;
 
-public class MakeLairModels extends BootApp
+public class MakeLairModels implements BootableApp
 {
 
 	MasterMgrClient client;

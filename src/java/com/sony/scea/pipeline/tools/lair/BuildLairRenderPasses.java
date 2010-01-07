@@ -5,13 +5,13 @@ import static com.sony.scea.pipeline.tools.lair.LairConstants.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
+import us.temerity.pipeline.bootstrap.*;
 
 import com.sony.scea.pipeline.tools.Wrapper;
 import static com.sony.scea.pipeline.tools.Globals.*;
 import static com.sony.scea.pipeline.tools.GlobalsArgs.*;
 
-public class BuildLairRenderPasses extends BootApp
+public class BuildLairRenderPasses implements BootableApp
 {
 
    MasterMgrClient client;

@@ -10,13 +10,13 @@ import javax.swing.*;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
+import us.temerity.pipeline.bootstrap.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 import us.temerity.pipeline.ui.*;
 
 import com.sony.scea.pipeline.tools.SonyAsset.AssetType;
 
-public class BuildShotGUI extends BootApp implements ActionListener
+public class BuildShotGUI implements BootableApp, ActionListener
 {
 
    MasterMgrClient client;

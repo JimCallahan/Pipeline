@@ -7,11 +7,11 @@ import static com.sony.scea.pipeline.tools.lair.LairConstants.getAssetValues;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
+import us.temerity.pipeline.bootstrap.*;
 
 import com.sony.scea.pipeline.tools.Wrapper;
 
-public class PrepLairRender extends BootApp
+public class PrepLairRender implements BootableApp
 {
 
    MasterMgrClient client;

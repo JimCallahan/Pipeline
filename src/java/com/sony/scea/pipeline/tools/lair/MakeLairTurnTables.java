@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.SortedMap;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
+import us.temerity.pipeline.bootstrap.*;
 
 @SuppressWarnings("unused")
-public class MakeLairTurnTables extends BootApp
+public class MakeLairTurnTables implements BootableApp
 {
 
 	MasterMgrClient client;

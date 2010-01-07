@@ -7,11 +7,11 @@ import static com.sony.scea.pipeline.tools.lair.LairConstants.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
+import us.temerity.pipeline.bootstrap.*;
 
 import com.sony.scea.pipeline.tools.Wrapper;
 
-public class BuildLairTurnTables extends BootApp
+public class BuildLairTurnTables implements BootableApp
 {
   MasterMgrClient client;
   PluginMgrClient plug;

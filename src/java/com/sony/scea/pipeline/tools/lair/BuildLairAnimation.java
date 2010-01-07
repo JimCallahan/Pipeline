@@ -6,11 +6,12 @@ import static com.sony.scea.pipeline.tools.GlobalsArgs.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.bootstrap.BootApp;
+import us.temerity.pipeline.apps.*;
+import us.temerity.pipeline.bootstrap.*;
 
 import com.sony.scea.pipeline.tools.Wrapper;
 
-public class BuildLairAnimation extends BootApp
+public class BuildLairAnimation implements BootableApp
 {
 
    MasterMgrClient client;
