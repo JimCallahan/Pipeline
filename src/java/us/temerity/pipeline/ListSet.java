@@ -1,4 +1,4 @@
-// $Id: ListSet.java,v 1.1 2009/03/30 14:36:25 jesse Exp $
+// $Id: ListSet.java,v 1.2 2010/01/07 22:23:37 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -70,6 +70,21 @@ class ListSet<E>
   )
   {
     return pMap.put(e, PRESENT) == null;
+  }
+  
+  /**
+   * Return the entry at the specified position in this set. 
+   * 
+   * @param index
+   *   the position index
+   */
+  public E
+  get
+  (
+    int index
+  )
+  {
+    return pMap.getKey(index);
   }
 
   @Override
