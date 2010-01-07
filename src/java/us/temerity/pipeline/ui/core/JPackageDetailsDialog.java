@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.11 2007/09/07 18:52:38 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.12 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -172,7 +172,7 @@ class JPackageDetailsDialog
 	{ "Test",        "test-package" }
       };
 
-      JButton btns[] = super.initUI("", body, null, null, extra, "Close");
+      JButton btns[] = super.initUI("", body, null, null, extra, "Close", null);
       pLoadScriptButton   = btns[0];
       pAddEntryButton     = btns[1];
       pClearEntriesButton = btns[2];
@@ -310,12 +310,12 @@ class JPackageDetailsDialog
       pTestButton.setEnabled(pOsType.equals(PackageInfo.sOsType));
 
       if(mod != null) {
-	pHeaderLabel.setText(os + " Package:  " + pPackage.getName() + " (working)");
+        setHeader(os + " Package:  " + pPackage.getName() + " (working)");
 	pHistoryPanel.setVisible(false);
       }
       else if(vsn != null) {
-	pHeaderLabel.setText(os + " Package:  " + pPackage.getName() + 
-			     " (v" + vsn.getVersionID() + ")");
+        setHeader(os + " Package:  " + pPackage.getName() + 
+		  " (v" + vsn.getVersionID() + ")");
 
 	pAuthorField.setText(vsn.getAuthor());
 	pTimeStampField.setText(TimeStamps.format(vsn.getTimeStamp())); 

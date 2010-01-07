@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.10 2009/11/02 03:44:11 jim Exp $
+// $Id: JOfflineDialog.java,v 1.11 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -212,7 +212,7 @@ class JOfflineDialog
 	{ "Offline", "offline" }
       };
 
-      JButton btns[] = super.initUI("Offline Tool:", body, null, null, extra, "Close");
+      JButton btns[] = super.initUI("Offline Tool:", body, null, null, extra, "Close", null);
 
       pOfflineButton = btns[0];
       pOfflineButton.setEnabled(false);

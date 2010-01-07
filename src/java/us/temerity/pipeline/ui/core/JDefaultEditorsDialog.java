@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.10 2009/08/19 23:53:51 jim Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.11 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -59,7 +59,7 @@ class JDefaultEditorsDialog
       };
 
       JButton btns[] = 
-	super.initUI("Default Editors:", body, "Confirm", "Apply", extra, "Close");
+	super.initUI("Default Editors:", body, "Confirm", "Apply", extra, "Close", null);
       
       pConfirmButton.setToolTipText(UIFactory.formatToolTip
         ("Save the current editor settings and close the dialog."));

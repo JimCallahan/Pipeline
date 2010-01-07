@@ -1,4 +1,4 @@
-// $Id: JManagePackagePluginsDialog.java,v 1.10 2009/03/19 20:32:28 jesse Exp $
+// $Id: JManagePackagePluginsDialog.java,v 1.11 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -57,7 +57,7 @@ class JManagePackagePluginsDialog
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
 	tab.add(panel);
       
-      super.initUI("", tab, "Confirm", "Apply", null, "Close");
+      super.initUI("", tab, "Confirm", "Apply", null, "Close", null);
     }
   }
 
@@ -106,9 +106,9 @@ class JManagePackagePluginsDialog
     PluginMgrClient pclient = PluginMgrClient.getInstance();
     try {
       if(vid == null)
-	pHeaderLabel.setText("Package Plugins:  " + pname + " (working)");
+        setHeader("Package Plugins:  " + pname + " (working)");
       else
-	pHeaderLabel.setText("Package Plugins:  " + pname + " (v" + vid + ")");
+        setHeader("Package Plugins:  " + pname + " (v" + vid + ")");
       
       pPackageName = pname;
       

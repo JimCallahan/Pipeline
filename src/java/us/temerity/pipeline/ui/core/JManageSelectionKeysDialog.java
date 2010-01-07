@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.25 2009/12/09 05:05:55 jesse Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.26 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -363,7 +363,7 @@ class JManageSelectionKeysDialog
         { "Edit", "edit" }
       };
 
-      JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close");
+      JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close", null);
       
       pUpdateButton = btns[1];
       pUpdateButton.setToolTipText(UIFactory.formatToolTip(

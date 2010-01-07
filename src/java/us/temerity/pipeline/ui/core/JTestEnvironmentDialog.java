@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.9 2007/05/15 06:08:25 jesse Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.10 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -96,7 +96,7 @@ class JTestEnvironmentDialog
 	body.add(area);
       }
 
-      JButton btns[] = super.initUI("X", body, null, "Run Test", null, "Close");
+      JButton btns[] = super.initUI("X", body, null, "Run Test", null, "Close", null);
 
       pack();
     }
@@ -126,7 +126,7 @@ class JTestEnvironmentDialog
    Map<String,String> env
   )
   { 
-    pHeaderLabel.setText(header);
+    setHeader(header);
     pEnvironment = env;
 
     validateWorkingDir();
@@ -220,7 +220,7 @@ class JTestEnvironmentDialog
 			    pEnvironment, dir, outFile, errFile);
     
       JMonitorSubProcessDialog diag = 
-	new JMonitorSubProcessDialog("Test Environmant Output", pHeaderLabel.getText(), proc);
+	new JMonitorSubProcessDialog("Test Environmant Output", getHeader(), proc);
       diag.setVisible(true);
     }
     catch(PipelineException ex) {

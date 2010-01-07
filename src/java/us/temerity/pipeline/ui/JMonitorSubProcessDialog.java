@@ -1,4 +1,4 @@
-// $Id: JMonitorSubProcessDialog.java,v 1.6 2007/09/07 18:52:38 jim Exp $
+// $Id: JMonitorSubProcessDialog.java,v 1.7 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -136,7 +136,7 @@ class JMonitorSubProcessDialog
 
       body.setDividerLocation(100);
 
-      super.initUI(header, body, null, null, null, "Kill");
+      super.initUI(header, body, null, null, null, "Kill", null);
     }
 
     addWindowListener(this);
@@ -321,7 +321,7 @@ class JMonitorSubProcessDialog
     public void 
     run()
     {
-      pHeaderLabel.setText(pHeader + "   (Running)");
+      setHeader(pHeader + "   (Running)");
       pStdOutPanel.updateScrollBar();
       pStdErrPanel.updateScrollBar();
     }
@@ -340,13 +340,14 @@ class JMonitorSubProcessDialog
       super("JMonitorSubProcessDialog:DoneTask");
     }
 
+    @Override
     public void 
     run()
     {
       if(pProc.wasSuccessful()) 
-	pHeaderLabel.setText(pHeader + "   (SUCCESS)");
+        setHeader(pHeader + "   (SUCCESS)");
       else 
-	pHeaderLabel.setText(pHeader + "   (FAILED: " + pProc.getExitCode() + ")");
+        setHeader(pHeader + "   (FAILED: " + pProc.getExitCode() + ")");
       
       pCancelButton.setText("Close");
     }

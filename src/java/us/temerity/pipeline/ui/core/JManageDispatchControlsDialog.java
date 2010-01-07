@@ -1,4 +1,4 @@
-// $Id: JManageDispatchControlsDialog.java,v 1.2 2009/09/29 20:44:41 jesse Exp $
+// $Id: JManageDispatchControlsDialog.java,v 1.3 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -163,7 +163,7 @@ class JManageDispatchControlsDialog
         { "Update", "update"},
       };
 
-      JButton btns[] = super.initUI(null, body, "Confirm", "Apply", extra, "Close");
+      JButton btns[] = super.initUI(null, body, "Confirm", "Apply", extra, "Close", null);
       
       pUpdateButton = btns[1];
       pUpdateButton.setToolTipText(UIFactory.formatToolTip(

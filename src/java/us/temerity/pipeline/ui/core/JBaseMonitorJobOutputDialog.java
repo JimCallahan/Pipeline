@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorJobOutputDialog.java,v 1.7 2009/07/01 16:43:14 jim Exp $
+// $Id: JBaseMonitorJobOutputDialog.java,v 1.8 2010/01/07 22:14:34 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -90,7 +90,7 @@ class JBaseMonitorJobOutputDialog
 	(prefix + " - Job " + pJobID + ":  " + agenda.getPrimaryTarget() + 
 	 "    [" + info.getHostname() + "]");
       
-      super.initUI(header, body, null, "Save As...", null, "Close");
+      super.initUI(header, body, null, "Save As...", null, "Close", null);
     }
     
     addWindowListener(this);
