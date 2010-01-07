@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.155 2010/01/07 02:42:43 jim Exp $
+// $Id: QueueMgr.java,v 1.156 2010/01/07 03:19:31 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9,8 +9,6 @@ import java.util.Map.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
-
-import org.python.modules.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -4073,6 +4071,80 @@ class QueueMgr
 	    finalChanges.put(hname, mod);
 	}
       } // synchronized(pHostsInfo) 
+      
+      TreeSet<String> names = null;
+      {
+        synchronized (pSelectionGroups) {
+          names = new TreeSet<String>(pSelectionGroups.keySet());
+        }
+        for (QueueHostMod mod : finalChanges.values()) {
+          if (mod.isSelectionGroupModified()) {
+            String group = mod.getSelectionGroup();
+            if (group != null && !names.contains(group)) {
+              throw new PipelineException
+                ("(" + group +") is not a valid selection group name");
+            }
+          }
+        }
+      }
+      
+      {
+        synchronized (pHardwareGroups) {
+          names = new TreeSet<String>(pHardwareGroups.keySet());
+        }
+        for (QueueHostMod mod : finalChanges.values()) {
+          if (mod.isHardwareGroupModified()) {
+            String group = mod.getHardwareGroup();
+            if (group != null && !names.contains(group)) {
+              throw new PipelineException
+                ("(" + group +") is not a valid hardware group name");
+            }
+          }
+        }
+      }
+      
+      {
+        synchronized (pUserBalanceGroups) {
+          names = new TreeSet<String>(pUserBalanceGroups.keySet());
+        }
+        for (QueueHostMod mod : finalChanges.values()) {
+          if (mod.isUserBalanceGroupModified()) {
+            String group = mod.getUserBalanceGroup();
+            if (group != null && !names.contains(group)) {
+              throw new PipelineException
+                ("(" + group +") is not a valid balance group name");
+            }
+          }
+        }
+      }
+      
+      {
+        synchronized (pDispatchControls) {
+          names = new TreeSet<String>(pDispatchControls.keySet());
+        }
+        for (QueueHostMod mod : finalChanges.values()) {
+          if (mod.isDispatchControlModified()) {
+            String group = mod.getDispatchControl();
+            if (group != null && !names.contains(group)) {
+              throw new PipelineException
+                ("(" + group +") is not a valid dispatch control name");
+            }
+          }
+        }
+      }
+      
+      {
+        names = new TreeSet<String>(pAdminPrivileges.getWorkGroups().getUsers());
+        for (QueueHostMod mod : finalChanges.values()) {
+          if (mod.isReservationModified()) {
+            String user = mod.getReservation();
+            if (user != null && !names.contains(user)) {
+              throw new PipelineException
+                ("(" + user +") is not a valid user name for a reservation.");
+            }
+          }
+        }
+      }
 
       timer.aquire();
       synchronized(pHostsMod) {
@@ -4310,10 +4382,14 @@ class QueueMgr
 
 	    /* user reservations */ 
 	    if(qmod.isReservationModified()) {
-	      host.setReservation(qmod.getReservation());
-	      if(modifiedHosts != null) 
-	        modifiedHosts.add(hname);
-	      diskModified = true;
+	      String rname = qmod.getReservation();
+	      if (rname == null || 
+	          pAdminPrivileges.getWorkGroups().getUsers().contains(rname)) {
+	        host.setReservation(qmod.getReservation());
+	        if(modifiedHosts != null) 
+	          modifiedHosts.add(hname);
+	        diskModified = true;
+	      }
 	    }
 
 	    /* job orders */ 
@@ -4383,12 +4459,19 @@ class QueueMgr
             
             /* user balance groups */ 
             if(qmod.isUserBalanceGroupModified()) {
-              String name = qmod.getUserBalanceGroup(); 
-              host.setBalanceGroup(name);
-              if(modifiedHosts != null) 
-                modifiedHosts.add(hname);
-              diskModified = true;
-              userBalanceHosts.add(hname);
+              tm.aquire();
+              synchronized (pUserBalanceGroups) {
+                tm.resume();
+
+                String name = qmod.getUserBalanceGroup(); 
+                if((name == null) || pUserBalanceGroups.containsKey(name)) {
+                  host.setBalanceGroup(name);
+                  if(modifiedHosts != null) 
+                    modifiedHosts.add(hname);
+                  diskModified = true;
+                  userBalanceHosts.add(hname);
+                }
+              }
             }
             
             /* favor method */ 
