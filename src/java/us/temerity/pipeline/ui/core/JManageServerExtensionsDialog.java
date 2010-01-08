@@ -1,4 +1,4 @@
-// $Id: JManageServerExtensionsDialog.java,v 1.6 2010/01/08 06:38:25 jesse Exp $
+// $Id: JManageServerExtensionsDialog.java,v 1.7 2010/01/08 20:42:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -148,7 +148,7 @@ class JManageServerExtensionsDialog
 	{ "Update", "update" }
       };
 
-      JButton btns[] = super.initUI(null, tab, null, null, extra, "Close");
+      JButton btns[] = super.initUI(null, tab, null, null, extra, "Close", null);
       pAddButton    = btns[0];
       pEditButton   = btns[1];
       pRemoveButton = btns[2];

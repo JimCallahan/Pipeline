@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.9 2010/01/08 06:38:25 jesse Exp $
+// $Id: JExecDetailsDialog.java,v 1.10 2010/01/08 20:42:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -178,7 +178,7 @@ class JExecDetailsDialog
 	body.add(split);
       }
                
-      super.initUI("X", body, null, null, null, "Close");
+      super.initUI("X", body, null, null, null, "Close", null);
     }
   }
   
@@ -229,7 +229,7 @@ class JExecDetailsDialog
       env = details.getEnvironment();
     
 
-    pHeaderLabel.setText("Execution Details -" + jheader + hostname);
+    setHeader("Execution Details -" + jheader + hostname);
  
     pWorkingDirField.setText(dir);
      

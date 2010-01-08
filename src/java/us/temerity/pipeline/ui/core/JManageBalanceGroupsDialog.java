@@ -1,4 +1,4 @@
-// $Id: JManageBalanceGroupsDialog.java,v 1.8 2010/01/08 06:38:25 jesse Exp $
+// $Id: JManageBalanceGroupsDialog.java,v 1.9 2010/01/08 20:42:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -324,7 +324,7 @@ class JManageBalanceGroupsDialog
     Box tempBox = new Box(BoxLayout.LINE_AXIS);
     tempBox.add(parent);
     JButton btns[] = super.initUI("Manage Balance Groups:", tempBox, "Confirm", "Apply", 
-                                  extra, "Close");
+                                  extra, "Close", null);
     
     pUpdateButton = btns[1];
 

@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.11 2010/01/08 06:38:25 jesse Exp $
+// $Id: JConfigDialog.java,v 1.12 2010/01/08 20:42:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -156,7 +156,7 @@ class JConfigDialog
 
       JScrollPane scroll = UIFactory.createVertScrollPane(body, sTSize+sVSize+19, 120);
 
-      super.initUI("Site Configuration:", scroll, null, null, null, "Close");
+      super.initUI("Site Configuration:", scroll, null, null, null, "Close", null);
     }  
   }
 

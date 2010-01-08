@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.16 2010/01/08 06:38:25 jesse Exp $
+// $Id: JRestoreDialog.java,v 1.17 2010/01/08 20:42:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -298,7 +298,7 @@ class JRestoreDialog
 	{ "Restore...", "restore" },
       };
 
-      JButton btns[] = super.initUI("Restore Tool:", body, null, null, extra, "Close");
+      JButton btns[] = super.initUI("Restore Tool:", body, null, null, extra, "Close", null);
 
       pRestoreButton = btns[0];
       pRestoreButton.setEnabled(false);

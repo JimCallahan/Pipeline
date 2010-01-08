@@ -1,4 +1,4 @@
-// $Id: JTemplateGlueDialog.java,v 1.3 2010/01/08 06:38:25 jesse Exp $
+// $Id: JTemplateGlueDialog.java,v 1.4 2010/01/08 20:42:25 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_12;
 
@@ -59,7 +59,7 @@ class JTemplateGlueDialog
     extras[1][0] = "Next";
     extras[1][1] = "next";
 
-    JButton buttons[] = super.initUI(header, pTopPanel, null, null, extras, cancel);
+    JButton buttons[] = super.initUI(header, pTopPanel, null, null, extras, cancel, null);
     pPreviousButton = buttons[0];
     pNextButton= buttons[1];
     

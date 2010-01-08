@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.40 2010/01/08 06:38:25 jesse Exp $
+// $Id: JManageToolsetsDialog.java,v 1.41 2010/01/08 20:42:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -586,7 +586,7 @@ class JManageToolsetsDialog
       JHorzSplitPanel body = new JHorzSplitPanel(left, right);
       body.setMinimumSize(body.getPreferredSize());
 
-      super.initUI("Manage Toolsets:", body, null, null, null, "Close");
+      super.initUI("Manage Toolsets:", body, null, null, null, "Close", null);
     }
 
     pPackageDetailsDialog = new JPackageDetailsDialog(this);

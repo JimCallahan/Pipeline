@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.11 2010/01/08 06:38:25 jesse Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.12 2010/01/08 20:42:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -231,7 +231,7 @@ class JManageHardwareKeysDialog
 	{ "Edit", "edit" }
       };
 
-      JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close");
+      JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close", null);
       
       pUpdateButton = btns[1];
       pUpdateButton.setToolTipText(UIFactory.formatToolTip(
