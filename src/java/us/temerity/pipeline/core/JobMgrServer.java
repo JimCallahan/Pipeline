@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.43 2010/01/05 02:25:16 jim Exp $
+// $Id: JobMgrServer.java,v 1.44 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -404,6 +404,13 @@ class JobMgrServer
 
 	    
               /*-- NETWORK CONNECTION ------------------------------------------------------*/
+              case Ping:
+                {
+                  objOut.writeObject(new SuccessRsp(new TaskTimer("Ping"))); 
+                  objOut.flush(); 
+                }
+                break;
+
               case Disconnect:
 		disconnect();
                 break;

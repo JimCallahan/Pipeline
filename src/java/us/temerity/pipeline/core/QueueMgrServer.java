@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.83 2010/01/05 02:25:16 jim Exp $
+// $Id: QueueMgrServer.java,v 1.84 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1080,6 +1080,13 @@ class QueueMgrServer
                 break;
 
               /*-- NETWORK CONNECTION ------------------------------------------------------*/
+              case Ping:
+                {
+                  objOut.writeObject(new SuccessRsp(new TaskTimer("Ping"))); 
+                  objOut.flush(); 
+                }
+                break;
+
               case Disconnect:
 		disconnect();
                 break;

@@ -1,4 +1,4 @@
-// $Id: JobRequest.java,v 1.9 2009/08/26 22:32:07 jim Exp $
+// $Id: JobRequest.java,v 1.10 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -129,6 +129,11 @@ enum JobRequest
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Simple test of network connectivity.
+   */ 
+  Ping, 
 
   /**
    * No more requests will be send over this connection.

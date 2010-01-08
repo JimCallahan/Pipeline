@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.40 2009/12/18 07:16:20 jim Exp $
+// $Id: BaseMgrClient.java,v 1.41 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,6 +36,9 @@ class BaseMgrClient
    *   {@link #performLongTransaction} with an infinite request timeout and a 60-second 
    *   response retry interval with infinite retries.
    * 
+   * @param ping
+   *   The ping request enum.
+   * 
    * @param disconnect
    *   The disconnect request enum.
    * 
@@ -51,6 +54,7 @@ class BaseMgrClient
     String hostname, 
     int port, 
     boolean forceLongTransactions, 
+    Object ping, 
     Object disconnect, 
     Object shutdown, 
     String clientID
@@ -65,6 +69,10 @@ class BaseMgrClient
     pPort = port;
 
     pForceLongTransactions = forceLongTransactions;
+
+    if(ping == null) 
+      throw new IllegalArgumentException("The ping request cannot be (null)!");
+    pPing = ping;
 
     if(disconnect == null) 
       throw new IllegalArgumentException("The disconnect request cannot be (null)!");
@@ -302,6 +310,50 @@ class BaseMgrClient
 
       tries++;
     }
+  }
+
+  /**
+   * Test the network connection.
+   * 
+   * @param reqTimeout
+   *   The maximum amount of time this operation will block (in milliseconds) while
+   *   attempting to send the request before failing.
+   * 
+   * @param rspTimeout
+   *   The maximum amount of time this operation will block (in milliseconds) while
+   *   attempting to recieve the response before retrying.
+   * 
+   * @throws PipelineException 
+   *   In unable to establish the connection.
+   */
+  public synchronized void 
+  ping
+  (
+   int reqTimeout, 
+   int rspTimeout   
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    Object obj = performLongTransaction(pPing, null, reqTimeout, rspTimeout); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Test the network connection.
+   * 
+   * @throws PipelineException 
+   *   In unable to establish the connection.
+   */
+  public synchronized void 
+  ping() 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(pPing, null);
+    handleSimpleResponse(obj);
   }
 
   /**
@@ -750,6 +802,11 @@ class BaseMgrClient
    * The network socket connection.
    */
   private Socket  pSocket;
+
+  /** 
+   * The ping request.
+   */ 
+  private Object  pPing;
 
   /** 
    * The disconnect request.

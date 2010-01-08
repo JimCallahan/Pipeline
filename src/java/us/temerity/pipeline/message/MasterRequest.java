@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.70 2009/12/14 03:20:56 jim Exp $
+// $Id: MasterRequest.java,v 1.71 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -981,6 +981,11 @@ enum MasterRequest
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Simple test of network connectivity.
+   */ 
+  Ping, 
 
   /**
    * No more requests will be send over this connection.

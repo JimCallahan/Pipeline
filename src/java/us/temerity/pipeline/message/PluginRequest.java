@@ -1,4 +1,4 @@
-// $Id: PluginRequest.java,v 1.8 2009/12/12 01:17:27 jim Exp $
+// $Id: PluginRequest.java,v 1.9 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -62,6 +62,11 @@ enum PluginRequest
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Simple test of network connectivity.
+   */ 
+  Ping, 
 
   /**
    * No more requests will be send over this connection.

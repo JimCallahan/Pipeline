@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.29 2009/11/09 01:41:14 jim Exp $
+// $Id: FileRequest.java,v 1.30 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -206,6 +206,11 @@ enum FileRequest
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Simple test of network connectivity.
+   */ 
+  Ping, 
 
   /**
    * No more requests will be send over this connection.

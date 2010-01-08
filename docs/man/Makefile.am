@@ -8,6 +8,7 @@ html_DATA = \
   pljava.html \
   pljobmgr.html \
   plmaster.html \
+  plping.html \
   plplugin.html \
   plpluginmgr.html \
   plpython.html \

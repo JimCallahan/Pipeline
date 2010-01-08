@@ -1984,6 +1984,7 @@ AC_CONFIG_FILES([
   docs/man/pljava.src.html
   docs/man/pljobmgr.src.html
   docs/man/plmaster.src.html
+  docs/man/plping.src.html
   docs/man/plplugin.src.html
   docs/man/plpluginmgr.src.html
   docs/man/plqueuemgr.src.html
@@ -2041,6 +2042,7 @@ AC_CONFIG_FILES([
   src/java/scripts/pljobmgr
   src/java/scripts/plmaster
   src/java/scripts/plmine
+  src/java/scripts/plping
   src/java/scripts/plplugin
   src/java/scripts/plpluginmgr
   src/java/scripts/plqueuemgr

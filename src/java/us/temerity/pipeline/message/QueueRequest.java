@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.35 2010/01/03 06:22:38 jesse Exp $
+// $Id: QueueRequest.java,v 1.36 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -513,6 +513,11 @@ enum QueueRequest
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Simple test of network connectivity.
+   */ 
+  Ping, 
 
   /**
    * No more requests will be send over this connection.

@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.27 2009/12/12 23:12:50 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.28 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -57,7 +57,7 @@ class FileMgrNetClient
   )
   {
     super(PackageInfo.sFileServer, PackageInfo.sFilePort, forceLongTransactions, 
-	  FileRequest.Disconnect, FileRequest.Shutdown, "FileMgrNet");
+	  FileRequest.Ping, FileRequest.Disconnect, FileRequest.Shutdown, "FileMgrNet");
   }
 
 

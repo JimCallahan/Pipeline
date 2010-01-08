@@ -32,6 +32,7 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plbrowse
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plbuilder
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/pljava
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plping
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plplugin
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plremote

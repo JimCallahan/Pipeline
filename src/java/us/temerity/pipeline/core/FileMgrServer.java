@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.53 2009/12/14 21:48:22 jim Exp $
+// $Id: FileMgrServer.java,v 1.54 2010/01/08 09:38:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -507,6 +507,13 @@ class FileMgrServer
                 break;
 
               /*-- NETWORK CONNECTION ------------------------------------------------------*/
+              case Ping:
+                {
+                  objOut.writeObject(new SuccessRsp(new TaskTimer("Ping"))); 
+                  objOut.flush(); 
+                }
+                break;
+
               case Disconnect:
 		disconnect();
                 break;

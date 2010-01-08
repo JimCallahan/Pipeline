@@ -3,7 +3,7 @@
 <HTML>
 <HEAD>
   <META name="generator" content=
-  "HTML Tidy for Linux (vers 7 December 2008), see www.w3.org">
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
   <META content="text/html; charset=us-ascii" http-equiv=
   "content-type">
 
@@ -730,7 +730,7 @@ a.c1 {font-style: italic}
       the database does not need to be locked and no tarball is
       created from the files in the backup directory.<BR>
       <BR>
-      The default is (21600000) msec.&nbsp; Which is (6) hours.<BR>
+      The default is (43200000) msec. Which is (12) hours.<BR>
     </DIV>
   </DIV>
 

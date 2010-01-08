@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.30 2009/12/18 07:20:55 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.31 2010/01/08 09:38:10 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -46,7 +46,7 @@ class BasePluginMgrClient
   )
   {
     super(PackageInfo.sPluginServer, PackageInfo.sPluginPort, forceLongTransactions, 
-          PluginRequest.Disconnect, PluginRequest.Shutdown, clientID);
+          PluginRequest.Ping, PluginRequest.Disconnect, PluginRequest.Shutdown, clientID);
 
     pEditors            = new PluginDataCache(PluginType.Editor);  
     pActions            = new PluginDataCache(PluginType.Action);  

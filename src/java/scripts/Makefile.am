@@ -5,6 +5,7 @@ instbin_SCRIPTS = \
   plbrowse \
   plbuilder \
   pljava \
+  plping \
   plplugin \
   plpython \
   plremote \

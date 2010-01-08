@@ -1,0 +1,351 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+<HEAD>
+  <META name="generator" content=
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
+  <META content="text/html; charset=us-ascii" http-equiv=
+  "content-type">
+
+  <TITLE>plping(1)</TITLE>
+  <STYLE type="text/css">
+div.c7 {margin-left: 40px}
+  div.c6 {margin-left: 80px;}
+  br.c5 {font-weight: bold;}
+  span.c4 {font-style: italic;}
+  div.c3 {margin-left: 40px;}
+  span.c2 {font-weight: bold;}
+  a.c1 {font-weight: bold;}
+  </STYLE>
+  <STYLE type="text/css">
+a.c1 {font-style: italic}
+  </STYLE>
+</HEAD>
+
+<BODY>
+  <H3><A name="Name" id="Name"></A>Name</H3>
+
+  <BLOCKQUOTE>
+    <B>plping</B> - tests Pipeline server connectivity and
+    responsiveness program<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Synopsis" id="Synopsis"></A>Synopsis</H3>
+
+  <BLOCKQUOTE>
+    <B>plping</B> [<A class="c1" href=
+    "#Global_Options">options</A>]<BR>
+    <BR>
+    <B>plping</B> <A class="c1" href="#--help">--help</A><BR>
+    <B>plping</B> <A class="c1" href=
+    "#--html-help">--html-help</A><BR>
+    <B>plping</B> <A class="c1" href=
+    "#--version_">--version</A><BR>
+    <B>plping</B> <A class="c1" href=
+    "#--release-date">--release-date</A><BR>
+    <B>plping</B> <A class="c1" href=
+    "#--copyright">--copyright</A><BR>
+    <B>plping</B> <A class="c1" href="#--license">--license</A><BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Description" id=
+  "Description"></A>Description<BR></H3>
+
+  <BLOCKQUOTE>
+    This program regularly communicates with the core server
+    deamons of Pipeline to insure that they are acknoledging
+    network requests and logs their response times. This can be
+    useful in detecting and diagnosing networking, system load, JVM
+    bugs and other problems related to the underlying
+    infrastructure on which these Pipeline server daemons are
+    executed.<BR>
+  </BLOCKQUOTE>
+
+  <H3><A name="Information_Options" id=
+  "Information_Options"></A>Information Options</H3>
+
+  <BLOCKQUOTE>
+    The following options provide information about
+    <B>plping</B>(1) and then immediately exit:
+  </BLOCKQUOTE>
+
+  <BLOCKQUOTE>
+    <B><A name="--help"></A>--help</B><BR>
+
+    <BLOCKQUOTE>
+      Prints a brief usage message and exits.<BR>
+    </BLOCKQUOTE><B><A name="--html-help"></A>--html-help</B><BR>
+
+    <BLOCKQUOTE>
+      Opens this page using the default web browser.&nbsp;
+    </BLOCKQUOTE><B><A name="--version"></A>--version</B><BR>
+
+    <BLOCKQUOTE>
+      Prints the version number of this software and exits.<BR>
+    </BLOCKQUOTE><B><A name=
+    "--release-date"></A>--release-date</B><BR>
+
+    <BLOCKQUOTE>
+      Prints date that this software was released and exits.<BR>
+    </BLOCKQUOTE><B><A name="--copyright"></A>--copyright</B><BR>
+    <BR>
+
+    <DIV class="c3">
+      Prints the <A href="#Copyright"><SPAN class="c2">copyright
+      notice</SPAN></A> for this software and exits.<BR>
+      <BR>
+    </DIV><SPAN class="c2"><A name="--license"></A>--license<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+      Prints the <A href="#License_Agreement"><SPAN class=
+      "c2">license agreement</SPAN></A> for this software and
+      exits.<BR>
+    </DIV>
+  </BLOCKQUOTE>
+
+  <H3><A name="Global_Options" id="Global_Options"></A>Global
+  Options<BR></H3>
+
+  <DIV class="c3">
+    <SPAN class="c2"><A name=
+    "--interval"></A>--interval</SPAN>=<SPAN class="c4">msec<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+      The amount of time (msec) in milliseconds between network
+      connectivity tests.<BR>
+      <BR>
+      The default is (900000) msec. Which is (15) minutes.
+    </DIV><BR>
+    <BR>
+    <SPAN class="c2"><A name=
+    "--log-file"></A>--log-file</SPAN>=<SPAN class=
+    "c4">filename<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+      Write all output to the given log file (filename) instead of
+      printing to stdout.<BR>
+      <BR>
+    </DIV><SPAN class="c2"><A name=
+    "--default-log-file"></A>--standard-log-file<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+      Write all output to the standard log file for <SPAN class=
+      "c2">plping</SPAN>(1) instead of printing to stdout.<BR>
+      <BR>
+      The standard log file for this site is:<BR>
+
+      <DIV class="c3">
+        <BR>
+        @ROOT_INST_DIR@/logs/plping.log.#
+      </DIV>
+    </DIV><BR>
+    <SPAN class="c2"><A name=
+    "--standard-log-dir"></A>--standard-log-dir</SPAN>=<SPAN class=
+    "c4">dirname</SPAN><BR>
+    <BR>
+
+    <DIV class="c3">
+      Write all output to the standard log file for <SPAN class=
+      "c2">plping</SPAN>(1) written to the given logs directory
+      (<SPAN class="c4">dirname</SPAN>) instead of printing to
+      stdout.
+    </DIV><BR>
+    <SPAN class="c2"><A name=
+    "--log-backups"></A>--log-backups</SPAN>=<SPAN class=
+    "c4">num<BR></SPAN>
+
+    <DIV class="c3">
+      <BR>
+      When logging to a file using <A href=
+      "#--log-file"><SPAN class="c2">--log-file</SPAN></A>, this
+      option sets the number of rotating backups (<SPAN class=
+      "c4">num</SPAN>) to maintain of the logfile.&nbsp;&nbsp; The
+      names of the backup files are the same as the log file with
+      the backup number appended to the end of the
+      name.&nbsp;&nbsp; The logfile will be automatically close the
+      current logfile, rotate the backups and reopen the logfile
+      whenever the log grows to larger than 10MB.<BR>
+      <BR>
+      The default number of backups is (10).
+    </DIV><BR>
+    <SPAN class="c2"><A name="--log"></A>--log</SPAN>=<SPAN class=
+    "c4">logger:level</SPAN>[<SPAN class=
+    "c4">,logger:level</SPAN>[...]]
+  </DIV>
+
+  <DIV class="c3">
+    <BR>
+
+    <DIV class="c3">
+      In addition to the normal output, <B>plping</B>(1) can
+      generate detailed output tracing the various stages of
+      internal execution.&nbsp; The arguments control the several
+      different types of logging information (<SPAN class=
+      "c4">logger</SPAN>) and different amounts of information
+      (<SPAN class="c4">level</SPAN>) of each type to
+      generate.&nbsp; Several loggers can be modified in one
+      option.<BR>
+      <BR>
+      The (<SPAN class="c4">logger</SPAN>) portion of the option's
+      argument can be:<BR>
+      <SPAN class="c2"><BR></SPAN>
+
+      <DIV class="c3">
+        <SPAN class="c2">all</SPAN><BR class="c5">
+      </DIV>
+
+      <DIV class="c6">
+        A shortcut for specifying all loggers at once.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR>
+        <SPAN class="c2">arg</SPAN><BR>
+      </DIV>
+
+      <DIV class="c3 c3">
+        Logs errors related to parsing the command-line options.
+      </DIV>
+
+      <DIV class="c3">
+        <BR>
+        <SPAN class="c2">net</SPAN><BR>
+      </DIV>
+
+      <DIV class="c3">
+        <DIV class="c3">
+          Logs network connections and activity.
+        </DIV><BR>
+        <SPAN class="c2">ops</SPAN>
+      </DIV>
+
+      <DIV class="c6">
+        Logs all core operations performed by the <SPAN class=
+        "c2">plping</SPAN>(1).<BR>
+      </DIV>
+
+      <DIV class="c7">
+        <BR>
+        <BR>
+      </DIV>The (<SPAN class="c4">level</SPAN>) portion of the
+      option's argument can be:<BR>
+      <BR>
+
+      <DIV class="c3">
+        <SPAN class="c2">severe</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        This level is used for error messages and other
+        catastrophic events.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c5">
+        <SPAN class="c2">warning</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        This level is used for non-fatal error messages and
+        advisory information.<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c5">
+        <SPAN class="c2">info</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        This is the default output level for all loggers and is
+        used for normal output from <B>plping</B>(1).<BR>
+      </DIV>
+
+      <DIV class="c3">
+        <BR class="c5">
+        <SPAN class="c2">fine</SPAN><BR>
+        <SPAN class="c2">finer</SPAN><BR>
+        <SPAN class="c2">finest</SPAN><BR>
+      </DIV>
+
+      <DIV class="c6">
+        These three levels are used for increasingly more detailed
+        command tracing messages.<BR>
+      </DIV>
+    </DIV>
+  </DIV>
+
+  <H3><A name="See_Also" id="See_Also"></A>See Also</H3>
+
+  <DIV class="c3">
+    <SPAN class="c2">Documentation</SPAN><BR>
+  </DIV>
+
+  <DIV class="c6">
+    <A href="../javadoc/index.html"><SPAN class="c2">Pipeline Java
+    API</SPAN></A><BR>
+    <BR>
+  </DIV>
+
+  <DIV class="c3">
+    <SPAN class="c2">Pipeline Programs</SPAN><BR>
+
+    <DIV class="c3">
+      <A href="plui.html"><SPAN class="c2">plui</SPAN></A>(1),
+      <A href="plremote.html"><SPAN class=
+      "c2">plremote</SPAN></A>(1),&nbsp;&nbsp;<A href=
+      "plscript.html"><SPAN class="c2">plscript</SPAN></A>(1),
+      <A href="plpython.html"><SPAN class=
+      "c2">plpython</SPAN></A>(1), <A href=
+      "plplugin.html"></A><A href="plplugin.html"><SPAN class=
+      "c2">plplugin</SPAN></A>(1), <A href=
+      "plbuilder.html"><SPAN class="c2">plbuilder</SPAN></A>(1)<BR>
+      <A href="plmaster.html"><SPAN class=
+      "c2">plmaster</SPAN></A>(1), <A href=
+      "pljobmgr.html"></A><A href="plmaster.html"></A> <A href=
+      "plfilemgr.html"></A><A href="plqueuemgr.html"><SPAN class=
+      "c2">plqueuemgr</SPAN></A>(1), <A href=
+      "plpluginmgr.html"><SPAN class=
+      "c2">plpluginmgr</SPAN></A>(1), <A href=
+      "plfilemgr.html"></A><A href="plfilemgr.html"><SPAN class=
+      "c2">plfilemgr</SPAN></A>(1), <A href=
+      "pljobmgr.html"><SPAN class="c2">pljobmgr</SPAN></A>(1)<BR>
+      <A href="pls.html"><SPAN class="c2">pls</SPAN></A>(1),
+      <A href="plbrowse.html"><SPAN class=
+      "c2">plbrowse</SPAN></A>(1), <A href=
+      "realpath.html"><SPAN class="c2">realpath</SPAN></A>(1)<BR>
+      <A href=
+      "file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html">
+      <SPAN class="c2">plconfig</SPAN></A>(1)
+    </DIV>
+  </DIV>
+
+  <DIV class="c7">
+    <BR>
+  </DIV>
+
+  <H3><A name="Author" id="Author"></A>Author</H3>
+
+  <DIV class="c3">
+    Created by <SPAN class="c2">Jim Callahan</SPAN> of <A href=
+    "http://temerity.us/"><SPAN class="c2">Temerity Software,
+    Inc</SPAN></A>.
+  </DIV>
+
+  <H3><A name="Copyright" id="Copyright"></A>Copyright</H3>
+
+  <DIV class="c3">
+    @COPYRIGHT@<BR>
+  </DIV>
+
+  <H3><A name="License_Agreement" id=
+  "License_Agreement"></A>License Agreement</H3>
+
+  <DIV class="c3">
+    @LICENSE@
+  </DIV>
+</BODY>
+</HTML>

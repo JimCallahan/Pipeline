@@ -20,6 +20,7 @@
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plbrowse
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plbuilder
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/pljava
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plping
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plplugin
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plpython
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plremote

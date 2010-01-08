@@ -425,6 +425,7 @@ PLG_BUILD_UTIL_SOURCES = $(shell ls $(srcdir)/build/*.java)
                    JobMgrOptsParser \
                    MasterOptsParser \
                    MineOptsParser \
+                   PingOptsParser \
                    PluginMgrOptsParser \
                    PluginOptsParser \
                    QueueMgrOptsParser \
