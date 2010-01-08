@@ -1,4 +1,4 @@
-// $Id: QueueHostHistogramSpecs.java,v 1.4 2009/09/16 23:35:42 jesse Exp $
+// $Id: QueueHostHistogramSpecs.java,v 1.5 2010/01/08 23:15:38 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -716,7 +716,6 @@ class QueueHostHistogramSpecs
   ) 
     throws GlueException
   {
-    //FIXME glue
     encoder.encode("Status", pStatus);
     encoder.encode("OsType", pOsType);
     encoder.encode("Load", pLoad);
@@ -729,6 +728,9 @@ class QueueHostHistogramSpecs
     encoder.encode("SelectionGroups", pSelectionGroups);
     encoder.encode("SelectionScheds", pSelectionScheds);
     encoder.encode("HardwareGroups",  pHardwareGroups);
+    encoder.encode("DispatchControls", pDispatchControls);
+    encoder.encode("FavorMethods", pFavorMethods);
+    encoder.encode("UserBalanceGroups", pUserBalanceGroups);
   }
 
   public void 
@@ -749,7 +751,10 @@ class QueueHostHistogramSpecs
     pOrder   = (HistogramSpec) decoder.decode("Order");   
     pSelectionGroups = (HistogramSpec) decoder.decode("SelectionGroups");   
     pSelectionScheds = (HistogramSpec) decoder.decode("SelectionScheds");  
-    pHardwareGroups  = (HistogramSpec) decoder.decode("HardwareGroups");   
+    pHardwareGroups  = (HistogramSpec) decoder.decode("HardwareGroups");
+    pDispatchControls = (HistogramSpec) decoder.decode("DispatchControls");
+    pFavorMethods     = (HistogramSpec) decoder.decode("FavorMethods");
+    pUserBalanceGroups = (HistogramSpec) decoder.decode("UserBalanceGroups");
   }
 
 
