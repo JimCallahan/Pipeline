@@ -775,7 +775,7 @@ TOKEN :
 TOKEN :
 {
   <USER_NAME:           (["a"-"z","A"-"Z"]) 
-	   	          (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+                        (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
 | <AE5:                 ["\0"]>                                   : OPTIONS
 | <ILLEGAL_USER_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
@@ -793,7 +793,7 @@ TOKEN :
 TOKEN :
 {
   <WORK_GROUP_NAME:           (["a"-"z","A"-"Z"]) 
-	   	                (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+                              (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
 | <AE54:                      ["\0"]>                                   : OPTIONS
 | <ILLEGAL_WORK_GROUP_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
