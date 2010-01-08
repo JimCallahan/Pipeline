@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.112 2010/01/07 21:54:05 jesse Exp $
+// $Id: ScriptApp.java,v 1.113 2010/01/08 23:12:09 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1917,7 +1917,6 @@ class ScriptApp
         dispatchModified = true;
       
 
-      //FIXME fix this so that you can set hardware keys from plscript.
       QueueHostMod change = 
 	new QueueHostMod(status, reserve, setReserve,  order, slots, 
 			 group, groupModified, schedule, scheduleModified, 
