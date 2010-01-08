@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.10 2009/12/09 14:28:04 jim Exp $
+// $Id: MasterControls.java,v 1.11 2010/01/08 09:37:57 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -513,14 +513,14 @@ class MasterControls
   ) 
   {
     if(interval != null) {
-//       if(interval < 3600000L)
-//         throw new IllegalArgumentException
-//           ("The backup sync interval (" + interval + " msec) must be at " + 
-//            "least 1 hour!"); 
+      if(interval < 3600000L)
+        throw new IllegalArgumentException
+          ("The backup sync interval (" + interval + " msec) must be at " + 
+           "least 1 hour!"); 
       pBackupSyncInterval = interval; 
     }
     else {
-      pBackupSyncInterval = 21600000L;  /* 6-hours */ 
+      pBackupSyncInterval = 43200000L;  /* 12-hours */ 
     }
   }
 

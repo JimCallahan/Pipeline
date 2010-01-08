@@ -1,4 +1,4 @@
-// $Id: QueueControls.java,v 1.6 2009/12/11 18:57:15 jesse Exp $
+// $Id: QueueControls.java,v 1.7 2010/01/08 09:37:57 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -230,7 +230,7 @@ class QueueControls
       pBackupSyncInterval = interval; 
     }
     else {
-      pBackupSyncInterval = 21600000L;  /* 6-hours */ 
+      pBackupSyncInterval = 43200000L;  /* 12-hours */ 
     }
   }
 
