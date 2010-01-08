@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.6 2010/01/07 19:19:49 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.7 2010/01/08 23:22:41 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -42,6 +42,7 @@ class AdvAssetBuilder
          info);
   }
   
+  @SuppressWarnings("deprecation")
   public
   AdvAssetBuilder
   (
@@ -524,7 +525,7 @@ class AdvAssetBuilder
             "Information pass for the AdvAssetBuilder");
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public void 
     validatePhase()

@@ -32,6 +32,7 @@ class CurveShotBuilder
          info);
   }
   
+  @SuppressWarnings("deprecation")
   public 
   CurveShotBuilder
   (
@@ -319,7 +320,7 @@ class CurveShotBuilder
             "The First Information pass for the CurveShotBuilder");
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public void 
     validatePhase()

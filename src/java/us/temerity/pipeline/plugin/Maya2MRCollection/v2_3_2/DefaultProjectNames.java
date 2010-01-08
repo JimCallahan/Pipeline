@@ -39,7 +39,6 @@ class DefaultProjectNames
   /*----------------------------------------------------------------------------------------*/
   
   
-  @SuppressWarnings("unused")
   @Override
   public void generateNames() 
     throws PipelineException
@@ -71,6 +70,7 @@ class DefaultProjectNames
   }
   
   
+  @Override
   public String
   getDummyFile()
   {
@@ -88,7 +88,6 @@ class DefaultProjectNames
   public String
   getAssetModelTTSetup
   (
-    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
@@ -109,7 +108,6 @@ class DefaultProjectNames
   public String
   getAssetShaderTTSetup
   (
-    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
@@ -136,7 +134,6 @@ class DefaultProjectNames
   public String
   getAssetRigAnimSetup
   (
-    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
@@ -176,7 +173,6 @@ class DefaultProjectNames
   getTaskName
   (
     String assetName,
-    @SuppressWarnings("unused")
     String assetType
   )
   {
@@ -252,7 +248,6 @@ class DefaultProjectNames
   public String 
   getFinalizeScriptName
   (
-    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
@@ -267,7 +262,6 @@ class DefaultProjectNames
   public String 
   getLowRezFinalizeScriptName
   (
-    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
@@ -388,6 +382,7 @@ class DefaultProjectNames
   /**
    * @return the shader copying mel script name
    */
+  @Override
   public String
   getShaderCopyScriptName()
   {
@@ -397,6 +392,7 @@ class DefaultProjectNames
   /**
    * @return the rig copying mel script name
    */
+  @Override
   public String
   getRigCopyScriptName()
   {
@@ -406,6 +402,7 @@ class DefaultProjectNames
   /**
    * @return the rig copying mel script name
    */
+  @Override
   public String
   getRemoveReferenceScriptName()
   {

@@ -1,12 +1,11 @@
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.*;
-import us.temerity.pipeline.stages.EmptyFileStage;
+import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P R O J E C T   B U I L D E R                                                          */
@@ -36,6 +35,7 @@ class ProjectBuilder
          info);
   }
   
+  @SuppressWarnings("deprecation")
   public
   ProjectBuilder
   (

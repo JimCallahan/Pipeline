@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.7 2010/01/07 19:19:49 jesse Exp $
+// $Id: AssetBuilder.java,v 1.8 2010/01/08 23:22:41 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -41,6 +41,7 @@ class AssetBuilder
       info);
   }
   
+  @SuppressWarnings("deprecation")
   public
   AssetBuilder
   (
@@ -463,7 +464,7 @@ class AssetBuilder
             "Information pass for the AssetBuilder");
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public void 
     validatePhase()

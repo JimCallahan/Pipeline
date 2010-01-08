@@ -37,6 +37,7 @@ class ShotBuilder
          info);
   }
   
+  @SuppressWarnings("deprecation")
   public 
   ShotBuilder
   (
@@ -345,7 +346,6 @@ class ShotBuilder
             "The First Information pass for the ShotBuilder");
     }
     
-    @SuppressWarnings("unchecked")
     @Override
     public void 
     validatePhase()

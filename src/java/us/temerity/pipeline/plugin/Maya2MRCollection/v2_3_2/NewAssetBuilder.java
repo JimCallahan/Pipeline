@@ -38,6 +38,7 @@ class NewAssetBuilder
          info);
   }
   
+  @SuppressWarnings("deprecation")
   public 
   NewAssetBuilder
   (
@@ -342,7 +343,7 @@ class NewAssetBuilder
 	    "Information pass for the NewAssetBuilder");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public void 
     validatePhase()

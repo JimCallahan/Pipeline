@@ -37,6 +37,7 @@ class ProjectTurntableBuilder
       info);
   }
   
+  @SuppressWarnings("deprecation")
   public
   ProjectTurntableBuilder
   (
@@ -259,7 +260,7 @@ class ProjectTurntableBuilder
             "Information pass for the ProjectTurntableBuilder");
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public void 
     validatePhase()

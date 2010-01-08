@@ -39,6 +39,7 @@ class SimpleAssetBuilder
          info);
   }
   
+  @SuppressWarnings("deprecation")
   public
   SimpleAssetBuilder
   (
@@ -363,7 +364,7 @@ class SimpleAssetBuilder
             "Information pass for the SimpleAssetBuilder");
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public void 
     validatePhase()

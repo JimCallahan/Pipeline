@@ -1,7 +1,5 @@
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
-import java.util.LinkedList;
-
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 

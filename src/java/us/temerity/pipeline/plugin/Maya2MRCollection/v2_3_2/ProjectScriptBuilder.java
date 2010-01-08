@@ -37,6 +37,7 @@ class ProjectScriptBuilder
       info);
   }
   
+  @SuppressWarnings("deprecation")
   public
   ProjectScriptBuilder
   (
@@ -351,7 +352,7 @@ class ProjectScriptBuilder
             "Information pass for the ProjectMELBuilder");
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public void 
     validatePhase()

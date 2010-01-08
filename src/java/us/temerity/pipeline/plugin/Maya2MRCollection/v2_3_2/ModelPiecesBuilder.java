@@ -174,7 +174,6 @@ class ModelPiecesBuilder
             "Information pass for the ModelPiecesBuilder");
     }
     
-    @SuppressWarnings("unchecked")
     @Override
     public void 
     validatePhase()
