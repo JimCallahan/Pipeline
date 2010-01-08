@@ -1,4 +1,4 @@
-// $Id: JTopLevelDialog.java,v 1.7 2010/01/07 22:14:34 jesse Exp $
+// $Id: JTopLevelDialog.java,v 1.8 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -66,19 +66,21 @@ class JTopLevelDialog
    * 
    * @param header
    *   The text displayed in the dialog header. 
+   * 
    * @param body
    *   The component containing the body of the dialog.
+   * 
    * @param confirm
    *   The title of the confirm button.
+   * 
    * @param apply
    *   The title of the apply button.
+   * 
    * @param extra
    *   An array of title/action-command strings pairs used to create extra buttons.
+   * 
    * @param cancel
    *   The title of the cancel button.
-   * @param extraHeader
-   *   Optional text which will be displayed right justified in the dialog header.  Can only be
-   *   used if the header is not set to null.
    * 
    * @return 
    *   The array of created extra buttons or <CODE>null</CODE> if extra was <CODE>null</CODE>.
@@ -86,13 +88,12 @@ class JTopLevelDialog
   protected JButton[]
   initUI
   (
-    String header, 
-    JComponent body, 
-    String confirm, 
-    String apply, 
-    String[][] extra,
-    String cancel, 
-    String extraHeader
+   String header, 
+   JComponent body, 
+   String confirm, 
+   String apply, 
+   String[][] extra,
+   String cancel
   ) 
   {
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -116,15 +117,6 @@ class JTopLevelDialog
       }
       
       panel.add(Box.createHorizontalGlue());
-      
-     {
-        JLabel label = new JLabel(extraHeader);
-        pHeaderLabelExtra = label;
-
-        label.setName("DialogHeaderLabel");     
-
-        panel.add(label);         
-      }
       
       root.add(panel);
     }	  
@@ -267,74 +259,6 @@ class JTopLevelDialog
   wasConfirmed()
   {
     return pConfirmed;
-  }
-  
-  /**
-   * Set the header of the dialog.
-   * 
-   * @param header
-   *   The header.
-   * 
-   * @throws IllegalStateException
-   *   If this method is called on a dialog that did not initialize the header when calling
-   *   initUI.
-   */
-  public void
-  setHeader
-  (
-    String header  
-  )
-  {
-    if (pHeaderLabel == null)
-      throw new IllegalStateException
-        ("Cannot call setHeader() in the top level dialog titled (" + getTitle() + ") " +
-         "because the dialog did not have a header when it was initialized.");
-    pHeaderLabel.setText(header);
-  }
-  
-  /**
-   * Get the text value of the header.
-   */
-  public String
-  getHeader()
-  {
-    if (pHeaderLabel == null)
-      return null;
-    else return pHeaderLabel.getText();
-  }
-
-  /**
-   * Set the right-justified extra header of the dialog.
-   * 
-   * @param header
-   *   The header.
-   * 
-   * @throws IllegalStateException
-   *   If this method is called on a dialog that did not initialize the header when calling
-   *   initUI.
-   */
-  public void
-  setExtraHeader
-  (
-    String header  
-  )
-  {
-    if (pHeaderLabelExtra == null)
-      throw new IllegalStateException
-        ("Cannot call setExtraHeader() in the top level dialog titled (" + getTitle() + ") " +
-         "because the dialog did not have a header when it was initialized.");
-    pHeaderLabelExtra.setText(header);
-  }
-  
-  /**
-   * Get the text value of the right-justified extra header.
-   */
-  public String
-  getExtraHeader()
-  {
-    if (pHeaderLabelExtra == null)
-      return null;
-    else return pHeaderLabelExtra.getText();
   }
 
 
@@ -558,12 +482,7 @@ class JTopLevelDialog
   /**
    * The dialog header label.
    */ 
-  private JLabel  pHeaderLabel;
-  
-  /**
-   * The right-justified dialog header label.
-   */
-  private JLabel  pHeaderLabelExtra;
+  protected JLabel  pHeaderLabel;
 
 
   /**

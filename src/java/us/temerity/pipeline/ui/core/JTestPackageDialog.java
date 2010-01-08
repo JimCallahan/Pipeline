@@ -1,9 +1,17 @@
-// $Id: JTestPackageDialog.java,v 1.3 2010/01/07 22:14:34 jesse Exp $
+// $Id: JTestPackageDialog.java,v 1.4 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.toolset.*;
+import us.temerity.pipeline.*; 
+import us.temerity.pipeline.toolset.*; 
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   P A C K A G E   D I A L O G                                                  */
@@ -43,7 +51,7 @@ class JTestPackageDialog
   public void 
   updatePackage
   (
-    PackageCommon com
+   PackageCommon com
   )
   { 
     if(com != null) {
@@ -58,34 +66,7 @@ class JTestPackageDialog
     }
   }
 
-  /**
-   * Update the underlying package and UI components.
-   * 
-   * @param com
-   *   The package.
-   */ 
-  public void 
-  updatePackage2
-  (
-    us.temerity.pipeline.toolset2.PackageCommon com
-  )
-  { 
-    if(com != null) {
-      String header = null;
-      if(com instanceof us.temerity.pipeline.toolset2.PackageMod) 
-        header = ("Test " + PackageInfo.sMachineType + " Package:  " + com.getName() + 
-                  " (w" + com.getVersion() + ")");
-      else if(com instanceof us.temerity.pipeline.toolset2.PackageVersion) 
-        header = ("Test " + PackageInfo.sMachineType + " Package:  " + com.getName() + 
-                  " (v" + com.getVersion() + ")");
 
-      updateEnvironment(header, com.getEnvironment(PackageInfo.sUser, "default", 
-                                                   PackageInfo.sMachineType));
-    }
-  }
-  
-
-  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/

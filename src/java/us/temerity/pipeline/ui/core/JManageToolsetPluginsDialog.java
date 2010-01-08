@@ -1,4 +1,4 @@
-// $Id: JManageToolsetPluginsDialog.java,v 1.11 2010/01/07 22:14:34 jesse Exp $
+// $Id: JManageToolsetPluginsDialog.java,v 1.12 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -70,7 +70,7 @@ class JManageToolsetPluginsDialog
 	{ "Save Default", "save-default" }
       };
 
-      JButton btns[] = super.initUI("", pTab, "Confirm", "Apply", extra, "Close", null);
+      JButton btns[] = super.initUI("", pTab, "Confirm", "Apply", extra, "Close");
 
       pDefaultButton     = btns[1];
       pSaveDefaultButton = btns[2];
@@ -134,8 +134,8 @@ class JManageToolsetPluginsDialog
 	throw new PipelineException
 	  ("No toolset named (" + tname + ") exists!");
       
-      setHeader("Toolset Plugin Menus:  " + tname + 
-	       (toolset.isFrozen() ? "" : " (working)"));
+      pHeaderLabel.setText("Toolset Plugin Menus:  " + tname + 
+			   (toolset.isFrozen() ? "" : " (working)"));
       
       pToolsetName = toolset.getName();
       

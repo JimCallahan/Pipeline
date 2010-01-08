@@ -1,4 +1,4 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.12 2010/01/07 22:14:34 jesse Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.13 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,7 +63,7 @@ class JManageLicenseKeysDialog
       };
 
       JButton btns[] = 
-	super.initUI("Manage License Keys:", body, "Confirm", "Apply", extra, "Close", null);
+	super.initUI("Manage License Keys:", body, "Confirm", "Apply", extra, "Close");
 
       pAddButton    = btns[1];
       pRemoveButton = btns[2];

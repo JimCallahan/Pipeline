@@ -1,4 +1,4 @@
-// $Id: JAboutDialog.java,v 1.5 2010/01/07 22:14:34 jesse Exp $
+// $Id: JAboutDialog.java,v 1.6 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -58,7 +58,7 @@ class JAboutDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("About Pipeline:", body, null, null, null, "Close", null);
+      super.initUI("About Pipeline:", body, null, null, null, "Close");
     }  
   }
 

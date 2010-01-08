@@ -1,4 +1,4 @@
-// $Id: JOutputDialog.java,v 1.4 2010/01/07 22:14:34 jesse Exp $
+// $Id: JOutputDialog.java,v 1.5 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -84,7 +84,7 @@ class JOutputDialog
       }
     }
       
-    super.initUI(":", body, null, null, null, "Close", null);
+    super.initUI(":", body, null, null, null, "Close");
     pack();
   }
 
@@ -105,7 +105,7 @@ class JOutputDialog
    String msg
   ) 
   {
-    setHeader(header);
+    pHeaderLabel.setText(header);
     pTitleLabel.setText(title);
     pMessageArea.setText(msg);
   }

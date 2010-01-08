@@ -1,4 +1,4 @@
-// $Id: JToolsetDetailsDialog.java,v 1.7 2010/01/07 22:14:34 jesse Exp $
+// $Id: JToolsetDetailsDialog.java,v 1.8 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -156,7 +156,7 @@ class JToolsetDetailsDialog
 	}
       }
 
-      super.initUI("", body, null, "Test", null, "Close", null);
+      super.initUI("", body, null, "Test", null, "Close");
 
       updateToolset(null, null);
       pack();
@@ -212,7 +212,7 @@ class JToolsetDetailsDialog
       boolean isFrozen = toolset.isFrozen();
 
       if(isFrozen) {
-	setHeader(os + " Toolset:  " + pToolset.getName());
+	pHeaderLabel.setText(os + " Toolset:  " + pToolset.getName());
 
 	pAuthorField.setText(toolset.getAuthor());
 	pTimeStampField.setText(TimeStamps.format(toolset.getTimeStamp()));
@@ -221,7 +221,7 @@ class JToolsetDetailsDialog
 	pHistoryPanel.setVisible(true);
       }
       else {
-	setHeader(os + " Toolset:  " + pToolset.getName() + " (working)");
+	pHeaderLabel.setText(os + " Toolset:  " + pToolset.getName() + " (working)");
 	pHistoryPanel.setVisible(false);
       }
 

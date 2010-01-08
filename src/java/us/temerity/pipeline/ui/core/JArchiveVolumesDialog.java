@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.12 2010/01/07 22:14:34 jesse Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.13 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -258,7 +258,7 @@ class JArchiveVolumesDialog
       };
 
       JButton btns[] = 
-	super.initUI("Archive Volume Browser:", body, null, null, extra, "Close", null);
+	super.initUI("Archive Volume Browser:", body, null, null, extra, "Close");
 
       btns[0].setToolTipText(UIFactory.formatToolTip
         ("Submit a request to restore the selected checked-in versions."));

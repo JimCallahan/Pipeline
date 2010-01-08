@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.16 2010/01/07 22:28:57 jesse Exp $
+// $Id: GUIExecution.java,v 1.17 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -203,7 +203,7 @@ class GUIExecution
 
 
       pTopPanel = new JBuilderTopPanel(getBuilder(), this);
-      JButton buttons[] = super.initUI(header, pTopPanel, null, null, extras, cancel, null);
+      JButton buttons[] = super.initUI(header, pTopPanel, null, null, extras, cancel);
       pNextButton = buttons[0];
       pNextActionButton = buttons[1];
       pRunAllButton = buttons[2];

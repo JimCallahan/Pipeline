@@ -1,4 +1,4 @@
-// $Id: JLogsDialog.java,v 1.5 2010/01/07 22:14:34 jesse Exp $
+// $Id: JLogsDialog.java,v 1.6 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -133,7 +133,7 @@ class JLogsDialog
 	{ "Clear",  "clear" }
       };
 
-      JButton btns[] = super.initUI("Log History:", body, null, null, extra, "Close", null);
+      JButton btns[] = super.initUI("Log History:", body, null, null, extra, "Close");
 
       pEnableButton = btns[0];
       pSaveAsButton = btns[2];

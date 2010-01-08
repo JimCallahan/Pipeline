@@ -1,8 +1,9 @@
-// $Id: JTopLevelCacheDialog.java,v 1.3 2010/01/07 22:14:34 jesse Exp $
+// $Id: JTopLevelCacheDialog.java,v 1.4 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.ui.*;
 
 /**
@@ -44,17 +45,9 @@ class JTopLevelCacheDialog
   protected void
   invalidateCaches()
   {
+//    LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+//      "Invalidating UI Cache with ID (" + pChannel + ")");
     UIMaster.getInstance().getUICache(pChannel).invalidateCaches();
-  }
-  
-  /**
-   * Shortcut method for updating the toolset part of the UI Cache for this dialog.
-   */
-  protected void
-  updateToolsetInfo()
-    throws PipelineException
-  {
-    UIMaster.getInstance().getUICache(pChannel).updateToolsetInformation();
   }
   
   /**

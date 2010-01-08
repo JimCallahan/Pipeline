@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.16 2010/01/07 22:14:34 jesse Exp $
+// $Id: JArchiveDialog.java,v 1.17 2010/01/08 06:38:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -212,7 +212,7 @@ class JArchiveDialog
 	{ "Archive...", "archive" }
       };
 
-      JButton btns[] = super.initUI("Archive Tool:", body, null, null, extra, "Close", null);
+      JButton btns[] = super.initUI("Archive Tool:", body, null, null, extra, "Close");
 
       pArchiveButton = btns[0];
       pArchiveButton.setEnabled(false);
