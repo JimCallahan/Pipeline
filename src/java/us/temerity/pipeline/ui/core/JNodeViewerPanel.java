@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.158 2010/01/07 11:27:36 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.159 2010/01/12 07:11:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -932,7 +932,7 @@ class JNodeViewerPanel
   /**
    * Remove the given node names from the root nodes displayed by the viewer. <P> 
    * 
-   * A full update is performed.
+   * No update is performed.
    * 
    * @param names
    *   The fully resolved node names.
@@ -948,11 +948,8 @@ class JNodeViewerPanel
 
     for(String name : names) 
       pRoots.remove(name);
-    
-    if (pGroupID != 0) {
-      PanelUpdater pu = new PanelUpdater(this);
-      pu.execute();
-    }
+
+    updateUniverse();
   }
 
   /**
@@ -976,31 +973,11 @@ class JNodeViewerPanel
       roots.remove(oldName);
       roots.add(newName);
     }
+
     setRoots(roots);
   }
 
-  /**
-   * Invalidate the state of all current root nodes which have the given node as an 
-   * upstream dependency.  These roots will be updated at the next status update.
-   */ 
-  private synchronized void
-  invalidateRootsContaining
-  (
-   String name
-  ) 
-  {
-    TreeSet<String> dead = new TreeSet<String>();
-    for(String root : pRoots.keySet()) {
-      NodeStatus status = pRoots.get(root);
-      if(root.equals(name) || status.hasUpstreamNamed(name)) 
-	dead.add(root);
-    }
 
-    for(String root : dead)
-      pRoots.put(root, null);
-  }
-
-  
   /*----------------------------------------------------------------------------------------*/
    
   /**
@@ -6064,13 +6041,13 @@ class JNodeViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Linking Nodes...")) {
-	TreeSet<String> linked = new TreeSet<String>();
+	TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
 	MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  for(String source : pSources) {
 	    client.link(pAuthor, pView, pTarget, source, 
 			pPolicy, pRelationship, pFrameOffset);
-	    linked.add(source);
+	    roots.remove(source);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -6082,8 +6059,7 @@ class JNodeViewerPanel
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	invalidateRootsContaining(pTarget);
-	removeRoots(linked);
+	setRoots(roots);
       }
     }
     

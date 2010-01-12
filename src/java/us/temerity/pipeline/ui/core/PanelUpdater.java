@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.45 2009/12/19 21:14:28 jesse Exp $
+// $Id: PanelUpdater.java,v 1.46 2010/01/12 07:11:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -516,25 +516,27 @@ class PanelUpdater
                     rootNames.add(name); 
                 }
                 
-                TreeSet<String> heavyNames = new TreeSet<String>(); 
-                if(pLightweightNodeStatus) 
-                  heavyNames.addAll(pNodeViewerHeavyRootNames); 
-                else 
-                  heavyNames.addAll(rootNames);
-                
-                master.updatePanelOp(pGroupID, "Updating Node Status...");
-                TreeMap<String,NodeStatus> results = 
-                  mclient.status(pAuthor, pView, rootNames, heavyNames, pDownstreamMode); 
-                
-                pNodeStatusModified = true;
-                
-                for(String name : results.keySet()) {
-                  if(rootNames.contains(name)) {
-                    NodeStatus status = results.get(name);
-                    if(status != null) 
-                      pNodeViewerRoots.put(name, status);
-                    else 
-                      pNodeViewerRoots.remove(name);
+                if(!rootNames.isEmpty()) {
+                  TreeSet<String> heavyNames = new TreeSet<String>(); 
+                  if(pLightweightNodeStatus) 
+                    heavyNames.addAll(pNodeViewerHeavyRootNames); 
+                  else 
+                    heavyNames.addAll(rootNames);
+                  
+                  master.updatePanelOp(pGroupID, "Updating Node Status...");
+                  TreeMap<String,NodeStatus> results = 
+                    mclient.status(pAuthor, pView, rootNames, heavyNames, pDownstreamMode); 
+                  
+                  pNodeStatusModified = true;
+                  
+                  for(String name : results.keySet()) {
+                    if(rootNames.contains(name)) {
+                      NodeStatus status = results.get(name);
+                      if(status != null) 
+                        pNodeViewerRoots.put(name, status);
+                      else 
+                        pNodeViewerRoots.remove(name);
+                    }
                   }
                 }
               }
