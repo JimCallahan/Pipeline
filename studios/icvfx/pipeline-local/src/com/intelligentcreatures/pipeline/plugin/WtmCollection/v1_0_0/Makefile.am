@@ -17,7 +17,6 @@ java_DATA = \
   BaseShotBuilder.java \
   BaseTaskBuilder.java \
   BlotBuilder.java \
-  BrokenBuilder.java \
   CineonDeliverBuilder.java \
   DeliverNamer.java \
   DpxDeliverBuilder.java \
