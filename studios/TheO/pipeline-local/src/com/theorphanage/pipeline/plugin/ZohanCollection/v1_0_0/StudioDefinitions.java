@@ -148,7 +148,7 @@ class StudioDefinitions
   }
   
 
-  public static final Path aProjectStartPath = new Path("/Projects");
+  public static final Path aProjectStartPath = new Path("/projects");
   public static final String aSequenceStart  = "VFX";
   public static final String aStandardsStart  = "Standards";
   

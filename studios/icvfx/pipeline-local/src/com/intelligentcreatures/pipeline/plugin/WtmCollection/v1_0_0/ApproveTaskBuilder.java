@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.6 2008/03/23 05:09:58 jim Exp $
+// $Id: ApproveTaskBuilder.java,v 1.7 2010/01/12 01:31:44 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -114,9 +114,6 @@ class ApproveTaskBuilder
     
     /* setup builder parameters */ 
     {
-      /* not really applicable to this builder, so hide it from the users */ 
-      disableParam(new ParamMapping(aActionOnExistence));
-      
       {
 	UtilityParam param = 
 	  new StringUtilityParam
@@ -192,6 +189,9 @@ class ApproveTaskBuilder
       PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
       setLayout(finalLayout);
     }
+
+    /* not really applicable to this builder, so hide it from the users */ 
+    disableParam(new ParamMapping(aActionOnExistence));
   }
   
 

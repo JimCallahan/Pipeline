@@ -1,4 +1,4 @@
-// $Id: QtDeliverBuilder.java,v 1.8 2008/06/15 17:31:10 jim Exp $
+// $Id: QtDeliverBuilder.java,v 1.9 2010/01/12 01:31:44 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -144,10 +144,6 @@ class QtDeliverBuilder
 
 	disableParam(new ParamMapping(aReleaseOnError));
 	setParamValue(new ParamMapping(aReleaseOnError), true);
-
-	disableParam(new ParamMapping(aActionOnExistence));
-	setParamValue(new ParamMapping(aActionOnExistence), 
-		      ActionOnExistence.Conform.toString()); 
       }
 
       /* the source images being delivered */ 
@@ -323,6 +319,10 @@ class QtDeliverBuilder
 
       setLayout(layout);
     }
+
+    disableParam(new ParamMapping(aActionOnExistence));
+    setParamValue(new ParamMapping(aActionOnExistence), 
+                  ActionOnExistence.Conform.toString()); 
   }
   
 
