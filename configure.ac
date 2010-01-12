@@ -1447,7 +1447,7 @@ AC_MSG_RESULT([$PLFILEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([plpluginmgr])
 AC_SUBST(PLPLUGINMGR_GC_OPTS)
-PLPLUGINMGR_GC_OPTS="${server_gc_opts}/plpluginmgr.gc-log -Xms64M -Xmx512M"
+PLPLUGINMGR_GC_OPTS="${server_gc_opts}/plpluginmgr.gc-log ${cms_gc_opts} -Xms128M -Xmx512M"
 AC_MSG_RESULT([$PLPLUGINMGR_GC_OPTS])
 
 AC_MSG_CHECKING([plqueuemgr])
