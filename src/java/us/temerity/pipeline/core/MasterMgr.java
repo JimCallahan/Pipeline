@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.329 2010/01/05 23:13:32 jim Exp $
+// $Id: MasterMgr.java,v 1.330 2010/01/12 00:30:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1499,6 +1499,9 @@ class MasterMgr
           if(entry.getValue().getVersion().isIntermediate()) 
             offline.remove(entry.getKey());
         }
+      }
+      catch(PipelineException ex) {
+        // ignore if no checked-in versions exist... 
       }
       finally {
         lock.readLock().unlock();
