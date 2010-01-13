@@ -745,6 +745,14 @@ AC_MSG_RESULT([$PRODDIR])
 
 
 
+AC_MSG_CHECKING([Short Symlinks])
+
+AC_SUBST(SHORT_SYMLINKS)
+SHORT_SYMLINKS=`crypto_lookup ShortSymlinks`
+
+AC_MSG_RESULT([$SHORT_SYMLINKS])
+
+
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline Queue Server Hostname])

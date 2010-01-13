@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.57 2009/12/12 01:17:26 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.58 2010/01/13 02:07:15 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -969,6 +969,13 @@ class PackageInfo
    * profile entry.
    */
   public static final Path sTargetPath;
+
+
+  /** 
+   * Whether symbolic link values are limited to 255 characters. 
+   */
+  public static final boolean sShortSymlinks = @SHORT_SYMLINKS@;
+
 
 
   /*----------------------------------------------------------------------------------------*/
