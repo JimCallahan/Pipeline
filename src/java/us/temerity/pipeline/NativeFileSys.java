@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.21 2009/08/25 01:49:14 jim Exp $
+// $Id: NativeFileSys.java,v 1.22 2010/01/13 07:08:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -181,6 +181,36 @@ class NativeFileSys
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Is the given path a symbolic link? <P> 
+   * 
+   * @param path 
+   *   The file system path to test.
+   * 
+   * @throws IOException 
+   *   If the given path is illegal, does not exist or some other I/O problem was encountered.
+   */
+  public static boolean 
+  isSymlink
+  (
+   File path
+  ) 
+    throws IOException
+  {
+    switch(PackageInfo.sOsType) {
+    case Unix: 
+    case MacOS:
+      loadLibrary();
+      return isSymlinkNative(path.getPath()); 
+
+    case Windows:
+      throw new IOException
+	("Not supported on Windows systems!");
+    }
+    
+    return false;
+  }
+
+  /** 
    * Create a symbolic link which points to the given file. <P> 
    * 
    * This method is not supported by the Windows operating system.
@@ -219,36 +249,35 @@ class NativeFileSys
   }
  
   /** 
-   * Is the given path a symbolic link? <P> 
+   * Get the value (target) of the given symbolic link. <P> 
    * 
-   * @param path 
-   *   The file system path to test.
+   * This method is not supported by the Windows operating system.
+   * 
+   * @param link
+   *   The file system path to the symlink to read. 
    * 
    * @throws IOException 
-   *   If the given path is illegal, does not exist or some other I/O problem was encountered.
+   *   If unable to read the symlink or is run under the Windows operating system.
    */
-  public static boolean 
-  isSymlink
+  public static File
+  readlink
   (
-   File path
+   File link
   ) 
     throws IOException
   {
     switch(PackageInfo.sOsType) {
-    case Unix: 
-    case MacOS:
-      loadLibrary();
-      return isSymlinkNative(path.getPath()); 
-
     case Windows:
       throw new IOException
 	("Not supported on Windows systems!");
+
+    default:
+      loadLibrary();
+      return new File(readlinkNative(link.getPath()));
     }
-    
-    return false;
   }
 
-
+ 
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -561,6 +590,19 @@ class NativeFileSys
   );
 
   /** 
+   * Is the given path a symbolic link? <P> 
+   * 
+   * @param path 
+   *   The file system path to test.
+   */
+  private static native boolean
+  isSymlinkNative
+  (
+   String path
+  ) 
+    throws IOException;
+
+  /** 
    * Create a symbolic link which points to the given file. <P> 
    * 
    * @param file 
@@ -578,15 +620,15 @@ class NativeFileSys
     throws IOException;
 
   /** 
-   * Is the given path a symbolic link? <P> 
+   * Get the value (target) of the given symbolic link. <P> 
    * 
-   * @param path 
-   *   The file system path to test.
+   * @param link
+   *   The file system path to the symlink to read. 
    */
-  private static native boolean
-  isSymlinkNative
+  private static native String
+  readlinkNative
   (
-   String path
+   String link 
   ) 
     throws IOException;
 

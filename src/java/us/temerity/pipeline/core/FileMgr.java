@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.103 2009/12/15 12:40:50 jim Exp $
+// $Id: FileMgr.java,v 1.104 2010/01/13 07:08:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -999,22 +999,15 @@ class FileMgr
                     throw new IllegalStateException(); 
                   File latest = new File(ldir, file.getPath());
                   try {
-                    // WE CAN DO THIS WITHOUT REALPATH!
-                    //
-                    // Check if "latest" is a file or a link.  If a file, its the target
-                    // of the symlink.  If its a link, then use whatever it points at as the
-                    // target of the new symlink we are going to create.  No file system 
-                    // walking or problems with symlink in the production directory path.
-                    //
-                    String source = NativeFileSys.realpath(latest).getPath();
-                    if(!source.startsWith(rbase))
-                      throw new IllegalStateException(); 
-                    filesToLink.add(new File(".." + source.substring(rbase.length())));
+                    if(NativeFileSys.isSymlink(latest)) 
+                      filesToLink.add(NativeFileSys.readlink(latest));
+                    else 
+                      filesToLink.add(new File("../" + lvid + "/" + file.getPath()));
                   }
                   catch(IOException ex) {
                     throw new PipelineException
-                      ("Unable to resolve the real path to the repository " + 
-                       "file (" + latest + ")!");
+                      ("Unable to determine target of the new repository symlink " + 
+                       "(" + latest + "):\n  " + ex.getMessage());
                   }
                 }
 

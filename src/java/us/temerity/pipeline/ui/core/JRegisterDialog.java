@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.26 2009/09/14 03:48:43 jlee Exp $
+// $Id: JRegisterDialog.java,v 1.27 2010/01/13 07:08:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -840,8 +840,14 @@ class JRegisterDialog
 	  editor = PluginMgrClient.getInstance().newEditor(ename, evid, evendor);
       }
 
-      pNodeMod = new NodeMod(name, primary, new TreeSet<FileSeq>(), isIntermediate, 
-                             toolset, editor);
+      try {
+        pNodeMod = new NodeMod(name, primary, new TreeSet<FileSeq>(), isIntermediate, 
+                               toolset, editor);
+      }
+      catch(IllegalArgumentException ex) {
+        throw new PipelineException
+          ("Unable to register node:\n\n" + name + "\n\n" + ex.getMessage());
+      }
     }
     catch(Exception ex) {
       showErrorDialog(ex);

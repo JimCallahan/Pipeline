@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.13 2009/10/09 08:38:35 jim Exp $
+// $Id: NativeFileSys.cc,v 1.14 2010/01/13 07:08:59 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -125,6 +125,49 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_umaskNative
   umask(mask);
 }
  
+/* Is the given path a symbolic link? */ 
+extern "C" 
+JNIEXPORT jboolean 
+JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jstring jfile  /* IN: the file system path to test */ 
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeFileSys.isSymlinkNative(), unable to lookup \"java/lang/IOException\"");
+    return JNI_FALSE;
+  }
+
+  /* repackage the arguments */ 
+  const char* file = env->GetStringUTFChars(jfile, 0);
+  if((file == NULL) || (strlen(file) == 0)) {
+    env->ThrowNew(IOException,"empty file argument");
+    return JNI_FALSE;
+  }
+  
+  /* get the file status */ 
+  struct stat sb;
+  if(lstat(file, &sb) == -1) {
+    sprintf(msg, "unable to determine if the file system path (%s) is a symlink: %s\n", 
+	    file, strerror(errno));
+    env->ReleaseStringUTFChars(jfile, file); 
+    env->ThrowNew(IOException, msg);  
+    return JNI_FALSE;
+  }
+  
+  env->ReleaseStringUTFChars(jfile, file); 
+  if((sb.st_mode & S_IFMT) == S_IFLNK)
+    return JNI_TRUE;
+  else 
+    return JNI_FALSE;
+}
+
 /* Create a symbolic link which points to the given file. */
 extern "C" 
 JNIEXPORT void 
@@ -173,14 +216,14 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
   env->ReleaseStringUTFChars(jlink, link); 
 }
 
-/* Is the given path a symbolic link? */ 
+/* Get the value (target) of the given symbolic link. */  
 extern "C" 
-JNIEXPORT jboolean 
-JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
+JNIEXPORT jstring
+JNICALL Java_us_temerity_pipeline_NativeFileSys_readlinkNative
 (
  JNIEnv *env, 
  jclass cls, 
- jstring jfile  /* IN: the file system path to test */ 
+ jstring jpath  /* IN: The file system path to the symlink to read */ 
 )
 {
   /* exception initialization */ 
@@ -188,32 +231,30 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeFileSys.isSymlinkNative(), unable to lookup \"java/lang/IOException\"");
-    return JNI_FALSE;
+    perror("NativeFileSys.readlinkNative(), unable to lookup \"java/lang/IOException\"");
+    return NULL;
   }
 
   /* repackage the arguments */ 
-  const char* file = env->GetStringUTFChars(jfile, 0);
-  if((file == NULL) || (strlen(file) == 0)) {
-    env->ThrowNew(IOException,"empty file argument");
-    return JNI_FALSE;
+  const char* path = env->GetStringUTFChars(jpath, 0);
+  if((path == NULL) || (strlen(path) == 0)) {
+    env->ThrowNew(IOException,"empty path argument");
+    return NULL;
   }
-  
-  /* get the file status */ 
-  struct stat sb;
-  if(lstat(file, &sb) == -1) {
-    sprintf(msg, "unable to determine if the file system path (%s) is a symlink: %s\n", 
-	    file, strerror(errno));
-    env->ReleaseStringUTFChars(jfile, file); 
+
+  /* read the link */ 
+  char target[MAXPATHLEN];
+  int size = readlink(path, target, MAXPATHLEN-1); 
+  if(size == -1) {
+    sprintf(msg, "cannot read link (%s): %s\n", path, strerror(errno));
+    env->ReleaseStringUTFChars(jpath, path); 
     env->ThrowNew(IOException, msg);  
-    return JNI_FALSE;
+    return NULL; 
   }
-  
-  env->ReleaseStringUTFChars(jfile, file); 
-  if((sb.st_mode & S_IFMT) == S_IFLNK)
-    return JNI_TRUE;
-  else 
-    return JNI_FALSE;
+  target[size] = '\0';
+
+  env->ReleaseStringUTFChars(jpath, path); 
+  return env->NewStringUTF(target);
 }
 
 /* Determine the canonicalized absolute pathname of the given path. */  

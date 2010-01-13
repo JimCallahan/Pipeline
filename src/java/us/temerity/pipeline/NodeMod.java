@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.67 2009/09/21 23:21:45 jim Exp $
+// $Id: NodeMod.java,v 1.68 2010/01/13 07:08:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -563,8 +563,15 @@ class NodeMod
 
     String nname = pattern.getPrefix();
 
-    validateName(nname);
-    validateSuffix(pattern.getSuffix());
+    try {
+      validatePrimary(pattern);
+      validateSuffix(pattern.getSuffix());
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException
+        ("Unable to rename node to:\n\n" + pattern + "\n\n" + ex.getMessage());
+    }
+
     pName = nname;
     
     {

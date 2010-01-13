@@ -26,6 +26,14 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeFileSys_umaskNative
 /*
  * Class:     us_temerity_pipeline_NativeFileSys
  * Method:    symlinkNative
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     us_temerity_pipeline_NativeFileSys
+ * Method:    symlinkNative
  * Signature: (Ljava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
@@ -33,10 +41,10 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
 
 /*
  * Class:     us_temerity_pipeline_NativeFileSys
- * Method:    symlinkNative
- * Signature: (Ljava/lang/String;)Z
+ * Method:    readlinkNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jboolean JNICALL Java_us_temerity_pipeline_NativeFileSys_isSymlinkNative
+JNIEXPORT jstring JNICALL Java_us_temerity_pipeline_NativeFileSys_readlinkNative
   (JNIEnv *, jclass, jstring);
 
 /*

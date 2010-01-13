@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.330 2010/01/12 00:30:48 jim Exp $
+// $Id: MasterMgr.java,v 1.331 2010/01/13 07:08:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8548,11 +8548,12 @@ class MasterMgr
 	   "areas owned by another user!");
 
       try {
-	NodeCommon.validateName(nname);
+	NodeCommon.validatePrimary(npat);
 	NodeCommon.validateSuffix(npat.getSuffix());
       }
       catch(IllegalArgumentException ex) {
-	return new FailureRsp(timer, ex.getMessage());
+	return new FailureRsp(timer, "Unable to rename node to:\n\n" + npat + "\n\n" + 
+                              ex.getMessage());
       }
 
       /* determine the new file sequences */ 

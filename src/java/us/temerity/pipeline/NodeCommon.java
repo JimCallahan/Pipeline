@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.36 2009/09/01 10:59:39 jim Exp $
+// $Id: NodeCommon.java,v 1.37 2010/01/13 07:08:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -215,8 +215,8 @@ class NodeCommon
    Integer batchSize 
   )
   { 
-    validateName(pName);
     Path path = new Path(pName);
+    validatePrimary(new FilePattern(path.getParent(), primary.getFilePattern()));
 
     {
       if(primary == null) 
@@ -902,20 +902,21 @@ class NodeCommon
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Verify that the given fully resolved node name is legal.
+   * Verify that the given fully resolved node primary sequence pattern is legal.
    * 
-   * @param name 
-   *   The fully resolved node name.
+   * @param pat
+   *   The new fully resolved file pattern.
    * 
    * @throws IllegalArgumentException
    *   If the name is illegal.
    */
   public static void 
-  validateName
+  validatePrimary
   (
-   String name
+   FilePattern pat
   )  
   {
+    String name = pat.getPrefix();
     if(name == null) 
       throw new IllegalArgumentException("The node name cannot be (null)!");
       
@@ -930,6 +931,26 @@ class NodeCommon
 
     if(parts[0].length() != 0) 
       throw new IllegalArgumentException("The node name (" + name + ") was not absolute!");
+
+    if(PackageInfo.sShortSymlinks) {
+      Path prefix = new Path(pat.getPrefix()); 
+      int padding = pat.getPadding();
+      String suffix = pat.getSuffix();
+
+      int total = (3*(parts.length-1) + 6 + /* relative path up to root working directory */ 
+                   11 +                     /* "repository" */ + 
+                   name.length() +          /* path to node file, including prefix */ 
+                   9 +                      /* revision number (estimate) */
+                   prefix.getName().length() +                  
+                   ((padding > -1) ? padding+1 : 0) +          
+                   ((suffix != null) ? suffix.length()+1 : 0)); 
+      if(total > 255) 
+        throw new IllegalArgumentException
+          ("The node name is too long due to the underlying file system " + 
+           "only supporting symbolic link values of 255 characters.  The number of " + 
+           "characters necessary to construct the required relative symbolic paths for " + 
+           "this node's name and file pattern was (" + total + ")."); 
+    }
 
     int wk;
     for(wk=1; wk<parts.length; wk++) {
