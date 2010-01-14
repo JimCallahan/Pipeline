@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.157 2010/01/07 06:17:51 jim Exp $
+// $Id: QueueMgr.java,v 1.158 2010/01/14 05:24:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -309,6 +309,7 @@ class QueueMgr
     dirs.add(new File(pQueueDir, "queue/job-info"));
     dirs.add(new File(pQueueDir, "queue/job-info-bak"));
     dirs.add(new File(pQueueDir, "queue/job-groups"));
+    dirs.add(new File(pQueueDir, "queue/job-groups-bak"));
     dirs.add(new File(pQueueDir, "queue/job-servers/samples"));
 
     synchronized(pMakeDirLock) {
@@ -457,7 +458,6 @@ class QueueMgr
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "All Loaded"); 
     } 
 
-
     /* initialize the job groups */ 
     {
       TaskTimer timer = 
@@ -473,9 +473,46 @@ class QueueMgr
 	    QueueJobGroup group = readJobGroup(groupID);
 	    if(group == null) 
 	      throw new IllegalStateException("The job group cannot be (null)!");
-	    synchronized(pJobGroups) {
-	      pJobGroups.put(groupID, group);
-	    }
+
+            /* validate the group */ 
+            TreeSet<Long> missingJobIDs = new TreeSet<Long>();
+            for(Long jobID : group.getAllJobIDs()) {
+              synchronized(pJobs) {
+                if(pJobs.get(jobID) == null) 
+                  missingJobIDs.add(jobID);
+              }
+              
+              synchronized(pJobInfo) {
+                if(pJobInfo.get(jobID) == null) 
+                  missingJobIDs.add(jobID);
+              }
+            }
+            
+            if(missingJobIDs.isEmpty()) {
+              synchronized(pJobGroups) {
+                pJobGroups.put(groupID, group);
+              }
+            }
+            else {
+              StringBuilder buf = new StringBuilder();
+              buf.append("Skipping invalid job group (" + groupID + ") due to its " + 
+                         "reference of the following missing jobs:");
+              for(Long jobID : missingJobIDs) 
+                buf.append(" " + jobID);
+              
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                 buf.toString()); 
+
+              try {
+                backupJobGroupFile(groupID);
+              }
+              catch(PipelineException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+                   ex.getMessage());
+              }
+            }
 	  }
 	  catch(NumberFormatException ex) {
 	    LogMgr.getInstance().log
@@ -488,16 +525,16 @@ class QueueMgr
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
     }
     
-    /* fix the job group id in all the jobs that are missing the id */
-    if (missingGroup.get()) { 
+    /* fix the job group ID in all the jobs that are missing the ID (if necessary) */
+    if(missingGroup.get()) { 
       TaskTimer timer = 
         LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Updating the JobGroupIDs in Jobs...");
       
-      for (Entry<Long, QueueJobGroup> entry: pJobGroups.entrySet()) {
+      for(Entry<Long, QueueJobGroup> entry: pJobGroups.entrySet()) {
         Long id = entry.getKey();
-        for (Long jobID : entry.getValue().getJobIDs()) {
+        for(Long jobID : entry.getValue().getJobIDs()) {
           QueueJob job = pJobs.get(jobID);
-          if (job.getJobGroupID() == -1) {
+          if(job.getJobGroupID() == -1) {
             job.setJobGroupID(id);
             writeJob(job);
           }
@@ -507,14 +544,20 @@ class QueueMgr
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Updated"); 
     }
 
-    /* garbage collect all jobs no longer referenced by a job group */ 
+    /* garbage collect all jobs no longer referenced by a job group */
+    TreeSet<Long> liveJobIDs = null;
     {
       TaskTimer timer = 
         LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Cleaning Old Jobs...");   
 
-      garbageCollectJobs(timer);
+      liveJobIDs = garbageCollectJobs(timer);
+
+      long cnt = 0L;
+      synchronized(pJobs) {
+        cnt = pJobs.size() - liveJobIDs.size();
+      }
       
-      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Cleaned"); 
+      LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Cleaned (" + cnt + ") Jobs"); 
     }
 
     /* initialize the job counters */ 
@@ -528,26 +571,29 @@ class QueueMgr
       } 
       
       synchronized(pJobInfo) {
-	for(QueueJobInfo info : pJobInfo.values())
-	  pJobCounters.update(timer, null, info);
+        for(Long jobID : liveJobIDs) {
+          QueueJobInfo info = pJobInfo.get(jobID);
+          if(info != null) 
+            pJobCounters.update(timer, null, info);
+        }
       }
 
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Initialized"); 
     }
     
-    /* Update the job key chooser status for all the job groups */
+    /* update the job key chooser status for all the job groups */
     {
       TaskTimer timer = 
         LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Updating Key Chooser State...");
       
       TreeSet<Long> jobGroupIDs = new TreeSet<Long>();
-      synchronized (pJobGroups) {
+      synchronized(pJobGroups) {
         jobGroupIDs = new TreeSet<Long>(pJobGroups.keySet());
       }
       
       for (Long jobGroupID : jobGroupIDs) {
         TreeSet<Long> jobIDs = null; 
-        synchronized (pJobGroups) {
+        synchronized(pJobGroups) {
           QueueJobGroup group = pJobGroups.get(jobGroupID);
           if (group != null) {
             if (group.getCompletedStamp() != null) {
@@ -561,46 +607,47 @@ class QueueMgr
             jobIDs = new TreeSet<Long>(group.getJobIDs());
           }
         }
-        if (jobIDs != null) {
+
+        if(jobIDs != null) {
           boolean upToDate = true;
           long chooserUpdate = pChooserUpdateTime.get();
           TreeSet<Long> notFinished = new TreeSet<Long>();
-          timer.aquire();
-          synchronized (pJobInfo) {
-            timer.resume();
+          synchronized(pJobInfo) {
             for (Long jobID : jobIDs) {
               QueueJobInfo info = pJobInfo.get(jobID);
-              JobState state = info.getState();
-              switch (state) {
-              case Paused:
-              case Preempted:
-              case Queued:
-                notFinished.add(jobID);
+              if(info != null) {
+                JobState state = info.getState();
+                switch (state) {
+                case Paused:
+                case Preempted:
+                case Queued:
+                  notFinished.add(jobID);
+                }
               }
             }
           }
-          timer.aquire();
-          synchronized (pJobs) {
-            timer.resume();
+
+          synchronized(pJobs) {
             for (Long jobID : notFinished) {
               QueueJob job = pJobs.get(jobID);
-              if (job.doKeysNeedUpdate(chooserUpdate)) {
-                upToDate = false;
-                break;
+              if(job != null) {
+                if (job.doKeysNeedUpdate(chooserUpdate)) {
+                  upToDate = false;
+                  break;
+                }
               }
             }
           }
-          synchronized (pJobGroups) {
+
+          synchronized(pJobGroups) {
             QueueJobGroup group = pJobGroups.get(jobGroupID);
-            if (group != null) {
+            if(group != null) {
               group.setJobKeysNeedUpdate(!upToDate);
-              String state = "Stale";
-              if (upToDate)
-                state = "Finished";
+
               LogMgr.getInstance().log
                 (Kind.Ops, Level.Finest, 
-                 "Setting the Job Group (" + group.getGroupID() +") Key Chooser state to " +
-                 "(" + state +")");
+                 "Setting the Key Chooser state for Job Group (" + group.getGroupID() + ") " +
+                 "to (" + (upToDate ? "Finished" : "Stale")  + ").");
             }
           }
         }
@@ -7612,6 +7659,7 @@ class QueueMgr
         TaskTimer tm = new TaskTimer("Writer [Deleting Jobs]");
       
         /* delete the dead jobs */ 
+        TreeSet<Long> dead = new TreeSet<Long>();
         while(true) {
           DeleteListEntry entry = pDeleteList.peek();
           if (entry == null)
@@ -7658,10 +7706,15 @@ class QueueMgr
               (LogMgr.Kind.Wri, LogMgr.Level.Severe,
                ex.getMessage());
           }
+
+          dead.add(jobID);
         }
         LogMgr.getInstance().logSubStage
           (LogMgr.Kind.Wri, LogMgr.Level.Finer,
            tm, timer);
+
+        /* remove the counters for the deleted jobs */
+        pJobCounters.removeByJobCounters(timer, dead);
       }
 
       /* post-cleanup task */ 
@@ -9740,8 +9793,11 @@ class QueueMgr
   
   /**
    * Garbage collect all jobs no longer referenced by a job group.
+   * 
+   * @return
+   *   The IDs of all of the live jobs.
    */ 
-  private void 
+  private TreeSet<Long> 
   garbageCollectJobs
   (
    TaskTimer timer
@@ -9764,33 +9820,30 @@ class QueueMgr
       timer.aquire();
       synchronized(pJobs) {
 	timer.resume();
-	for(Long jobID : pJobs.keySet()) 
-	  if(!live.contains(jobID)) {
+	for(Long jobID : pJobs.keySet()) {
+	  if(!live.contains(jobID)) 
 	    dead.add(jobID);
-	  }
+        }
       }
 
       timer.aquire();
       synchronized(pJobInfo) {
 	timer.resume();
-	for(Long jobID : pJobInfo.keySet()) 
+	for(Long jobID : pJobInfo.keySet()) {
 	  if(!live.contains(jobID))
 	    dead.add(jobID);
+        }
       }
     }
-    
-    /* remove the counters for the given jobs which are no longer referenced by any group */
-    pJobCounters.removeByJobCounters(timer, dead);
 
     /* schedule the jobs for deletion by the job writer thread... */ 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (Kind.Wri, Level.Finest, 
       "Adding jobs with IDs (" + dead + ") to the delete list");
-    for (Long id : dead) {
+    for (Long id : dead) 
       pDeleteList.add(new DeleteListEntry(id, System.currentTimeMillis()));
-    }
     
-    if (!dead.isEmpty())
+    if(!dead.isEmpty())
       pWriterSemaphore.release();
     
     /* tell the job servers to cleanup any resources associated with the dead jobs */ 
@@ -9802,6 +9855,8 @@ class QueueMgr
     LogMgr.getInstance().logStage
       (LogMgr.Kind.Ops, LogMgr.Level.Finer,
        timer); 
+
+    return live;
   }
 
   /**
@@ -12039,6 +12094,44 @@ class QueueMgr
     }
 
     return null;
+  }
+
+  /**
+   * Move the job group into the backup directory.
+   * 
+   * @throws PipelineException
+   *   If unable to backup the job group file.
+   */  
+  private void
+  backupJobGroupFile
+  (
+   Long groupID
+  ) 
+    throws PipelineException
+  {
+    Object lock = getJobGroupFileLock(groupID);
+    synchronized(lock) {
+      File backup = new File(pQueueDir, "queue/job-groups-bak/" + groupID);
+      if(backup.isFile()) {
+        if(!backup.delete()) 
+          throw new PipelineException
+            ("Unable to delete job group backup file (" + backup + ")!");
+      }
+
+      File file = new File(pQueueDir, "queue/job-groups/" + groupID);
+      if(file.isFile()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+           "Backing Up Job Group: " + groupID);
+       
+        if(!file.renameTo(backup)) {
+          file.delete(); 
+          throw new PipelineException
+            ("Unable to backup the invalid job group file (" + file + ") to the " + 
+             "the file (" + backup + ")!");
+        }
+      }
+    }
   }
 
   /**
