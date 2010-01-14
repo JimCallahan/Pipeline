@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.331 2010/01/13 07:08:59 jim Exp $
+// $Id: MasterMgr.java,v 1.332 2010/01/14 02:52:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13921,67 +13921,73 @@ class MasterMgr
           nodeID = new NodeID(rootNodeID, name);
         }
         
-        /* get the current status of the root submit node */ 
-        NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
-        
-        /* compute file indices if not already specified */ 
-        if(indices == null) {
-          indices = new TreeSet<Integer>();  
-        
-          NodeMod work = status.getHeavyDetails().getWorkingVersion();
-          if(work == null) 
-            throw new PipelineException
-              ("Cannot generate jobs for the checked-in node (" + status + ")!");
+        /* single thread the status update and job submit process... */
+        timer.aquire();
+        synchronized(pQueueSubmitLock) { 
+          timer.resume();
 
-          /* compute the file indices for all of the given target file sequences */ 
-          if(targetSeqs != null) {
-            TreeMap<File,Integer> fileIndices = new TreeMap<File,Integer>();
-            {
+          /* get the current status of the root submit node */ 
+          NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
+        
+          /* compute file indices if not already specified */ 
+          if(indices == null) {
+            indices = new TreeSet<Integer>();  
+            
+            NodeMod work = status.getHeavyDetails().getWorkingVersion();
+            if(work == null) 
+              throw new PipelineException
+                ("Cannot generate jobs for the checked-in node (" + status + ")!");
+            
+            /* compute the file indices for all of the given target file sequences */ 
+            if(targetSeqs != null) {
+              TreeMap<File,Integer> fileIndices = new TreeMap<File,Integer>();
+              {
+                FileSeq fseq = work.getPrimarySequence(); 
+                int wk = 0;
+                for(File file : fseq.getFiles()) {
+                  fileIndices.put(file, wk);
+                  wk++;
+                }
+              }
+              
+              for(FileSeq fseq : targetSeqs) {
+                for(File file : fseq.getFiles()) {
+                  Integer idx = fileIndices.get(file);
+                  if(idx != null) 
+                    indices.add(idx);
+                }
+              }
+            }
+            
+            /* compute the file indices of all primary target files */
+            else {  
               FileSeq fseq = work.getPrimarySequence(); 
-              int wk = 0;
-              for(File file : fseq.getFiles()) {
-                fileIndices.put(file, wk);
-                wk++;
-              }
-            }
-
-            for(FileSeq fseq : targetSeqs) {
-              for(File file : fseq.getFiles()) {
-                Integer idx = fileIndices.get(file);
-                if(idx != null) 
-                  indices.add(idx);
-              }
+              int wk; 
+              for(wk=0; wk<fseq.numFrames(); wk++) 
+                indices.add(wk);
             }
           }
-
-          /* compute the file indices of all primary target files */
-          else {  
-            FileSeq fseq = work.getPrimarySequence(); 
-            int wk; 
-            for(wk=0; wk<fseq.numFrames(); wk++) 
-              indices.add(wk);
+          
+          /* submit the jobs for the root node */ 
+          QueueJobGroup group = null;
+          if(rootNodeID.equals(nodeID)) {
+            group = submitJobsCommon(status, indices, batchSize, priority, rampUp,
+                                     maxLoad, minMemory, minDisk,
+                                     selectionKeys, licenseKeys, hardwareKeys, timeStamp,
+                                     allSelectionKeys, allLicenseKeys, allHardwareKeys, 
+                                     assocRoots, exceptions, timer);
           }
-        }
-        
-        /* submit the jobs for the root node */ 
-        QueueJobGroup group = null;
-        if(rootNodeID.equals(nodeID)) {
-          group = submitJobsCommon(status, indices, batchSize, priority, rampUp,
-            			   maxLoad, minMemory, minDisk,
-                                   selectionKeys, licenseKeys, hardwareKeys, timeStamp,
-                                   allSelectionKeys, allLicenseKeys, allHardwareKeys, 
-                                   assocRoots, exceptions, timer);
-        }
-        else {
-          group = submitJobsCommon(status, indices, null, null, null,
-            			   null, null, null,
-                                   null, null, null, timeStamp, 
-                                   allSelectionKeys, allLicenseKeys, allHardwareKeys, 
-                                   assocRoots, exceptions, timer);
-        }
+          else {
+            group = submitJobsCommon(status, indices, null, null, null,
+                                     null, null, null,
+                                     null, null, null, timeStamp, 
+                                     allSelectionKeys, allLicenseKeys, allHardwareKeys, 
+                                     assocRoots, exceptions, timer);
+          }
 
-        if(group != null) 
-          jobGroups.add(group);
+          if(group != null) 
+            jobGroups.add(group);
+        }
         
         /* reset for the next root node (if any) */
         {
@@ -14092,101 +14098,99 @@ class MasterMgr
   )
     throws PipelineException 
   {
-    synchronized(pQueueSubmitLock) { 
-      /* generate jobs */ 
-      TreeMap<NodeID,Long[]> extJobIDs = new TreeMap<NodeID,Long[]>();
-      TreeMap<NodeID,Long[]> nodeJobIDs = new TreeMap<NodeID,Long[]>();
-      TreeMap<NodeID,TreeSet<Long>> upsJobIDs = new TreeMap<NodeID,TreeSet<Long>>();
-      TreeSet<Long> rootJobIDs = new TreeSet<Long>();
-      TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
+    /* generate jobs */ 
+    TreeMap<NodeID,Long[]> extJobIDs = new TreeMap<NodeID,Long[]>();
+    TreeMap<NodeID,Long[]> nodeJobIDs = new TreeMap<NodeID,Long[]>();
+    TreeMap<NodeID,TreeSet<Long>> upsJobIDs = new TreeMap<NodeID,TreeSet<Long>>();
+    TreeSet<Long> rootJobIDs = new TreeSet<Long>();
+    TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
       
-      Long jobGroupID = pNextJobGroupID++;
+    Long jobGroupID = pNextJobGroupID++;
       
-      submitJobs(status, jobGroupID, indices, 
-		 true, batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
-		 selectionKeys, licenseKeys, hardwareKeys, timeStamp,
-                 allSelectionKeys, allLicenseKeys, allHardwareKeys, 
-		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, assocRoots, 
-		 exceptions, timer);
+    submitJobs(status, jobGroupID, indices, 
+               true, batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
+               selectionKeys, licenseKeys, hardwareKeys, timeStamp,
+               allSelectionKeys, allLicenseKeys, allHardwareKeys, 
+               extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, assocRoots, 
+               exceptions, timer);
       
-      if(jobs.isEmpty()) 
-        return null; 
+    if(jobs.isEmpty()) 
+      return null; 
       
-      /* generate the root target file sequence for the job group, 
-	   sorting root IDs by target file sequence order */ 
-      FileSeq targetSeq = null;
-      ArrayList<Long> orderedRootIDs = new ArrayList<Long>();
+    /* generate the root target file sequence for the job group, 
+       sorting root IDs by target file sequence order */ 
+    FileSeq targetSeq = null;
+    ArrayList<Long> orderedRootIDs = new ArrayList<Long>();
+    {
+      TreeMap<String,TreeMap<Integer,Long>> rootOrder = 
+        new TreeMap<String,TreeMap<Integer,Long>>();
+
+      FilePattern fpat = null;
+      TreeSet<Integer> frames = new TreeSet<Integer>();
       {
-	TreeMap<String,TreeMap<Integer,Long>> rootOrder = 
-	  new TreeMap<String,TreeMap<Integer,Long>>();
-
-	FilePattern fpat = null;
-	TreeSet<Integer> frames = new TreeSet<Integer>();
-	{
-	  for(Long jobID : rootJobIDs) {
-	    QueueJob job = jobs.get(jobID);
-	    FileSeq fseq = job.getActionAgenda().getPrimaryTarget();
+        for(Long jobID : rootJobIDs) {
+          QueueJob job = jobs.get(jobID);
+          FileSeq fseq = job.getActionAgenda().getPrimaryTarget();
 	    
-	    if(fpat == null) 
-	      fpat = fseq.getFilePattern();
+          if(fpat == null) 
+            fpat = fseq.getFilePattern();
 
-	    int start = 0;
-	    FrameRange range = fseq.getFrameRange();
-	    if(range != null) {
-	      int fnums[] = range.getFrameNumbers();
-	      int wk;
-	      for(wk=0; wk<fnums.length; wk++) 
-		frames.add(fnums[wk]);
+          int start = 0;
+          FrameRange range = fseq.getFrameRange();
+          if(range != null) {
+            int fnums[] = range.getFrameNumbers();
+            int wk;
+            for(wk=0; wk<fnums.length; wk++) 
+              frames.add(fnums[wk]);
 
-	      start = range.getStart();
-	    }
+            start = range.getStart();
+          }
 
-	    TreeMap<Integer,Long> frameOrder = rootOrder.get(fpat.toString());
-	    if(frameOrder == null) {
-	      frameOrder = new TreeMap<Integer,Long>();
-	      rootOrder.put(fpat.toString(), frameOrder);
-	    }
-	    frameOrder.put(start, jobID);
-	  }
-	}
-
-	if(frames.isEmpty()) 
-	  targetSeq = new FileSeq(fpat, null);
-	else 
-	  targetSeq = new FileSeq(fpat, new FrameRange(frames));
-
-	for(TreeMap<Integer,Long> frameOrder : rootOrder.values()) 
-	  orderedRootIDs.addAll(frameOrder.values());
+          TreeMap<Integer,Long> frameOrder = rootOrder.get(fpat.toString());
+          if(frameOrder == null) {
+            frameOrder = new TreeMap<Integer,Long>();
+            rootOrder.put(fpat.toString(), frameOrder);
+          }
+          frameOrder.put(start, jobID);
+        }
       }
-      
-      /* generate the list of external job IDs */ 
-      TreeSet<Long> externalIDs = new TreeSet<Long>();
-      for(QueueJob job : jobs.values()) 
-	for(Long jobID : job.getSourceJobIDs()) 
-	  if(!jobs.containsKey(jobID)) 
-	    externalIDs.add(jobID);
-      
-      /* create the job group */ 
-      QueueJobGroup group = 
-	new QueueJobGroup(jobGroupID, status.getNodeID(), 
-			  status.getHeavyDetails().getWorkingVersion().getToolset(), 
-			  targetSeq, orderedRootIDs, externalIDs, 
-			  new TreeSet<Long>(jobs.keySet()));
 
-      /* update the job and group IDs file */ 
-      writeNextIDs();
+      if(frames.isEmpty()) 
+        targetSeq = new FileSeq(fpat, null);
+      else 
+        targetSeq = new FileSeq(fpat, new FrameRange(frames));
+
+      for(TreeMap<Integer,Long> frameOrder : rootOrder.values()) 
+        orderedRootIDs.addAll(frameOrder.values());
+    }
       
-      /* submit the jobs and job group */  
-      QueueMgrControlClient qclient = acquireQueueMgrClient();
-      try {
-        qclient.submitJobs(group, jobs.values());
-      }
-      finally {
-        releaseQueueMgrClient(qclient);
-      }
+    /* generate the list of external job IDs */ 
+    TreeSet<Long> externalIDs = new TreeSet<Long>();
+    for(QueueJob job : jobs.values()) 
+      for(Long jobID : job.getSourceJobIDs()) 
+        if(!jobs.containsKey(jobID)) 
+          externalIDs.add(jobID);
       
-      return group; 
-    } //synchronized(pQueueSubmitLock) 
+    /* create the job group */ 
+    QueueJobGroup group = 
+      new QueueJobGroup(jobGroupID, status.getNodeID(), 
+                        status.getHeavyDetails().getWorkingVersion().getToolset(), 
+                        targetSeq, orderedRootIDs, externalIDs, 
+                        new TreeSet<Long>(jobs.keySet()));
+
+    /* update the job and group IDs file */ 
+    writeNextIDs();
+      
+    /* submit the jobs and job group */  
+    QueueMgrControlClient qclient = acquireQueueMgrClient();
+    try {
+      qclient.submitJobs(group, jobs.values());
+    }
+    finally {
+      releaseQueueMgrClient(qclient);
+    }
+      
+    return group; 
   }  
 
   /**
