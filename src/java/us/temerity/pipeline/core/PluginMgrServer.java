@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.28 2010/01/08 09:38:10 jim Exp $
+// $Id: PluginMgrServer.java,v 1.29 2010/01/14 04:18:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -105,7 +105,7 @@ class PluginMgrServer
 
       try {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Info,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   "Waiting on Client Handlers...");
 	
 	synchronized(pTasks) {
@@ -120,7 +120,7 @@ class PluginMgrServer
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
       }
     }

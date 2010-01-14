@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.54 2010/01/08 09:38:10 jim Exp $
+// $Id: FileMgrServer.java,v 1.55 2010/01/14 04:18:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -103,8 +103,8 @@ class FileMgrServer
 
       try {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	   "Shutting Down -- Waiting for tasks to complete...");
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+           "Waiting on Client Handlers...");
 
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -118,7 +118,7 @@ class FileMgrServer
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
       }
     }

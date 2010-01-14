@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.114 2010/01/08 09:38:10 jim Exp $
+// $Id: MasterMgrServer.java,v 1.115 2010/01/14 04:18:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -147,6 +147,22 @@ class MasterMgrServer
 	{
 	  LogMgr.getInstance().logAndFlush
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     "Waiting on Client Handlers...");
+	  
+	  synchronized(pTasks) {
+	    for(HandlerTask task : pTasks) 
+	      task.closeConnection();
+	  }	
+	  
+	  synchronized(pTasks) {
+	    for(HandlerTask task : pTasks) 
+	      task.join();
+	  }
+	}
+
+	{
+	  LogMgr.getInstance().logAndFlush
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on License Validator...");
           
           lic.interrupt();
@@ -178,26 +194,10 @@ class MasterMgrServer
           backupSync.interrupt();
           backupSync.join();
         }
-
-	{
-	  LogMgr.getInstance().logAndFlush
-	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     "Waiting on Client Handlers...");
-	  
-	  synchronized(pTasks) {
-	    for(HandlerTask task : pTasks) 
-	      task.closeConnection();
-	  }	
-	  
-	  synchronized(pTasks) {
-	    for(HandlerTask task : pTasks) 
-	      task.join();
-	  }
-	}
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
       }
     }

@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.44 2010/01/08 09:38:10 jim Exp $
+// $Id: JobMgrServer.java,v 1.45 2010/01/14 04:18:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -101,17 +101,9 @@ class JobMgrServer
       pJobMgr.killAll();
 
       try {
-	if(collector != null) {
-	  LogMgr.getInstance().logAndFlush
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
-	     "Waiting on Collector...");
-
-	  collector.join();
-	}
-
 	{
 	  LogMgr.getInstance().logAndFlush
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Client Handlers...");
 
 	  synchronized(pTasks) {
@@ -124,10 +116,18 @@ class JobMgrServer
 	      task.join();
 	  }
 	}
+
+	if(collector != null) {
+	  LogMgr.getInstance().logAndFlush
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     "Waiting on Collector...");
+
+	  collector.join();
+	}
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   "Interrupted while shutting down!");
       }
     }
