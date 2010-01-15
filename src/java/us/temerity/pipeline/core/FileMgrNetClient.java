@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.28 2010/01/08 09:38:10 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.29 2010/01/15 22:08:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -282,9 +282,10 @@ class FileMgrNetClient
       ctime = mod.getLastCTimeUpdate(); 
 
     FileStateReq req = 
-      new FileStateReq(id, vstate, jobStates, isFrozen, mod.getWorkingID(), latest, ctime, 
-		       mod.getSequences(), isBaseIntermediate, baseCheckSums, 
-                       isLatestIntermediate, latestCheckSums, workingCheckSums);
+      new FileStateReq(id, vstate, jobStates, isFrozen, mod.isActionEnabled(), 
+                       mod.getWorkingID(), latest, ctime, mod.getSequences(), 
+                       isBaseIntermediate, baseCheckSums, isLatestIntermediate, 
+                       latestCheckSums, workingCheckSums);
 
     Object obj = performLongTransaction(FileRequest.State, req, 15000, 60000);  
 

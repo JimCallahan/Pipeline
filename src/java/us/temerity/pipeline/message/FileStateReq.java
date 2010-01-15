@@ -1,4 +1,4 @@
-// $Id: FileStateReq.java,v 1.10 2009/09/01 10:59:39 jim Exp $
+// $Id: FileStateReq.java,v 1.11 2010/01/15 22:08:52 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -43,6 +43,9 @@ class FileStateReq
    *   Whether the files associated with the working version are symlinks to the 
    *   checked-in files instead of copies.
    * 
+   * @param hasEnabledAction
+   *   Whether the working version has an enabled action.
+   * 
    * @param working 
    *   The revision number of the checked-in version upon which the working version 
    *   is based.
@@ -80,6 +83,7 @@ class FileStateReq
    VersionState vstate, 
    JobState jobStates[], 
    boolean isFrozen, 
+   boolean hasEnabledAction, 
    VersionID working, 
    VersionID latest, 
    long ctime, 
@@ -100,6 +104,7 @@ class FileStateReq
     pVersionState = vstate;
 
     pIsFrozen = isFrozen;
+    pHasEnabledAction = hasEnabledAction;
 
     switch(vstate) {
     case Pending:
@@ -194,6 +199,15 @@ class FileStateReq
   isFrozen() 
   {
     return pIsFrozen; 
+  }
+
+  /**
+   * Whether the working version has an enabled action.
+   */
+  public boolean
+  hasEnabledAction() 
+  {
+    return pHasEnabledAction; 
   }
 
   /**
@@ -314,6 +328,11 @@ class FileStateReq
    * checked-in files instead of copies.
    */ 
   private boolean pIsFrozen; 
+
+  /**
+   * Whether the working version has an enabled action.
+   */
+  private boolean pHasEnabledAction; 
 
   /**
    * The revision number of the checked-in version upon which the working version  is based.  

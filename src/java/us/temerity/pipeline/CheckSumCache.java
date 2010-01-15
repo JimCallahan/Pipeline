@@ -1,4 +1,4 @@
-// $Id: CheckSumCache.java,v 1.2 2009/10/28 06:06:17 jim Exp $
+// $Id: CheckSumCache.java,v 1.3 2010/01/15 22:08:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,7 +47,8 @@ class CheckSumCache
   }
 
   /** 
-   * Construct a checksum cache by copying the checksums from a checked-in version of a node.<P>
+   * Construct a checksum cache by copying the checksums from a checked-in version of a 
+   * node.<P>
    * 
    * The newly created checksums will have an updated-on timestamp of 0L.
    * 
@@ -251,10 +252,13 @@ class CheckSumCache
    *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the file 
    *   was last modified.
    * 
+   * @return 
+   *   Whether the checksum was recomputed.
+   * 
    * @throws IOException
    *   If the source file does not exist or are otherwise unable to compute its checksum.
    */
-  public void 
+  public boolean
   update
   (
    Path prodDir, 
@@ -268,7 +272,10 @@ class CheckSumCache
       Path wpath = new Path(prodDir, pNodeID.getWorkingParent());
       pCheckSums.put(fname, new TransientCheckSum(new Path(wpath, fname), stamp+1L));
       pWasModified = true;
+      return true;
     }
+
+    return false;
   }
   
   /**

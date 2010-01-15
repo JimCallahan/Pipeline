@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.22 2009/11/02 03:44:10 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.23 2010/01/15 22:08:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -262,9 +262,10 @@ class FileMgrDirectClient
       ctime = mod.getLastCTimeUpdate(); 
       
     FileStateReq req = 
-      new FileStateReq(id, vstate, jobStates, isFrozen, mod.getWorkingID(), latest, ctime, 
-                       mod.getSequences(), isBaseIntermediate, baseCheckSums, 
-                       isLatestIntermediate, latestCheckSums, workingCheckSums);
+      new FileStateReq(id, vstate, jobStates, isFrozen, mod.isActionEnabled(), 
+                       mod.getWorkingID(), latest, ctime, mod.getSequences(), 
+                       isBaseIntermediate, baseCheckSums, isLatestIntermediate, 
+                       latestCheckSums, workingCheckSums);
 
     Object obj = pFileMgr.states(req); 
     if(obj instanceof FileStateRsp) {
