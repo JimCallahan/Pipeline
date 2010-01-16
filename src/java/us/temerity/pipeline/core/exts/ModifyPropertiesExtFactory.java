@@ -1,4 +1,4 @@
-// $Id: ModifyPropertiesExtFactory.java,v 1.3 2007/07/08 01:18:16 jim Exp $
+// $Id: ModifyPropertiesExtFactory.java,v 1.4 2010/01/16 00:35:49 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -74,7 +74,7 @@ class ModifyPropertiesExtFactory
   )
     throws PipelineException
   {
-    ext.preModifyPropertiesTest(pNodeID, pNodeMod);
+    ext.preModifyPropertiesTest(pNodeID, new NodeMod(pNodeMod));
   }
 
 

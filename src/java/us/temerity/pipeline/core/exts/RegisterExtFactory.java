@@ -1,4 +1,4 @@
-// $Id: RegisterExtFactory.java,v 1.3 2007/07/08 01:18:16 jim Exp $
+// $Id: RegisterExtFactory.java,v 1.4 2010/01/16 00:35:50 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -74,7 +74,7 @@ class RegisterExtFactory
   )
     throws PipelineException
   {
-    ext.preRegisterTest(pNodeID, pNodeMod);
+    ext.preRegisterTest(pNodeID, new NodeMod(pNodeMod));
   }
 
 
