@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.113 2010/01/08 23:12:09 jesse Exp $
+// $Id: ScriptApp.java,v 1.114 2010/01/17 04:39:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -165,9 +165,11 @@ class ScriptApp
        "    runtime\n" + 
        "      --set-master [--remote-log=logger:level[,logger:level[...]]]\n" + 
        "        [--file-stat-dir=...] [--checksum-dir=...]\n" + 
-       "        [--node-gc-interval=msec] [--min-overhead=min] [--max-overhead=max]\n" + 
-       "        [--avg-node-size=size] [--restore-cleanup-interval=msec]\n" + 
-       "        [--backup-sync-interval]\n" + 
+       "        [--min-free-memory=...] [--cache-factor=...]\n" + 
+       "        [--gc-interval=...] [--gc-misses=...]\n" + 
+       "        [--repo-cache-size=...] [--work-cache-size=...]\n" + 
+       "        [--check-cache-size=...] [--annot-cache-size=...]\n" + 
+       "        [--restore-cleanup-interval=...] [--backup-sync-interval=...]\n" +
        "      --set-queue [--remote-log=logger:level[,logger:level[...]]]\n" + 
        "        [--collector-batch-size=num] [--dispatcher-interval=msec]\n" +  
        "        [--nfs-cache-interval=msec] [--backup-sync-interval]\n" + 

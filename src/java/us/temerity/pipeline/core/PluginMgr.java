@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.46 2009/12/18 23:00:35 jesse Exp $
+// $Id: PluginMgr.java,v 1.47 2010/01/17 04:39:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -809,7 +809,7 @@ class PluginMgr
         timer.resume();
         
         ArrayList<String> args = new ArrayList<String>();
-        args.add("-zcf");
+        args.add("-cf");
         args.add(backupTarget.toOsString());
         args.add("pipeline/plugins");
         

@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.158 2010/01/14 05:24:22 jim Exp $
+// $Id: QueueMgr.java,v 1.159 2010/01/17 04:39:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10216,7 +10216,7 @@ class QueueMgr
           TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
           
           ArrayList<String> args = new ArrayList<String>();
-          args.add("-zcf");
+          args.add("-cf");
           args.add(backupTarget.toOsString());
           args.add("pipeline");
           
