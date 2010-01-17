@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.332 2010/01/14 02:52:07 jim Exp $
+// $Id: MasterMgr.java,v 1.333 2010/01/17 04:37:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21002,6 +21002,47 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Dump the contents of the checked-in cache.
+   */ 
+  private void 
+  debugCheckedInCache() 
+  {
+    if(!LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Detail))
+      return;
+
+    StringBuilder buf = new StringBuilder(); 
+
+    long readCnt = 0L;
+    buf.append("--- Read Queue ---\n"); 
+    for(String name : pCheckedInRead) {
+      buf.append("  " + name + "\n"); 
+      readCnt++;
+    }
+    
+    long cachedCnt = 0L;
+    buf.append("--- Cached ---\n"); 
+    synchronized(pCheckedInBundles) {
+      for(Map.Entry<String,TreeMap<VersionID,CheckedInBundle>> entry : 
+            pCheckedInBundles.entrySet()) {
+        String name = entry.getKey();
+        int numVersions = entry.getValue().size();
+        buf.append("  " + name + " = " + numVersions + " (versions)\n"); 
+        cachedCnt += numVersions;
+      }
+    }
+   
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Mem, LogMgr.Level.Detail, 
+       "\n" + 
+       "--- Checked-In Cache ------------------------------------------------------------\n" + 
+       "  Count = " + pCheckedInCounters.getCurrent() + " (versions)\n" + 
+       "   Read = " + readCnt + " (nodes)\n" + 
+       " Cached = " + cachedCnt + " (versions)\n" +
+       buf.toString() + 
+       "--- Checked-In Cache ------------------------------------------------------------"); 
+  }
 
   /**
    * Record that a new checked-in version has been added to the cache.
@@ -21013,15 +21054,16 @@ class MasterMgr
    VersionID vid
   ) 
   {
-    long cached = pCheckedInCounters.miss(); 
+    pCheckedInCounters.miss(); 
     pCheckedInRead.add(name);
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	 "Cached Checked-In Version: " + name + " v" + vid + "\n" + 
-	 "  Total Cached = " + cached); 
+	 "Cached Checked-In Version: " + name + " v" + vid); 
     }
+
+    debugCheckedInCache(); 
   }
 
   /**
@@ -21035,16 +21077,17 @@ class MasterMgr
   ) 
   {
     for(VersionID vid : vids) {
-      long cached = pCheckedInCounters.miss(); 
+      pCheckedInCounters.miss(); 
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
         LogMgr.getInstance().log
           (LogMgr.Kind.Mem, LogMgr.Level.Finest,
-           "Cached Checked-In Version: " + name + " v" + vid + "\n" + 
-	 "  Total Cached = " + cached); 
+           "Cached Checked-In Version: " + name + " v" + vid); 
       }
     }
 
     pCheckedInRead.add(name);
+
+    debugCheckedInCache(); 
   }
 
   /**
@@ -21058,18 +21101,61 @@ class MasterMgr
   ) 
   {
     for(VersionID vid : vids) {
-      long cached = pCheckedInCounters.free(); 
+      pCheckedInCounters.free(); 
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
         LogMgr.getInstance().log
           (LogMgr.Kind.Mem, LogMgr.Level.Finest,
-           "Freed Checked-In Version: " + name + " v" + vid + "\n" + 
-           "  Total Cached = " + cached); 
+           "Freed Checked-In Version: " + name + " v" + vid); 
       }
     }
+
+    debugCheckedInCache(); 
   }
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Dump the contents of the working cache.
+   */ 
+  private void 
+  debugWorkingCache() 
+  {
+    if(!LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Detail))
+      return;
+
+    StringBuilder buf = new StringBuilder(); 
+
+    long readCnt = 0L;
+    buf.append("--- Read Queue ---\n"); 
+    for(NodeID nodeID : pWorkingRead) {
+      buf.append("  " + nodeID.getName() + " " + 
+                 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n"); 
+      readCnt++;
+    }
+    
+    long cachedCnt = 0L;
+    buf.append("--- Cached ---\n"); 
+    synchronized(pWorkingBundles) {
+      for(Map.Entry<String,TreeMap<NodeID,WorkingBundle>> entry : 
+            pWorkingBundles.entrySet()) {
+        String name = entry.getKey();
+        int numVersions = entry.getValue().size();
+        buf.append("  " + name + " = " + numVersions + " (versions)\n"); 
+        cachedCnt += numVersions;
+      }
+    }
+   
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Mem, LogMgr.Level.Detail, 
+       "\n" + 
+       "--- Working Cache ---------------------------------------------------------------\n" + 
+       "  Count = " + pWorkingCounters.getCurrent() + " (versions)\n" + 
+       "   Read = " + readCnt + " (versions)\n" + 
+       " Cached = " + cachedCnt + " (versions)\n" +
+       buf.toString() + 
+       "--- Working Cache ---------------------------------------------------------------"); 
+  }
 
   /**
    * Record that a new working version has been added to the cache.
@@ -21080,16 +21166,17 @@ class MasterMgr
    NodeID nodeID
   ) 
   {
-    long cached = pWorkingCounters.miss(); 
+    pWorkingCounters.miss(); 
     pWorkingRead.add(nodeID);
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Cached Working Version: " + nodeID.getName() + 
-	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
-	 "  Total Cached = " + cached); 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")"); 
     }
+
+    debugWorkingCache();   
   }
 
   /**
@@ -21101,18 +21188,62 @@ class MasterMgr
    NodeID nodeID
   ) 
   {
-    long cached = pWorkingCounters.free(); 
+    pWorkingCounters.free(); 
 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {   
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Freed Working Version: " +  nodeID.getName() + 
-	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
-	 "  Total Cached = " + cached); 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")"); 
     }
+    
+    debugWorkingCache();  
   }
 
+
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Dump the contents of the checksum cache.
+   */ 
+  private void 
+  debugCheckSumCache() 
+  {
+    if(!LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Detail))
+      return;
+
+    StringBuilder buf = new StringBuilder(); 
+
+    long readCnt = 0L;
+    buf.append("--- Read Queue ---\n"); 
+    for(NodeID nodeID : pWorkingRead) {
+      buf.append("  " + nodeID.getName() + " " + 
+                 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n"); 
+      readCnt++;
+    }
+    
+    long cachedCnt = 0L;
+    buf.append("--- Cached ---\n"); 
+    synchronized(pCheckSumBundles) {
+      for(Map.Entry<String,TreeMap<NodeID,CheckSumBundle>> entry : 
+            pCheckSumBundles.entrySet()) {
+        String name = entry.getKey();
+        int numVersions = entry.getValue().size();
+        buf.append("  " + name + " = " + numVersions + " (versions)\n"); 
+        cachedCnt += numVersions;
+      }
+    }
+   
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Mem, LogMgr.Level.Detail, 
+       "\n" + 
+       "--- CheckSum Cache --------------------------------------------------------------\n" + 
+       "  Count = " + pCheckSumCounters.getCurrent() + " (versions)\n" + 
+       "   Read = " + readCnt + " (versions)\n" + 
+       " Cached = " + cachedCnt + " (versions)\n" +
+       buf.toString() + 
+       "--- CheckSum Cache --------------------------------------------------------------"); 
+  }
 
   /**
    * Record that a new working version checksum has been added to the cache.
@@ -21123,16 +21254,17 @@ class MasterMgr
    NodeID nodeID
   ) 
   {
-    long cached = pCheckSumCounters.miss(); 
+    pCheckSumCounters.miss(); 
     pCheckSumsRead.add(nodeID);
 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {  
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Cached Working CheckSum: " + nodeID.getName() + 
-	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
-	 "  Total Cached = " + cached); 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")"); 
     }
+    
+    debugCheckSumCache();
   }
 
   /**
@@ -21144,19 +21276,60 @@ class MasterMgr
    NodeID nodeID
   ) 
   {
-    long cached = pCheckSumCounters.free(); 
+    pCheckSumCounters.free(); 
 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) { 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Freed Working CheckSum: " +  nodeID.getName() + 
-	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
-	 "  Total Cached = " + cached); 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")"); 
     }
+    
+    debugCheckSumCache();
   }
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Dump the contents of the annotations cache.
+   */ 
+  private void 
+  debugAnnotationCache() 
+  {
+    if(!LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Detail))
+      return;
+
+    StringBuilder buf = new StringBuilder(); 
+
+    long readCnt = 0L;
+    buf.append("--- Read Queue ---\n"); 
+    for(String name : pAnnotationsRead) {
+      buf.append("  " + name + "\n"); 
+      readCnt++;
+    }
+    
+    long cachedCnt = 0L;
+    buf.append("--- Cached ---\n"); 
+    synchronized(pAnnotations) {
+      for(Map.Entry<String,TreeMap<String,BaseAnnotation>> entry : 
+            pAnnotations.entrySet()) {
+        String name = entry.getKey();
+        buf.append("  " + name + "\n"); 
+        cachedCnt++;
+      }
+    }
+   
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Mem, LogMgr.Level.Detail, 
+       "\n" + 
+       "--- Annotation Cache ------------------------------------------------------------\n" + 
+       "  Count = " + pAnnotationCounters.getCurrent() + " (nodes)\n" + 
+       "   Read = " + readCnt + " (nodes)\n" + 
+       " Cached = " + cachedCnt + " (nodes)\n" +
+       buf.toString() + 
+       "--- Annotation Cache ------------------------------------------------------------"); 
+  }
 
   /**
    * Record that a new set of annotations have been added to the cache.
@@ -21167,15 +21340,16 @@ class MasterMgr
    String name
   ) 
   {
-    long cached = pAnnotationCounters.miss(); 
+    pAnnotationCounters.miss(); 
     pAnnotationsRead.add(name);
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	 "Cached Annotation: " + name + "\n" + 
-	 "  Total Cached = " + cached); 
+	 "Cached Annotation: " + name); 
     }
+
+    debugAnnotationCache();    
   }
 
   /**
@@ -21187,16 +21361,17 @@ class MasterMgr
    String name
   ) 
   {
-    long cached = pAnnotationCounters.free(); 
+    pAnnotationCounters.free(); 
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	 "Freed Annotation: " + name + "\n" + 
-	 "  Total Cached = " + cached); 
+	 "Freed Annotation: " + name); 
     }
-  }
 
+    debugAnnotationCache();    
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   D A T A B A S E   B A C K U P                                                        */
@@ -21256,7 +21431,7 @@ class MasterMgr
           TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
           
           ArrayList<String> args = new ArrayList<String>();
-          args.add("-zcf");
+          args.add("-cf");
           args.add(backupTarget.toOsString());
           args.add("pipeline");
           
