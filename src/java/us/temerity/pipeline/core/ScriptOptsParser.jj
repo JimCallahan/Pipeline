@@ -1527,6 +1527,7 @@ TOKEN :
 | <FINE:    	      "fine">    
 | <FINER :  	      "finer">   
 | <FINEST:    	      "finest">  
+| <DETAIL:    	      "detail">  
 | <COMMA10:  	      ",">             : LOG_TYPE
 | <AE25:              (["\0"])+>       : DEFAULT
 | <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
@@ -1579,6 +1580,7 @@ TOKEN :
 | <REMOTE_FINE:              "fine">    
 | <REMOTE_FINER :            "finer">   
 | <REMOTE_FINEST:            "finest">  
+| <REMOTE_DETAIL:            "detail">  
 | <COMMA17:  	             ",">             : REMOTE_LOG_TYPE
 | <AE56:                     (["\0"])+>       : OPTIONS
 | <ILLEGAL_REMOTE_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
@@ -2504,7 +2506,7 @@ LogMgr.Level LogLevel() :
 }
 {
   (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
-   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel() | v=DetailLevel()) 
   {
     return v;
   }
@@ -2573,6 +2575,17 @@ LogMgr.Level FinestLevel() :
   (<FINEST> | <REMOTE_FINEST>) 
   {
     return LogMgr.Level.Finest;
+  }
+}
+
+LogMgr.Level DetailLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  (<DETAIL> | <REMOTE_DETAIL>) 
+  {
+    return LogMgr.Level.Detail;
   }
 }
 

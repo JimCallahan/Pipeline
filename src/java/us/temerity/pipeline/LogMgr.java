@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.17 2010/01/06 23:34:09 jim Exp $
+// $Id: LogMgr.java,v 1.18 2010/01/17 04:38:39 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -712,7 +712,12 @@ class LogMgr
     /**
      * Log all messages (STDOUT).
      */ 
-    Finest;
+    Finest,
+
+    /**
+     * Log at the highest level of detail (STDOUT).
+     */ 
+    Detail;
 
 
     /**
@@ -913,7 +918,8 @@ class LogMgr
     "INFO", 
     "FINE", 
     "FINER", 
-    "FINEST"
+    "FINEST", 
+    "DETAIL"
   };
 
   /**
