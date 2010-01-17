@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.333 2010/01/17 04:37:53 jim Exp $
+// $Id: MasterMgr.java,v 1.334 2010/01/17 05:00:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15742,9 +15742,9 @@ class MasterMgr
    * 
    * The database backup files will be automatically named: <P> 
    * <DIV style="margin-left: 40px;">
-   *   plmaster-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
-   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
-   *   plpluginmgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plmaster-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
+   *   plpluginmgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
    * </DIV>
    * 
    * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
@@ -15773,7 +15773,7 @@ class MasterMgr
 
     SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss");
     String dateStr = format.format(new Date());
-    Path target = new Path(targetDir, "plmaster-db." + dateStr + ".tgz");
+    Path target = new Path(targetDir, "plmaster-db." + dateStr + ".tar");
 
     /* pre-op tests */
     BackupDatabaseExtFactory factory = new BackupDatabaseExtFactory(target.toFile());

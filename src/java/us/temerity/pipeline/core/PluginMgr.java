@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.47 2010/01/17 04:39:10 jim Exp $
+// $Id: PluginMgr.java,v 1.48 2010/01/17 05:00:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -763,7 +763,7 @@ class PluginMgr
    * 
    * The database backup files will be automatically named: <P> 
    * <DIV style="margin-left: 40px;">
-   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
    * </DIV>
    * 
    * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
@@ -789,7 +789,7 @@ class PluginMgr
     Path targetDir = req.getBackupDirectory();
 
     String dateStr = req.getDateString();
-    Path backupTarget = new Path(targetDir, "plpluginmgr-db." + dateStr + ".tgz");
+    Path backupTarget = new Path(targetDir, "plpluginmgr-db." + dateStr + ".tar");
 
     TaskTimer timer = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
 

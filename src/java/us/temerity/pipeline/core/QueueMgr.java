@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.159 2010/01/17 04:39:10 jim Exp $
+// $Id: QueueMgr.java,v 1.160 2010/01/17 05:00:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3189,7 +3189,7 @@ class QueueMgr
    * 
    * The database backup files will be automatically named: <P> 
    * <DIV style="margin-left: 40px;">
-   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
    * </DIV>
    * 
    * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
@@ -3217,7 +3217,7 @@ class QueueMgr
     Path targetDir = req.getBackupDirectory();
 
     String dateStr = req.getDateString();
-    Path target = new Path(targetDir, "plqueue-db." + dateStr + ".tgz");
+    Path target = new Path(targetDir, "plqueue-db." + dateStr + ".tar");
 
     try {
       if(!pAdminPrivileges.isMasterAdmin(req))
