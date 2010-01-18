@@ -1,4 +1,4 @@
-// $Id: CheckSumCache.java,v 1.3 2010/01/15 22:08:52 jim Exp $
+// $Id: CheckSumCache.java,v 1.4 2010/01/18 18:21:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -240,7 +240,7 @@ class CheckSumCache
 
   /**
    * Recompute the checksum for the given file unless has already been generated after the
-   * given last modification timestamp for the file.
+   * given last modification timestamp for the file, warning when checksums are recomputed.
    * 
    * @param prodDir
    *   The root production directory. 
@@ -248,34 +248,61 @@ class CheckSumCache
    * @param fname
    *   The short filename without any directory components.
    * 
-   * @param stamp
-   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the file 
-   *   was last modified.
+   * @param stat
+   *   The file status information for the file.
    * 
-   * @return 
-   *   Whether the checksum was recomputed.
+   * @param critical
+   *   The last legitimate change time (ctime) of the file.
+   * 
+   * @param warning
+   *   If not (null), log warning messages when the checksum is recomputed prefixed
+   *   by this string. 
    * 
    * @throws IOException
    *   If the source file does not exist or are otherwise unable to compute its checksum.
    */
-  public boolean
+  public void 
   update
   (
    Path prodDir, 
    String fname, 
-   long stamp
+   NativeFileStat stat, 
+   long critical, 
+   String warning
   ) 
     throws IOException 
   {
     TransientCheckSum found = pCheckSums.get(fname); 
+    long stamp = stat.lastCriticalChange(critical); 
     if((found == null) || !found.isValidAfter(stamp)) {
       Path wpath = new Path(prodDir, pNodeID.getWorkingParent());
-      pCheckSums.put(fname, new TransientCheckSum(new Path(wpath, fname), stamp+1L));
-      pWasModified = true;
-      return true;
-    }
+      Path path = new Path(wpath, fname);
 
-    return false;
+      if((warning != null) && LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Warning)) {
+        if(found == null) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Sum, LogMgr.Level.Warning, 
+             warning + path + "\n" + 
+             "  No checksum had been computed yet.");
+        }
+        else {
+          long updatedOn = found.getUpdatedOn();
+          long mtime = stat.lastModification(); 
+          long ctime = stat.lastChange();
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Sum, LogMgr.Level.Warning, 
+             warning + path + "\n" + 
+             "    CheckSum: " + TimeStamps.format(updatedOn) + " (" + updatedOn + ")\n" + 
+             "  File Stamp: " + TimeStamps.format(stamp) + " (" + stamp + ")\n" + 
+             "  File MTime: " + TimeStamps.format(mtime) + " (" + mtime + ")\n" + 
+             "  File CTime: " + TimeStamps.format(ctime) + " (" + ctime + ")\n" + 
+             "    Critical: " + TimeStamps.format(critical) + " (" + critical + ")"); 
+        }
+      }
+
+      pCheckSums.put(fname, new TransientCheckSum(path, stamp+1L));
+      pWasModified = true;
+    }
   }
   
   /**

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.105 2010/01/15 22:08:52 jim Exp $
+// $Id: FileMgr.java,v 1.106 2010/01/18 18:21:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -533,6 +533,10 @@ class FileMgr
 
         Path statPath = new Path(pFileStatPath.get());
 
+        String warning = null;
+        if(req.hasEnabledAction()) 
+          warning = ("Checksum rebuilt by Status for file which has an enabled Action: ");
+
 	/* if frozen, the possibilities are more limited... */ 
 	if(req.isFrozen()) {
 	  switch(req.getVersionState()) {
@@ -593,10 +597,7 @@ class FileMgr
                   }
                   else {
                     if(linter) {
-                      boolean wasUpdated = wcheck.update(pCheckSumPath.get(), fname, 
-                                                         work.lastCriticalChange(ctime)); 
-                      if(wasUpdated && req.hasEnabledAction())
-                        warnCheckSumUpdated("Status", wpath, path); 
+                      wcheck.update(pCheckSumPath.get(), fname, work, ctime, warning); 
                       if(wcheck.isIdentical(fname, lsum)) 
                         fs[wk] = FileState.Identical;
                       else 
@@ -701,10 +702,7 @@ class FileMgr
                     }
 
                     if(fs[wk] == null) {
-                      boolean wasUpdated = wcheck.update(pCheckSumPath.get(), fname, 
-                                                         work.lastCriticalChange(ctime)); 
-                      if(wasUpdated && req.hasEnabledAction())
-                        warnCheckSumUpdated("Status", wpath, path); 
+                      wcheck.update(pCheckSumPath.get(), fname, work, ctime, warning); 
                       if(wcheck.isIdentical(fname, lsum)) 
                         fs[wk] = FileState.Identical;
                       else 
@@ -763,10 +761,7 @@ class FileMgr
                         workEqLatest = true;
                       else if((linter || (work.fileSize() == latest.fileSize())) && 
                               (jobStates[wk] != JobState.Running)) {
-                        boolean wasUpdated = wcheck.update(pCheckSumPath.get(), fname,
-                                                           work.lastCriticalChange(ctime)); 
-                        if(wasUpdated && req.hasEnabledAction())
-                          warnCheckSumUpdated("Status", wpath, path); 
+                        wcheck.update(pCheckSumPath.get(), fname, work, ctime, warning);
                         workRefreshed = true;
                         workEqLatest = wcheck.isIdentical(fname, lsum);
                       }
@@ -785,13 +780,8 @@ class FileMgr
                             workEqBase = true;
                           else if((binter || (work.fileSize() == base.fileSize())) && 
                                   (jobStates[wk] != JobState.Running)) {
-                            if(!workRefreshed) {
-                              boolean wasUpdated = 
-                                wcheck.update(pCheckSumPath.get(), fname, 
-                                              work.lastCriticalChange(ctime)); 
-                              if(wasUpdated && req.hasEnabledAction())
-                                warnCheckSumUpdated("Status", wpath, path); 
-                            }
+                            if(!workRefreshed) 
+                              wcheck.update(pCheckSumPath.get(), fname, work, ctime, warning); 
                             workEqBase = wcheck.isIdentical(fname, bsum); 
                           }
 
@@ -890,6 +880,10 @@ class FileMgr
 
         Path statPath = new Path(pFileStatPath.get());
 
+        String warning = null;
+        if(req.hasEnabledAction()) 
+          warning = ("Checksum rebuilt by Check-In for file which has an enabled Action: ");
+
 	/* create the repository file directory as well any missing subdirectories */ 
 	VersionID rvid = req.getVersionID();
 	File rdir  = null;
@@ -932,10 +926,7 @@ class FileMgr
               try {
                 NativeFileStat work = new NativeFileStat(new Path(wpath, path));
                 String fname = path.toString(); 
-                boolean wasUpdated = wcheck.update(pCheckSumPath.get(), fname, 
-                                                   work.lastCriticalChange(ctime)); 
-                if(wasUpdated && req.hasEnabledAction())
-                  warnCheckSumUpdated("Check-In", wpath, path); 
+                wcheck.update(pCheckSumPath.get(), fname, work, ctime, warning); 
               }
               catch(IOException ex) {
                 throw new PipelineException
@@ -5022,26 +5013,6 @@ class FileMgr
     }
   }
  
-
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Generate a warning message when checksums of working files with actions are updated.
-   */ 
-  private void 
-  warnCheckSumUpdated
-  (
-   String title, 
-   Path wpath, 
-   Path path
-  ) 
-  {
-    Path p = new Path(wpath, path); 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Sum, LogMgr.Level.Warning,
-       "Checksum rebuilt by " + title + " for file which has an enabled Action: " + p); 
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
