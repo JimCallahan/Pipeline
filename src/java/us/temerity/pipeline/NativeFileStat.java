@@ -1,4 +1,4 @@
-// $Id: NativeFileStat.java,v 1.4 2009/10/28 06:06:17 jim Exp $
+// $Id: NativeFileStat.java,v 1.5 2010/01/20 02:03:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -117,6 +117,15 @@ class NativeFileStat
   isDirectory() 
   {
     return ((pMode & sIFMT) == sIFDIR);
+  }
+ 
+  /** 
+   * Whether the given path specifies a symbolic link.
+   */ 
+  public boolean
+  isSymlink() 
+  {
+    return ((pMode & sIFMT) == sIFLNK); 
   }
  
 
@@ -262,8 +271,10 @@ class NativeFileStat
    * Useful file mode bitmask values.
    */ 
   private static final int sIFMT  = 0170000;  /* bit mask for the file type bit fields */
+  private static final int sIFLNK = 0120000;  /* symbolic link */   
   private static final int sIFREG = 0100000;  /* regular file */
   private static final int sIFDIR = 0040000;  /* directory */   
+
 
 
 
