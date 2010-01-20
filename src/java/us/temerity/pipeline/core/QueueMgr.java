@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.160 2010/01/17 05:00:21 jim Exp $
+// $Id: QueueMgr.java,v 1.161 2010/01/20 00:21:16 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4182,6 +4182,7 @@ class QueueMgr
       
       {
         names = new TreeSet<String>(pAdminPrivileges.getWorkGroups().getUsers());
+        names.addAll(pAdminPrivileges.getWorkGroups().getGroups());
         for (QueueHostMod mod : finalChanges.values()) {
           if (mod.isReservationModified()) {
             String user = mod.getReservation();
@@ -4430,8 +4431,10 @@ class QueueMgr
 	    /* user reservations */ 
 	    if(qmod.isReservationModified()) {
 	      String rname = qmod.getReservation();
+	      WorkGroups wgroups = pAdminPrivileges.getWorkGroups(); 
 	      if((rname == null) || 
-                 pAdminPrivileges.getWorkGroups().getUsers().contains(rname)) {
+                  wgroups.getUsers().contains(rname) ||
+                  wgroups.getGroups().contains(rname)) {
 	        host.setReservation(rname);
 	        if(modifiedHosts != null) 
 	          modifiedHosts.add(hname);
