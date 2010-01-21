@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.161 2010/01/20 00:21:16 jesse Exp $
+// $Id: QueueMgr.java,v 1.162 2010/01/21 07:31:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13144,36 +13144,37 @@ class QueueMgr
           /* update job information */
           QueueJobInfo info = getJobInfo(tm, jobID); 
           if(info != null) {
-              switch(info.getState()) {
-              case Preempted: 
-                preempted = true;
-                break;
+            switch(info.getState()) {
+            case Preempted: 
+              preempted = true;
+              break;
               
-              default:
-                {
-                  JobState prevState = null;
-                  if(isTerminal != null) {
-                    if(isTerminal) {
-                      LogMgr.getInstance().log
-                        (LogMgr.Kind.Net, LogMgr.Level.Warning, 
-                         "Treating job (" + jobID + ") as Failed because the Job Manager " + 
-                         "(" + pHostname + ") was manually Shutdown before establishing " + 
-                         "whether the job had completed."); 
-                      
-                      prevState = info.exited(null);
-                    }
-                    else {
-                      prevState = info.limbo(pHostname);
-                    }
+            default:
+              {
+                JobState prevState = null;
+                if(isTerminal != null) {
+                  if(isTerminal) {
+                    LogMgr.getInstance().log
+                      (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+                       "Treating job (" + jobID + ") as Failed because the Job Manager " + 
+                       "(" + pHostname + ") was manually Shutdown before establishing " + 
+                       "whether the job had completed."); 
+                    
+                    prevState = info.exited(null);
                   }
                   else {
-                    prevState = info.exited(results);
+                    prevState = info.limbo(pHostname);
                   }
-                  pJobCounters.update(tm, prevState, info);
-                  if(!remonitored) 
-                    finishedInfo = new QueueJobInfo(info);
                 }
+                else {
+                  prevState = info.exited(results);
+                }
+                pJobCounters.update(tm, prevState, info);
+                if(!remonitored) 
+                  finishedInfo = new QueueJobInfo(info);
               }
+            }
+
             pWriteJobInfoList.add(info.getJobID());
             pWriterSemaphore.release();
           }
