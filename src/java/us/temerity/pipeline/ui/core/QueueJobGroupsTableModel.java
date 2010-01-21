@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.14 2009/12/18 23:00:36 jesse Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.15 2010/01/21 01:34:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -210,12 +210,7 @@ class QueueJobGroupsTableModel
       case 1:
 	{
 	  double[] dist = pJobStateDist.get(group.getGroupID());
-	  StringBuilder buf = new StringBuilder();
-	  int wk;
-	  for(wk=0; wk<dist.length; wk++) 
-	    buf.append(dist[wk] + ":");
-
-	  value = buf.toString();
+	  value = new Distribution(dist); 
 	}
 	break;
 
@@ -335,6 +330,71 @@ class QueueJobGroupsTableModel
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private 
+  class Distribution
+    implements Comparable<Distribution> 
+  {
+    public 
+    Distribution
+    (
+     double[] dist
+    ) 
+    {
+      for(JobState jstate : JobState.all()) {
+        switch(jstate) {
+        case Queued:
+        case Preempted: 
+        case Paused:
+          pPending += dist[jstate.ordinal()];
+          break;
+          
+        case Running:
+        case Limbo:
+          pRunning += dist[jstate.ordinal()];
+          break;
+            
+        case Aborted:
+        case Finished:
+        case Failed:
+          pDone += dist[jstate.ordinal()];
+        }
+      }
+    }
+
+    public int 	
+    compareTo
+    (
+     Distribution d
+    ) 
+    {
+      if(ExtraMath.equiv(pPending, d.pPending)) {
+        if(ExtraMath.equiv(pRunning, d.pRunning)) {
+          if(ExtraMath.equiv(pDone, d.pDone)) {
+            return 0;
+          }
+          else {
+            return ((pDone < d.pDone) ? -1 : 1);
+          }
+        }
+        else {
+          return ((pRunning < d.pRunning) ? -1 : 1);
+        }
+      }
+      else {
+        return ((pPending < d.pPending) ? -1 : 1);
+      }
+    }
+
+    private double pPending; 
+    private double pRunning; 
+    private double pDone; 
+  }
+     
 
 
   /*----------------------------------------------------------------------------------------*/
