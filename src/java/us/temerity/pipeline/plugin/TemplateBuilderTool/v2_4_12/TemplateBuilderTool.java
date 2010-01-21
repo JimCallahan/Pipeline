@@ -1,8 +1,7 @@
-// $Id: TemplateBuilderTool.java,v 1.2 2009/11/03 03:48:00 jesse Exp $
+// $Id: TemplateBuilderTool.java,v 1.3 2010/01/21 21:39:41 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateBuilderTool.v2_4_12;
 
-import java.lang.reflect.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
@@ -83,39 +82,14 @@ class TemplateBuilderTool
     BuilderInformation info = 
       new BuilderInformation(true, false, false, false, params);
     
-//    BaseBuilderCollection collection = 
-//      PluginMgrClient.getInstance().newBuilderCollection
-//        ("Template", new VersionID("2.4.12"), "Temerity");
-//    
-//    Class[] arguments = {MasterMgrClient.class, QueueMgrClient.class, 
-//                         BuilderInformation.class, String.class, String.class, String.class};
-//    
-//    Constructor construct = collection.getBuilderConstructor("TemplateInfoBuilder", arguments);
-
     BaseBuilderCollection collection = 
       PluginMgrClient.getInstance().newBuilderCollection
         ("TemplateGlue", new VersionID("2.4.12"), "Temerity");
-    
-//    Class[] arguments = {MasterMgrClient.class, QueueMgrClient.class, 
-//                         BuilderInformation.class};
-    
-//  Constructor construct = collection.getBuilderConstructor("TemplateGlueBuilder", arguments);
     
     BaseBuilder builder = 
       collection.instantiateBuilder
         ("TemplateGlueBuilder", new MasterMgrClient(), new QueueMgrClient(), info);
 
-    try {
-//      builder = (BaseBuilder) construct.newInstance
-//        (mclient, qclient, info, pPrimary, getAuthor(), getView());
-//      builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
-    }
-    catch (Exception ex) {
-      String message = Exceptions.getFullMessage
-        ("Could not create TemplateGlueBuilder constructor", ex);
-      throw new PipelineException(message);
-    }
-    
     Level opLevel = LogMgr.getInstance().getLevel(Kind.Ops);
     switch(opLevel) {
     case Info:
@@ -125,6 +99,12 @@ class TemplateBuilderTool
       break;
     }
     
+    if (builder == null) {
+      throw new PipelineException
+        ("For some reason, the Template Glue Builder does not appear to be installed or " +
+         "at least cannot be instantiated.");
+    }
+      
     builder.run();
     
     return false;
