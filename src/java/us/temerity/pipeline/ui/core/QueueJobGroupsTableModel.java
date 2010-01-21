@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.15 2010/01/21 01:34:17 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.16 2010/01/21 01:36:56 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -372,13 +372,13 @@ class QueueJobGroupsTableModel
      Distribution d
     ) 
     {
-      if(ExtraMath.equiv(pPending, d.pPending)) {
+      if(ExtraMath.equiv(pDone, d.pDone)) {
         if(ExtraMath.equiv(pRunning, d.pRunning)) {
-          if(ExtraMath.equiv(pDone, d.pDone)) {
+          if(ExtraMath.equiv(pPending, d.pPending)) {
             return 0;
           }
           else {
-            return ((pDone < d.pDone) ? -1 : 1);
+            return ((pPending < d.pPending) ? -1 : 1);
           }
         }
         else {
@@ -386,7 +386,7 @@ class QueueJobGroupsTableModel
         }
       }
       else {
-        return ((pPending < d.pPending) ? -1 : 1);
+        return ((pDone < d.pDone) ? -1 : 1);
       }
     }
 
