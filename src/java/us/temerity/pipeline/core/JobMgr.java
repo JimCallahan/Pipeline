@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.53 2009/12/14 21:48:22 jim Exp $
+// $Id: JobMgr.java,v 1.54 2010/01/21 07:33:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1204,16 +1204,14 @@ class JobMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
 	   "Finished Job: " + jobID);
+
+        /* compute checksums for all existing target files */ 
+        CheckSumCache cache = computeCheckSums(agenda);
       
-        /* make sure all target files of the job exist, 
-             if they are all there compute their checksums... */ 
-        CheckSumCache cache = null;
+        /* if successful, make sure all target files of the job exist */ 
         int exitCode = pProc.getExitCode();
         if(exitCode == BaseSubProcess.SUCCESS) {
-          if(targetsExist(agenda)) {
-            cache = computeCheckSums(agenda);
-          }
-          else {
+          if(!targetsExist(agenda)) {
             exitCode = 667;
 
             try {
@@ -1281,15 +1279,17 @@ class JobMgr
       Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent());
       for(FileSeq fseq : agenda.getTargetSequences()) {
         for(Path fpath : fseq.getPaths()) {
-          try {
-            cache.recompute(PackageInfo.sProdPath, fpath.toOsString()); 
-          }
-          catch(IOException ex) {    
-            Path path = new Path(wpath, fpath);
-            LogMgr.getInstance().log
-              (LogMgr.Kind.Sum, LogMgr.Level.Warning, 
-               "Unable to compute the checksum for target file (" + path + ") of job " + 
-               "(" + agenda.getJobID()  + "):\n\n  " + ex.getMessage()); 
+          Path path = new Path(wpath, fpath);
+          if(path.toFile().exists()) {
+            try {
+              cache.recompute(PackageInfo.sProdPath, fpath.toOsString()); 
+            }
+            catch(IOException ex) {    
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Sum, LogMgr.Level.Warning, 
+                 "Unable to compute the checksum for target file (" + path + ") of job " + 
+                 "(" + agenda.getJobID()  + "):\n\n  " + ex.getMessage()); 
+            }
           }
         }
       }
