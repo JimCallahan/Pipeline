@@ -1,4 +1,4 @@
-// $Id: CheckSumCache.java,v 1.4 2010/01/18 18:21:19 jim Exp $
+// $Id: CheckSumCache.java,v 1.5 2010/01/22 00:12:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -278,7 +278,8 @@ class CheckSumCache
       Path wpath = new Path(prodDir, pNodeID.getWorkingParent());
       Path path = new Path(wpath, fname);
 
-      if((warning != null) && LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Warning)) {
+      if((warning != null) && 
+         LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Warning)) {
         if(found == null) {
           LogMgr.getInstance().log
             (LogMgr.Kind.Sum, LogMgr.Level.Warning, 

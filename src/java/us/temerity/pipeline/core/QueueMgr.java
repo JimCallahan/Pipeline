@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.162 2010/01/21 07:31:32 jim Exp $
+// $Id: QueueMgr.java,v 1.163 2010/01/22 00:13:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13128,16 +13128,21 @@ class QueueMgr
           }
           tm.resume();
           
-          pUserBalanceInfo.addJobChange(pHostname, pJob.getJobID(), null, false);
-          String bgroup = null;
-          synchronized (pHosts) {
-           QueueHost host = pHosts.get(pHostname);
-           if (host != null)
-             bgroup = host.getBalanceGroup();
-          }
-          if (bgroup != null) {
-            synchronized (pJobsFinishedLock) {
-             pJobsFinished.apply(bgroup, pJob.getNodeID().getAuthor(), 1); 
+          /* update the user balance group */ 
+          {
+            pUserBalanceInfo.addJobChange(pHostname, pJob.getJobID(), null, false);
+
+            String bgroup = null;
+            synchronized(pHosts) {
+              QueueHost host = pHosts.get(pHostname);
+              if(host != null)
+                bgroup = host.getBalanceGroup();
+            }
+
+            if(bgroup != null) {
+              synchronized(pJobsFinishedLock) {
+                pJobsFinished.apply(bgroup, pJob.getNodeID().getAuthor(), 1); 
+              }
             }
           }
           
