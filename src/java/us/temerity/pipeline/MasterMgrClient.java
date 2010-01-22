@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.156 2010/01/08 09:38:10 jim Exp $
+// $Id: MasterMgrClient.java,v 1.157 2010/01/22 00:14:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -4539,6 +4539,68 @@ class MasterMgrClient
     NodeModifyPropertiesReq req = new NodeModifyPropertiesReq(id, mod);
 
     Object obj = performTransaction(MasterRequest.ModifyProperties, req);
+    handleSimpleResponse(obj);
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the LastCTimeUpdate property of a working version. <P>  
+   * 
+   * Only privileged users may call this method. <P> 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param stamp 
+   *   The new timestamp to give the LastCTimeUpdate property.
+   * 
+   * @throws PipelineException
+   *   If unable to set the node properties.
+   */
+  public synchronized void 
+  setLastCTimeUpdate
+  ( 
+   String author, 
+   String view, 
+   String name,  
+   long stamp
+  ) 
+    throws PipelineException
+  {
+    setLastCTimeUpdate(new NodeID(author, view, name), stamp); 
+  }
+
+  /** 
+   * Set the LastCTimeUpdate property of a working version. <P>  
+   * 
+   * Only privileged users may call this method. <P> 
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param stamp 
+   *   The new timestamp to give the LastCTimeUpdate property.
+   * 
+   * @throws PipelineException
+   *   If unable to set the node properties.
+   */
+  public synchronized void 
+  setLastCTimeUpdate
+  ( 
+   NodeID nodeID, 
+   long stamp
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeSetLastCTimeUpdateReq req = new NodeSetLastCTimeUpdateReq(nodeID, stamp); 
+
+    Object obj = performTransaction(MasterRequest.SetLastCTimeUpdate, req);
     handleSimpleResponse(obj);
   }
 

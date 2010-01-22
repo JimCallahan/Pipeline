@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.334 2010/01/17 05:00:21 jim Exp $
+// $Id: MasterMgr.java,v 1.335 2010/01/22 00:14:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1950,7 +1950,7 @@ class MasterMgr
         pMinFreeMemory.set(bytes); 
       }
       else {
-        pMinFreeMemory.set(maxMem / 5L);
+        pMinFreeMemory.set(maxMem / 7L);  // 14.2% of maximum
       }
 
       bytes = pMinFreeMemory.get();
@@ -7769,7 +7769,8 @@ class MasterMgr
    * 
    * @return
    *   <CODE>NodeGetWorkingNamesRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine which working versions match the pattern.
+   *   <CODE>FailureRsp</CODE> if unable to determine which working versions match the 
+   *   pattern.
    */ 
   public Object 
   getWorkingNames
@@ -8070,6 +8071,67 @@ class MasterMgr
     }      
   }
   
+  /** 
+   * Set the LastCTimeUpdate property of a working version. <P> 
+   * 
+   * 
+   * @param req 
+   *   The modify properties request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set LastCTimeUpdate on the working version.
+   */
+  public Object
+  setLastCTimeUpdate
+  (
+   NodeSetLastCTimeUpdateReq req
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+    String name = nodeID.getName(); 
+    long stamp = req.getTimeStamp();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setCTimeUpdate(): " + nodeID + " [" + stamp + "]");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+    workingLock.writeLock().lock();
+    try {
+      timer.resume();
+
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Manager privileges may set the LastCTimeUpdate!"); 
+
+      /* get the working version */ 
+      WorkingBundle bundle = getWorkingBundle(nodeID);
+      NodeMod mod = new NodeMod(bundle.getVersion());
+      if(mod.isFrozen()) 
+	throw new PipelineException
+	  ("The LastCTimeUpdate of frozen node (" + nodeID + ") cannot be modified!");
+      
+      mod.setLastCTimeUpdate(stamp); 
+
+      /* write the new working version to disk */ 
+      writeWorkingVersion(nodeID, mod);
+      
+      /* update the bundle */ 
+      bundle.setVersion(mod);
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      workingLock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }      
+  }
+
   /**
    * Create or modify an existing link between the working versions. <P> 
    * 

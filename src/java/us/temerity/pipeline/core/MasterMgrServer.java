@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.115 2010/01/14 04:18:32 jim Exp $
+// $Id: MasterMgrServer.java,v 1.116 2010/01/22 00:14:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1230,6 +1230,15 @@ class MasterMgrServer
                 {
                   NodeModifyPropertiesReq req = (NodeModifyPropertiesReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.modifyProperties(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case SetLastCTimeUpdate:
+                {
+                  NodeSetLastCTimeUpdateReq req = 
+                    (NodeSetLastCTimeUpdateReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.setLastCTimeUpdate(req));
                   objOut.flush(); 
                 }
                 break;

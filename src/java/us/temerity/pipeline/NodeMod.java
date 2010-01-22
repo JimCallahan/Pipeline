@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.68 2010/01/13 07:08:59 jim Exp $
+// $Id: NodeMod.java,v 1.69 2010/01/22 00:14:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -399,12 +399,24 @@ class NodeMod
   }
 
   /**
-   * Update the last critical modification timestamp.
+   * Set the timestamp of last update of the change time (ctime) to now.
    */
   public void 
   updateLastCTimeUpdate() 
   {
     pLastCTimeUpdate = TimeStamps.now();
+  }
+  
+  /**
+   * Set the timestamp of last update of the change time (ctime) to the given time.
+   */
+  public void 
+  setLastCTimeUpdate
+  (
+   long stamp
+  ) 
+  {
+    pLastCTimeUpdate = stamp;
   }
   
   

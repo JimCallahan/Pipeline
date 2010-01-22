@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.71 2010/01/08 09:38:10 jim Exp $
+// $Id: MasterRequest.java,v 1.72 2010/01/22 00:14:33 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -605,6 +605,11 @@ enum MasterRequest
    * An instance of {@link NodeModifyPropertiesReq} is next.
    */
   ModifyProperties, 
+
+  /**
+   * An instance of {@link NodeSetLastCTimeUpdateReq} is next.
+   */
+  SetLastCTimeUpdate, 
 
   /**
    * An instance of {@link NodeLinkReq} is next.
