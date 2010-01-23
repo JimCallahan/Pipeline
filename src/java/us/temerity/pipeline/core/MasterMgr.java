@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.335 2010/01/22 00:14:33 jim Exp $
+// $Id: MasterMgr.java,v 1.336 2010/01/23 00:45:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11923,7 +11923,7 @@ class MasterMgr
 	  
           /* create or update the checksum cache for the new working version */ 
           {
-            /* copy the checksums from the checked-in version without updated-on timestamps */ 
+            /* copy checksums from the checked-in version without updated-on timestamps */ 
             CheckSumCache wcache = new CheckSumCache(nodeID, vsn); 
         
             /* lookup timestamps of the working links to set the checksum updated-on times */ 
