@@ -1,4 +1,4 @@
-// $Id: NodeSetLastCTimeUpdateReq.java,v 1.1 2010/01/22 00:14:33 jim Exp $
+// $Id: NodeSetLastCTimeUpdateReq.java,v 1.2 2010/01/23 00:45:03 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -82,7 +82,7 @@ class NodeSetLastCTimeUpdateReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  ///  private static final long serialVersionUID = ;
+  private static final long serialVersionUID = -8539627572203148725L;
 
   
 
