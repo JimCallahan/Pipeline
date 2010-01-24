@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.163 2010/01/22 00:13:37 jim Exp $
+// $Id: QueueMgr.java,v 1.164 2010/01/24 01:58:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5134,9 +5134,6 @@ class QueueMgr
           nodeJobIDs.putAll(table);
       }
 	  
-      CheckSumCache cache = new CheckSumCache(nodeID); 
-      cache.resetModified(); 
-      
       timer.aquire();  
       synchronized(pJobInfo) {
         timer.resume();
@@ -5147,6 +5144,8 @@ class QueueMgr
         ArrayList<Long>     jobIDs = new ArrayList<Long>(frames);
         ArrayList<JobState> states = new ArrayList<JobState>(frames);
         
+        TreeMap<Long,CheckSumCache> jobCaches = new TreeMap<Long,CheckSumCache>();
+
         for(File file : fseq.getFiles()) {
           Long jobID = nodeJobIDs.get(file);	  
           JobState jstate = null;
@@ -5157,13 +5156,13 @@ class QueueMgr
             
             if((info != null) && (info.getSubmittedStamp() > stamp)) {
               jstate = info.getState();
-              
-              QueueJobResults results = info.getResults();
-              if(results != null) {
-                CheckSumCache jcache = results.getCheckSumCache();
-                if(jcache != null) {
-                  CheckSumCache ncache = new CheckSumCache(latestUpdates, jcache);
-                  cache.addAll(ncache); 
+
+              if(!jobCaches.containsKey(jobID)) {
+                QueueJobResults results = info.getResults();
+                if(results != null) {
+                  CheckSumCache jcache = results.getCheckSumCache();
+                  if(jcache != null) 
+                    jobCaches.put(jobID, jcache);
                 }
               }
             }
@@ -5171,9 +5170,14 @@ class QueueMgr
               jobID = null;
             }
           }
+
           jobIDs.add(jobID);
           states.add(jstate);
         }
+        
+        CheckSumCache cache = new CheckSumCache(nodeID); 
+        for(CheckSumCache jcache : jobCaches.values()) 
+          cache.addDelta(latestUpdates, jcache);
         
         return new QueueGetJobStatesAndCheckSumsRsp(timer, nodeID, jobIDs, states, cache);
       }
@@ -11815,6 +11819,11 @@ class QueueMgr
     throws PipelineException
   {
     long jobID = info.getJobID();
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Job Info: " + jobID);
+
     Object lock = getJobInfoFileLock(jobID);
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-info/" + jobID);
@@ -11876,7 +11885,7 @@ class QueueMgr
         if(file.isFile()) {
           LogMgr.getInstance().log
             (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-             "Reading Job Information: " + jobID);
+             "Reading Job Info: " + jobID);
 
           try {
             return((QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", file));
@@ -11985,7 +11994,7 @@ class QueueMgr
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Deleting Job Information: " + jobID);
+	 "Deleting Job Info: " + jobID);
 
       if(!file.isFile()) 
 	throw new PipelineException
@@ -12487,7 +12496,8 @@ class QueueMgr
                   writeJobInfo(info);
                 }
 
-                /* initialize the table of working area files to the jobs which create them */ 
+                /* initialize the table of working area files to the jobs which 
+                   create them */ 
                 {
                   ActionAgenda agenda = job.getActionAgenda();
                   NodeID nodeID = agenda.getNodeID();

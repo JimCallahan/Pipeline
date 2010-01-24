@@ -1,4 +1,4 @@
-// $Id: CheckSumCache.java,v 1.5 2010/01/22 00:12:04 jim Exp $
+// $Id: CheckSumCache.java,v 1.6 2010/01/24 01:58:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -108,35 +108,6 @@ class CheckSumCache
       TransientCheckSum osum = ocache.pCheckSums.get(ofnames.get(wk)); 
       if(osum != null) 
         pCheckSums.put(nfnames.get(wk), new TransientCheckSum(osum));
-    }
-  }
-
-  /** 
-   * Construct a new cache by copying the checksums from another cache which are newer
-   * than the given dates for a specific set of files. 
-   * 
-   * @param latestUpdates
-   *   The timestamps of each currently cached checksum indexed by primary/secondary file.
-   * 
-   * @param ocache
-   *   The checksum cache which contains the checksums to copy.
-   */
-  public  
-  CheckSumCache
-  (
-   TreeMap<String,Long> latestUpdates,
-   CheckSumCache ocache
-  )
-  {
-    pNodeID = ocache.getNodeID(); 
-
-    pCheckSums = new TreeMap<String,TransientCheckSum>();
-    for(Map.Entry<String,TransientCheckSum> entry : ocache.pCheckSums.entrySet()) {
-      String fname = entry.getKey();
-      TransientCheckSum osum = entry.getValue(); 
-      Long stamp = latestUpdates.get(fname); 
-      if((osum != null) && ((stamp == null) || osum.isValidAfter(stamp)))
-        pCheckSums.put(fname, new TransientCheckSum(osum));
     }
   }
 
@@ -303,6 +274,25 @@ class CheckSumCache
 
       pCheckSums.put(fname, new TransientCheckSum(path, stamp+1L));
       pWasModified = true;
+
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finest)) {
+        long updatedOn = stamp+1;
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Sum, LogMgr.Level.Finest, 
+           "Computed New CheckSum for: " + path + 
+           "  Updated On: " + TimeStamps.format(updatedOn) + " (" + updatedOn + ")"); 
+      }
+    }
+    else {
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finest)) {
+        Path wpath = new Path(prodDir, pNodeID.getWorkingParent());
+        Path path = new Path(wpath, fname);
+        long updatedOn = found.getUpdatedOn();
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Sum, LogMgr.Level.Finest, 
+           "Kept Existing CheckSum for: " + path + "\n" + 
+           "  Last Updated: " + TimeStamps.format(updatedOn) + " (" + updatedOn + ")"); 
+      }
     }
   }
   
@@ -352,9 +342,10 @@ class CheckSumCache
   /**
    * Replace the updated on timestamp associated with a checksum already being cached. <P> 
    * 
-   * This is used internally by various server processes to update checksum timestamps without 
-   * recomputing them.  Often used in combination with {@link #recompute} which initially
-   * sets a 0L timestamp which this method then replaces with a more useful timestamp.
+   * This is used internally by various server processes to update checksum timestamps 
+   * without recomputing them.  Often used in combination with {@link #recompute} which 
+   * initially sets a 0L timestamp which this method then replaces with a more useful 
+   * timestamp.
    * 
    * @param fname
    *   The short filename without any directory components.
@@ -409,12 +400,23 @@ class CheckSumCache
     if((found == null) || checksum.isNewerThan(found)) {
       pCheckSums.put(fname, checksum); 
       pWasModified = true;
+
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finest)) {
+        Path wpath = new Path(PackageInfo.sProdPath, pNodeID.getWorkingParent());
+        Path path = new Path(wpath, fname);
+        long updatedOn = checksum.getUpdatedOn();
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Sum, LogMgr.Level.Finest, 
+           "Added " + ((found != null) ? "Newer" : "Missing") + " CheckSum to Cache for: " + 
+           path + "\n" + 
+           "  Updated On: " + TimeStamps.format(updatedOn) + " (" + updatedOn + ")"); 
+      }
     }
   }
   
   /**
    * Add all of the checksums stored in another cache to this one, but only the checksums
-   * that was generated after any corresponding checksum already stored for the file.
+   * that were generated after any corresponding checksum already stored for the file.
    */ 
   public void 
   addAll
@@ -425,6 +427,53 @@ class CheckSumCache
     for(Map.Entry<String,TransientCheckSum> entry : sums.pCheckSums.entrySet()) 
       add(entry.getKey(), entry.getValue());
   }
+
+  /**
+   * Add all of the checksums stored in another cache to this one, but only the checksums
+   * that were generated after the given dates for a specific set of files. <P> 
+   * 
+   * This is useful if you have the latestUpdates for another CheckSumCache and want to 
+   * collate all of the checksums that are newer than the other CheckSumCache into this 
+   * cache which can then be transmitted over the network and applied to the other cache
+   * using {@link #addAll addAll()}.
+   * 
+   * @param latestUpdates
+   *   The timestamps of each currently cached checksum indexed by primary/secondary file.
+   * 
+   * @param ocache
+   *   The checksum cache which contains the checksums to copy.
+   */ 
+  public void 
+  addDelta
+  (
+   TreeMap<String,Long> latestUpdates,
+   CheckSumCache ocache
+  ) 
+  {
+    for(Map.Entry<String,TransientCheckSum> entry : ocache.pCheckSums.entrySet()) {
+      String fname = entry.getKey();
+      TransientCheckSum osum = entry.getValue(); 
+      Long stamp = latestUpdates.get(fname); 
+      if((osum != null) && ((stamp == null) || osum.isValidAfter(stamp))) {
+        pCheckSums.put(fname, new TransientCheckSum(osum));
+        pWasModified = true;
+
+        if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finest)) {
+          Path wpath = new Path(PackageInfo.sProdPath, pNodeID.getWorkingParent());
+          Path path = new Path(wpath, fname);
+          long updatedOn = osum.getUpdatedOn();
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Sum, LogMgr.Level.Finest, 
+             "Adding " + ((stamp == null) ? "Missing" : "Newer") + " CheckSum to " + 
+             "Delta-Cache for: " + path + "\n" + 
+             "  Updated On: " + TimeStamps.format(updatedOn) + " (" + updatedOn + ")" +  
+             ((stamp == null) ? "" : 
+              "\n    External: " + TimeStamps.format(stamp) + " (" + stamp + ")"));   
+        }
+      }
+    }
+  }
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -438,8 +487,17 @@ class CheckSumCache
    String fname
   )
   {
-    if(pCheckSums.remove(fname) != null) 
+    if(pCheckSums.remove(fname) != null) {
       pWasModified = true;
+
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finest)) {
+        Path wpath = new Path(PackageInfo.sProdPath, pNodeID.getWorkingParent());
+        Path path = new Path(wpath, fname); 
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Sum, LogMgr.Level.Finest, 
+           "Removed Cached CheckSum for: " + path); 
+      }
+    }
   }
   
   /**
@@ -452,10 +510,8 @@ class CheckSumCache
   )
   {
     for(FileSeq fseq : fseqs) {
-      for(Path path : fseq.getPaths()) {
-        if(pCheckSums.remove(path.toString()) != null) 
-          pWasModified = true;
-      }
+      for(Path path : fseq.getPaths()) 
+        remove(path.toString());
     }
   }
   
@@ -479,8 +535,21 @@ class CheckSumCache
       }
     }      
     
-    if(!current.keySet().equals(pCheckSums.keySet()))
+    if(!current.keySet().equals(pCheckSums.keySet())) {
       pWasModified = true;
+
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finest)) {
+        Path wpath = new Path(PackageInfo.sProdPath, pNodeID.getWorkingParent());
+        for(String fname : current.keySet()) {
+          if(pCheckSums.get(fname) == null) {
+            Path path = new Path(wpath, fname); 
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Sum, LogMgr.Level.Finest, 
+               "Removed not Excepted Cached CheckSum for: " + path); 
+          }
+        }
+      }
+    }
   }
   
   /**
@@ -492,6 +561,10 @@ class CheckSumCache
     if(!pCheckSums.isEmpty()) {
       pCheckSums.clear(); 
       pWasModified = true;
+
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Sum, LogMgr.Level.Finest, 
+         "Removed All Checksums from Cache for Node: " + pNodeID); 
     }
   }
   
