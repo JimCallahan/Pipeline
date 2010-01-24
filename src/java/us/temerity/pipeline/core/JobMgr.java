@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.54 2010/01/21 07:33:40 jim Exp $
+// $Id: JobMgr.java,v 1.55 2010/01/24 00:54:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -625,7 +625,7 @@ class JobMgr
       case Unix:
       case MacOS:
 	program = "rm";
-	args.add("-f");
+	args.add("-rf");
 	args.add(dir.toString());
 	break;
 	
