@@ -15,7 +15,7 @@ import java.util.*;
  */
 public 
 class DeleteJobGroupExtFactory
-  implements QueueTaskFactory
+  implements QueueTestFactory, QueueTaskFactory
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -24,15 +24,25 @@ class DeleteJobGroupExtFactory
   /**
    * Construct a task factory.
    * 
+   * @param user
+   *   The name of the user attempting to delete the job group.
+   * 
+   * @param distribution
+   *   Get the percentage of jobs in the group associated with a given JobState.
+   * 
    * @param group
    *   The completed job group.
    */ 
   public 
   DeleteJobGroupExtFactory
   (
+   String user, 
+   TreeMap<JobState,Double> distribution, 
    QueueJobGroup group
   )      
   {
+    pUser  = user; 
+    pDist  = distribution;
     pGroup = group; 
   }
 
@@ -40,6 +50,37 @@ class DeleteJobGroupExtFactory
 
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Does the extension support pre-tests for this type of operation.
+   */ 
+  public boolean 
+  hasTest
+  (   
+   BaseQueueExt ext
+  )
+  {
+    return ext.hasPreDeleteJobGroupTest();
+  }
+
+  /**
+   * Perform the pre-test passed for this type of operation.
+   * 
+   * @throws PipelineException
+   *   If the test fails.
+   */ 
+  public void
+  performTest
+  (   
+   BaseQueueExt ext
+  )
+    throws PipelineException
+  {
+    ext.preDeleteJobGroupTest(pUser, pDist, pGroup);
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -103,6 +144,16 @@ class DeleteJobGroupExtFactory
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the user attempting to delete the job group.
+   */
+  private String  pUser; 
+
+  /**
+   * The percentage of jobs in the group associated with a given JobState.
+   */ 
+  private TreeMap<JobState,Double> pDist; 
 
   /**
    * The completed job group.

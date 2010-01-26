@@ -62,6 +62,16 @@ LogQueueActivityExt
 	addParam(param);
       }
 
+
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aAllowDeleteJobGroup, 
+	   "Whether to allow deletion of job groups.",
+	   true);
+	addParam(param);
+      }
+
       {
 	ExtensionParam param = 
 	  new BooleanExtensionParam
@@ -202,7 +212,10 @@ LogQueueActivityExt
 	LayoutGroup sub = new LayoutGroup
 	  ("ServerOps", "General queue mananger server operations.", true); 
 	sub.addEntry(aLogSubmitJobs); 
+	sub.addSeparator();
+        sub.addEntry(aAllowDeleteJobGroup); 
 	sub.addEntry(aLogDeleteJobGroup); 
+	sub.addSeparator();
 	sub.addEntry(aLogCleanupJobs); 
 	sub.addSeparator();
 	sub.addEntry(aAllowAddHost); 
@@ -389,6 +402,48 @@ LogQueueActivityExt
     LogMgr.getInstance().log
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());        
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to test before a completed job group has been marked for removal.
+   */  
+  public boolean
+  hasPreDeleteJobGroupTest() 
+  {
+    return true;
+  }
+
+  /**
+   * Test to perform before a completed job group has been marked for removal.
+   * 
+   * @param user
+   *   The name of the user attempting to delete the job group.
+   * 
+   * @param distribution
+   *   Get the percentage of jobs in the group associated with a given JobState.
+   * 
+   * @param group
+   *   The completed job group.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preDeleteJobGroupTest
+  (
+   String user, 
+   TreeMap<JobState,Double> distribution, 
+   QueueJobGroup group   
+  ) 
+    throws PipelineException
+  {
+    Boolean tf = (Boolean) getParamValue(aAllowDeleteJobGroup); 
+    if((tf == null) || !tf) 
+      throw new PipelineException
+	("Deleting job groups is not allowed!");
   }
 
 
@@ -1050,8 +1105,11 @@ LogQueueActivityExt
   private static final String  aEnableDelay  = "EnableDelay"; 
   private static final String  aDisableDelay = "DisableDelay"; 
 
-  private static final String  aLogSubmitJobs     = "LogSubmitJobs"; 
-  private static final String  aLogDeleteJobGroup = "LogDeleteJobGroup"; 
+  private static final String  aLogSubmitJobs = "LogSubmitJobs"; 
+
+  private static final String  aAllowDeleteJobGroup = "AllowDeleteJobGroup"; 
+  private static final String  aLogDeleteJobGroup   = "LogDeleteJobGroup"; 
+
   private static final String  aLogCleanupJobs    = "LogCleanupJobs"; 
 
   private static final String  aAllowAddHost     = "AllowAddHost"; 

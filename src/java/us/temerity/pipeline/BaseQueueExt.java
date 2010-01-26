@@ -186,6 +186,40 @@ class BaseQueueExt
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Whether to test before a completed job group has been marked for removal.
+   */  
+  public boolean
+  hasPreDeleteJobGroupTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before a completed job group has been marked for removal.
+   * 
+   * @param user
+   *   The name of the user attempting to delete the job group.
+   * 
+   * @param distribution
+   *   Get the percentage [0,1] of jobs in the group associated with a given JobState.
+   * 
+   * @param group
+   *   The completed job group.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preDeleteJobGroupTest
+  (
+   String user, 
+   TreeMap<JobState,Double> distribution, 
+   QueueJobGroup group   
+  ) 
+    throws PipelineException
+  {}
+
+  /**
    * Whether to run a task after a completed job group has been marked for removal.
    */  
   public boolean

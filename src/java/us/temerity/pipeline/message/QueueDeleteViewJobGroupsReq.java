@@ -57,7 +57,7 @@ class QueueDeleteViewJobGroupsReq
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the name of user which owens the working area.
+   * Get the name of user which owns the working area.
    */ 
   public String
   getAuthor() 

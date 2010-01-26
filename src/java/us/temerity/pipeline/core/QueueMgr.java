@@ -528,7 +528,8 @@ class QueueMgr
     /* fix the job group ID in all the jobs that are missing the ID (if necessary) */
     if(missingGroup.get()) { 
       TaskTimer timer = 
-        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Updating the JobGroupIDs in Jobs...");
+        LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, 
+                                       "Updating the JobGroupIDs in Jobs...");
       
       for(Entry<Long, QueueJobGroup> entry: pJobGroups.entrySet()) {
         Long id = entry.getKey();
@@ -7054,6 +7055,7 @@ class QueueMgr
       synchronized(pJobGroups) {
 	timer.resume();
 
+	String user = req.getRequestor(); 
 	for(Long groupID : groupAuthors.keySet()) {
 	  QueueJobGroup group = pJobGroups.get(groupID);
 	  if(group == null) 
@@ -7066,7 +7068,7 @@ class QueueMgr
 	      ("The author (" + group.getNodeID().getAuthor() + ") of group " + 
 	       "(" + groupID + ") did not match the specified author (" + author + ")!");
 
-	  deleteCompletedJobGroup(timer, group);
+	  deleteCompletedJobGroup(timer, user, group);
 	}
 
 	return new SuccessRsp(timer);
@@ -7123,10 +7125,11 @@ class QueueMgr
 	      dead.add(group);
 	  }
 	}
-	
+
+	String user = req.getRequestor(); 
 	for(QueueJobGroup group : dead) {
 	  try {
-	    deleteCompletedJobGroup(timer, group);
+	    deleteCompletedJobGroup(timer, user, group);
 	  }
 	  catch(PipelineException ex) {
 	  }
@@ -7171,10 +7174,11 @@ class QueueMgr
         for(Long groupID : pJobGroups.keySet()) 
           dead.add(pJobGroups.get(groupID));
 	
+	String user = req.getRequestor(); 
         for(QueueJobGroup group : dead) {   
           if(pAdminPrivileges.isQueueManaged(req, group.getNodeID())) {
             try {
-              deleteCompletedJobGroup(timer, group);
+              deleteCompletedJobGroup(timer, user, group);
             }
             catch(PipelineException ex) {
             }
@@ -7192,6 +7196,15 @@ class QueueMgr
   /**
    * Delete the completed job group with the given ID.
    * 
+   * @param timer
+   *   The task timer. 
+   * 
+   * @param user
+   *   The name of the user attempting to delete the job group.
+   * 
+   * @param group
+   *   The completed job group.
+   * 
    * @throws PipelineExceptio
    *   If the job group is not completed.
    */ 
@@ -7199,11 +7212,25 @@ class QueueMgr
   deleteCompletedJobGroup
   (    
    TaskTimer timer,
+   String user, 
    QueueJobGroup group
   ) 
     throws PipelineException 
   {
     Long groupID = group.getGroupID();
+
+    DeleteJobGroupExtFactory factory = null;
+    {
+      TreeMap<JobState,Double> dist = new TreeMap<JobState,Double>();
+      {
+        double d[] = pJobCounters.getDistribution(timer, group.getGroupID());
+        for(JobState jstate : JobState.all()) 
+          dist.put(jstate, d[jstate.ordinal()]); 
+      }
+      
+      factory = new DeleteJobGroupExtFactory(user, dist, group); 
+      performExtensionTests(timer, factory);
+    }
 
     timer.aquire();  
     synchronized(pJobInfo) {
@@ -7236,7 +7263,7 @@ class QueueMgr
     }
 
     /* post-delete group task */ 
-    startExtensionTasks(timer, new DeleteJobGroupExtFactory(group));
+    startExtensionTasks(timer, factory); 
   }
 
 
