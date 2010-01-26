@@ -2,18 +2,18 @@
 
 function usage
 {
-  echo "usage: unpack-site-profile [--cvs] site-profile"
+  echo "usage: unpack-site-profile --git site-profile"
   exit 1
 }
 
-cvs=0
+git=0
 case $# in 
   (1) 
     profile=$1;;
 
   (2) 
-    if [ $1 != "--cvs" ]; then usage; fi;
-    cvs=1;
+    if [ $1 != "--git" ]; then usage; fi;
+    git=1;
     profile=$2;;
 
   (*) 
@@ -45,25 +45,25 @@ fi
 echo "Saving Parameter Values in Plain Text..."
 java -cp ../../CryptoApp.jar CryptoApp $profile --params > $profile.txt
 
-if [ $cvs -eq 1 ]
+if [ $git -eq 1 ]
 then 
-  echo "Adding to CVS..."
-  cvs add -kb $profile $profile.txt 
+  echo "Adding to GIT..."
+  git add $profile $profile.txt 
   if [ -f $profile-users.glue ]
   then
-    cvs add -kb $profile-users.glue
+    git add $profile-users.glue
   fi
   if [ -f $profile-users.jpg ]
   then
-    cvs add -kb $profile-users.jpg
+    git add $profile-users.jpg
   fi
   if [ -f $profile-days.glue ]
   then
-    cvs add -kb $profile-days.glue
+    git add $profile-days.glue
   fi
   if [ -f $profile-days.jpg ]
   then
-    cvs add -kb $profile-days.jpg
+    git add $profile-days.jpg
   fi
 fi
 
