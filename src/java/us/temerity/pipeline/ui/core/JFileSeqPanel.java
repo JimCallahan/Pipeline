@@ -759,8 +759,12 @@ class JFileSeqPanel
     Map.Entry<FileSeq,Integer> entry = pTargetSeqs.firstEntry();
     VersionID vid = pTargetVersionID;
     if((entry != null) && (vid != null)) {
-      CompareTask task = new CompareTask(cname, cvid, cvendor, entry.getKey(), vid); 
-      task.start();
+      FileSeq fseq = entry.getKey();
+      if(fseq.isSingle()) {
+        String fname = fseq.getPath(0).toString();
+        CompareTask task = new CompareTask(cname, cvid, cvendor, fname, vid); 
+        task.start();
+      }
     }
   }
 
@@ -1128,7 +1132,7 @@ class JFileSeqPanel
      String cname,   
      VersionID cvid,
      String cvendor, 
-     FileSeq fseq, 
+     String fname, 
      VersionID vid
     ) 
     {
@@ -1137,7 +1141,7 @@ class JFileSeqPanel
       pComparatorName    = cname;
       pComparatorVersion = cvid; 
       pComparatorVendor  = cvendor; 
-      pFileSeq           = fseq; 
+      pFileName          = fname; 
       pVersionID         = vid; 
     }
 
@@ -1173,7 +1177,7 @@ class JFileSeqPanel
 	    File fileB = null;
 	    {
 	      Path path = new Path(PackageInfo.sRepoPath, 
-				   name + "/" + pVersionID + "/" + pFileSeq.toString());
+				   name + "/" + pVersionID + "/" + pFileName); 
 	      fileB = path.toFile();	      
 	    }
 
@@ -1183,7 +1187,7 @@ class JFileSeqPanel
 	      Path path = 
                 new Path(PackageInfo.sWorkPath, 
                          pParent.getAuthor() + "/" + pParent.getView() + pStatus.getName());
-	      Path wpath = new Path(path.getParentPath(), pFileSeq.toString());
+	      Path wpath = new Path(path.getParentPath(), pFileName);
 	      fileA = wpath.toFile();
 	    }
 
@@ -1234,7 +1238,7 @@ class JFileSeqPanel
     private String     pComparatorName;
     private VersionID  pComparatorVersion; 
     private String     pComparatorVendor; 
-    private FileSeq    pFileSeq; 
+    private String     pFileName; 
     private VersionID  pVersionID; 
   }
 
