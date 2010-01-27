@@ -1233,8 +1233,7 @@ class PluginMgr
       }
     }
     catch(Exception ex) {
-      return new FailureRsp(timer, 
-                            Exceptions.getFullMessage("Internal Error:", ex.getMessage()));
+      return new FailureRsp(timer, Exceptions.getFullMessage("Internal Error:", ex));
     }
     finally {
       pPluginLock.writeLock().unlock();

@@ -8009,7 +8009,7 @@ class QueueMgr
 
             String hname = info.getHostname();
             if(hname != null) {
-              KillTask task = new KillTask(hostname, jobID);
+              KillTask task = new KillTask(hname, jobID);
               task.start();
             }
 
