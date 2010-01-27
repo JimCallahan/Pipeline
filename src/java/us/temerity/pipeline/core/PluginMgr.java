@@ -973,263 +973,270 @@ class PluginMgr
     timer.aquire();
     pPluginLock.writeLock().lock();
     try {
-      timer.resume();
+      try {
+        timer.resume();
 
-      if(!pAdminPrivileges.isDeveloper(req))
-	throw new PipelineException
-	  ("Only a user with Developer privileges may install plugins!");
+        if(!pAdminPrivileges.isDeveloper(req))
+          throw new PipelineException
+            ("Only a user with Developer privileges may install plugins!");
 
-      String cname = req.getClassName();
-      boolean isDryRun = req.getDryRun();
+        String cname = req.getClassName();
+        boolean isDryRun = req.getDryRun();
 
-      TreeMap<String,byte[]> contents = req.getContents();
+        TreeMap<String,byte[]> contents = req.getContents();
 
-      /* For plugins with resources cache the file sizes and the checksums. */
-      SortedMap<String,Long> resources = new TreeMap<String,Long>();
-      SortedMap<String,byte[]> checksums = new TreeMap<String,byte[]>();
+        /* For plugins with resources cache the file sizes and the checksums. */
+        SortedMap<String,Long> resources = new TreeMap<String,Long>();
+        SortedMap<String,byte[]> checksums = new TreeMap<String,byte[]>();
 
-      long sessionID = -1L;
+        long sessionID = -1L;
 
-      if(req instanceof PluginResourceInstallReq) {
-	PluginResourceInstallReq resourceReq = (PluginResourceInstallReq) req;
+        if(req instanceof PluginResourceInstallReq) {
+          PluginResourceInstallReq resourceReq = (PluginResourceInstallReq) req;
 
-	TreeMap<String,Long>   resourcesFromReq = resourceReq.getResources();
-	TreeMap<String,byte[]> checksumsFromReq = resourceReq.getChecksums();
+          TreeMap<String,Long>   resourcesFromReq = resourceReq.getResources();
+          TreeMap<String,byte[]> checksumsFromReq = resourceReq.getChecksums();
 
-	if(resourcesFromReq != null) {
-	  resources.putAll(resourcesFromReq);
-	}
+          if(resourcesFromReq != null) {
+            resources.putAll(resourcesFromReq);
+          }
 
-	if(checksumsFromReq != null) {
-	  checksums.putAll(checksumsFromReq);
-	}
+          if(checksumsFromReq != null) {
+            checksums.putAll(checksumsFromReq);
+          }
 
-	sessionID = resourceReq.getSessionID();
-      }
+          sessionID = resourceReq.getSessionID();
+        }
 
-      /* load the class and cache the class bytes */ 
-      pLoadCycleID++;
-      loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), contents, 
-                       resources, checksums, sessionID, 
-                       req.getExternal(), req.getRename(), 
-		       (isDryRun ? PluginLoadType.DryRun : PluginLoadType.Install)); 
+        /* load the class and cache the class bytes */ 
+        pLoadCycleID++;
+        loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), contents, 
+                         resources, checksums, sessionID, 
+                         req.getExternal(), req.getRename(), 
+                         (isDryRun ? PluginLoadType.DryRun : PluginLoadType.Install)); 
 
 
-      if(!isDryRun) {
-	PluginID pid = pPluginIDTable.get(cname);
+        if(!isDryRun) {
+          PluginID pid = pPluginIDTable.get(cname);
 
-	if(pid == null) {
-	  throw new PipelineException
-	    ("Plugin (" + cname + ") was not validated!");
-	}
+          if(pid == null) {
+            throw new PipelineException
+              ("Plugin (" + cname + ") was not validated!");
+          }
 
-	PluginType ptype = pPluginTypeTable.get(cname);
+          PluginType ptype = pPluginTypeTable.get(cname);
 
-	String vendor = pid.getVendor();
-	String name = pid.getName();
+          String vendor = pid.getVendor();
+          String name = pid.getName();
 
-	VersionID vid = pid.getVersionID();
+          VersionID vid = pid.getVersionID();
 
-	pluginPath = vendor + "/" + ptype + "/" + name + "/" + vid;
+          pluginPath = vendor + "/" + ptype + "/" + name + "/" + vid;
 
-	Path currentVersionPath = 
-	  new Path(PackageInfo.sPluginsPath, pluginPath);
-	Path backupVersionPath  = 
-	  new Path(PackageInfo.sPluginsPath, pluginPath + "-backup");
+          Path currentVersionPath = 
+            new Path(PackageInfo.sPluginsPath, pluginPath);
+          Path backupVersionPath  = 
+            new Path(PackageInfo.sPluginsPath, pluginPath + "-backup");
 
-	currentVersionDir = currentVersionPath.toFile();
-	backupVersionDir  = backupVersionPath.toFile();
+          currentVersionDir = currentVersionPath.toFile();
+          backupVersionDir  = backupVersionPath.toFile();
 
-	try {
-	  /* If the plugin version directory exists, this means that the plugin 
-	     was installed successfully.  Move the plugin version directory to 
-	     one that has "-backup" appended to the version ID. */
-	  if(currentVersionDir.exists()) {
-	    /* If for some reason a backup directory exists, this could be due to 
-	       an error removing the directory.  At this point we have already 
-	       obtained a write lock so it is safe to remove the directory.  No 
-	       other thread is performing an action with the backup directory. */
-	    if(backupVersionDir.exists())
-	      rmdir(backupVersionDir);
+          try {
+            /* If the plugin version directory exists, this means that the plugin 
+               was installed successfully.  Move the plugin version directory to 
+               one that has "-backup" appended to the version ID. */
+            if(currentVersionDir.exists()) {
+              /* If for some reason a backup directory exists, this could be due to 
+                 an error removing the directory.  At this point we have already 
+                 obtained a write lock so it is safe to remove the directory.  No 
+                 other thread is performing an action with the backup directory. */
+              if(backupVersionDir.exists())
+                rmdir(backupVersionDir);
 
-	    NativeFileSys.move(currentVersionDir, backupVersionDir, false);
-	  }
-	  /* If the plugin version directory does not exists, this means it is a 
-	     new plugin being installed.
+              NativeFileSys.move(currentVersionDir, backupVersionDir, false);
+            }
+            /* If the plugin version directory does not exists, this means it is a 
+               new plugin being installed.
 	     
-	     If resources are involved with the plugin the mkdir the parent 
-	     of the plugin version directory.
+               If resources are involved with the plugin the mkdir the parent 
+               of the plugin version directory.
 	     
-	     If there are no resources then mkdir the plugin version directory. */
-	  else {
-	    if(sessionID != -1L) {
-	      File parentDir = currentVersionDir.getParentFile();
+               If there are no resources then mkdir the plugin version directory. */
+            else {
+              if(sessionID != -1L) {
+                File parentDir = currentVersionDir.getParentFile();
 
-	      if(!parentDir.exists()) {
-		if(!parentDir.mkdirs())
-		  throw new PipelineException
-		    ("Unable to create the directory (" + parentDir + ") " + 
-		     "for (" + pluginPath + ")!");
-	      }
-	    }
-	    else {
-	      if(!currentVersionDir.mkdirs()) {
-		throw new PipelineException
-		  ("Unable to create the directory (" + currentVersionDir + ") " + 
-		   "for (" + pluginPath + ")!");
-	      }
-	    }
-	  }
+                if(!parentDir.exists()) {
+                  if(!parentDir.mkdirs())
+                    throw new PipelineException
+                      ("Unable to create the directory (" + parentDir + ") " + 
+                       "for (" + pluginPath + ")!");
+                }
+              }
+              else {
+                if(!currentVersionDir.mkdirs()) {
+                  throw new PipelineException
+                    ("Unable to create the directory (" + currentVersionDir + ") " + 
+                     "for (" + pluginPath + ")!");
+                }
+              }
+            }
 
-	  /* If there are resources with the plugin then move the scratch directory 
-	     to the plugin version directory. */
-	  if(sessionID != -1L) {
-	    Path scratchPath = 
-	      new Path(pPluginScratchPath, Long.toString(sessionID));
+            /* If there are resources with the plugin then move the scratch directory 
+               to the plugin version directory. */
+            if(sessionID != -1L) {
+              Path scratchPath = 
+                new Path(pPluginScratchPath, Long.toString(sessionID));
 
-	    File scratchDir = scratchPath.toFile();
+              File scratchDir = scratchPath.toFile();
 
-	    NativeFileSys.move(scratchDir, currentVersionDir, false);
-	  }
-	}
-	catch(PipelineException ex) {
-	  throw ex;
-	}
+              NativeFileSys.move(scratchDir, currentVersionDir, false);
+            }
+          }
+          catch(PipelineException ex) {
+            throw ex;
+          }
 
-	/* save the plugin class bytes in a file */ 
-	Path path = null; 
-	try {
-	  boolean isJar = (contents.size() > 1);
-	  path = new Path(PackageInfo.sPluginsPath, 
-	                  pluginPath + "/" + 
-			  name + (isJar ? ".jar" : ".class"));
+          /* save the plugin class bytes in a file */ 
+          Path path = null; 
+          try {
+            boolean isJar = (contents.size() > 1);
+            path = new Path(PackageInfo.sPluginsPath, 
+                            pluginPath + "/" + 
+                            name + (isJar ? ".jar" : ".class"));
 	  
-	  File dir = path.getParentPath().toFile();
-	  if(!dir.exists()) {
-	    if(!dir.mkdirs()) 
-	      throw new IOException
-		("Unable to create the directory (" + dir + ") where the plugin " + 
-	         "(" + cname + ") will be installed!");
-	  }
-	  else {
-	    /* remove old class or JAR file if the plugin has changed format */ 
-	    Path opath = new Path(PackageInfo.sPluginsPath, 
-				  pluginPath + "/" + 
-				  name + (isJar ? ".class" : ".jar"));
-	    File ofile = opath.toFile();
-	    if(ofile.isFile()) 
-	      ofile.delete();
-	  }
+            File dir = path.getParentPath().toFile();
+            if(!dir.exists()) {
+              if(!dir.mkdirs()) 
+                throw new IOException
+                  ("Unable to create the directory (" + dir + ") where the plugin " + 
+                   "(" + cname + ") will be installed!");
+            }
+            else {
+              /* remove old class or JAR file if the plugin has changed format */ 
+              Path opath = new Path(PackageInfo.sPluginsPath, 
+                                    pluginPath + "/" + 
+                                    name + (isJar ? ".class" : ".jar"));
+              File ofile = opath.toFile();
+              if(ofile.isFile()) 
+                ofile.delete();
+            }
 	  
-	  if(isJar) {
-	    JarOutputStream out = new JarOutputStream(new FileOutputStream(path.toFile()));
+            if(isJar) {
+              JarOutputStream out = new JarOutputStream(new FileOutputStream(path.toFile()));
 	  
-	    for(String key : contents.keySet()) {
-	      String ename = (key.replace(".", "/") + ".class");
-	      byte bs[] = contents.get(key);
+              for(String key : contents.keySet()) {
+                String ename = (key.replace(".", "/") + ".class");
+                byte bs[] = contents.get(key);
 	    
-	      out.putNextEntry(new ZipEntry(ename));
-	      out.write(bs, 0, bs.length);
-	      out.closeEntry();
-	    }
+                out.putNextEntry(new ZipEntry(ename));
+                out.write(bs, 0, bs.length);
+                out.closeEntry();
+              }
 
-	    out.close();
-	  }
-	  else {
-	    FileOutputStream out = new FileOutputStream(path.toFile());
-	    out.write(contents.get(cname)); 
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("Unable to save the plugin (" + cname + ") to file (" + path + ")!");
-	}
+              out.close();
+            }
+            else {
+              FileOutputStream out = new FileOutputStream(path.toFile());
+              out.write(contents.get(cname)); 
+              out.close();
+            }
+          }
+          catch(IOException ex) {
+            throw new PipelineException
+              ("Unable to save the plugin (" + cname + ") to file (" + path + ")!");
+          }
 
-	PluginMetadata metadata = null;
-	try {
-	  metadata = new PluginMetadata(cname, resources, checksums);
-	}
-	catch(IllegalArgumentException ex) {
-	  throw new PipelineException(ex);
-	}
+          PluginMetadata metadata = null;
+          try {
+            metadata = new PluginMetadata(cname, resources, checksums);
+          }
+          catch(IllegalArgumentException ex) {
+            throw new PipelineException(ex);
+          }
 
-	Path metadataPath = new Path(path.getParentPath(), ".metadata");
-	try {
-	  GlueEncoderImpl.encodeFile("PluginMetadata", metadata, metadataPath.toFile());
-	}
-	catch(GlueException ex) {
-	  throw new PipelineException(ex);
-	}
+          Path metadataPath = new Path(path.getParentPath(), ".metadata");
+          try {
+            GlueEncoderImpl.encodeFile("PluginMetadata", metadata, metadataPath.toFile());
+          }
+          catch(GlueException ex) {
+            throw new PipelineException(ex);
+          }
 
-	/* After writing all the plugin related files flip the installed flag. */
-	isPluginInstalled = true;
+          /* After writing all the plugin related files flip the installed flag. */
+          isPluginInstalled = true;
 
-	/* Check that all required plugins have been loaded. */
-	if(!pUpToDate.get()) {
-	  if(pMissingCount == 0)
-	    pUpToDate.set(true);
+          /* Check that all required plugins have been loaded. */
+          if(!pUpToDate.get()) {
+            if(pMissingCount == 0)
+              pUpToDate.set(true);
 
-	  displayPluginSummary();
-	}
+            displayPluginSummary();
+          }
 
-	/* The plugin has been successfully installed at this point but if there are
-           required plugins that need to be installed return a PluginCount response 
-           rather than Success response.  This is not an error, only adds plugins counts 
-           to inform the user of the state of required plugins. */
+          /* The plugin has been successfully installed at this point but if there are
+             required plugins that need to be installed return a PluginCount response 
+             rather than Success response.  This is not an error, only adds plugins counts 
+             to inform the user of the state of required plugins. */
 
-	if(!pUpToDate.get()) {
-	  if(pMissingCount > 0 || pUnknownCount > 0)
-	    return new PluginCountRsp(timer, pMissingCount, pUnknownCount);
-	}
+          if(!pUpToDate.get()) {
+            if(pMissingCount > 0 || pUnknownCount > 0)
+              return new PluginCountRsp(timer, pMissingCount, pUnknownCount);
+          }
+        }
+        /* end if(!rsp.getDryRun()) */
+
+        return new SuccessRsp(timer);
       }
-      /* end if(!rsp.getDryRun()) */
-
-      return new SuccessRsp(timer);
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
+      }
+      finally {
+        /* Perform the cleanup of directories. */
+        if(currentVersionDir != null && backupVersionDir != null) {
+          try {
+            /* If the plugin was installed, meaning that all plugin related 
+               files were written to disk, then remove the backup directory. */
+            if(isPluginInstalled) {
+              if(backupVersionDir.exists())
+                rmdir(backupVersionDir);
+            }
+            /* If the plugin was NOT installed, meaning that there was an exception 
+               during the directory moving, removing or writing of files, check for 
+               a backup directory.
+	     
+               If the backup directory exists then this means that the plugin 
+               version directory should be removed and the backup should be moved 
+               to the plugin version directory.
+	     
+               If there is no backup directory this means that there was no 
+               previous install of the plugin and the plugin version directory 
+               should be removed. */
+            else {
+              if(backupVersionDir.exists()) {
+                rmdir(currentVersionDir);
+                NativeFileSys.move(backupVersionDir, currentVersionDir, false);
+              }
+              else {
+                rmdir(currentVersionDir);
+              }
+            }
+          }
+          catch(PipelineException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
+               "Error cleaning up after plugin (" + pluginPath + ") " + 
+               "(" + currentVersionDir + ") - (" + currentVersionDir.exists() + ") " + 
+               "(" + backupVersionDir  + ") - (" + backupVersionDir.exists()  + ")!");
+          }
+        }
+      }
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+    catch(Exception ex) {
+      return new FailureRsp(timer, 
+                            Exceptions.getFullMessage("Internal Error:", ex.getMessage()));
     }
     finally {
-      /* Perform the cleanup of directories. */
-      if(currentVersionDir != null && backupVersionDir != null) {
-	try {
-	  /* If the plugin was installed, meaning that all plugin related 
-	     files were written to disk, then remove the backup directory. */
-	  if(isPluginInstalled) {
-	    if(backupVersionDir.exists())
-	      rmdir(backupVersionDir);
-	  }
-	  /* If the plugin was NOT installed, meaning that there was an exception 
-	     during the directory moving, removing or writing of files, check for 
-	     a backup directory.
-	     
-	     If the backup directory exists then this means that the plugin 
-	     version directory should be removed and the backup should be moved 
-	     to the plugin version directory.
-	     
-	     If there is no backup directory this means that there was no 
-	     previous install of the plugin and the plugin version directory 
-	     should be removed. */
-	  else {
-	    if(backupVersionDir.exists()) {
-	      rmdir(currentVersionDir);
-	      NativeFileSys.move(backupVersionDir, currentVersionDir, false);
-	    }
-	    else {
-	      rmdir(currentVersionDir);
-	    }
-	  }
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
-	     "Error cleaning up after plugin (" + pluginPath + ") " + 
-	     "(" + currentVersionDir + ") - (" + currentVersionDir.exists() + ") " + 
-	     "(" + backupVersionDir  + ") - (" + backupVersionDir.exists()  + ")!");
-	}
-      }
-
       pPluginLock.writeLock().unlock();
     }
   }

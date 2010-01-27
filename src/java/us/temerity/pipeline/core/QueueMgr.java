@@ -7945,9 +7945,11 @@ class QueueMgr
 	  
         case Running:
           {
-            KillTask task = new KillTask(info.getHostname(), jobID);
-            task.start();
-            
+            String hname = info.getHostname();
+            if(hname != null) {
+              KillTask task = new KillTask(hname, jobID);
+              task.start();
+            }
             aborted = true;
           }
         }
@@ -7999,14 +8001,14 @@ class QueueMgr
         case Running:
           {
             QueueJobInfo preemptedInfo = new QueueJobInfo(info);
-            
-            {
-              String hostname = info.getHostname();
               
-              JobState prevState = info.preempted();
-              pJobCounters.update(tm, prevState, info);
-              pWriteJobInfoList.add(jobID);
-              trigger = true;
+            JobState prevState = info.preempted();
+            pJobCounters.update(tm, prevState, info);
+            pWriteJobInfoList.add(jobID);
+            trigger = true;
+
+            String hname = info.getHostname();
+            if(hname != null) {
               KillTask task = new KillTask(hostname, jobID);
               task.start();
             }
@@ -12741,6 +12743,11 @@ class QueueMgr
           (LogMgr.Kind.Sch, LogMgr.Level.Fine,
            timer); 
       }
+      catch(Exception ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Sch, LogMgr.Level.Severe, 
+           Exceptions.getFullMessage("Internal Error:", ex));
+      }
       finally {
         pDatabaseLock.readLock().unlock();
       }
@@ -12886,6 +12893,11 @@ class QueueMgr
           (LogMgr.Kind.Col, LogMgr.Level.Finer,
            timer); 
       }
+      catch(Exception ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Col, LogMgr.Level.Severe, 
+           Exceptions.getFullMessage("Internal Error:", ex));
+      }
       finally {
         pDatabaseLock.readLock().unlock();
       }
@@ -12987,327 +12999,335 @@ class QueueMgr
       timer.aquire();
       pDatabaseLock.readLock().lock();
       try {
-	timer.resume();
-        
-        /* attempt to start the job on the selected server, 
-	   no environment means the job has been started previously */  
-        QueueJobInfo startedInfo = null;
-        boolean balked = false;
-        if(pCookedEnvs != null) {
-          timer.suspend();
-          TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Start]"); 
+        try {
+          timer.resume();
 
-          JobMgrPlgControlClient client = new JobMgrPlgControlClient(pHostname); 
-          boolean reported = false;
-          try {
-            /* perform pre-start file system tasks */ 
-            preStartFileOps();
+          /* attempt to start the job on the selected server, 
+             no environment means the job has been started previously */  
+          QueueJobInfo startedInfo = null;
+          boolean balked = false;
+          if(pCookedEnvs != null) {
+            timer.suspend();
+            TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Start]"); 
 
-            /* start the job */ 
+            JobMgrPlgControlClient client = new JobMgrPlgControlClient(pHostname); 
+            boolean reported = false;
             try {
-              client.jobStart(pJob, pCookedEnvs); 
-            }
-            catch(Exception ex2) { 
-              tm.aquire();
-              synchronized(pHosts) {
-                tm.resume();
-                QueueHost host = pHosts.get(pHostname);
-                if(host != null) 
-                  setHostStatus(host, QueueHost.Status.Limbo);
-              }
-              
-              String header = 
-                ("Lost contact with the Job Manager (" + pHostname + ") while attempting " + 
-                 "to start the job (" + jobID + ").");
-              String msg = header;
-              if(!(ex2 instanceof PipelineException))
-                msg = Exceptions.getFullMessage(header, ex2);
-              LogMgr.getInstance().log(LogMgr.Kind.Net, LogMgr.Level.Warning, msg); 
-              reported = true;
-              throw ex2;
-            }
- 
-            /* make a copy of the job information to hand to extensions */ 
-            startedInfo = new QueueJobInfo(getJobInfo(tm, jobID));
-          }
-          catch (Exception ex) {
-            if(!reported) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Job, LogMgr.Level.Warning,
-                 Exceptions.getFullMessage
-                   ("Failed to start job (" + jobID + ") on Job Manager (" + pHostname + ")!",
-                    ex));
-            }
-	  
-            /* treat a failure to start as a preemption */ 
-            tm.aquire(); 
-            synchronized(pJobInfo) {
-              tm.resume();
+              /* perform pre-start file system tasks */ 
+              preStartFileOps();
 
-              QueueJobInfo info = pJobInfo.get(jobID);
-              JobState prevState = info.preempted();
-              pJobCounters.update(tm, prevState, info);
-              pWriteJobInfoList.add(info.getJobID());
-              pWriterSemaphore.release();
-            }
-
-            balked = true;
-          }
-          finally {
-            if(client != null)
-              client.disconnect();
-          }
-
-          LogMgr.getInstance().logSubStage
-            (LogMgr.Kind.Job, LogMgr.Level.Finer, 
-             tm, timer);
-        }
-        
-        /* resume waiting on a previously started job */ 
-        else {
-          timer.suspend();
-          TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Restart]"); 
-
-          tm.aquire(); 
-          synchronized(pJobInfo) {
-            tm.resume();
-            
-            QueueJobInfo info = pJobInfo.get(jobID);
-            JobState prevState = info.restarted();
-            pJobCounters.update(tm, prevState, info);
-            pWriteJobInfoList.add(info.getJobID());
-            pWriterSemaphore.release();
-          }
-
-          LogMgr.getInstance().logSubStage
-            (LogMgr.Kind.Job, LogMgr.Level.Finer, 
-             tm, timer);
-        }
-
-        /* post-started tasks */ 
-        if(startedInfo != null) 
-          startExtensionTasks(timer, new JobStartedExtFactory(pJob, startedInfo));
-      
-        /* if job was successfully started... */  
-        QueueJobInfo finishedInfo = null;
-        boolean preempted = false;
-        if(!balked) {
-          timer.suspend();
-          TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Wait]");
-
-          pUserBalanceInfo.addJobChange
-            (pHostname, pJob.getJobID(), 
-             pJob.getNodeID().getAuthor(), true);
-          
-          /* wait for the job to finish and collect the results */ 
-          tm.aquire(); 
-          QueueJobResults results = null;
-          Boolean isTerminal = null;
-          {
-            JobMgrControlClient client = new JobMgrControlClient(pHostname);
-            try {
-              /* wait for the job to finish */ 
+              /* start the job */ 
               try {
-                results = client.jobWait(jobID);
+                client.jobStart(pJob, pCookedEnvs); 
               }
               catch(Exception ex2) { 
+                tm.aquire();
                 synchronized(pHosts) {
+                  tm.resume();
                   QueueHost host = pHosts.get(pHostname);
                   if(host != null) 
                     setHostStatus(host, QueueHost.Status.Limbo);
                 }
-                
+
                 String header = 
-                  ("Lost contact with the Job Manager (" + pHostname + ") while waiting " + 
-                   "on the results of executing the job (" + jobID + ")."); 
+                  ("Lost contact with the Job Manager (" + pHostname + ") while attempting " + 
+                   "to start the job (" + jobID + ").");
                 String msg = header;
                 if(!(ex2 instanceof PipelineException))
                   msg = Exceptions.getFullMessage(header, ex2);
                 LogMgr.getInstance().log(LogMgr.Kind.Net, LogMgr.Level.Warning, msg); 
-
-                /* if the job manager is already shutdown or missing,
-                     then the job must die too */
-                isTerminal = true;
-                synchronized(pHosts) {
-                  QueueHost host = pHosts.get(pHostname);
-                  if(host != null) {
-                    switch(host.getStatus()) {
-                    case Enabled:
-                    case Disabled:
-                    case Limbo:
-                      isTerminal = false; 
-                    }
-                  }
-                }
-
-                /* if the job manager might still be alive, 
-                     don't give up on the job just yet.. */ 
-                if(!isTerminal) {
-                  remonitorJob(this); 
-                  remonitored = true;
-                }
+                reported = true;
+                throw ex2;
               }
 
-              /* perform post-completion file system tasks */ 
-              if(!remonitored) 
-                postFinishFileOps(results);
-            }
-            catch(Exception ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Job, LogMgr.Level.Warning,
-                 Exceptions.getFullMessage
-                   ("Failed to wait for the results of the executing job (" + jobID + ")!", 
-                    ex));
-            }
-            finally {
-              client.disconnect();
-            }
-          }
-          tm.resume();
-          
-          /* update the user balance group */ 
-          {
-            pUserBalanceInfo.addJobChange(pHostname, pJob.getJobID(), null, false);
-
-            String bgroup = null;
-            synchronized(pHosts) {
-              QueueHost host = pHosts.get(pHostname);
-              if(host != null)
-                bgroup = host.getBalanceGroup();
-            }
-
-            if(bgroup != null) {
-              synchronized(pJobsFinishedLock) {
-                pJobsFinished.apply(bgroup, pJob.getNodeID().getAuthor(), 1); 
-              }
-            }
-          }
-          
-          /* update job information */
-          QueueJobInfo info = getJobInfo(tm, jobID); 
-          if(info != null) {
-            switch(info.getState()) {
-            case Preempted: 
-              preempted = true;
-              break;
-              
-            default:
-              {
-                JobState prevState = null;
-                if(isTerminal != null) {
-                  if(isTerminal) {
-                    LogMgr.getInstance().log
-                      (LogMgr.Kind.Net, LogMgr.Level.Warning, 
-                       "Treating job (" + jobID + ") as Failed because the Job Manager " + 
-                       "(" + pHostname + ") was manually Shutdown before establishing " + 
-                       "whether the job had completed."); 
-                    
-                    prevState = info.exited(null);
-                  }
-                  else {
-                    prevState = info.limbo(pHostname);
-                  }
-                }
-                else {
-                  prevState = info.exited(results);
-                }
-                pJobCounters.update(tm, prevState, info);
-                if(!remonitored) 
-                  finishedInfo = new QueueJobInfo(info);
-              }
-            }
-
-            pWriteJobInfoList.add(info.getJobID());
-            pWriterSemaphore.release();
-          }
-          else {
-            LogMgr.getInstance().log
-              (LogMgr.Kind.Job, LogMgr.Level.Severe,
-               "The job (" + jobID + ") has " + 
-               (remonitored ? " become in Limbo" : "completed") + 
-               ", but somehow there was no QueueJobInfo entry to update!"); 
-          }
-          
-          LogMgr.getInstance().logSubStage
-            (LogMgr.Kind.Job, LogMgr.Level.Finer, 
-             tm, timer);
-        }
-
-        /* abort eary since we are not done monitoring the job yet... */ 
-        if(remonitored) 
-          return;
-
-        /* clean up... */ 
-        {
-          timer.suspend();
-          TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Cleanup]"); 
-
-          /* release any license keys */ 
-          tm.aquire();
-          synchronized(pLicenseKeys) {
-            tm.resume();
-
-            for(String kname : pAcquiredKeys) {
-              LicenseKey key = pLicenseKeys.get(kname);
-              if(key != null) 
-                key.release(pHostname);
-            }
-          }
-	
-          /* release any ramp-up holds */ 
-          tm.aquire();
-          synchronized(pHosts) {
-            tm.resume();
-
-            QueueHost host = pHosts.get(pHostname);
-            if(host != null)
-              host.cancelHold(jobID);
-          }      
-	
-          /* if the job was preempted, 
-	     clean up the obsolete data files on the jobs server */ 
-          if(preempted) {
-            tm.aquire();
-            JobMgrControlClient client = new JobMgrControlClient(pHostname);	
-            try {
-              client.cleanupPreemptedResources(jobID);
+              /* make a copy of the job information to hand to extensions */ 
+              startedInfo = new QueueJobInfo(getJobInfo(tm, jobID));
             }
             catch (Exception ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Job, LogMgr.Level.Severe,
-                 ex.getMessage()); 
+              if(!reported) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Job, LogMgr.Level.Warning,
+                   Exceptions.getFullMessage
+                   ("Failed to start job (" + jobID + ") on Job Manager (" + pHostname + ")!",
+                    ex));
+              }
+
+              /* treat a failure to start as a preemption */ 
+              tm.aquire(); 
+              synchronized(pJobInfo) {
+                tm.resume();
+
+                QueueJobInfo info = pJobInfo.get(jobID);
+                JobState prevState = info.preempted();
+                pJobCounters.update(tm, prevState, info);
+                pWriteJobInfoList.add(info.getJobID());
+                pWriterSemaphore.release();
+              }
+
+              balked = true;
             }
             finally {
               if(client != null)
                 client.disconnect();
             }
-            tm.resume();
+
+            LogMgr.getInstance().logSubStage
+              (LogMgr.Kind.Job, LogMgr.Level.Finer, 
+               tm, timer);
           }
 
-          /* if balked or preempted, 
-	     put job back on the list of jobs waiting to be run */ 
-          if(balked || preempted)
-            pWaiting.add(jobID);
+          /* resume waiting on a previously started job */ 
+          else {
+            timer.suspend();
+            TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Restart]"); 
 
-          LogMgr.getInstance().logSubStage
-            (LogMgr.Kind.Job, LogMgr.Level.Finer, 
-             tm, timer);	
+            tm.aquire(); 
+            synchronized(pJobInfo) {
+              tm.resume();
+
+              QueueJobInfo info = pJobInfo.get(jobID);
+              JobState prevState = info.restarted();
+              pJobCounters.update(tm, prevState, info);
+              pWriteJobInfoList.add(info.getJobID());
+              pWriterSemaphore.release();
+            }
+
+            LogMgr.getInstance().logSubStage
+              (LogMgr.Kind.Job, LogMgr.Level.Finer, 
+               tm, timer);
+          }
+
+          /* post-started tasks */ 
+          if(startedInfo != null) 
+            startExtensionTasks(timer, new JobStartedExtFactory(pJob, startedInfo));
+
+          /* if job was successfully started... */  
+          QueueJobInfo finishedInfo = null;
+          boolean preempted = false;
+          if(!balked) {
+            timer.suspend();
+            TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Wait]");
+
+            pUserBalanceInfo.addJobChange
+              (pHostname, pJob.getJobID(), 
+               pJob.getNodeID().getAuthor(), true);
+
+            /* wait for the job to finish and collect the results */ 
+            tm.aquire(); 
+            QueueJobResults results = null;
+            Boolean isTerminal = null;
+            {
+              JobMgrControlClient client = new JobMgrControlClient(pHostname);
+              try {
+                /* wait for the job to finish */ 
+                try {
+                  results = client.jobWait(jobID);
+                }
+                catch(Exception ex2) { 
+                  synchronized(pHosts) {
+                    QueueHost host = pHosts.get(pHostname);
+                    if(host != null) 
+                      setHostStatus(host, QueueHost.Status.Limbo);
+                  }
+
+                  String header = 
+                    ("Lost contact with the Job Manager (" + pHostname + ") while waiting " + 
+                     "on the results of executing the job (" + jobID + ")."); 
+                  String msg = header;
+                  if(!(ex2 instanceof PipelineException))
+                    msg = Exceptions.getFullMessage(header, ex2);
+                  LogMgr.getInstance().log(LogMgr.Kind.Net, LogMgr.Level.Warning, msg); 
+
+                  /* if the job manager is already shutdown or missing,
+                     then the job must die too */
+                  isTerminal = true;
+                  synchronized(pHosts) {
+                    QueueHost host = pHosts.get(pHostname);
+                    if(host != null) {
+                      switch(host.getStatus()) {
+                      case Enabled:
+                      case Disabled:
+                      case Limbo:
+                        isTerminal = false; 
+                      }
+                    }
+                  }
+
+                  /* if the job manager might still be alive, 
+                     don't give up on the job just yet.. */ 
+                  if(!isTerminal) {
+                    remonitorJob(this); 
+                    remonitored = true;
+                  }
+                }
+
+                /* perform post-completion file system tasks */ 
+                if(!remonitored) 
+                  postFinishFileOps(results);
+              }
+              catch(Exception ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Job, LogMgr.Level.Warning,
+                   Exceptions.getFullMessage
+                   ("Failed to wait for the results of the executing job (" + jobID + ")!", 
+                    ex));
+              }
+              finally {
+                client.disconnect();
+              }
+            }
+            tm.resume();
+
+            /* update the user balance group */ 
+            {
+              pUserBalanceInfo.addJobChange(pHostname, pJob.getJobID(), null, false);
+
+              String bgroup = null;
+              synchronized(pHosts) {
+                QueueHost host = pHosts.get(pHostname);
+                if(host != null)
+                  bgroup = host.getBalanceGroup();
+              }
+
+              if(bgroup != null) {
+                synchronized(pJobsFinishedLock) {
+                  pJobsFinished.apply(bgroup, pJob.getNodeID().getAuthor(), 1); 
+                }
+              }
+            }
+
+            /* update job information */
+            QueueJobInfo info = getJobInfo(tm, jobID); 
+            if(info != null) {
+              switch(info.getState()) {
+              case Preempted: 
+                preempted = true;
+                break;
+
+              default:
+                {
+                  JobState prevState = null;
+                  if(isTerminal != null) {
+                    if(isTerminal) {
+                      LogMgr.getInstance().log
+                        (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+                         "Treating job (" + jobID + ") as Failed because the Job Manager " + 
+                         "(" + pHostname + ") was manually Shutdown before establishing " + 
+                         "whether the job had completed."); 
+
+                      prevState = info.exited(null);
+                    }
+                    else {
+                      prevState = info.limbo(pHostname);
+                    }
+                  }
+                  else {
+                    prevState = info.exited(results);
+                  }
+                  pJobCounters.update(tm, prevState, info);
+                  if(!remonitored) 
+                    finishedInfo = new QueueJobInfo(info);
+                }
+              }
+
+              pWriteJobInfoList.add(info.getJobID());
+              pWriterSemaphore.release();
+            }
+            else {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Job, LogMgr.Level.Severe,
+                 "The job (" + jobID + ") has " + 
+                 (remonitored ? " become in Limbo" : "completed") + 
+                 ", but somehow there was no QueueJobInfo entry to update!"); 
+            }
+
+            LogMgr.getInstance().logSubStage
+              (LogMgr.Kind.Job, LogMgr.Level.Finer, 
+               tm, timer);
+          }
+
+          /* abort eary since we are not done monitoring the job yet... */ 
+          if(remonitored) 
+            return;
+
+          /* clean up... */ 
+          {
+            timer.suspend();
+            TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Cleanup]"); 
+
+            /* release any license keys */ 
+            tm.aquire();
+            synchronized(pLicenseKeys) {
+              tm.resume();
+
+              for(String kname : pAcquiredKeys) {
+                LicenseKey key = pLicenseKeys.get(kname);
+                if(key != null) 
+                  key.release(pHostname);
+              }
+            }
+
+            /* release any ramp-up holds */ 
+            tm.aquire();
+            synchronized(pHosts) {
+              tm.resume();
+
+              QueueHost host = pHosts.get(pHostname);
+              if(host != null)
+                host.cancelHold(jobID);
+            }      
+
+            /* if the job was preempted, 
+               clean up the obsolete data files on the jobs server */ 
+            if(preempted) {
+              tm.aquire();
+              JobMgrControlClient client = new JobMgrControlClient(pHostname);	
+              try {
+                client.cleanupPreemptedResources(jobID);
+              }
+              catch (Exception ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Job, LogMgr.Level.Severe,
+                   ex.getMessage()); 
+              }
+              finally {
+                if(client != null)
+                  client.disconnect();
+              }
+              tm.resume();
+            }
+
+            /* if balked or preempted, 
+               put job back on the list of jobs waiting to be run */ 
+            if(balked || preempted)
+              pWaiting.add(jobID);
+
+            LogMgr.getInstance().logSubStage
+              (LogMgr.Kind.Job, LogMgr.Level.Finer, 
+               tm, timer);	
+          }
+
+          /* post-execution tasks */ 
+          if(balked) 
+            startExtensionTasks(timer, new JobBalkedExtFactory(pJob, pHostname));
+          else if(finishedInfo != null) 
+            startExtensionTasks(timer, new JobFinishedExtFactory(pJob, finishedInfo));
+
+          LogMgr.getInstance().logStage
+            (LogMgr.Kind.Job, LogMgr.Level.Fine,
+             timer); 
         }
-
-        /* post-execution tasks */ 
-        if(balked) 
-          startExtensionTasks(timer, new JobBalkedExtFactory(pJob, pHostname));
-        else if(finishedInfo != null) 
-          startExtensionTasks(timer, new JobFinishedExtFactory(pJob, finishedInfo));
-
-        LogMgr.getInstance().logStage
-          (LogMgr.Kind.Job, LogMgr.Level.Fine,
-           timer); 
+        finally {
+          if(!remonitored) 
+            unmonitorJob(this); 
+        }
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Job, LogMgr.Level.Severe, 
+           Exceptions.getFullMessage("Internal Error:", ex));
       }
       finally {
-        if(!remonitored) 
-          unmonitorJob(this); 
-
         pDatabaseLock.readLock().unlock();
       }
     }
@@ -13826,28 +13846,36 @@ class QueueMgr
 
       pDatabaseLock.readLock().lock();
       try {
-	client = new JobMgrControlClient(pHostname);	
-	client.jobKill(pJobID);
-      }
-      catch (Exception ex) {
-        synchronized(pHosts) {
-          QueueHost host = pHosts.get(pHostname);
-          if(host != null) 
-            setHostStatus(host, QueueHost.Status.Limbo);
+        try {
+          client = new JobMgrControlClient(pHostname);	
+          client.jobKill(pJobID);
         }
-
-        String header = 
-          ("Lost contact with the Job Manager (" + pHostname + ") while attempting " + 
-           "to direct it to kill the job (" + pJobID + ")."); 
-        String msg = header;
-        if(!(ex instanceof PipelineException))
-          msg = Exceptions.getFullMessage(header, ex);
-        LogMgr.getInstance().log(LogMgr.Kind.Net, LogMgr.Level.Warning, msg); 
+        catch (Exception ex) {
+          synchronized(pHosts) {
+            QueueHost host = pHosts.get(pHostname);
+            if(host != null) 
+              setHostStatus(host, QueueHost.Status.Limbo);
+          }
+          
+          String header = 
+            ("Lost contact with the Job Manager (" + pHostname + ") while attempting " + 
+             "to direct it to kill the job (" + pJobID + ")."); 
+          String msg = header;
+          if(!(ex instanceof PipelineException))
+            msg = Exceptions.getFullMessage(header, ex);
+          LogMgr.getInstance().log(LogMgr.Kind.Net, LogMgr.Level.Warning, msg); 
+        }
+        finally { 
+          if(client != null)
+            client.disconnect();
+        }
       }
-      finally { 
-	if(client != null)
-	  client.disconnect();
-
+      catch(Exception ex2) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Severe, 
+           Exceptions.getFullMessage("Internal Error:", ex2));
+      }
+      finally {
         pDatabaseLock.readLock().unlock();
       }
     }
@@ -13911,6 +13939,11 @@ class QueueMgr
               client.disconnect();
           }
         }
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Job, LogMgr.Level.Severe, 
+           Exceptions.getFullMessage("Internal Error:", ex));
       }
       finally {
         pDatabaseLock.readLock().unlock();

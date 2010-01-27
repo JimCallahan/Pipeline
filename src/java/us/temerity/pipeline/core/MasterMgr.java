@@ -16854,234 +16854,237 @@ class MasterMgr
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
-    boolean cacheModified = false;
     try {
-      timer.resume();	
-
-      if(!isOfflineCacheValid()) 
-        throw new PipelineException 
-          ("The Offline operation will not be available until the offlined node " +
-           "version cache has finished being rebuilt.");
-
-      if(!pAdminPrivileges.isMasterAdmin(req))
-	throw new PipelineException
-	  ("Only a user with Master Admin privileges may offline checked-in versions!"); 
-  
-      /* write lock online/offline status */ 
-      timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
+      boolean cacheModified = false;
       try {
-	timer.resume();	
+        timer.resume();	
+
+        if(!isOfflineCacheValid()) 
+          throw new PipelineException 
+            ("The Offline operation will not be available until the offlined node " +
+             "version cache has finished being rebuilt.");
+
+        if(!pAdminPrivileges.isMasterAdmin(req))
+          throw new PipelineException
+            ("Only a user with Master Admin privileges may offline checked-in versions!"); 
+  
+        /* write lock online/offline status */ 
+        timer.aquire();
+        List<ReentrantReadWriteLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
+        try {
+          timer.resume();	
         
-        StringBuilder dryRunResults = null;
-        if(req.isDryRun()) 
-          dryRunResults = new StringBuilder();
+          StringBuilder dryRunResults = null;
+          if(req.isDryRun()) 
+            dryRunResults = new StringBuilder();
 
-	/* process each node */ 
-	for(String name : versions.keySet()) {	
-	  timer.aquire();
-	  ArrayList<ReentrantReadWriteLock> workingLocks = 
-	    new ArrayList<ReentrantReadWriteLock>();
-	  {
-	    TreeMap<String,TreeSet<String>> views = pNodeTree.getViewsContaining(name);
-	    for(String author : views.keySet()) {
-	      for(String view : views.get(author)) {
-		NodeID nodeID = new NodeID(author, view, name);
-		ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-		workingLock.readLock().lock();
-		workingLocks.add(workingLock);
-	      }
-	    }
-	  }
+          /* process each node */ 
+          for(String name : versions.keySet()) {	
+            timer.aquire();
+            ArrayList<ReentrantReadWriteLock> workingLocks = 
+              new ArrayList<ReentrantReadWriteLock>();
+            {
+              TreeMap<String,TreeSet<String>> views = pNodeTree.getViewsContaining(name);
+              for(String author : views.keySet()) {
+                for(String view : views.get(author)) {
+                  NodeID nodeID = new NodeID(author, view, name);
+                  ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+                  workingLock.readLock().lock();
+                  workingLocks.add(workingLock);
+                }
+              }
+            }
 
-	  ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-	  checkedInLock.readLock().lock();  
-	  try {
-	    timer.resume();	
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = 
-              getCheckedInBundles(name, false);
+            ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+            checkedInLock.readLock().lock();  
+            try {
+              timer.resume();	
+              TreeMap<VersionID,CheckedInBundle> checkedIn = 
+                getCheckedInBundles(name, false);
 	    
-	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
-	    TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
+              ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
+              TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
 
-	    /* process the to be offlined versions */ 
-	    TreeSet<VersionID> toBeOfflined = versions.get(name);
-	    for(VersionID vid : toBeOfflined) { 
+              /* process the to be offlined versions */ 
+              TreeSet<VersionID> toBeOfflined = versions.get(name);
+              for(VersionID vid : toBeOfflined) { 
 
-	      /* only process online versions */
-	      if(!isOffline(timer, name, vid)) {
-		CheckedInBundle bundle = checkedIn.get(vid);
-		if(bundle == null) 
-		  throw new PipelineException 
-		    ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
-		int vidx = vids.indexOf(vid);
+                /* only process online versions */
+                if(!isOffline(timer, name, vid)) {
+                  CheckedInBundle bundle = checkedIn.get(vid);
+                  if(bundle == null) 
+                    throw new PipelineException 
+                      ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
+                  int vidx = vids.indexOf(vid);
 	    
-                if(bundle.getVersion().isIntermediate()) 
-                  throw new PipelineException
-                    ("The checked-in version (" + vid + ") of node (" + name + ") " + 
-                     "cannot be offlined because it is marked as having Intermediate " + 
-                     "Files which are never stored in the repository!"); 
+                  if(bundle.getVersion().isIntermediate()) 
+                    throw new PipelineException
+                      ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+                       "cannot be offlined because it is marked as having Intermediate " + 
+                       "Files which are never stored in the repository!"); 
 
-		/* make sure at lease one archive volume contains the version */ 
-		{
-		  boolean hasBeenArchived = false;
-		  synchronized(pArchivedIn) {
-		    TreeMap<VersionID,TreeSet<String>> aversions = pArchivedIn.get(name);
-		    if(aversions != null) {
-		      TreeSet<String> archives = aversions.get(vid);
-		      if((archives != null) && !archives.isEmpty()) 
-			hasBeenArchived = true;
-		    }
-		  }
-
-		  if(!hasBeenArchived) 
-		    throw new PipelineException
-		      ("The checked-in version (" + vid + ") of node (" + name + ") " + 
-		       "cannot be offlined until it has been archived at least once!");
-		}	    
-
-		/* make sure it is not being referenced by an existing working version */ 
-		{
-		  TreeMap<String,TreeSet<String>> views = pNodeTree.getViewsContaining(name);
-		  for(String author : views.keySet()) {
-		    for(String view : views.get(author)) {
-		      NodeID nodeID = new NodeID(author, view, name);
-		      NodeMod mod = getWorkingBundle(nodeID, false).getVersion();
-		      if(vid.equals(mod.getWorkingID())) 
-			throw new PipelineException
-			  ("The checked-in version (" + vid + ") of node (" + name + ") " + 
-			   "cannot be offlined because a working version currently exists " + 
-			   "which references the checked-in version in the working area " + 
-			   "(" + view + ") owned by user (" + author + ")!");
-		  
-		      if(vid.equals(checkedIn.lastKey())) 
-			throw new PipelineException
-			  ("The latest checked-in version (" + vid + ") of node " + 
-			   "(" + name + ") cannot be offlined because a working version " + 
-			   "currently exists in the working area (" + view + ") owned by " + 
-			   "user (" + author + ")!");
-		    }
-		  }
-		}
-
-		/* determine which symlinks target the to be offlined files */ 
-		TreeMap<File,TreeSet<VersionID>> symlinks = 
-		  new TreeMap<File,TreeSet<VersionID>>();
-		{
-		  for(File file : novelty.keySet()) {
-		    Boolean[] isNovel = novelty.get(file);
-
-		    /* the file exists for this version */ 
-		    if(isNovel[vidx] != null) {
-
-		      /* determine whether later files/symlinks needs to be relocated */ 
-		      boolean selected = false;
-		      if(isNovel[vidx])
-			selected = true;
-		      else {
-			int vk;
-			for(vk=vidx-1; vk>=0; vk--) {
-			  VersionID nvid = vids.get(vk);
-                          if(isOffline(timer, name, nvid)) {
-                            selected = true;
-                            break;
-                          }
-                          else if(isNovel[vk]) {
-                            break;
-                          }
-			}
-		      }
-
-		      /* determine which versions need relocation */ 
-		      if(selected) {
-			int vk;
-			for(vk=vidx+1; vk<isNovel.length; vk++) {
-			  VersionID nvid = vids.get(vk);
-		      
-			  if((isNovel[vk] == null) || isNovel[vk]) 
-			    break;
-			  else if(!isOffline(timer, name, nvid)) {
-                            TreeSet<VersionID> svids = symlinks.get(file);
-                            if(svids == null) {
-                              svids = new TreeSet<VersionID>();
-                                symlinks.put(file, svids);
-                            }
-                            svids.add(nvid);
-			  }
-			}
-		      }
-		    }
-		  }
-		}
-	      	    
-		/* offline the files */ 	
-		{
-		  FileMgrClient fclient = acquireFileMgrClient();
-		  try {
-		    fclient.offline(name, vid, symlinks, dryRunResults);
-		  }
-		  finally {
-		    releaseFileMgrClient(fclient);
-		  }
-		}
-
-                if(!req.isDryRun()) {
-                  /* update the currently offlined revision numbers */ 
-                  synchronized(pOfflinedLock) {
-                    TreeSet<VersionID> offlined = pOfflined.get(name);
-                    if(offlined == null) {
-                      offlined = new TreeSet<VersionID>();
-                      pOfflined.put(name, offlined);
+                  /* make sure at lease one archive volume contains the version */ 
+                  {
+                    boolean hasBeenArchived = false;
+                    synchronized(pArchivedIn) {
+                      TreeMap<VersionID,TreeSet<String>> aversions = pArchivedIn.get(name);
+                      if(aversions != null) {
+                        TreeSet<String> archives = aversions.get(vid);
+                        if((archives != null) && !archives.isEmpty()) 
+                          hasBeenArchived = true;
+                      }
                     }
+
+                    if(!hasBeenArchived) 
+                      throw new PipelineException
+                        ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+                         "cannot be offlined until it has been archived at least once!");
+                  }	    
+
+                  /* make sure it is not being referenced by an existing working version */ 
+                  {
+                    TreeMap<String,TreeSet<String>> views = pNodeTree.getViewsContaining(name);
+                    for(String author : views.keySet()) {
+                      for(String view : views.get(author)) {
+                        NodeID nodeID = new NodeID(author, view, name);
+                        NodeMod mod = getWorkingBundle(nodeID, false).getVersion();
+                        if(vid.equals(mod.getWorkingID())) 
+                          throw new PipelineException
+                            ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+                             "cannot be offlined because a working version currently exists " + 
+                             "which references the checked-in version in the working area " + 
+                             "(" + view + ") owned by user (" + author + ")!");
+		  
+                        if(vid.equals(checkedIn.lastKey())) 
+                          throw new PipelineException
+                            ("The latest checked-in version (" + vid + ") of node " + 
+                             "(" + name + ") cannot be offlined because a working version " + 
+                             "currently exists in the working area (" + view + ") owned by " + 
+                             "user (" + author + ")!");
+                      }
+                    }
+                  }
+
+                  /* determine which symlinks target the to be offlined files */ 
+                  TreeMap<File,TreeSet<VersionID>> symlinks = 
+                    new TreeMap<File,TreeSet<VersionID>>();
+                  {
+                    for(File file : novelty.keySet()) {
+                      Boolean[] isNovel = novelty.get(file);
+
+                      /* the file exists for this version */ 
+                      if(isNovel[vidx] != null) {
+
+                        /* determine whether later files/symlinks needs to be relocated */ 
+                        boolean selected = false;
+                        if(isNovel[vidx])
+                          selected = true;
+                        else {
+                          int vk;
+                          for(vk=vidx-1; vk>=0; vk--) {
+                            VersionID nvid = vids.get(vk);
+                            if(isOffline(timer, name, nvid)) {
+                              selected = true;
+                              break;
+                            }
+                            else if(isNovel[vk]) {
+                              break;
+                            }
+                          }
+                        }
+
+                        /* determine which versions need relocation */ 
+                        if(selected) {
+                          int vk;
+                          for(vk=vidx+1; vk<isNovel.length; vk++) {
+                            VersionID nvid = vids.get(vk);
+		      
+                            if((isNovel[vk] == null) || isNovel[vk]) 
+                              break;
+                            else if(!isOffline(timer, name, nvid)) {
+                              TreeSet<VersionID> svids = symlinks.get(file);
+                              if(svids == null) {
+                                svids = new TreeSet<VersionID>();
+                                symlinks.put(file, svids);
+                              }
+                              svids.add(nvid);
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+	      	    
+                  /* offline the files */ 	
+                  {
+                    FileMgrClient fclient = acquireFileMgrClient();
+                    try {
+                      fclient.offline(name, vid, symlinks, dryRunResults);
+                    }
+                    finally {
+                      releaseFileMgrClient(fclient);
+                    }
+                  }
+
+                  if(!req.isDryRun()) {
+                    /* update the currently offlined revision numbers */ 
+                    synchronized(pOfflinedLock) {
+                      TreeSet<VersionID> offlined = pOfflined.get(name);
+                      if(offlined == null) {
+                        offlined = new TreeSet<VersionID>();
+                        pOfflined.put(name, offlined);
+                      }
                     
-                    offlined.add(vid);
+                      offlined.add(vid);
+                    }
                   }
                 }
               }
-	    }
-	  }
-	  finally {
-	    checkedInLock.readLock().unlock();  
+            }
+            finally {
+              checkedInLock.readLock().unlock();  
 
-	    Collections.reverse(workingLocks);
-	    for(ReentrantReadWriteLock workingLock : workingLocks) 
-	      workingLock.readLock().unlock();
-	  }
-	}
+              Collections.reverse(workingLocks);
+              for(ReentrantReadWriteLock workingLock : workingLocks) 
+                workingLock.readLock().unlock();
+            }
+          }
         
-        if(dryRunResults != null) 
-          return new DryRunRsp(timer, dryRunResults.toString()); 
+          if(dryRunResults != null) 
+            return new DryRunRsp(timer, dryRunResults.toString()); 
 
-	cacheModified = true;
+          cacheModified = true;
 
-	/* post-op tasks */ 
-	startExtensionTasks(timer, factory);
+          /* post-op tasks */ 
+          startExtensionTasks(timer, factory);
 
-	return new SuccessRsp(timer);
+          return new SuccessRsp(timer);
+        }
+        finally {
+          onlineOfflineWriteUnlock(onOffLocks);
+        }  
       }
-      finally {
-	onlineOfflineWriteUnlock(onOffLocks);
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
       }  
+      finally {
+        /* keep the offlined cache file up-to-date */ 
+        if(cacheModified && pPreserveOfflinedCache) {
+          try {
+            writeOfflined();
+          }
+          catch(PipelineException ex) {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               ex.getMessage());
+	  
+            removeOfflinedCache();
+          }
+        }
+      }
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }  
     finally {
       pDatabaseLock.readLock().unlock();
-
-      /* keep the offlined cache file up-to-date */ 
-      if(cacheModified && pPreserveOfflinedCache) {
-	try {
-	  writeOfflined();
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().logAndFlush
-	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	     ex.getMessage());
-	  
-	  removeOfflinedCache();
-	}
-      }
     }
   }
 
@@ -17226,75 +17229,78 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      timer.resume();
+      try {
+        timer.resume();
 
-      /* filter any versions which are not offline */ 
-      TreeMap<String,TreeSet<VersionID>> vsns = new TreeMap<String,TreeSet<VersionID>>();
-      {
-	timer.aquire();
-	List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
-	try {
+        /* filter any versions which are not offline */ 
+        TreeMap<String,TreeSet<VersionID>> vsns = new TreeMap<String,TreeSet<VersionID>>();
+        {
+          timer.aquire();
+          List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
+          try {
+            timer.resume();
+
+            for(String name : versions.keySet()) {
+              TreeSet<VersionID> offline = getOfflinedVersions(timer, name); 
+              if(offline != null) {
+                for(VersionID vid : versions.get(name)) {
+                  if(offline.contains(vid)) {
+                    TreeSet<VersionID> vids = vsns.get(name);
+                    if(vids == null) {
+                      vids = new TreeSet<VersionID>();
+                      vsns.put(name, vids);
+                    }
+                    vids.add(vid);
+                  }
+                }
+              }	  
+            }
+          }
+          catch(PipelineException ex) {
+            return new FailureRsp(timer, ex.getMessage());
+          }  
+          finally {
+            onlineOfflineReadUnlock(onOffLocks);
+          }
+        }
+
+        /* add the requests, replacing any current requests for the same versions */ 
+        timer.aquire();
+        synchronized(pRestoreReqs) {
           timer.resume();
 
-          for(String name : versions.keySet()) {
-            TreeSet<VersionID> offline = getOfflinedVersions(timer, name); 
-            if(offline != null) {
-              for(VersionID vid : versions.get(name)) {
-                if(offline.contains(vid)) {
-                  TreeSet<VersionID> vids = vsns.get(name);
-                  if(vids == null) {
-                    vids = new TreeSet<VersionID>();
-                    vsns.put(name, vids);
-                  }
-                  vids.add(vid);
-                }
+          long now = System.currentTimeMillis();
+
+          for(String name : vsns.keySet()) {
+            TreeMap<VersionID,RestoreRequest> restores = pRestoreReqs.get(name);
+            for(VersionID vid : vsns.get(name)) {
+              RestoreRequest rr = new RestoreRequest(now);
+              if(restores == null) {
+                restores = new TreeMap<VersionID,RestoreRequest>();
+                pRestoreReqs.put(name, restores);
               }
-            }	  
-	  }
-	}
-        catch(PipelineException ex) {
-          return new FailureRsp(timer, ex.getMessage());
-        }  
-	finally {
-	  onlineOfflineReadUnlock(onOffLocks);
-	}
-      }
-
-      /* add the requests, replacing any current requests for the same versions */ 
-      timer.aquire();
-      synchronized(pRestoreReqs) {
-	timer.resume();
-
-	long now = System.currentTimeMillis();
-
-	for(String name : vsns.keySet()) {
-	  TreeMap<VersionID,RestoreRequest> restores = pRestoreReqs.get(name);
-	  for(VersionID vid : vsns.get(name)) {
-	    RestoreRequest rr = new RestoreRequest(now);
-	    if(restores == null) {
-	      restores = new TreeMap<VersionID,RestoreRequest>();
-	      pRestoreReqs.put(name, restores);
-	    }
-	    restores.put(vid, rr);
-	  }
-	}
+              restores.put(vid, rr);
+            }
+          }
 	
-	/* post-op tasks */ 
-	startExtensionTasks(timer, factory);
+          /* post-op tasks */ 
+          startExtensionTasks(timer, factory);
 
-	return new SuccessRsp(timer);
+          return new SuccessRsp(timer);
+        }
+      }
+      finally {
+        try {
+          writeRestoreReqs();
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Net, LogMgr.Level.Warning,
+             ex.getMessage());
+        }
       }
     }
     finally {
-      try {
-	writeRestoreReqs();
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	   ex.getMessage());
-      }
-
       pDatabaseLock.readLock().unlock();
     }
   }
@@ -17336,40 +17342,43 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      synchronized(pRestoreReqs) {
-	timer.resume();
+      try {
+        synchronized(pRestoreReqs) {
+          timer.resume();
 
-	for(String name : versions.keySet()) {
-	  TreeMap<VersionID,RestoreRequest> reqs = pRestoreReqs.get(name);
-	  if(reqs != null) {
-	    for(VersionID vid : versions.get(name)) {
-	      RestoreRequest rr = reqs.get(vid);
-	      if(rr != null) {
-		switch(rr.getState()) {
-		case Pending: 
-		  rr.denied();
-		}
-	      }
-	    }
-	  }	
-	}
+          for(String name : versions.keySet()) {
+            TreeMap<VersionID,RestoreRequest> reqs = pRestoreReqs.get(name);
+            if(reqs != null) {
+              for(VersionID vid : versions.get(name)) {
+                RestoreRequest rr = reqs.get(vid);
+                if(rr != null) {
+                  switch(rr.getState()) {
+                  case Pending: 
+                    rr.denied();
+                  }
+                }
+              }
+            }	
+          }
 	
-	/* post-op tasks */ 
-	startExtensionTasks(timer, factory);
+          /* post-op tasks */ 
+          startExtensionTasks(timer, factory);
 
-	return new SuccessRsp(timer);
+          return new SuccessRsp(timer);
+        }
+      }
+      finally {
+        try {
+          writeRestoreReqs();
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Net, LogMgr.Level.Warning,
+             ex.getMessage());
+        }
       }
     }
     finally {
-      try {
-	writeRestoreReqs();
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	   ex.getMessage());
-      }
-
       pDatabaseLock.readLock().unlock();
     }
   }
@@ -17591,343 +17600,346 @@ class MasterMgr
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
-    boolean cacheModified = false;
     try {
-      timer.resume();	
-
-      if(!isOfflineCacheValid()) 
-        throw new PipelineException 
-          ("The Restore operation will not be available until the offlined node " +
-           "version cache has finished being rebuilt.");
-
-      if(!pAdminPrivileges.isMasterAdmin(req))
-        throw new PipelineException 
-          ("Only a user with Master Admin privileges may restore checked-in versions!"); 
-
-      /* get the archive volume manifest */ 
-      ArchiveVolume vol = readArchive(archiveName);
-
-      /* validate the archiver plugin */ 
-      {
-	BaseArchiver varchiver = vol.getArchiver();
-	if(archiver == null) 
-	  archiver = varchiver;
-	else if(!archiver.getName().equals(varchiver.getName()))
-	  throw new PipelineException
-	    ("The archiver plugin (" + archiver.getName() + ") did not match the " +
-	     "archiver plugin (" + varchiver.getName() + ") used to create the archive " + 
-	     "volume (" + archiveName + ")!");
-	else if(!archiver.getVersionID().equals(varchiver.getVersionID())) 
-	  throw new PipelineException
-	    ("The version (" + archiver.getVersionID() + ") of the archiver plugin " + 
-	     "(" + archiver.getName() + ") did not match the version " + 
-	     "(" + varchiver.getVersionID() + ") of the archiver plugin " + 
-	     "(" + varchiver.getName() + ") used to create the archive volume " + 
-	     "(" + archiveName + ")!");	
-      }
-
-      /* write lock online/offline status */ 
-      timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
+      boolean cacheModified = false;
       try {
-	timer.resume();	
+        timer.resume();	
 
-	/* validate the file sequences to be restored */ 
-	TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = 
-	  new TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>();
-        TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> checkSums = 
-          new TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>>(); 
-	long total = 0L;
-	for(String name : versions.keySet()) {
+        if(!isOfflineCacheValid()) 
+          throw new PipelineException 
+            ("The Restore operation will not be available until the offlined node " +
+             "version cache has finished being rebuilt.");
+
+        if(!pAdminPrivileges.isMasterAdmin(req))
+          throw new PipelineException 
+            ("Only a user with Master Admin privileges may restore checked-in versions!"); 
+
+        /* get the archive volume manifest */ 
+        ArchiveVolume vol = readArchive(archiveName);
+
+        /* validate the archiver plugin */ 
+        {
+          BaseArchiver varchiver = vol.getArchiver();
+          if(archiver == null) 
+            archiver = varchiver;
+          else if(!archiver.getName().equals(varchiver.getName()))
+            throw new PipelineException
+              ("The archiver plugin (" + archiver.getName() + ") did not match the " +
+               "archiver plugin (" + varchiver.getName() + ") used to create the archive " + 
+               "volume (" + archiveName + ")!");
+          else if(!archiver.getVersionID().equals(varchiver.getVersionID())) 
+            throw new PipelineException
+              ("The version (" + archiver.getVersionID() + ") of the archiver plugin " + 
+               "(" + archiver.getName() + ") did not match the version " + 
+               "(" + varchiver.getVersionID() + ") of the archiver plugin " + 
+               "(" + varchiver.getName() + ") used to create the archive volume " + 
+               "(" + archiveName + ")!");	
+        }
+
+        /* write lock online/offline status */ 
+        timer.aquire();
+        List<ReentrantReadWriteLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
+        try {
+          timer.resume();	
+
+          /* validate the file sequences to be restored */ 
+          TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = 
+            new TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>();
+          TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>> checkSums = 
+            new TreeMap<String,TreeMap<VersionID,SortedMap<String,CheckSum>>>(); 
+          long total = 0L;
+          for(String name : versions.keySet()) {
 	  
-	  timer.aquire();
-	  ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-	  checkedInLock.readLock().lock();  
-	  try {
-	    timer.resume();	
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = 
-              getCheckedInBundles(name, false);
+            timer.aquire();
+            ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+            checkedInLock.readLock().lock();  
+            try {
+              timer.resume();	
+              TreeMap<VersionID,CheckedInBundle> checkedIn = 
+                getCheckedInBundles(name, false);
 	  
-	    for(VersionID vid : versions.get(name)) {
-	      if(!vol.contains(name, vid)) 
-		throw new PipelineException
-		  ("The checked-in version (" + vid + ") of node (" + name + ") cannot be " +
-		   "restored because it is not contained in the archive volume " + 
-		   "(" + archiveName + ")!");
-	      total += vol.getSize(name, vid);
+              for(VersionID vid : versions.get(name)) {
+                if(!vol.contains(name, vid)) 
+                  throw new PipelineException
+                    ("The checked-in version (" + vid + ") of node (" + name + ") cannot be " +
+                     "restored because it is not contained in the archive volume " + 
+                     "(" + archiveName + ")!");
+                total += vol.getSize(name, vid);
 	      
-              if(!isOffline(timer, name, vid)) 
-                throw new PipelineException 
-                  ("The checked-in version (" + vid + ") of node (" + name + ") cannot " + 
-                   "be restored because it is currently online!");
+                if(!isOffline(timer, name, vid)) 
+                  throw new PipelineException 
+                    ("The checked-in version (" + vid + ") of node (" + name + ") cannot " + 
+                     "be restored because it is currently online!");
 	  
-	      CheckedInBundle bundle = checkedIn.get(vid);
-	      if(bundle == null) 
-		throw new PipelineException 
-		  ("No checked-in version (" + vid + ") of node (" + name + ") exists " + 
-		   "to be restored!");
+                CheckedInBundle bundle = checkedIn.get(vid);
+                if(bundle == null) 
+                  throw new PipelineException 
+                    ("No checked-in version (" + vid + ") of node (" + name + ") exists " + 
+                     "to be restored!");
 
-              NodeVersion vsn = bundle.getVersion();
+                NodeVersion vsn = bundle.getVersion();
 
-              if(vsn.isIntermediate()) 
-                throw new PipelineException
-                  ("The checked-in version (" + vid + ") of node (" + name + ") " + 
-                   "cannot be restored because it is marked as having Intermediate " + 
-                   "Files which are never stored in the repository!"); 
+                if(vsn.isIntermediate()) 
+                  throw new PipelineException
+                    ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+                     "cannot be restored because it is marked as having Intermediate " + 
+                     "Files which are never stored in the repository!"); 
 
-              {
-                TreeMap<VersionID,TreeSet<FileSeq>> fvsns = fseqs.get(name);
-                if(fvsns == null) {
-                  fvsns = new TreeMap<VersionID,TreeSet<FileSeq>>();
-                  fseqs.put(name, fvsns);
-                }
+                {
+                  TreeMap<VersionID,TreeSet<FileSeq>> fvsns = fseqs.get(name);
+                  if(fvsns == null) {
+                    fvsns = new TreeMap<VersionID,TreeSet<FileSeq>>();
+                    fseqs.put(name, fvsns);
+                  }
                 
-                fvsns.put(vid, vsn.getSequences());
-              }
+                  fvsns.put(vid, vsn.getSequences());
+                }
               
-              {
-                TreeMap<VersionID,SortedMap<String,CheckSum>> cvsns = checkSums.get(name); 
-                if(cvsns == null) {
-                  cvsns = new TreeMap<VersionID,SortedMap<String,CheckSum>>();
-                  checkSums.put(name, cvsns);
+                {
+                  TreeMap<VersionID,SortedMap<String,CheckSum>> cvsns = checkSums.get(name); 
+                  if(cvsns == null) {
+                    cvsns = new TreeMap<VersionID,SortedMap<String,CheckSum>>();
+                    checkSums.put(name, cvsns);
+                  }
+
+                  cvsns.put(vid, vsn.getCheckSums());
+                }
+              }
+            }
+            finally {
+              checkedInLock.readLock().unlock();  
+            }
+          }
+
+          /* get the toolset environment */ 
+          String tname = req.getToolset();
+          if(tname == null) 
+            tname = vol.getToolset();
+	
+          TreeMap<String,String> env = 
+            getToolsetEnvironment(null, null, tname, OsType.Unix, timer);
+	
+          /* pre-op tests */
+          RestoreExtFactory factory = 
+            new RestoreExtFactory(req.getRequestor(), archiveName, versions, archiver, tname);
+          try {
+            performExtensionTests(timer, factory);
+          }
+          catch(PipelineException ex) {
+            return new FailureRsp(timer, ex.getMessage());
+          }
+
+          /* extract the versions from the archive volume by running the archiver plugin and 
+             save any STDOUT output */
+          {
+            String output = null;
+            {
+              FileMgrClient fclient = acquireFileMgrClient();
+              try {
+                StringBuilder dryRunResults = null;
+                if(req.isDryRun()) 
+                  dryRunResults = new StringBuilder();
+
+                output = fclient.extract(archiveName, stamp, fseqs, checkSums, 
+                                         archiver, env, total, dryRunResults);
+
+                if(dryRunResults != null) 
+                  return new DryRunRsp(timer, dryRunResults.toString()); 
+              }
+              finally {
+                releaseFileMgrClient(fclient);
+              }
+            }
+	  
+            long now = System.currentTimeMillis();
+            File file = new File(pNodeDir, 
+                                 "archives/output/restore/" + archiveName + "-" + now);
+            try {
+              FileWriter out = new FileWriter(file);
+	    
+              if(output != null) 
+                out.write(output);
+	    
+              out.flush();
+              out.close();
+            }
+            catch(IOException ex) {
+              throw new PipelineException
+                ("I/O ERROR: \n" + 
+                 "  While attempting to write the archive STDOUT file (" + file + ")...\n" + 
+                 "    " + ex.getMessage());
+            }
+	 
+            synchronized(pRestoredOn) {
+              TreeSet<Long> stamps = pRestoredOn.get(archiveName);
+              if(stamps == null) {
+                stamps = new TreeSet<Long>();
+                pRestoredOn.put(archiveName, stamps);
+              }
+              stamps.add(now);
+            }
+          }
+      
+          /* move the extracted files into the respository */ 
+          for(String name : versions.keySet()) {
+
+            timer.aquire();
+            ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+            checkedInLock.readLock().lock();  
+            try {
+              timer.resume();	
+              TreeMap<VersionID,CheckedInBundle> checkedIn =
+                getCheckedInBundles(name, false);
+
+              ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
+              TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
+	    
+              for(VersionID vid : versions.get(name)) {
+                int vidx = vids.indexOf(vid);
+	      
+                /* determine what files and/or links need to be modified */ 
+                TreeMap<File,TreeSet<VersionID>> symlinks = 
+                  new TreeMap<File,TreeSet<VersionID>>();
+                TreeMap<File,VersionID> targets = new TreeMap<File,VersionID>();
+                for(File file : novelty.keySet()) {
+                  Boolean[] isNovel = novelty.get(file);
+	    
+                  /* the file exists for this version */ 
+                  if(isNovel[vidx] != null) {
+		  
+                    /* determine revision number of the earliest online version of the file 
+                       which will be used as the target of all symlinks for this fill */ 
+                    VersionID tvid = vid;
+                    if(!isNovel[vidx]) {
+                      int vk;
+                      for(vk=vidx-1; vk>=0; vk--) {
+                        VersionID nvid = vids.get(vk);
+                        if(!isOffline(timer, name, nvid)) 
+                          tvid = nvid;
+
+                        if(isNovel[vk]) 
+                          break;
+                      }
+                    }
+	     
+                    /* move the file and relocate all later links to target this version */ 
+                    if(tvid.equals(vid)) {
+                      TreeSet<VersionID> svids = symlinks.get(file);
+                      if(svids == null) {
+                        svids = new TreeSet<VersionID>();
+                        symlinks.put(file, svids);
+                      }
+		    
+                      int vk;
+                      for(vk=vidx+1; vk<isNovel.length; vk++) {
+                        VersionID nvid = vids.get(vk);
+                        if((isNovel[vk] == null) || isNovel[vk]) 
+                          break;
+                        else if(!isOffline(timer, name, nvid)) 
+                          svids.add(nvid);
+                      }
+                    }
+
+                    /* create a symlink to the earliest online version of the file */ 
+                    else {
+                      targets.put(file, tvid);
+                    }
+                  }
+                }
+ 
+                /* restore the files */ 
+                {
+                  FileMgrClient fclient = acquireFileMgrClient();
+                  try {
+                    fclient.restore(archiveName, stamp, name, vid, symlinks, targets);
+                  }
+                  finally {
+                    releaseFileMgrClient(fclient);
+                  }
                 }
 
-                cvsns.put(vid, vsn.getCheckSums());
+                /* update the currently offlined revision numbers */ 
+                synchronized(pOfflinedLock) {
+                  TreeSet<VersionID> offlined = pOfflined.get(name);
+                  offlined.remove(vid);
+                  if(offlined.isEmpty()) {
+                    offlined = null;
+                    pOfflined.remove(name);
+                  }
+                }
+	
+                /* update the restore requests */ 
+                synchronized(pRestoreReqs) {
+                  TreeMap<VersionID,RestoreRequest> reqs = pRestoreReqs.get(name);
+                  if(reqs != null) {
+                    RestoreRequest rr = reqs.get(vid);
+                    if(rr != null) 
+                      rr.restored(archiveName);
+                  }
+                }
               }
-	    }
-	  }
-	  finally {
-	    checkedInLock.readLock().unlock();  
-	  }
-	}
+            }
+            finally {
+              checkedInLock.readLock().unlock();  
+            }	  
+          }
 
-	/* get the toolset environment */ 
-	String tname = req.getToolset();
-	if(tname == null) 
-	  tname = vol.getToolset();
-	
-	TreeMap<String,String> env = 
-	  getToolsetEnvironment(null, null, tname, OsType.Unix, timer);
-	
-	/* pre-op tests */
-	RestoreExtFactory factory = 
-	  new RestoreExtFactory(req.getRequestor(), archiveName, versions, archiver, tname);
-	try {
-	  performExtensionTests(timer, factory);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+          cacheModified = true;
 
-	/* extract the versions from the archive volume by running the archiver plugin and 
-	   save any STDOUT output */
-	{
-	  String output = null;
-	  {
-	    FileMgrClient fclient = acquireFileMgrClient();
-	    try {
-              StringBuilder dryRunResults = null;
-              if(req.isDryRun()) 
-                dryRunResults = new StringBuilder();
+          /* post-op tasks */ 
+          startExtensionTasks(timer, factory);
 
-	      output = fclient.extract(archiveName, stamp, fseqs, checkSums, 
-                                       archiver, env, total, dryRunResults);
-
-              if(dryRunResults != null) 
-                return new DryRunRsp(timer, dryRunResults.toString()); 
-	    }
-	    finally {
-	      releaseFileMgrClient(fclient);
-	    }
-	  }
-	  
-          long now = System.currentTimeMillis();
-	  File file = new File(pNodeDir, 
-                               "archives/output/restore/" + archiveName + "-" + now);
-	  try {
-	    FileWriter out = new FileWriter(file);
-	    
-	    if(output != null) 
-	      out.write(output);
-	    
-	    out.flush();
-	    out.close();
-	  }
-	  catch(IOException ex) {
-	    throw new PipelineException
-	      ("I/O ERROR: \n" + 
-	       "  While attempting to write the archive STDOUT file (" + file + ")...\n" + 
-	       "    " + ex.getMessage());
-	  }
-	 
-	  synchronized(pRestoredOn) {
-	    TreeSet<Long> stamps = pRestoredOn.get(archiveName);
-	    if(stamps == null) {
-	      stamps = new TreeSet<Long>();
-	      pRestoredOn.put(archiveName, stamps);
-	    }
-	    stamps.add(now);
-	  }
-	}
-      
-	/* move the extracted files into the respository */ 
-	for(String name : versions.keySet()) {
-
-	  timer.aquire();
-	  ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-	  checkedInLock.readLock().lock();  
-	  try {
-	    timer.resume();	
-	    TreeMap<VersionID,CheckedInBundle> checkedIn =
-              getCheckedInBundles(name, false);
-
-	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
-	    TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
-	    
-	    for(VersionID vid : versions.get(name)) {
-	      int vidx = vids.indexOf(vid);
-	      
-	      /* determine what files and/or links need to be modified */ 
-	      TreeMap<File,TreeSet<VersionID>> symlinks = 
-		new TreeMap<File,TreeSet<VersionID>>();
-	      TreeMap<File,VersionID> targets = new TreeMap<File,VersionID>();
-	      for(File file : novelty.keySet()) {
-		Boolean[] isNovel = novelty.get(file);
-	    
-		/* the file exists for this version */ 
-		if(isNovel[vidx] != null) {
-		  
-		  /* determine revision number of the earliest online version of the file 
-		     which will be used as the target of all symlinks for this fill */ 
-		  VersionID tvid = vid;
-		  if(!isNovel[vidx]) {
-		    int vk;
-		    for(vk=vidx-1; vk>=0; vk--) {
-		      VersionID nvid = vids.get(vk);
-                      if(!isOffline(timer, name, nvid)) 
-                        tvid = nvid;
-
-		      if(isNovel[vk]) 
-			break;
-		    }
-		  }
-	     
-		  /* move the file and relocate all later links to target this version */ 
-		  if(tvid.equals(vid)) {
-		    TreeSet<VersionID> svids = symlinks.get(file);
-		    if(svids == null) {
-		      svids = new TreeSet<VersionID>();
-		      symlinks.put(file, svids);
-		    }
-		    
-		    int vk;
-		    for(vk=vidx+1; vk<isNovel.length; vk++) {
-		      VersionID nvid = vids.get(vk);
-		      if((isNovel[vk] == null) || isNovel[vk]) 
-			break;
-		      else if(!isOffline(timer, name, nvid)) 
-                        svids.add(nvid);
-		    }
-		  }
-
-		  /* create a symlink to the earliest online version of the file */ 
-		  else {
-		    targets.put(file, tvid);
-		  }
-		}
-	      }
- 
-	      /* restore the files */ 
-	      {
-		FileMgrClient fclient = acquireFileMgrClient();
-		try {
-		  fclient.restore(archiveName, stamp, name, vid, symlinks, targets);
-		}
-		finally {
-		  releaseFileMgrClient(fclient);
-		}
-	      }
-
-	      /* update the currently offlined revision numbers */ 
-	      synchronized(pOfflinedLock) {
-		TreeSet<VersionID> offlined = pOfflined.get(name);
-		offlined.remove(vid);
-		if(offlined.isEmpty()) {
-		  offlined = null;
-		  pOfflined.remove(name);
-		}
-	      }
-	
-	      /* update the restore requests */ 
-	      synchronized(pRestoreReqs) {
-		TreeMap<VersionID,RestoreRequest> reqs = pRestoreReqs.get(name);
-		if(reqs != null) {
-		  RestoreRequest rr = reqs.get(vid);
-		  if(rr != null) 
-		    rr.restored(archiveName);
-		}
-	      }
-	    }
-	  }
-	  finally {
-	    checkedInLock.readLock().unlock();  
-	  }	  
-	}
-
-	cacheModified = true;
-
-	/* post-op tasks */ 
-	startExtensionTasks(timer, factory);
-
-	return new SuccessRsp(timer);
+          return new SuccessRsp(timer);
+        }
+        finally {
+          onlineOfflineWriteUnlock(onOffLocks);
+        }
       }
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
+      }  
       finally {
-	onlineOfflineWriteUnlock(onOffLocks);
+        try {
+          writeRestoreReqs();
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Net, LogMgr.Level.Warning,
+             ex.getMessage());
+        }
+
+        try {
+          FileMgrClient fclient = acquireFileMgrClient();
+          try {
+            fclient.extractCleanup(archiveName, stamp);
+          }
+          finally {
+            releaseFileMgrClient(fclient);
+          }
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Net, LogMgr.Level.Warning,
+             ex.getMessage());
+        }
+
+        /* keep the offlined cache file up-to-date */ 
+        if(cacheModified && pPreserveOfflinedCache) {
+          try {
+            writeOfflined();
+          }
+          catch(PipelineException ex) {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               ex.getMessage());
+	  
+            removeOfflinedCache();
+          }
+        }
       }
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }  
     finally {
-      try {
-	writeRestoreReqs();
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	   ex.getMessage());
-      }
-
-      try {
-	FileMgrClient fclient = acquireFileMgrClient();
-	try {
-	  fclient.extractCleanup(archiveName, stamp);
-	}
-	finally {
-	  releaseFileMgrClient(fclient);
-	}
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	   ex.getMessage());
-      }
-
       pDatabaseLock.readLock().unlock();
-
-      /* keep the offlined cache file up-to-date */ 
-      if(cacheModified && pPreserveOfflinedCache) {
-	try {
-	  writeOfflined();
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().logAndFlush
-	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	     ex.getMessage());
-	  
-	  removeOfflinedCache();
-	}
-      }
     }
   }
 
