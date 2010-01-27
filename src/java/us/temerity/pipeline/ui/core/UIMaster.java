@@ -6132,7 +6132,7 @@ class UIMaster
       {
 	UIMaster master = UIMaster.getInstance();
         boolean ignoreExitCode = false;
-	if(master.beginPanelOp(pChannel, "Launching Node Editor...")) {
+        if((pChannel == 0) || master.beginPanelOp(pChannel, "Launching Node Editor...")) {
 	  MasterMgrClient client = master.acquireMasterMgrClient();
 	  try {
 
@@ -6224,7 +6224,7 @@ class UIMaster
               }
 	    }
 
-            if(pSubstitute) {
+            if(pSubstitute && (pChannel > 0)) {
               PrivilegeDetails details = getUICache(pChannel).getCachedPrivilegeDetails();
               if(!details.isNodeManaged(pAuthorName)) 
                 throw new PipelineException
@@ -6269,7 +6269,8 @@ class UIMaster
 	  }
 	  finally {
 	    master.releaseMasterMgrClient(client);
-	    master.endPanelOp(pChannel, "Done.");
+	    if(pChannel > 0) 
+              master.endPanelOp(pChannel, "Done.");
 	  }
 	}
 
