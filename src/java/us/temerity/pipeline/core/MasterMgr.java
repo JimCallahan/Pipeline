@@ -10609,7 +10609,30 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.writeLock().lock();
+    {
+      ReentrantReadWriteLock.WriteLock wlock = pDatabaseLock.writeLock(); 
+      try {
+        long start = System.currentTimeMillis();
+        while(true) {
+          if(wlock.tryLock() || 
+             wlock.tryLock(sDatabaseWriteLockTimeout, TimeUnit.MILLISECONDS))
+            break;
+
+          long wait = System.currentTimeMillis() - start;
+          if(wait > sDeleteTimeout)
+            return new FailureRsp
+              (timer, "Giving up after attempting to Delete node (" + name + ") for " + 
+               "(" + TimeStamps.formatInterval(wait) + ").\n\n" + 
+               "The Pipeline server is simply too busy at the moment to allow Delete " + 
+               "operations to proceed without causing unacceptable delays for other " + 
+               "users.  Please try again later, preferably during non-peak hours."); 
+        }
+      }
+      catch(InterruptedException ex) {
+        return new FailureRsp
+          (timer, "Interrupted while attempting to acquire the database write-lock!"); 
+      }
+    }
     try {
       timer.resume();	
 
@@ -25733,6 +25756,21 @@ class MasterMgr
    */ 
   private ReentrantReadWriteLock  pDatabaseLock;
 
+  /**
+   * The amount of time to wait between attempts to acquire the database write-lock.
+   */ 
+  private static final long  sDatabaseWriteLockTimeout = 5000L;   /* 5-seconds */ 
+
+  /**
+   * The total amount of time to attempt to acquire the database write-lock during a
+   * Delete operation before giving up. 
+   */ 
+  private static final long  sDeleteTimeout = 300000L;   /* 5-minutes */ 
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * The file system directory creation lock.
    */
