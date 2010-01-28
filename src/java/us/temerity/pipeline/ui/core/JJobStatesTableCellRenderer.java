@@ -69,26 +69,34 @@ class JJobStatesTableCellRenderer
   )
   {
     double[] dist = (double[]) value; 
-    
+
     double total = 0.0f;
-    int wk;
-    for(wk=0; wk<dist.length; wk++) 
-      total += dist[wk];
+    double[] sorted = new double[dist.length];
+    {
+      int wk = 0;
+      for(JobState jstate : sDisplayOrder) {
+        sorted[wk] = dist[jstate.ordinal()];
+        total += sorted[wk];
+        wk++;
+      }
+    }
     
     if(total > 0.0f) {
       UserPrefs prefs = UserPrefs.getInstance();
       Color[] colors = {
-        colorCast(prefs.getQueuedCoreColor()), 
-        colorCast(prefs.getPreemptedCoreColor()), 
-        colorCast(prefs.getPausedCoreColor()), 
+        colorCast(prefs.getFailedCoreColor()), 
         colorCast(prefs.getAbortedCoreColor()), 
+        colorCast(prefs.getFinishedCoreColor()), 
+        
         colorCast(prefs.getRunningCoreColor()), 
         colorCast(prefs.getLimboCoreColor()), 
-        colorCast(prefs.getFinishedCoreColor()), 
-        colorCast(prefs.getFailedCoreColor())
+        
+        colorCast(prefs.getPausedCoreColor()), 
+        colorCast(prefs.getPreemptedCoreColor()), 
+        colorCast(prefs.getQueuedCoreColor())
       };
 
-      pGraph.setValues(dist, colors);
+      pGraph.setValues(sorted, colors);
     }
     else {
       pGraph.setValues(null, null);
@@ -115,9 +123,13 @@ class JJobStatesTableCellRenderer
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = ;
+  private static final JobState[] sDisplayOrder = {
+    JobState.Failed, JobState.Aborted, JobState.Finished, 
+    JobState.Running, JobState.Limbo, 
+    JobState.Paused, JobState.Preempted, JobState.Queued
+  };
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

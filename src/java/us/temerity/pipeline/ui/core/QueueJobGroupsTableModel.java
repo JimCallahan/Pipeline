@@ -345,25 +345,7 @@ class QueueJobGroupsTableModel
      double[] dist
     ) 
     {
-      for(JobState jstate : JobState.all()) {
-        switch(jstate) {
-        case Queued:
-        case Preempted: 
-        case Paused:
-          pPending += dist[jstate.ordinal()];
-          break;
-          
-        case Running:
-        case Limbo:
-          pRunning += dist[jstate.ordinal()];
-          break;
-            
-        case Aborted:
-        case Finished:
-        case Failed:
-          pDone += dist[jstate.ordinal()];
-        }
-      }
+      pDist = dist;
     }
 
     public int 	
@@ -372,27 +354,16 @@ class QueueJobGroupsTableModel
      Distribution d
     ) 
     {
-      if(ExtraMath.equiv(pDone, d.pDone)) {
-        if(ExtraMath.equiv(pRunning, d.pRunning)) {
-          if(ExtraMath.equiv(pPending, d.pPending)) {
-            return 0;
-          }
-          else {
-            return ((pPending < d.pPending) ? -1 : 1);
-          }
-        }
-        else {
-          return ((pRunning < d.pRunning) ? -1 : 1);
-        }
+      for(JobState jstate : sCompareOrder) {
+        int i = jstate.ordinal();
+        if(!ExtraMath.equiv(pDist[i], d.pDist[i], 0.05)) 
+          return ((pDist[i] < d.pDist[i]) ? -1 : 1);
       }
-      else {
-        return ((pDone < d.pDone) ? -1 : 1);
-      }
+
+      return 0;
     }
 
-    private double pPending; 
-    private double pRunning; 
-    private double pDone; 
+    private double[] pDist; 
   }
      
 
@@ -403,6 +374,11 @@ class QueueJobGroupsTableModel
 
   private static final long serialVersionUID = -93844522399458365L; 
 
+  private static final JobState[] sCompareOrder = {
+    JobState.Failed, JobState.Aborted, JobState.Finished, 
+    JobState.Running, JobState.Limbo, 
+    JobState.Paused, JobState.Preempted, JobState.Queued
+  };
 
 
   /*----------------------------------------------------------------------------------------*/
