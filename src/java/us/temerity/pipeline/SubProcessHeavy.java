@@ -562,6 +562,7 @@ class SubProcessHeavy
     }
 
     /* run the process... */ 
+    TaskTimer timer = new TaskTimer(); 
     String extraErrors = null;
     CloseStdInTask closeStdin = new CloseStdInTask(getName());
     try {
@@ -642,6 +643,9 @@ class SubProcessHeavy
 	buf.append("ABORTED");
       }
       
+      timer.suspend();
+      buf.append("\n  " + timer);
+
       LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Sub, LogMgr.Level.Fine,
 	 buf.toString());

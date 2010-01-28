@@ -725,8 +725,9 @@ class SubProcessLight
 	(LogMgr.Kind.Sub, LogMgr.Level.Finest,
 	 buf.toString());
     }
-      
+
     /* run the process... */ 
+    TaskTimer timer = new TaskTimer(); 
     String extraErrors = null;
     StdOutTask stdout = new StdOutTask(getName());
     StdErrTask stderr = new StdErrTask(getName());
@@ -806,6 +807,9 @@ class SubProcessLight
 	buf.append("ABORTED");
       }
       
+      timer.suspend();
+      buf.append("\n  " + timer);
+
       LogMgr.getInstance().logAndFlush
 	(LogMgr.Kind.Sub, LogMgr.Level.Fine,
 	 buf.toString());
