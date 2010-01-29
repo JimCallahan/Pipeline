@@ -6134,8 +6134,8 @@ class QueueMgr
 
         if(unprivileged)
           exceptions.add
-            ("Some jobs did not have their requirements changed due to lack of Queue Admin " + 
-             "or Queue Manager privileges!");
+            ("Some jobs did not have their requirements changed due to lack of Queue " + 
+             "Admin or Queue Manager privileges!");
       
         if (exceptions.size() > 0) {
           String msg = "";
@@ -6143,9 +6143,9 @@ class QueueMgr
             msg += each + "\n\n";
         
           throw new PipelineException
-            ("While changing job requirements was successful, the following errors occured " +
-             "during KeyChooser execution.  These errors may effect the ability of the jobs " +
-             "on the queue to run.\n\n" + msg);
+            ("While changing job requirements was successful, the following errors " + 
+             "occured during KeyChooser execution.  These errors may effect the ability " + 
+             "of the jobs on the queue to run.\n\n" + msg);
         }
 
         return new SuccessRsp(timer);
@@ -6268,8 +6268,8 @@ class QueueMgr
 
         if(unprivileged)
           exceptions.add
-            ("Some jobs did not have their permissions changed due to lack of Queue Admin " +
-             "or Queue Manager privileges!");
+            ("Some jobs did not have their permissions changed due to lack of Queue " + 
+             "Admin or Queue Manager privileges!");
       
         if (exceptions.size() > 0) {
           String msg = "";
@@ -6277,9 +6277,9 @@ class QueueMgr
             msg += each + "\n\n";
         
           throw new PipelineException
-            ("While updating job keys was successful, the following errors occurred during " + 
-             "KeyChooser execution.  These errors may effect the ability of the jobs on " + 
-             "the queue to run.\n\n" + msg);
+            ("While updating job keys was successful, the following errors occurred " +
+             "during KeyChooser execution.  These errors may effect the ability of the " + 
+             "jobs on the queue to run.\n\n" + msg);
         }
 
         return new SuccessRsp(timer);
@@ -14043,6 +14043,7 @@ class QueueMgr
    */
   private boolean  pRebuild; 
 
+
   /*----------------------------------------------------------------------------------------*/
  
   /**
@@ -14068,6 +14069,7 @@ class QueueMgr
    */ 
   private AtomicReference<Path>  pBackupSyncTarget; 
   
+
   /*----------------------------------------------------------------------------------------*/
  
   /**
@@ -14079,6 +14081,7 @@ class QueueMgr
    * The network interface to the <B>plmaster</B>(1) daemon.
    */ 
   private MasterMgrClient  pMasterMgrClient;
+
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -14105,6 +14108,7 @@ class QueueMgr
    */
   private AtomicLong pLastUpdateAllTime;
   
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -14113,6 +14117,7 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,LicenseKey>  pLicenseKeys; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -14161,6 +14166,7 @@ class QueueMgr
    */ 
   private TreeMap<Flags,HardwareProfile>  pHardwareProfiles;
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -14184,6 +14190,7 @@ class QueueMgr
    */ 
   private TreeMap<String,SelectionSchedule>  pSelectionSchedules; 
   
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -14210,6 +14217,7 @@ class QueueMgr
    */ 
   private TreeMap<String, JobRankSorter>  pDispDispatchControls; 
   
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -14259,6 +14267,7 @@ class QueueMgr
    */
   private AtomicBoolean pUserBalanceRecalculated;
   
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -14290,8 +14299,8 @@ class QueueMgr
   
   /**
    * A map, keyed by the balance group and then the user name, of the number of jobs the user
-   * currently has running in each balance group, plus the number of jobs they have dispatched 
-   * during this dispatcher cycle. <p>
+   * currently has running in each balance group, plus the number of jobs they have 
+   * dispatched during this dispatcher cycle. <p>
    * 
    * This is  not the same as {@link #pDispUserUse}, which measures the total number of jobs
    * the user dispatched since the last balancer() cycle.  Instead, this structure is used to
@@ -14343,6 +14352,7 @@ class QueueMgr
    */
   private long pDispSampleStart;
 
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -14376,6 +14386,7 @@ class QueueMgr
    */ 
   private TreeMap<Flags,SelectionProfile>  pSelectionProfiles;
 
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -14385,6 +14396,7 @@ class QueueMgr
    */ 
   private TreeMap<String,QueueExtensionConfig>  pQueueExtensions; 
 
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -14393,6 +14405,7 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeMap<OsType,Toolset>>  pToolsets;
+
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -14463,6 +14476,7 @@ class QueueMgr
    */
   private TreeMap<String,QueueHostInfo>  pHostsInfo; 
   
+
   /*----------------------------------------------------------------------------------------*/
  
   /**
@@ -14489,6 +14503,7 @@ class QueueMgr
    * A lock which protects resource sample files from simulatenous reads and writes.
    */ 
   private Object  pSampleFileLock; 
+
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -14587,6 +14602,7 @@ class QueueMgr
    */ 
   private int  pDispatcherCycles; 
 
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -14611,7 +14627,11 @@ class QueueMgr
    */
   private LinkedBlockingQueue<DeleteListEntry> pDeleteList;
   
+  /**
+   * Used to block the Writer thread until there is something to write. 
+   */ 
   private Semaphore pWriterSemaphore;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -14629,6 +14649,7 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<Long,QueueJob>  pJobs; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -14649,15 +14670,21 @@ class QueueMgr
    */ 
   private TreeMap<Long,QueueJobInfo>  pJobInfo;
   
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * A table of pending changes to the JobReqs of QueueJobs. <p>
    * 
-   * Access to this field should be protected by a synchronized block.
+   * Access to this field should be protected by synchronizing on pJobReqsChangesLock.
    */
   private TreeMap<Long,JobReqs>  pJobReqsChanges;
+
+  /**
+   * The lock which protects pJobReqsChanges.
+   */ 
   private Object pJobReqsChangesLock;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -14677,6 +14704,7 @@ class QueueMgr
    */ 
   private TreeMap<NodeID,TreeMap<File,Long>>  pNodeJobIDs;
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -14694,6 +14722,7 @@ class QueueMgr
    */
   private TreeMap<Long,QueueJobGroup>  pJobGroups; 
 
+
   /*----------------------------------------------------------------------------------------*/
      
   /**
@@ -14703,6 +14732,7 @@ class QueueMgr
    * by this class.
    */ 
   private QueueJobCounters  pJobCounters; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
