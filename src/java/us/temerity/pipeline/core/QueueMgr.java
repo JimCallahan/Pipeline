@@ -12539,8 +12539,14 @@ class QueueMgr
                       pNodeJobIDs.put(nodeID, table);
                     }
                 
-                    for(File f : fseq.getFiles()) 
-                      table.put(f, jobID);
+                    /* only update the entry if this job is newer (larger ID) since the 
+                       reading is multi-threaded and jobs are not guaranteed to be read 
+                       in job ID order */ 
+                    for(File f : fseq.getFiles()) {
+                      Long oldID = table.get(f);
+                      if((oldID == null) || (oldID < jobID))  
+                        table.put(f, jobID);
+                    }
                   }
                 }
             
