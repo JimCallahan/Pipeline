@@ -14086,13 +14086,6 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Saves information about user queue usage.
-   */
-  private UserBalanceInfo pUserBalanceInfo;
-
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
    * A long that is set whenever keychoosers or a key that uses a keychooser is updated. <p>
    * 
    * This value can then be compared against the value saved in jobs to determine if the job 
@@ -14220,6 +14213,11 @@ class QueueMgr
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Saves information about user queue usage.
+   */
+  private UserBalanceInfo pUserBalanceInfo;
+
   /**
    * The interval (in milliseconds) between when the User Balance Info class updates its 
    * samples.<P>
