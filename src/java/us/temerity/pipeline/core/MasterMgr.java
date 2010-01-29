@@ -12667,6 +12667,77 @@ class MasterMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*  C H E C K S U M S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sent updates to the checksums for files associated with the given set of working 
+   * versions. <P> 
+   * 
+   * This is used by the Queue Manager to transmit checksums stored in QueueJobInfo
+   * instances which are about to be garbage collected.
+   *
+   * @param req
+   *   The request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or <CODE>FailureRsp</CODE> on failure.
+   */ 
+  public Object
+  updateCheckSums
+  (
+   NodeUpdateCheckSumsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.updateCheckSums()");
+
+    TreeMap<NodeID,CheckSumCache> checksums = req.getCheckSums();
+    if(checksums.isEmpty()) 
+      return new SuccessRsp(timer);    
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      for(Map.Entry<NodeID,CheckSumCache> entry : checksums.entrySet()) {
+        NodeID nodeID = entry.getKey();
+        CheckSumCache qcache = entry.getValue();
+        if(!qcache.isEmpty()) {
+          timer.aquire();
+          ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
+          clock.writeLock().lock();
+          try {
+            timer.resume();
+            
+            CheckSumBundle cbundle = getCheckSumBundle(nodeID);   
+            CheckSumCache cache = cbundle.getCache();
+            
+            cache.resetModified(); 
+            cache.addAll(qcache);
+            if(cache.wasModified()) {
+              cbundle.setCache(cache); 
+              writeCheckSumCache(cache); 
+            }
+          }
+          finally {
+            clock.writeLock().unlock();
+          } 
+        }
+      }
+
+      return new SuccessRsp(timer);    
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   B U N D L E S                                                              */
@@ -25033,8 +25104,8 @@ class MasterMgr
                   default:
                     throw new PipelineException
                       ("Somehow the working file (" + fseq.getFile(wk) + ") with a file " + 
-                       "state of (" + states[wk].name() + ") was erroneously submitted for " + 
-                       "check-in!");
+                       "state of (" + states[wk].name() + ") was erroneously submitted " + 
+                       "for check-in!");
                   }
                 }
               }
@@ -26316,7 +26387,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The connection to the queue manager daemon: <B>plqueuemgr<B>(1).
+   * The connection to the queue manager daemon: <B>plqueuemgr</B>(1).
    */ 
   private Stack<QueueMgrControlClient> pQueueMgrClients;
 

@@ -116,7 +116,7 @@ class QueueMgr
       pBackupSyncTarget  = new AtomicReference<Path>();
 
       pAdminPrivileges = new AdminPrivileges();
-      pMasterMgrClient = new MasterMgrClient();
+      pMasterMgrClients = new Stack<MasterMgrControlClient>();
       
       pChooserUpdateTime = new AtomicLong();
       pLastUpdateAllTime = new AtomicLong();
@@ -721,8 +721,9 @@ class QueueMgr
   public void 
   establishMasterConnection()
   {
+    MasterMgrControlClient mclient = acquireMasterMgrClient();
     try {
-      pMasterMgrClient.waitForConnection(15000);
+      mclient.waitForConnection(15000);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
@@ -731,6 +732,9 @@ class QueueMgr
 	 "  " + ex.getMessage());
       
       pServer.shutdown();
+    }
+    finally {
+      releaseMasterMgrClient(mclient);
     }
   }
 
@@ -765,6 +769,14 @@ class QueueMgr
   public void  
   shutdown() 
   {
+    /* close the connection(s) to the master manager */ 
+    if(pMasterMgrClients != null) {
+      while(!pMasterMgrClients.isEmpty()) {
+	MasterMgrControlClient client = pMasterMgrClients.pop();
+        client.disconnect();
+      }
+    }
+
     /* shutdown all job servers */ 
     if(pShutdownJobMgrs.get()) { 
       LogMgr.getInstance().logAndFlush
@@ -6100,8 +6112,16 @@ class QueueMgr
       }
       
       try {
-        DoubleMap<NodeID, String, BaseAnnotation> annots = 
-          pMasterMgrClient.getAnnotations(nodeIDs);
+        DoubleMap<NodeID, String, BaseAnnotation> annots = null;
+        {
+          MasterMgrControlClient mclient = acquireMasterMgrClient();
+          try {
+            annots = mclient.getAnnotations(nodeIDs);
+          }
+          finally {
+            releaseMasterMgrClient(mclient);
+          }
+        }
 
         boolean unprivileged = false; 
 
@@ -6238,8 +6258,16 @@ class QueueMgr
       }
       
       try {
-        DoubleMap<NodeID, String, BaseAnnotation> annots = 
-          pMasterMgrClient.getAnnotations(nodeIDs);
+        DoubleMap<NodeID, String, BaseAnnotation> annots = null;
+        {
+          MasterMgrControlClient mclient = acquireMasterMgrClient();
+          try {
+            annots = mclient.getAnnotations(nodeIDs);
+          }
+          finally {
+            releaseMasterMgrClient(mclient);
+          }
+        }
       
         boolean unprivileged = false; 
         for(Entry<Long, QueueJob> entry : jobs.entrySet()) {
@@ -9850,8 +9878,10 @@ class QueueMgr
       }
     }
 
-    /* get the IDs of the jobs which should be deleted */ 
+    /* get the IDs of the jobs which should be deleted, 
+       collect any checksums they may contain */ 
     TreeSet<Long> dead = new TreeSet<Long>();
+    TreeMap<NodeID,CheckSumCache> checksums = new TreeMap<NodeID,CheckSumCache>();
     {
       timer.aquire();
       synchronized(pJobs) {
@@ -9865,19 +9895,53 @@ class QueueMgr
       timer.aquire();
       synchronized(pJobInfo) {
 	timer.resume();
-	for(Long jobID : pJobInfo.keySet()) {
-	  if(!live.contains(jobID))
+        for(Map.Entry<Long,QueueJobInfo> entry : pJobInfo.entrySet()) {
+          Long jobID = entry.getKey();
+	  if(!live.contains(jobID)) {
 	    dead.add(jobID);
+
+            QueueJobInfo info = entry.getValue();
+            if(info != null) {
+              QueueJobResults results = info.getResults(); 
+              if(results != null) {
+                CheckSumCache jcache = results.getCheckSumCache();
+                NodeID nodeID = jcache.getNodeID();
+                if((jcache != null) && !jcache.isEmpty()) {
+                  CheckSumCache cache = checksums.get(nodeID);
+                  if(cache == null) {
+                    cache = new CheckSumCache(nodeID);
+                    checksums.put(nodeID, cache); 
+                  }
+
+                  cache.addAll(jcache);
+                }
+              }
+            }            
+          }
         }
       }
+    }
+
+    /* update the master manager with all checksums collected */ 
+    MasterMgrControlClient mclient = acquireMasterMgrClient();
+    try {
+      mclient.updateCheckSums(checksums); 
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Net, LogMgr.Level.Severe,
+           ex.getMessage()); 
+    }
+    finally {
+      releaseMasterMgrClient(mclient);
     }
 
     /* schedule the jobs for deletion by the job writer thread... */ 
     LogMgr.getInstance().logAndFlush
       (Kind.Wri, Level.Finest, 
       "Adding jobs with IDs (" + dead + ") to the delete list");
-    for (Long id : dead) 
-      pDeleteList.add(new DeleteListEntry(id, System.currentTimeMillis()));
+    for (Long jobID : dead) 
+      pDeleteList.add(new DeleteListEntry(jobID, System.currentTimeMillis()));
     
     if(!dead.isEmpty())
       pWriterSemaphore.release();
@@ -10463,9 +10527,15 @@ class QueueMgr
       for(String tname : tnames) {
 	if(!pToolsets.containsKey(tname)) {
 	  while(true) {
-	    try {
-	      pToolsets.put(tname, pMasterMgrClient.getOsToolsets(tname));	
-	      break;
+	    try { 
+              MasterMgrControlClient mclient = acquireMasterMgrClient();
+              try {
+                pToolsets.put(tname, mclient.getOsToolsets(tname));	
+                break;
+              }
+              finally {
+                releaseMasterMgrClient(mclient);
+              }
 	    }
 	    catch(PipelineException ex) {
 	      LogMgr.getInstance().log
@@ -10483,6 +10553,55 @@ class QueueMgr
       }
     }
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M A S T E R   M G R   H E L P E R S                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get a connection to the master manager.
+   */ 
+  private MasterMgrControlClient
+  acquireMasterMgrClient()
+  {
+    synchronized(pMasterMgrClients) {
+      if(pMasterMgrClients.isEmpty()) {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
+	   "Creating New Master Manager Client.");
+
+	return new MasterMgrControlClient();
+      }
+      else {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
+	   "Reusing File Manager Client: " + (pMasterMgrClients.size()-1) + " inactive");
+
+	return pMasterMgrClients.pop();
+      }
+    }
+  }
+
+  /**
+   * Return an inactive connection to the file manager for reuse.
+   */ 
+  private void
+  releaseMasterMgrClient
+  (
+   MasterMgrControlClient client
+  )
+  {
+    synchronized(pMasterMgrClients) {
+      pMasterMgrClients.push(client);
+      
+      LogMgr.getInstance().logAndFlush
+	(LogMgr.Kind.Net, LogMgr.Level.Finest,
+	 "Freed Master Manager Client: " + pMasterMgrClients.size() + " inactive");
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -11951,8 +12070,8 @@ class QueueMgr
                     (LogMgr.Kind.Glu, LogMgr.Level.Warning,
                      "The backup job info file (" + backup + ") indicates that the job " + 
                      "was being changed from " + info.getState() + " which means it might " + 
-                     "have been about to change to Running, Paused or Aborted.  The safest " + 
-                     "thing is to treat it as Aborted."); 
+                     "have been about to change to Running, Paused or Aborted.  The " + 
+                     "safest thing is to treat it as Aborted."); 
                   
                   info.aborted();
                   writeJobInfo(info);
@@ -13036,8 +13155,8 @@ class QueueMgr
                 }
 
                 String header = 
-                  ("Lost contact with the Job Manager (" + pHostname + ") while attempting " + 
-                   "to start the job (" + jobID + ").");
+                  ("Lost contact with the Job Manager (" + pHostname + ") while " + 
+                   "attempting to start the job (" + jobID + ").");
                 String msg = header;
                 if(!(ex2 instanceof PipelineException))
                   msg = Exceptions.getFullMessage(header, ex2);
@@ -13054,8 +13173,8 @@ class QueueMgr
                 LogMgr.getInstance().log
                   (LogMgr.Kind.Job, LogMgr.Level.Warning,
                    Exceptions.getFullMessage
-                   ("Failed to start job (" + jobID + ") on Job Manager (" + pHostname + ")!",
-                    ex));
+                   ("Failed to start job (" + jobID + ") on Job Manager " + 
+                    "(" + pHostname + ")!",ex));
               }
 
               /* treat a failure to start as a preemption */ 
@@ -14083,10 +14202,10 @@ class QueueMgr
    */ 
   private AdminPrivileges  pAdminPrivileges; 
 
-  /**
-   * The network interface to the <B>plmaster</B>(1) daemon.
+  /** 
+   * The connections to the master manager daemon: <B>plmaster</B>(1).
    */ 
-  private MasterMgrClient  pMasterMgrClient;
+  private Stack<MasterMgrControlClient> pMasterMgrClients;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1474,6 +1474,15 @@ class MasterMgrServer
                 }
                 break;
 
+              /*-- CHECKSUMS ---------------------------------------------------------------*/
+              case UpdateCheckSums: 
+                {
+                  NodeUpdateCheckSumsReq req = (NodeUpdateCheckSumsReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.updateCheckSums(req));
+                  objOut.flush(); 
+                }
+                break;
+
               /*-- NODE BUNDLES ----------------------------------------------------------*/
               case Pack:
                 {

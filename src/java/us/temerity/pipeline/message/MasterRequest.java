@@ -759,6 +759,14 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * An instance {@link QueueUpdateCheckSumsReq} is next.
+   */ 
+  UpdateCheckSums, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * An instance of {@link NodePackReq} is next.
    */
   Pack, 
