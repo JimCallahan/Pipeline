@@ -6,7 +6,7 @@ import us.temerity.pipeline.glue.*;
 
 import java.io.*; 
 import java.util.*;
-
+import java.util.concurrent.*;
 import javax.swing.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -385,6 +385,11 @@ class LogMgr
 	}
       }
 
+      if(pFifo != null) {
+        written = true;
+        pFifo.add(text); 
+      }
+
       if(!written) {
 	switch(level) { 
 	case Severe:
@@ -544,8 +549,8 @@ class LogMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Write logs to rotating log files instead of STDOUT/STDERR.
-   * 
+   * Write logs to rotating log files instead of STDOUT/STDERR.<P> 
+   *
    * @param prefix
    *   The log file prefix, the rotating log files have are named (file.#).
    * 
@@ -656,7 +661,7 @@ class LogMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Write log messages to a Swing text area component. 
+   * Write log messages to a Swing text area component.<P> 
    * 
    * @param area 
    *   The text area which will display the log messages or <CODE>null</CODE> to disable.
@@ -670,6 +675,28 @@ class LogMgr
     synchronized(pTextAreaLock) {
       pTextArea = area;
     }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write log messages to a thread-safe FIFO (first-in first-out) buffer.<P> 
+   * 
+   * When combined with a named logger, this can be used to allow one thread to safely and
+   * efficiently read the logging output of another thread.  The FIFO will contain an entry
+   * for each log message.  
+   * 
+   * @param fifo
+   *   The FIFO used to communicate logging messages or <CODE>null</CODE> to disable.
+   */ 
+  public synchronized void 
+  logToFifo
+  (
+   LinkedBlockingDeque<String> fifo
+  ) 
+  {
+    pFifo = fifo; 
   }
 
 
@@ -997,10 +1024,26 @@ class LogMgr
   
   /**
    * The text area component which will display log messages 
+   * or <CODE>null</CODE> if not enabled.<P> 
+   * 
+   * Access to this field should be protected by synchronizing on pTextAreaLock.
+   */ 
+  private JTextArea  pTextArea;
+
+  /**
+   * A lock which protects access to pTextArea.  This is needed because of the Swing
+   * updating threads are not naturally by the parent class synchronized.
+   */ 
+  private Object pTextAreaLock; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The FIFO used to communicate log messages 
    * or <CODE>null</CODE> if not enabled.
    */ 
-  private Object     pTextAreaLock; 
-  private JTextArea  pTextArea;
+  private LinkedBlockingDeque<String>  pFifo;
 
 }
 
