@@ -8030,15 +8030,22 @@ class QueueMgr
           {
             QueueJobInfo preemptedInfo = new QueueJobInfo(info);
               
+            String hname = info.getHostname();
+
             JobState prevState = info.preempted();
             pJobCounters.update(tm, prevState, info);
             pWriteJobInfoList.add(jobID);
             trigger = true;
 
-            String hname = info.getHostname();
             if(hname != null) {
               KillTask task = new KillTask(hname, jobID);
               task.start();
+            }
+            else {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+                 "Somehow the job (" + jobID + ") is being preempted, but there is no " + 
+                 "hostname for where the job is running!"); 
             }
 
             /* post-preempt tasks */ 
