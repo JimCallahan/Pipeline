@@ -948,6 +948,11 @@ class JNodeViewerPanel
 
     for(String name : names) 
       pRoots.remove(name);
+    
+    JNodeBrowserPanel browser = 
+      UIMaster.getInstance().getNodeBrowserPanels().getPanel(getGroupID());
+    if(browser != null)
+      browser.applyPanelUpdates(pAuthor, pView, new TreeSet<String>(pRoots.keySet()));
 
     updateUniverse();
   }
