@@ -9912,8 +9912,8 @@ class QueueMgr
               QueueJobResults results = info.getResults(); 
               if(results != null) {
                 CheckSumCache jcache = results.getCheckSumCache();
-                NodeID nodeID = jcache.getNodeID();
                 if((jcache != null) && !jcache.isEmpty()) {
+                  NodeID nodeID = jcache.getNodeID();
                   CheckSumCache cache = checksums.get(nodeID);
                   if(cache == null) {
                     cache = new CheckSumCache(nodeID);
