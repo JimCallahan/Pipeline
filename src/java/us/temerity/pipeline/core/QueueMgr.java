@@ -402,7 +402,7 @@ class QueueMgr
   ) 
     throws PipelineException
   {
-    Map<Long, String> running = Collections.synchronizedMap(new TreeMap<Long,String>());
+    TreeSet<Long> runningJobIDs = new TreeSet<Long>(); 
     AtomicBoolean missingGroup = new AtomicBoolean(false);
 
     /* initialize the jobs */ 
@@ -421,8 +421,7 @@ class QueueMgr
       ArrayList<JobReaderTask> readers = new ArrayList<JobReaderTask>();
       int wk;
       for(wk=0; wk<jobReaderThreads; wk++) {
-        JobReaderTask task = 
-          new JobReaderTask(found, running, missingGroup, uponError, doneScanning);
+        JobReaderTask task = new JobReaderTask(found, missingGroup, uponError, doneScanning);
         task.start();
         readers.add(task); 
       }
@@ -449,6 +448,8 @@ class QueueMgr
              "Interrupted while reading job files:\n" + ex.getMessage());
           uponError.set(true); 
         }
+
+        runningJobIDs.addAll(task.getRunningJobIDs());
       }
       
       if(uponError.get()) 
@@ -546,16 +547,15 @@ class QueueMgr
     }
 
     /* garbage collect all jobs no longer referenced by a job group */
-    TreeSet<Long> liveJobIDs = null;
     {
       TaskTimer timer = 
         LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Cleaning Old Jobs...");   
 
-      liveJobIDs = garbageCollectJobs(timer);
+      long live = garbageCollectJobs(timer);
 
       long cnt = 0L;
       synchronized(pJobs) {
-        cnt = pJobs.size() - liveJobIDs.size();
+        cnt = pJobs.size() - live; 
       }
       
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Cleaned (" + cnt + ") Jobs"); 
@@ -566,13 +566,16 @@ class QueueMgr
       TaskTimer timer = 
         LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Initializing Job Counters...");   
 
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
       synchronized(pJobGroups) {
-	for(QueueJobGroup group : pJobGroups.values()) 
+	for(QueueJobGroup group : pJobGroups.values()) {
 	  pJobCounters.initCounters(timer, group);
+          jobIDs.addAll(group.getJobIDs());
+        }
       } 
       
       synchronized(pJobInfo) {
-        for(Long jobID : liveJobIDs) {
+        for(Long jobID : jobIDs) {
           QueueJobInfo info = pJobInfo.get(jobID);
           if(info != null) 
             pJobCounters.update(timer, null, info);
@@ -653,6 +656,7 @@ class QueueMgr
           }
         }
       }
+
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Updated");
     }
 
@@ -660,34 +664,28 @@ class QueueMgr
        the host is re-Enabled */ 
     {
       TaskTimer timer = new TaskTimer();
-      for(Long jobID : running.keySet()) {
-        boolean stillExists = false;
+      for(Long jobID : runningJobIDs) {
+        QueueJob job = null;
         synchronized(pJobs) {
-          stillExists = pJobs.containsKey(jobID);
+          job = pJobs.get(jobID);
         }
-        
-        if(stillExists) {
-          String hostname = running.get(jobID);
           
-          QueueJob job = null;
-          synchronized(pJobs) {
-            job = pJobs.get(jobID);
-          }
-          
-          OsType os = null;
-          { 
-            QueueJobInfo info = getJobInfo(timer, jobID);
-            if(info != null) 
-              os = info.getOsType();
-          }
+        QueueJobInfo info = getJobInfo(timer, jobID);
+
+        if((job != null) && (info != null)) {
+          OsType os = info.getOsType();
+          String hname = info.getHostname();
 
           /* without valid keys, we shouldn't trying to create a MonitorTask */ 
-          if((hostname == null) || (job == null) || (os == null)) {
-            LogMgr.getInstance().log
+          if((hname == null) || (os == null)) {
+            LogMgr.getInstance().logAndFlush
               (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-               "Unable to start a Monitor Task for job (" + job + ") running on host " +
-               "(" + hostname + ") with an operating system of (" + os + "), because " +
-               "one or more of these properties are unknown (null)!"); 
+               "Somehow the previously running job (" + jobID + ") was missing " + 
+               "critical information needed to resume montoring its progress. " + 
+               "Skipping start of MonitorTask and marking the job as aborted."); 
+            
+            info.aborted();
+            writeJobInfo(info);
           }
           else {
             /* attempt to acquire the licenses already being used by the job */ 
@@ -696,19 +694,19 @@ class QueueMgr
               for(String kname : job.getJobRequirements().getLicenseKeys()) {
                 LicenseKey key = pLicenseKeys.get(kname);
                 if(key != null) {
-                  if(key.acquire(hostname)) 
+                  if(key.acquire(hname)) 
                     acquiredKeys.add(kname);
                   else {
                     LogMgr.getInstance().log
                       (LogMgr.Kind.Ops, LogMgr.Level.Warning,
                        "Unable to acquire a (" + key.getName() + ") license key for the " + 
-                       "job (" + jobID + ") already running on (" + hostname + ")!");
+                       "job (" + jobID + ") already running on (" + hname + ")!");
                   }
                 }            
               }
             }
             
-            monitorJob(new MonitorTask(hostname, os, job, acquiredKeys)); 
+            monitorJob(new MonitorTask(hname, os, job, acquiredKeys)); 
           }
         }
       }
@@ -5513,28 +5511,41 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     
-    //FIXME this should probably use pRunning to figure out what is running.
-
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      timer.resume(); 
+
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      timer.aquire(); 
+      synchronized(pRunning) {
+        timer.resume(); 
+
+        for(String hname : pRunning.keySet()) 
+          jobIDs.addAll(pRunning.keySet(hname));
+      }
+      
       TreeMap<Long,JobState> jobStates = new TreeMap<Long,JobState>();
+      timer.aquire(); 
       synchronized(pJobInfo) {
         timer.resume();
-        for(Map.Entry<Long,QueueJobInfo> entry : pJobInfo.entrySet()) {
-          Long jobID = entry.getKey();
-          QueueJobInfo info = entry.getValue(); 
-          switch(info.getState()) {
-          case Running:
-          case Limbo:
-            jobStates.put(jobID, info.getState()); 
+
+        for(Long jobID : jobIDs) {
+          QueueJobInfo info = pJobInfo.get(jobID);
+          if(info != null) {
+            switch(info.getState()) {
+            case Running:
+            case Limbo:
+              jobStates.put(jobID, info.getState()); 
+            }
           }
         }
       }
-      
+
       timer.aquire();  
       synchronized(pJobs) {
         timer.resume();
+
         TreeMap<Long,JobStatus> running = new TreeMap<Long,JobStatus>();
         for(Map.Entry<Long,JobState> entry : jobStates.entrySet()) {
           Long jobID = entry.getKey();
@@ -5661,23 +5672,48 @@ class QueueMgr
   public Object
   getRunningJobInfo() 
   {
-    //FIXME this should probably use pRunning to figure out what is running.
-    
     TaskTimer timer = new TaskTimer();
-    TreeMap<Long,QueueJobInfo> running = new TreeMap<Long,QueueJobInfo>();
 
     timer.aquire();  
     pDatabaseLock.readLock().lock();
     try {
+      timer.resume(); 
+      
+      MappedSet<String,Long> hostJobIDs = new MappedSet<String,Long>();
+      timer.aquire(); 
+      synchronized(pRunning) {
+        timer.resume(); 
+
+        for(String hname : pRunning.keySet()) {
+          for(Long jobID : pRunning.keySet(hname))
+            hostJobIDs.put(hname, jobID);
+        }
+      }
+
+      TreeMap<Long,QueueJobInfo> running = new TreeMap<Long,QueueJobInfo>();
+      timer.aquire(); 
       synchronized(pJobInfo) {
         timer.resume(); 
-        for(Map.Entry<Long,QueueJobInfo> entry : pJobInfo.entrySet()) {
-          Long jobID = entry.getKey();
-          QueueJobInfo info = entry.getValue(); 
-          switch(info.getState()) {
-          case Running:
-          case Limbo:
-            running.put(jobID, info);
+        for(String hname : hostJobIDs.keySet()) {
+          for(Long jobID : hostJobIDs.get(hname)) {
+            QueueJobInfo info = pJobInfo.get(jobID); 
+            if(info != null) {
+              switch(info.getState()) {
+              case Running:
+              case Limbo:
+                if(hname.equals(info.getHostname()))
+                  running.put(jobID, info);
+                else {
+                  LogMgr.getInstance().logAndFlush
+                    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                     "Somehow the job (" + jobID + ") with a JobState of " + 
+                     "(" + info.getState() + ") associated with a Monitor task for " + 
+                     "the Job Manager (" + hname + ") had a hostname of " + 
+                     "(" + info.getHostname() + ").  Omitting it from the jobs " + 
+                     "returned by QueueMgr.getRunningJobInfo()."); 
+                }
+              }
+            }
           }
         }
       }
@@ -9865,10 +9901,10 @@ class QueueMgr
   /**
    * Garbage collect all jobs no longer referenced by a job group.
    * 
-   * @return
-   *   The IDs of all of the live jobs.
+   * @return 
+   *   The number of live jobs after GC.
    */ 
-  private TreeSet<Long> 
+  private int
   garbageCollectJobs
   (
    TaskTimer timer
@@ -9963,7 +9999,7 @@ class QueueMgr
       (LogMgr.Kind.Ops, LogMgr.Level.Finer,
        timer); 
 
-    return live;
+    return live.size();
   }
 
   /**
@@ -12598,7 +12634,6 @@ class QueueMgr
     JobReaderTask
     (
      LinkedBlockingQueue<File> found,
-     Map<Long, String> runningJobs,
      AtomicBoolean missingGroup, 
      AtomicBoolean uponError,
      AtomicBoolean doneScanning
@@ -12607,12 +12642,19 @@ class QueueMgr
       super("QueueMgr:JobReaderTask"); 
 
       pFound = found;
-      pRunningJobs = runningJobs;
       pMissingGroup = missingGroup;
       pUponError = uponError;
       pDoneScanning = doneScanning; 
+      
+      pRunningJobIDs = new TreeSet<Long>();
     }
     
+    public TreeSet<Long> 
+    getRunningJobIDs()
+    {
+      return pRunningJobIDs;
+    }
+
     @Override
     public void 
     run()
@@ -12683,29 +12725,29 @@ class QueueMgr
                 case Paused:
                   pWaiting.add(jobID);
                   break;
-              
+                  
                 case Running:
-                  info.limbo();
-                  writeJobInfo(info);
-                  pRunningJobs.put(jobID, info.getHostname());
-                  break;
-
                 case Limbo:
-                  {
-                    String hname = info.getHostname();
-                    if(hname != null) {
-                      pRunningJobs.put(jobID, info.getHostname());
-                    }
-                    else {
-                      /* This is to catch the case where we find a Limbo job without an 
-                         assigned hostname.  In that case, its best just to Abort the job.  
-                         This might not strictly be needed since we've added a version of 
-                         QueueJobInfo.limbo() which takes a hostname parameter, but it 
-                         protects against existing jobs which might not have the hostname 
-                         data in them. */ 
-                      info.aborted();
+                  String hname = info.getHostname();
+                  OsType os = info.getOsType();  
+                  if((hname == null) || (os == null)) {
+                    LogMgr.getInstance().logAndFlush
+                      (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                       "Somehow the previously running job (" + jobID + ") was missing " + 
+                       "critical information needed to resume montoring its progress. " + 
+                       "Marking the job as aborted."); 
+
+                    info.aborted();
+                    writeJobInfo(info);
+                  }
+                  else {
+                    switch(info.getState()) {
+                    case Running:
+                      info.limbo();
                       writeJobInfo(info);
                     }
+
+                    pRunningJobIDs.add(jobID); 
                   }
                 }
             
@@ -12751,10 +12793,11 @@ class QueueMgr
     }
 
     private LinkedBlockingQueue<File> pFound;
-    private Map<Long,String> pRunningJobs;
     private AtomicBoolean pMissingGroup;
     private AtomicBoolean pUponError;
     private AtomicBoolean pDoneScanning;
+
+    private TreeSet<Long> pRunningJobIDs;
   }
 
   /*----------------------------------------------------------------------------------------*/

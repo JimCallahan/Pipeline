@@ -169,11 +169,18 @@ class QueueSlotsTableModel
     UserPrefs prefs = UserPrefs.getInstance();
 
     IntegerOpMap<String> activeJobs = new IntegerOpMap<String>();
+    MappedSet<String,Long> hostJobIDs = new MappedSet<String,Long>();
     for(QueueJobInfo info : jobInfo.values()) {
       switch(info.getState()) {
       case Running:
-      case Limbo:
-        activeJobs.apply(info.getHostname(), 1); 
+      case Limbo:  
+        {
+          String hname = info.getHostname();
+          if(hname != null) {
+            activeJobs.apply(hname, 1); 
+            hostJobIDs.put(hname, info.getJobID());
+          }
+        }
       }
     }
 
@@ -211,15 +218,21 @@ class QueueSlotsTableModel
       case Limbo:
 	{
 	  ArrayList<QueueJobInfo> hinfo = new ArrayList<QueueJobInfo>();
-	  for(QueueJobInfo info : jobInfo.values()) {
-	    if(hname.equals(info.getHostname())) 
-	      hinfo.add(info);
-	  }
-	  
 	  ArrayList<JobStatus> hstatus = new ArrayList<JobStatus>();
-	  for(QueueJobInfo info : hinfo) 
-	    hstatus.add(jobStatus.get(info.getJobID()));
-
+          {
+            TreeSet<Long> jobIDs = hostJobIDs.get(hname);
+            if(jobIDs != null) {
+              for(Long jobID : jobIDs) {
+                QueueJobInfo info = jobInfo.get(jobID);
+                JobStatus js = jobStatus.get(jobID); 
+                if((info != null) && (js != null)) {
+                  hinfo.add(info);
+                  hstatus.add(js);
+                }
+              }
+            }
+          }
+	  
 	  Long onHold = null;
 	  {
 	    long stamp = host.getHold();
