@@ -91,7 +91,7 @@ class AuditRepo
        "For all checked-in nodes which match the given regular expression (node-regex)\n" + 
        "regenerate and compare the checksums for any online files associated with the\n" + 
        "node against the checksums stored in the node's database entry for the file.\n" + 
-       "If no regular expression is given, then all ndoes will be compared.\n\n"); 
+       "If no regular expression is given, then all nodes will be compared.\n\n"); 
 		
     System.exit(1);       
   }
