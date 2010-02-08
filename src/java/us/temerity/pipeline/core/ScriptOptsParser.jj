@@ -1514,6 +1514,7 @@ TOKEN :
 | <LOG_WRI: 	     "wri">
 | <LOG_USR: 	     "usr">
 | <LOG_BAK: 	     "bak">
+| <LOG_LCK: 	     "lck">
 | <COLON7:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -1567,6 +1568,7 @@ TOKEN :
 | <REMOTE_LOG_WRI: 	     "wri">
 | <REMOTE_LOG_USR: 	     "usr">
 | <REMOTE_LOG_BAK: 	     "bak">
+| <REMOTE_LOG_LCK: 	     "lck">
 | <COLON1:  	             ":">       : REMOTE_LOG_LEVEL  
 | <ILLEGAL_REMOTE_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -2322,7 +2324,7 @@ LogMgr.Kind LogKind() :
   (g=ArgKind() | g=SumKind() | g=GluKind() | g=JobKind() | g=MemKind() | g=NetKind() | 
    g=OpsKind() | g=PlgKind() | g=SubKind() | g=TexKind() | g=DspKind() | g=SelKind() | 
    g=ColKind() | g=SchKind() | g=ExtKind() | g=BldKind() | g=WriKind() | g=UsrKind() | 
-   g=BakKind())
+   g=BakKind() | g=LckKind())
   {
     return g;
   }
@@ -2496,6 +2498,15 @@ LogMgr.Kind BakKind() :
   (<LOG_BAK> | <REMOTE_LOG_BAK>)
   {
     return LogMgr.Kind.Bak;
+  }
+}
+
+LogMgr.Kind LckKind() : 
+{}
+{
+  (<LOG_LCK> | <REMOTE_LOG_LCK>)
+  {
+    return LogMgr.Kind.Lck;
   }
 }
 

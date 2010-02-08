@@ -870,7 +870,12 @@ class LogMgr
     /**
      * Activity of database synchronization and backup threads.
      */
-    Bak;
+    Bak, 
+
+    /**
+     * Activity of thread locking.
+     */
+    Lck;
 
     /**
      * Get the list of all possible states.
@@ -972,7 +977,8 @@ class LogMgr
     "BLD",
     "WRI",
     "USR",
-    "BAK"
+    "BAK",
+    "LCK"
   };
 
 
