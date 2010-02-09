@@ -32,8 +32,8 @@ class ShotBuilder
     this(mclient, 
          qclient, 
          new DefaultBuilderAnswers(mclient, qclient, 
-                                   UtilContext.getDefaultUtilContext(mclient)),
-         new DefaultProjectNames(mclient, qclient),
+           UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()),
+         new DefaultProjectNames(mclient, qclient, info),
          info);
   }
   
@@ -369,7 +369,9 @@ class ShotBuilder
       throws PipelineException
     {
       DefaultShotNames names = 
-	new DefaultShotNames(pProject, pMovieFormat, !pNewSequence, pClient, pQueue, pBuilderQueries);
+	new DefaultShotNames
+	  (pProject, pMovieFormat, !pNewSequence, pClient, pQueue, 
+	   getBuilderInformation(), pBuilderQueries);
       addSubBuilder(names);
       pShotNames = names;
       
@@ -454,7 +456,8 @@ class ShotBuilder
       
       TreeSet<String> chars = (TreeSet<String>) getParamValue(aChars);
       for (String each : chars) {
-	DefaultAssetNames names = new DefaultAssetNames(pClient, pQueue);
+	DefaultAssetNames names = 
+	  new DefaultAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "character");
@@ -464,7 +467,8 @@ class ShotBuilder
       
       TreeSet<String> props = (TreeSet<String>) getParamValue(aProps);
       for (String each : props) {
-	DefaultAssetNames names = new DefaultAssetNames(pClient, pQueue);
+	DefaultAssetNames names = 
+	  new DefaultAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "prop");
@@ -474,7 +478,8 @@ class ShotBuilder
       
       TreeSet<String> sets = (TreeSet<String>) getParamValue(aProps);
       for (String each : sets) {
-	DefaultAssetNames names = new DefaultAssetNames(pClient, pQueue);
+	DefaultAssetNames names = 
+	  new DefaultAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "set");

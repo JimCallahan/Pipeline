@@ -17,14 +17,16 @@ class ShotNames
   ShotNames
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException
   {
     super("RotoNamer", 
         "The basic naming class for shots in Zohan",
         mclient,
-        qclient);
+        qclient,
+        info);
     
     {
       UtilityParam param =
@@ -341,7 +343,8 @@ class ShotNames
   (
     String nodeName,
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
   {
     Path p = new Path(nodeName);
@@ -359,7 +362,7 @@ class ShotNames
     String shot = pieces.remove(0).replaceFirst(sequence, "");
     ShotNames namer = null;
     try {
-      namer = new ShotNames(mclient, qclient);
+      namer = new ShotNames(mclient, qclient, info);
       namer.setParamValue(aProjectName, project);
       namer.setParamValue(aSequenceName, sequence);
       namer.setParamValue(aShotName, shot);

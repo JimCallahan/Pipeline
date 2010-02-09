@@ -20,7 +20,8 @@ class RadarBuilderAnswers
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
-    UtilContext context
+    UtilContext context,
+    String logger
   ) 
     throws PipelineException 
   {
@@ -28,7 +29,8 @@ class RadarBuilderAnswers
           "The Radar implementation of the AnswersBuilderQueries",
           mclient,
           qclient,
-          context);
+          context,
+          logger);
   }
   
   public ArrayList<String> 

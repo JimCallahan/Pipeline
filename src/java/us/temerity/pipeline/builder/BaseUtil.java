@@ -4,11 +4,16 @@ package us.temerity.pipeline.builder;
 
 import java.util.*;
 
+import sun.rmi.runtime.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.NodeTreeComp.State;
 import us.temerity.pipeline.math.Range;
+
+/*------------------------------------------------------------------------------------------*/
+/*   B A S E   U T I L                                                                      */
+/*------------------------------------------------------------------------------------------*/
 
 /**
  * The abstract class that provides the basis for all utility classes in Pipeline.
@@ -49,15 +54,23 @@ class BaseUtil
    * Constructor that passes in all the information BaseUtil needs to initialize.
    * 
    * @param name
-   *        The name of the utility.
+   *   The name of the utility.
+   * 
    * @param desc
-   *        A description of what the utility should do.
+   *   A description of what the utility should do.
+   * 
    * @param mclient
-   *        The instance of the Master Manager that the utility will use to execute.
+   *   The instance of the Master Manager that the utility will use to execute.
+   * 
    * @param qclient
-   *        The instance of the Queue Manager that the utility will use to execute.
+   *   The instance of the Queue Manager that the utility will use to execute.
+   * 
    * @param context
-   *        The {@link UtilContext} that this utility is going to operate in.
+   *   The {@link UtilContext} that this utility is going to operate in.
+   *   
+   * @param logger
+   *   The instance of the {@link LogMgr} that the utility should use to write its logs or
+   *   <code>null</code> if the default instance should be used.
    */
   protected 
   BaseUtil
@@ -66,7 +79,8 @@ class BaseUtil
     String desc,
     MasterMgrClient mclient,
     QueueMgrClient qclient,
-    UtilContext context
+    UtilContext context,
+    String logger
   ) 
     throws PipelineException 
   {
@@ -75,6 +89,11 @@ class BaseUtil
     pQueue = qclient;
     pPlug = PluginMgrClient.getInstance();
     pContext = context;
+    
+    if (logger == null)
+      pLog = LogMgr.getInstance();
+    else
+      pLog = LogMgr.getInstance(logger);
     
     if (pContext == null)
       pContext = UtilContext.getDefaultUtilContext(mclient);
@@ -107,17 +126,23 @@ class BaseUtil
    * Default constructor for BaseUtil. <P>
    * 
    * The {@link UtilContext} for this utility will need to be initialized using
-   * {@link #setContext(UtilContext)} before any of the methods in this 
-   * class are used. 
+   * {@link #setContext(UtilContext)} before any of the methods in this class are used. 
    * 
    * @param name
-   *        The name of the utility.
+   *   The name of the utility.
+   * 
    * @param desc
-   *        A description of what the utility should do.
+   *   A description of what the utility should do.
+   * 
    * @param mclient
-   *        The instance of the Master Manager that the utility will use to execute.
+   *   The instance of the Master Manager that the utility will use to execute.
+   * 
    * @param qclient
-   *        The instance of the Queue Manager that the utility will use to execute.
+   *   The instance of the Queue Manager that the utility will use to execute.
+   *   
+   * @param logger
+   *   The instance of the {@link LogMgr} that the utility should use to write its logs or
+   *   <code>null</code> if the default instance should be used.
    */
   protected 
   BaseUtil
@@ -125,11 +150,12 @@ class BaseUtil
     String name,
     String desc,    
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    String logger
   ) 
     throws PipelineException 
   {
-    this(name, desc, mclient, qclient, null);
+    this(name, desc, mclient, qclient, null, logger);
   }
 
   
@@ -144,7 +170,6 @@ class BaseUtil
    * 
    * This name is used in the UI to label fields and table columns in a more human 
    * friendly manner.
-   * 
    */ 
   public final String
   getNameUI()
@@ -173,17 +198,17 @@ class BaseUtil
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Sets the {@link UtilContext} that this utility will operate in.
-   * <P>
+   * Sets the {@link UtilContext} that this utility will operate in. <P>
+   * 
    * This should not be used to change the context in the middle of running a tool. Generally,
    * this should be set in the first validatePhase of the first Information Pass in a builder.
    * That will guarantee that all future decisions are made in the right default space. If a
    * change is needed to the working environment in the middle of running a builder, it would
    * be best to just create a new {@link UtilContext} and pass that into the necessary stages,
-   * rather than calling this method, as there will be no impact on the rest of the Builder.
+   * rather than calling this method, as there will be no impact on the rest of the Builder. 
    * 
    * @param context
-   *        The {@link UtilContext} for the utility.
+   *   The {@link UtilContext} for the utility.
    */
   public void 
   setContext
@@ -195,13 +220,15 @@ class BaseUtil
   }
   
   /**
-   * Disables a node's Action.
-   * <p>
-   * Takes the name of a node and disables the Action for that node. Throws a
-   * {@link PipelineException} if there is a problem disabling the action.
+   * Disables a node's Action. <p>
+   * 
+   * Takes the name of a node and disables the Action for that node. 
    * 
    * @param name
-   *        The full name of the node to have its Action disabled.
+   *   The full name of the node to have its Action disabled.
+   *   
+   * @throws PipelineException
+   *   If there is a problem disabling the action.
    */
   public void 
   disableAction
@@ -217,13 +244,15 @@ class BaseUtil
   }
   
   /**
-   * Enables a node's Action.
-   * <p>
-   * Takes the name of a node and enables the Action for that node. Throws a
-   * {@link PipelineException} if there is a problem enabling the action.
+   * Enables a node's Action.<p>
+   * 
+   * Takes the name of a node and enables the Action for that node. 
    * 
    * @param name
-   *        The full name of the node to have its Action enabled.
+   *   The full name of the node to have its Action enabled.
+   * 
+   * @throws PipelineException
+   *   If there is a problem enabling the action.
    */
   public void 
   enableAction
@@ -239,13 +268,15 @@ class BaseUtil
   }
 
   /**
-   * Removes a node's Action.
-   * <p>
-   * Takes the name of a node and removes any Action that the node might have. Throws a
-   * {@link PipelineException} if there is a problem removing the action.
+   * Removes a node's Action.  <p>
+   * 
+   * Takes the name of a node and removes any Action that the node might have. 
    * 
    * @param name
-   *        The full name of the node to have its Action removed.
+   *   The full name of the node to have its Action removed.
+   *   
+   * @throws PipelineException
+   *   If there is a problem removing the action.
    */
   public void 
   removeAction
@@ -261,13 +292,15 @@ class BaseUtil
   }
 
   /**
-   * Releases a group of nodes.
-   * <p>
-   * Takes a {@link TreeSet} of node names and releases all the nodes in the list. Throws a
-   * {@link PipelineException} if there is a problem releasing a node.
+   * Releases a group of nodes. <p>
+   * 
+   * Takes a {@link TreeSet} of node names and releases all the nodes in the list. 
    * 
    * @param nodes
-   *        A list of the full nodes names of everything to be released.
+   *   A list of the full nodes names of everything to be released.
+   *  
+   * @throws PipelineException
+   *   If there is a problem releasing a node.
    */
   public void 
   releaseNodes
@@ -285,9 +318,11 @@ class BaseUtil
    * Returns a boolean that indicates if the name is an existing node in Pipeline.
    * 
    * @param name
-   *        The name of the node to search for.
-   * @return <code>true</code> if the node exists. <code>false</code> if the node does
-   *         not exist or if the specified path is a Branch.
+   *   The name of the node to search for.
+   *        
+   * @return 
+   *   <code>true</code> if the node exists. <code>false</code> if the node does not exist 
+   *   or if the specified path is a Branch.
    */
   public boolean 
   nodeExists
@@ -310,9 +345,11 @@ class BaseUtil
    * area.
    * 
    * @param name
-   *        The name of the node to search for.
-   * @return <code>true</code> if the node exists in the current working area. 
-   *         <code>false</code> if the node does not exist or if it is not checked-out.
+   *   The name of the node to search for.
+   *        
+   * @return 
+   *   <code>true</code> if the node exists in the current working area.  <code>false</code> 
+   *   if the node does not exist or if it is not checked-out.
    */
   public boolean 
   workingVersionExists
@@ -335,9 +372,11 @@ class BaseUtil
    * Returns all the paths that are located directly underneath a given path.
    * 
    * @param start
-   *        The path to start the search underneath
-   * @return An {@link ArrayList} containing all the paths (both directories and nodes)
-   *         located directly under the given path.
+   *   The path to start the search underneath.
+   *        
+   * @return 
+   *   An {@link ArrayList} containing all the paths (both directories and nodes) located 
+   *   directly under the given path.
    */
   public ArrayList<String> 
   findChildNodeNames
@@ -369,9 +408,11 @@ class BaseUtil
    * Returns all the directories that are located directly underneath a given path.
    * 
    * @param start
-   *        The path to start the search underneath
-   * @return An {@link ArrayList} containing the names of all the directories located
-   *         directly under the given path.
+   *   The path to start the search underneath.
+   *   
+   * @return 
+   *   An {@link ArrayList} containing the names of all the directories located directly 
+   *   under the given path.
    */
   public ArrayList<String> 
   findChildBranchNames
@@ -405,10 +446,10 @@ class BaseUtil
    * Returns all the fully resolved node names that are located underneath a given path.
    * 
    * @param start
-   *        The path to start the search underneath
-   * @return An {@link ArrayList} containing all the node paths located under the given
-   *         path.
-   * @throws PipelineException
+   *   The path to start the search underneath
+   *   
+   * @return 
+   *   An {@link ArrayList} containing all the node paths located under the given path.
    */
   public ArrayList<String> 
   findAllChildNodeNames
@@ -432,8 +473,10 @@ class BaseUtil
    * 
    * @param nodeName
    *   The name of the node.
+   *   
    * @return
    *   The working version of the node
+   *   
    * @throws PipelineException
    *   If there is no working version of the node.
    */
@@ -450,23 +493,26 @@ class BaseUtil
 
   /**
    * Check-outs the latest version of a node if the working version is older than the latest
-   * checked-in version.
-   * <p>
+   * checked-in version. <p>
+   * 
    * Checks the current version ID of a node against the newest checked-in version. If the
    * ID's are the same, it does nothing. If ID is older it checks out the node, using the
    * CheckOutMode and CheckOutMethod passed in.
    * 
    * @param name
-   *    The name of the node node to checkout.
+   *   The name of the node node to checkout.
+   *   
    * @param mode
-   *    The {@link CheckOutMode} to use.
+   *   The {@link CheckOutMode} to use.
+   *   
    * @param method
-   *    The {@link CheckOutMethod} to use.
+   *   The {@link CheckOutMethod} to use.
    * 
    * @see #checkOutLatest(String, CheckOutMode, CheckOutMethod) checkOutLatest
    * @see #frozenStomp(String) frozenStomp
    * 
-   * @throws PipelineException If no checked-in versions of the node exist.
+   * @throws PipelineException 
+   *   If no checked-in versions of the node exist.
    */
   public void 
   checkOutNewer
@@ -507,21 +553,25 @@ class BaseUtil
   }
 
   /**
-   * Check-out the latest version of a node.
-   * <p>
+   * Check-out the latest version of a node.  <p>
+   * 
    * Check-out the latest version of the node using the CheckOutMode and CheckOutMethod
    * passed in.
    * 
    * @param name
-   *    The name of the node node to checkout.
+   *   The name of the node node to checkout.
+   *   
    * @param mode
-   *    The {@link CheckOutMode} to use.
+   *   The {@link CheckOutMode} to use.
+   *   
    * @param method
-   *    The {@link CheckOutMethod} to use.
+   *   The {@link CheckOutMethod} to use.
+   *   
    * @see #checkOutNewer(String, CheckOutMode, CheckOutMethod) checkOutNewer
    * @see #frozenStomp(String) frozenStomp
    * 
-   * @throws PipelineException If no checked-in versions of the node exist.
+   * @throws PipelineException 
+   *   If no checked-in versions of the node exist.
    */
   public void 
   checkOutLatest
@@ -539,12 +589,13 @@ class BaseUtil
    * Check-out the latest version of a node using the Overwrite All and All Frozen options.
    * 
    * @param name
-   *    The name of the node node to checkout.
+   *   The name of the node node to checkout.
    * 
    * @see #checkOutNewer(String, CheckOutMode, CheckOutMethod) checkOutNewer
    * @see #checkOutLatest(String, CheckOutMode, CheckOutMethod) checkOutLatest
    * 
-   * @throws PipelineException If no checked-in versions of the node exist.
+   * @throws PipelineException 
+   *   If no checked-in versions of the node exist.
    */
   public void 
   frozenStomp
@@ -558,11 +609,13 @@ class BaseUtil
   }
 
   /**
-   * Locks the latest version of the node.
+   * Lock to the latest version of the node.
    * 
    * @param name
-   *        The name of the node node to checkout.
-   * @throws PipelineException If no checked-in versions of the node exist.
+   *   The name of the node node to lock.
+   *   
+   * @throws PipelineException 
+   *   If no checked-in versions of the node exist.
    */
   public void 
   lockLatest
@@ -577,13 +630,13 @@ class BaseUtil
   }
 
   /**
-   * Determines the latest checked-in version of a node and evolves the current working
-   * version of the that node to the latest version.
-   * <p>
+   * Determine the latest checked-in version of a node and evolves the current working
+   * version of the that node to the latest version.  <p>
+   * 
    * Throws a {@link PipelineException} if no checked-in versions of the node exist.
    * 
    * @param name
-   *        The name of the node to be evolved.
+   *   The name of the node to be evolved.
    */
   public void 
   evolveNode
@@ -611,12 +664,13 @@ class BaseUtil
    * Checks in a group of nodes with the specified message and the specified check-in Level.
    * 
    * @param nodes
-   * 	The list of nodes to be checked in.
+   *   The list of nodes to be checked in.
+   *   
    * @param level
-   * 	The Level of the check in.
+   *   The Level of the check in.
+   *   
    * @param message
-   * 	The message for all the checked in nodes.
-   * @throws PipelineException
+   *   The message for all the checked in nodes.
    */
   public void 
   checkInNodes
@@ -637,12 +691,12 @@ class BaseUtil
 
   /**
    * Returns <code>true</code> if the entire tree given has an {@link OverallQueueState} of
-   * Finished.
-   * <p>
+   * Finished. <p>
+   * 
    * Starts at the node specified in the node status passed in and decends down the tree,
    * checking the {@link OverallQueueState} of each node. If every node it finds is in the
    * Finished state, the method will return <code>true</code>. If any are found in a state
-   * which is not Finished, then <code>false</code> sis returned.
+   * which is not Finished, then <code>false</code> is returned.
    * 
    * @param status
    *   The heavyweight status of the root node of the tree to be searched.
@@ -650,7 +704,7 @@ class BaseUtil
   public boolean 
   isTreeFinished
   (
-   NodeStatus status
+    NodeStatus status
   )
   {
     if(!status.hasHeavyDetails()) 
@@ -671,6 +725,7 @@ class BaseUtil
       }
       return true;
     } 
+    
     default: 
       {
         pLog.logAndFlush(Kind.Ops, Level.Warning, 
@@ -721,7 +776,7 @@ class BaseUtil
   }
 
   /**
-   * Static method to return a list of all the selection keys.<P> 
+   * Static method to return a list of all the selection keys. 
    * 
    * @param client
    *   The instance of the Queue Manager to use to extract the information.
@@ -758,8 +813,8 @@ class BaseUtil
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Recursive function to search for nodes under a given path.
-   * <p>
+   * Recursive function to search for nodes under a given path.  <p>
+   * 
    * Starts with the current {@link NodeTreeComp}, travels down the tree, and adds any nodes
    * it finds to an {@link ArrayList} being passed as a parameter. It is important to note
    * when using this method that the {@link ArrayList} is being modified inside the method.
@@ -803,9 +858,10 @@ class BaseUtil
   }
 
   /**
-   * Shortcut method to get the author value of the stage's {@link UtilContext}.
+   * Shortcut method to get the author value of the utility's {@link UtilContext}.
    * 
-   * @return The Author.
+   * @return 
+   *   The author.
    */
   protected final String 
   getAuthor()
@@ -814,9 +870,10 @@ class BaseUtil
   }
 
   /**
-   * Shortcut method to get the view value of the stage's {@link UtilContext}.
+   * Shortcut method to get the view value of the utility's {@link UtilContext}.
    * 
-   * @return The View.
+   * @return 
+   *   The working area.
    */
   protected final String 
   getView()
@@ -827,7 +884,8 @@ class BaseUtil
   /**
    * Shortcut method to get the toolset value of the stage's {@link UtilContext}.
    * 
-   * @return The Toolset.
+   * @return 
+   *   The toolset.
    */
   protected final String 
   getToolset()
@@ -881,15 +939,16 @@ class BaseUtil
   }
 
   /**
-   * Add a parameter to this utility.
-   * <P>
+   * Add a parameter to this utility. <P>
+   * 
    * This method is used by subclasses in their constructors to initialize the set of global
    * parameters that they support.
    * 
    * @param param
-   *        The parameter to add.
+   *   The parameter to add.
+   *   
    * @throws PipelineException
-   *         If a parameter is added with a name that already exists.
+   *   If a parameter is added with the same name as an existing parameter.
    */
   protected void 
   addParam
@@ -917,16 +976,17 @@ class BaseUtil
   }
   
   /**
-   * Replaces an existing parameter with a new parameter.
-   * <P>
-   * The conditions are as follows. The parameter must have the same name as the parameter it
-   * is replacing. If you attempt to replace a parameter that does not exist, an exception is
-   * thrown. Only parameters which have not had value inputed into them can be replaced. If an
-   * attempt is made to replace a parameter from a layout which is not after the current pass
-   * an exception will be thrown.
+   * Replaces an existing parameter with a new parameter. <P>
+   * 
+   * The conditions under which this will succeed are as follows. The parameter must have the 
+   * same name as the parameter it  is replacing. If an attempt is made to replace a parameter 
+   * that does not exist, an exception is thrown. Only parameters which have not had a value 
+   * inputed into them can be replaced. If an  attempt is made to replace a parameter from a 
+   * layout which is not after the current pass an exception will be thrown.
    * 
    * @param param
    *   The parameter to replace.
+   *   
    * @throws PipelineException
    *   If a parameter which does not exist or which belongs to a pass that is before the
    *   current pass is replaced.
@@ -960,10 +1020,14 @@ class BaseUtil
    * Get the value of the parameter with the given name.
    * 
    * @param name
-   *        The name of the parameter.
-   * @return The parameter value.
-   * @throws IllegalArgumentException if no parameter with the given name exists or if the
-   * named parameter does not implement {@link SimpleParamAccess}.
+   *   The name of the parameter.
+   * 
+   * @return 
+   *   The parameter value.
+   *   
+   * @throws IllegalArgumentException 
+   *   If no parameter with the given name exists or if the  named parameter does not 
+   *   implement {@link SimpleParamAccess}.
    */
   @SuppressWarnings("unchecked")
   public Comparable 
@@ -987,8 +1051,9 @@ class BaseUtil
    * Get the value of the Simple Parameter located inside the named Complex Parameter and
    * identified by the list of keys.
    * 
-   * @throws IllegalArgumentException if no parameter with the given name exists or if the
-   * named parameter does not implement {@link SimpleParamAccess}.
+   * @throws IllegalArgumentException 
+   *   If no parameter with the given name exists or if the named parameter does not 
+   *   implement {@link SimpleParamAccess}.
    */
   @SuppressWarnings("unchecked")
   public Comparable
@@ -1017,10 +1082,11 @@ class BaseUtil
    * Get the value of the Simple Parameter described by the {@link ParamMapping}.
    * 
    * @param mapping
-   *        The name of the parameter.
+   *   The name of the parameter.
    * 
-   * @throws IllegalArgumentException if no parameter with the given name exists or if the
-   * named parameter does not implement {@link SimpleParamAccess}.
+   * @throws IllegalArgumentException 
+   *   If no parameter with the given name exists or if the named parameter does not implement 
+   *   {@link SimpleParamAccess}.
    */
   @SuppressWarnings("unchecked")
   public Comparable
@@ -1039,7 +1105,7 @@ class BaseUtil
    * of keys.
    * 
    * @throws IllegalArgumentException
-   *         if no parameter with the given name exists.
+   *   If no parameter with the given name exists.
    */
   @SuppressWarnings("unchecked")
   public UtilityParam 
@@ -1068,9 +1134,10 @@ class BaseUtil
    * Get the parameter with the given name.
    * 
    * @param name
-   *        The name of the parameter.
+   *   The name of the parameter.
+   * 
    * @throws IllegalArgumentException
-   *         if no parameter with the given name exists.
+   *   If no parameter with the given name exists.
    */
   public UtilityParam 
   getParam
@@ -1087,9 +1154,10 @@ class BaseUtil
    * Get the parameter described by the {@link ParamMapping}.
    * 
    * @param mapping
-   *        The name of the parameter.
+   *   The name of the parameter.
+   * 
    * @throws IllegalArgumentException
-   *         if no parameter with the given name exists.
+   *   If no parameter with the given name exists.
    */
   public UtilityParam
   getParam
@@ -1134,9 +1202,10 @@ class BaseUtil
    * Set the value of a parameter.
    * 
    * @param name
-   *        The name of the parameter.
+   *   The name of the parameter.
+   * 
    * @param value
-   *        The new value of the parameter.
+   *   The new value of the parameter.
    */
   @SuppressWarnings("unchecked")
   public final boolean 
@@ -2072,6 +2141,8 @@ class BaseUtil
   
   public final static String aUtilContext = "UtilContext";
 
+  private static final long serialVersionUID = -7450635393202917345L;
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -2139,7 +2210,7 @@ class BaseUtil
   /**
    * Instance of the log manager for builder logging purposes.
    */
-  protected final LogMgr pLog = LogMgr.getInstance();
+  protected final LogMgr pLog;
   
   /**
    * Boolean which signals that no more params or other volatile parts can be added to the 

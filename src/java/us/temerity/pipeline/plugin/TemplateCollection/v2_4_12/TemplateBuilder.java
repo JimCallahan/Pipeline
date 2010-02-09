@@ -894,7 +894,7 @@ class TemplateBuilder
            "This state should be impossible with any node network I can think of." +
            "The nodes which are left are " + pBuildList);
     
-        LogMgr.getInstance().log(Kind.Ops, Level.Fine, "Template Node: " + nodeName);
+        pLog.log(Kind.Ops, Level.Fine, "Template Node: " + nodeName);
         
         TemplateNode node = getTemplateNode(nodeName);
         
@@ -1144,7 +1144,7 @@ class TemplateBuilder
       throws PipelineException
     {
       String nodeName = node.getNodeName();
-      LogMgr.getInstance().log
+      pLog.log
         (Kind.Ops, Level.Fine, 
          "Searching for product nodes based on the template node (" + nodeName + ") " +
          "as it is used by template node (" + parent +")");
@@ -1162,7 +1162,7 @@ class TemplateBuilder
         allProducts.add(realProduct);
       }
       
-      LogMgr.getInstance().log(Kind.Ops, Level.Finer,
+      pLog.log(Kind.Ops, Level.Finer,
         "The following products were found:\n " + allProducts);
 
       for (String realProduct : allProducts) {
@@ -1340,7 +1340,7 @@ class TemplateBuilder
     buildPhase() 
       throws PipelineException
     {
-      LogMgr.getInstance().log
+      pLog.log
         (Kind.Ops, Level.Fine, 
          "Running the first finalizing for nodes.");
       for(FinalizableStage stage : pFinalizableStages) 
@@ -1377,7 +1377,7 @@ class TemplateBuilder
     buildPhase() 
       throws PipelineException
     {
-      LogMgr.getInstance().log
+      pLog.log
         (Kind.Ops, Level.Fine, 
          "Running the secondary finalizing for nodes.");
       for(TemplateStage stage : pSecondaryFinalizableStages) 

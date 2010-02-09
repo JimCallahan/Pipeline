@@ -15,7 +15,7 @@ import us.temerity.pipeline.*;
  * Superclass of Action plugins which interact with compositing programs.
  */
 public class CompositeActionUtils
-  extends CommonActionUtils
+  extends PythonActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

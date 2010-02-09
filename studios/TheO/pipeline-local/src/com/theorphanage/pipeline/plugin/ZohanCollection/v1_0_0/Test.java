@@ -28,11 +28,11 @@ public class Test {
 //      }
 //    }
 
-    MasterMgrClient client = new MasterMgrClient();
-    QueueMgrClient queue = new QueueMgrClient();
-    String node = "/Projects/NEXUS/VFX/ZT/ZT138_040/Source/work/ZT138_040_bg1";
-    ShotNames namer = ShotNames.getNamesFromNode(node, client, queue);
-    System.out.println(namer.getRotoScene());
+//    MasterMgrClient client = new MasterMgrClient();
+//    QueueMgrClient queue = new QueueMgrClient();
+//    String node = "/Projects/NEXUS/VFX/ZT/ZT138_040/Source/work/ZT138_040_bg1";
+//    ShotNames namer = ShotNames.getNamesFromNode(node, client, queue);
+//    System.out.println(namer.getRotoScene());
     
   }
 

@@ -80,7 +80,7 @@ class TemplateBuilderTool
     }
     
     BuilderInformation info = 
-      new BuilderInformation(true, false, false, false, params);
+      new BuilderInformation(null, true, false, false, false, params);
     
     BaseBuilderCollection collection = 
       PluginMgrClient.getInstance().newBuilderCollection

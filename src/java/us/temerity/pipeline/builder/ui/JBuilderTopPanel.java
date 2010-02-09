@@ -150,7 +150,7 @@ class JBuilderTopPanel
 	pLogArea.setEditable(false);
 	pLogArea.setLineWrap(true);
 	if (pBuilder.useBuilderLogging())
-	  LogMgr.getInstance().logToTextArea(pLogArea);
+	  pBuilder.getBuilderInformation().getLogMgr().logToTextArea(pLogArea);
       }
       
       if (pBuilder.useBuilderLogging()) {

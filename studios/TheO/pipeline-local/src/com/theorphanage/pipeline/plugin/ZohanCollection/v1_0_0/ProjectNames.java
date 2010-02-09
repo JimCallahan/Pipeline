@@ -18,14 +18,16 @@ extends BaseNames
   ProjectNames
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException
   {
     super("ProjectNames", 
           "The basic naming class for project specific files.",
           mclient,
-          qclient);
+          qclient,
+          info);
     {
       UtilityParam param =
         new StringUtilityParam

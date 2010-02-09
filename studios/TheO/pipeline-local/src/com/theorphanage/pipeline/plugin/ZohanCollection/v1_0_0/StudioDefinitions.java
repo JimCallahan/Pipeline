@@ -16,7 +16,8 @@ class StudioDefinitions
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
-    UtilContext context
+    UtilContext context,
+    String logger
   ) 
     throws PipelineException 
   {
@@ -24,7 +25,8 @@ class StudioDefinitions
           "Provides basic information about where things are located in the default Orphanage Pipeline setup.",
           mclient,
           qclient,
-          context);
+          context,
+          logger);
   }
   
   /**

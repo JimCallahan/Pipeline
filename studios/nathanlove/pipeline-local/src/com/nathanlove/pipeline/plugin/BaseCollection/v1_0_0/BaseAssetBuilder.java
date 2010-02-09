@@ -74,11 +74,11 @@ class BaseAssetBuilder
     }
     addCheckinWhenDoneParam();
     
-    pProjectNames = new ProjectNamer(mclient, qclient);
+    pProjectNames = new ProjectNamer(mclient, qclient, builderInformation);
     addSubBuilder(pProjectNames);
     addMappedParam(pProjectNames.getName(), ParamNames.aProjectName, ParamNames.aProjectName);
     
-    pAssetNames = new AssetNamer(mclient, qclient);
+    pAssetNames = new AssetNamer(mclient, qclient, builderInformation);
     addSubBuilder(pAssetNames);
     addMappedParam(pAssetNames.getName(), ParamNames.aProjectName, ParamNames.aProjectName);
 

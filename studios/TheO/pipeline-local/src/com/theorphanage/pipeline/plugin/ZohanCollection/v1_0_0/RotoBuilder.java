@@ -50,8 +50,9 @@ class RotoBuilder
     throws PipelineException
   {
     this(mclient, qclient, info, 
-        new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
-        new ProjectNames(mclient, qclient),
+        new StudioDefinitions(mclient, qclient, 
+          UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()),
+        new ProjectNames(mclient, qclient, info),
         null);
   }
   
@@ -309,7 +310,7 @@ class RotoBuilder
     {
       /* if we haven't been passed in a ShotNamer from a parent builder, make one now */
       if (pShotNamer == null) {
-        pShotNamer = new ShotNames(pClient, pQueue);
+        pShotNamer = new ShotNames(pClient, pQueue, getBuilderInformation());
       }
       
       /* if no parent builder has already generated the shot names... */ 

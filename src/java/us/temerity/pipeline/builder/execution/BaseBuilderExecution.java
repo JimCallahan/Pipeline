@@ -39,7 +39,7 @@ class BaseBuilderExecution
     if (builder == null)
       throw new IllegalArgumentException("The builder cannot be (null");
 
-    pLog = LogMgr.getInstance();
+    pLog = builder.getBuilderInformation().getLogMgr();
     
     pBuilder = builder;
     pRunningBuilder = null;
@@ -82,7 +82,7 @@ class BaseBuilderExecution
         client.disconnect();
     }
     PluginMgrClient.getInstance().disconnect();
-    LogMgr.getInstance().cleanup();
+    pBuilder.getBuilderInformation().getLogMgr().cleanup();
   }
   
   

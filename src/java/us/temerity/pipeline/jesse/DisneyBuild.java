@@ -237,7 +237,8 @@ public class DisneyBuild
       MasterMgrClient mclient = new MasterMgrClient();
       QueueMgrClient qclient = new QueueMgrClient();
       BuilderInformation information = 
-        new BuilderInformation(false, false, true, true, new MultiMap<String, String>());
+        new BuilderInformation
+          (null, false, false, true, true, new MultiMap<String, String>());
       
       try {
         TemplateBuilder builder = 

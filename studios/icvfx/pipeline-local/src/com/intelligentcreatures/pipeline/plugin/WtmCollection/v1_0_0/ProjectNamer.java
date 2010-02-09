@@ -30,21 +30,26 @@ class ProjectNamer
    *
    * @param qclient
    *   The queue manager connection.
+   * 
+   * @param info
+   *   The builder information instance.
    *
    * @param studioDefs
    *   Provides a set of studio-wide helpers for project, sequence and shot naming.
    */
-  public ProjectNamer
+  public 
+  ProjectNamer
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
-    StudioDefinitions studioDefs
+   BuilderInformation info,
+   StudioDefinitions studioDefs
   )
     throws PipelineException
   {
     super("ProjectNamer",
           "The basic naming class for project specific files.",
-          mclient, qclient);
+          mclient, qclient, info);
 
     pStudioDefs = studioDefs;
     pBasePaths  = new DoubleMap<AssetType, TaskType, Path>();

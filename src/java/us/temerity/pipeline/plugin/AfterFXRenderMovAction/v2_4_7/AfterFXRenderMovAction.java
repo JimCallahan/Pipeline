@@ -457,51 +457,6 @@ class AfterFXRenderMovAction
     out.write("stdErr.close();\n");
   }
   
-  protected void
-  writeSourceRelinkingScript
-  (
-    BufferedWriter out,
-    ActionAgenda agenda
-  ) 
-    throws PipelineException, IOException
-  {
-    
-    String workingStart = PackageInfo.sWorkPath.toOsString().replaceAll("\\\\", "/");
-    String currentWorking = agenda.getEnvironment().get("WORKING").replaceAll("\\\\", "/");
-    
-    out.write("{\n" + 
-	"var workingStart = \"" + workingStart + "/\";\n" +
-	"var currentWorking = \"" + currentWorking + "/\";\n" +
-	"var proj = app.project;\n" +
-	"var list = proj.items;\n" +
-	"var regExp = new RegExp(workingStart, \"g\");\n" + 
-	"for (j=1; j <= list.length; j++)\n" + 
-	"{\n" + 
-	"  var item = list[j];\n" +
-	"  if (item instanceof FootageItem)\n" + 
-	"  {\n" + 
-	"     var file = item.file;\n" + 
-	"     if (regExp.test(file))\n" + 
-	"     {\n" + 
-	"	var fileName = file.fullName;\n" + 
-	"	var endName = fileName.replace(workingStart, \"\");\n" + 
-	"	var split = endName.split(\"/\");\n" + 
-	"	var newEnd = \"\";\n" + 
-	"	for (i=2; i < split.length; i++)\n" + 
-	"	{\n" + 
-	"	  newEnd += split[i];\n" + 
-	"	  if (i != split.length -1)\n" + 
-	"	    newEnd += \"/\";\n" + 
-	"	}\n" + 
-	"	var newFileName = currentWorking + newEnd;\n" + 
-	"	var newFile = new File(newFileName);\n" + 
-	"	item.replaceWithSequence(newFile, false);\n" + 
-	"    }\n" + 
-	"  }\n" + 
-	"}\n" +
-	"}\n");
-  }
-  
   
   
   /*----------------------------------------------------------------------------------------*/

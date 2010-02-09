@@ -93,7 +93,7 @@ public class BuilderApp
       }
       
       BuilderInformation info = 
-        new BuilderInformation(pGui, pAbortOnBadParam, true, pCommandLineParams);
+        new BuilderInformation(null, pGui, pAbortOnBadParam, true, pCommandLineParams);
       
       if (pBuilderName != null && pCollectionName != null) {
         BaseBuilderCollection collection = 

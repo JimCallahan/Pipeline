@@ -87,7 +87,8 @@ class ShadeApproveTaskBuilder
       super.validatePhase();
       
       pAssetNames = 
-        AssetNamer.getNamerFromNodeName(pSubmitNode, getMasterMgrClient(), getQueueMgrClient());
+        AssetNamer.getNamerFromNodeName
+          (pSubmitNode, getMasterMgrClient(), getQueueMgrClient(), getBuilderInformation());
     }
     private static final long serialVersionUID = -4186029807770743040L;
   }

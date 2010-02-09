@@ -48,7 +48,8 @@ class RenderPassBuilder
     this(mclient, 
          qclient, 
          builderInformation,
-         new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)));
+         new StudioDefinitions(mclient, qclient, 
+           UtilContext.getDefaultUtilContext(mclient), builderInformation.getLoggerName()));
   }
   
   public 
@@ -168,7 +169,7 @@ class RenderPassBuilder
       addParam(param);
     }
     
-    pProjectNamer = new ProjectNamer(mclient, qclient);
+    pProjectNamer = new ProjectNamer(mclient, qclient, builderInformation);
     addSubBuilder(pProjectNamer);
     addMappedParam(pProjectNamer.getName(), ParamNames.aProjectName, ParamNames.aProjectName);
     
@@ -257,7 +258,8 @@ class RenderPassBuilder
       String spot =  getStringParamValue(aSpotMapping);
       String shot =  getStringParamValue(aShotMapping);
       
-      pShotNamer = ShotNamer.getGeneratedNamer(pClient, pQueue, pProject, spot, shot);
+      pShotNamer = ShotNamer.getGeneratedNamer
+        (pClient, pQueue, getBuilderInformation(), pProject, spot, shot);
       
       pPassName = getStringParamValue(new ParamMapping(ParamNames.aPassName), false);
     }

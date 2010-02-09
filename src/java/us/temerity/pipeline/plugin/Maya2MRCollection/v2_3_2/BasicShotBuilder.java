@@ -24,7 +24,9 @@ class BasicShotBuilder
   )
     throws PipelineException
   {
-    this(mclient, qclient, new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
+    this(mclient, qclient, 
+         new DefaultBuilderAnswers(mclient, qclient, 
+           UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()),
          info);
   }
   

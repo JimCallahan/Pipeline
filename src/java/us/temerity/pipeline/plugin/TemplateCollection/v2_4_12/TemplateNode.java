@@ -36,12 +36,11 @@ class TemplateNode
   TemplateNode
   (
     NodeMod mod,
-    boolean inTemplate
+    boolean inTemplate,
+    LogMgr log
   )
     throws PipelineException
   {
-    LogMgr log = LogMgr.getInstance();
-    
     pNodeMod = mod;
     pNodeName = mod.getName();
     pInTemplate = inTemplate;

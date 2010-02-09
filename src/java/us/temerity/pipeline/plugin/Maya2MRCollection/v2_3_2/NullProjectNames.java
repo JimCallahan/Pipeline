@@ -1,7 +1,7 @@
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseNames;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.DefaultProjectNames.GlobalsType;
 
 public abstract
@@ -20,13 +20,16 @@ class NullProjectNames
     String name,
     String desc,
     MasterMgrClient mclient,
-    QueueMgrClient qclient)
+    QueueMgrClient qclient,
+    BuilderInformation info
+   )
     throws PipelineException
   {
-    super(name, desc, mclient, qclient);
+    super(name, desc, mclient, qclient, info);
   }
 
-  public String getAnimTaskName()
+  public String 
+  getAnimTaskName()
   {
     return null;
   }

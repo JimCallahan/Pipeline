@@ -660,7 +660,7 @@ class TemplateBuilder
       
       while (!pNodesToBuild.isEmpty() ) {
         String toBuild = findNodeToBuild();
-        LogMgr.getInstance().log(Kind.Ops, Level.Fine, 
+        pLog.log(Kind.Ops, Level.Fine, 
           "Template Node: " + toBuild);
         NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), toBuild);
         TreeMap<String, BaseAnnotation> annots = getAnnotations(toBuild);
@@ -979,7 +979,7 @@ class TemplateBuilder
      throws PipelineException
     {
       for (String product : pProductNodes.keySet()) {
-        LogMgr.getInstance().log
+        pLog.log
           (Kind.Ops, Level.Fine, 
            "Searching for product nodes based on the template node (" + product + ")");
         NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), product);
@@ -996,7 +996,7 @@ class TemplateBuilder
           allProducts.add(realProduct);
         }
         
-        LogMgr.getInstance().log(Kind.Ops, Level.Finer,
+        pLog.log(Kind.Ops, Level.Finer,
           "The following products were found:\n " + allProducts);
         
         boolean ignorable = pProductNodes.get(product);

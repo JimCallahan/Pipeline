@@ -126,7 +126,8 @@ class DpxDeliverBuilder
           "A builder for constructing the nodes required to prepare an image sequence " + 
 	  "for delivery to the client or for internal review.", 
           mclient, qclient, builderInfo, 
-	  new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
+	  new StudioDefinitions(mclient, qclient, 
+	    UtilContext.getDefaultUtilContext(mclient), builderInfo.getLoggerName()),
 	  null, null, null); 
    
     /* setup builder parameters */ 
@@ -651,7 +652,8 @@ class DpxDeliverBuilder
 
       /* initialize internal Deliver (Shot) namer */ 
       {
-	pDeliverNamer = new DeliverNamer(pClient, pQueue, pStudioDefs);
+	pDeliverNamer = new DeliverNamer
+	  (pClient, pQueue, getBuilderInformation(), pStudioDefs);
 	pShotNamer = pDeliverNamer;
 
 	pDeliverNamer.setParamValue

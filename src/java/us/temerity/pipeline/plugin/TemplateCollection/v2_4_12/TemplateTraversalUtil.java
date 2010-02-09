@@ -192,7 +192,7 @@ class TemplateTraversalUtil
     NodeMod mod = getWorkingVersion(status);
     
     if (inTemplate(status)) {
-      TemplateNode node = new TemplateNode(mod, true);
+      TemplateNode node = new TemplateNode(mod, true, pLog);
       if (parent == null)
         node.setRoot(true);
       pNodeDatabase.put(nodeName, node);
@@ -201,7 +201,7 @@ class TemplateTraversalUtil
       }
     }
     else {
-      TemplateNode node = new TemplateNode(mod, false);
+      TemplateNode node = new TemplateNode(mod, false, pLog);
       pNodeDatabase.put(nodeName, node);
     }
   }

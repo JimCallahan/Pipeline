@@ -93,6 +93,12 @@ class BaseStage
     pAnnotations = new ListMap<String, BaseAnnotation>();
     pVersionAnnotations = new ListMap<String, BaseAnnotation>();
     
+    String logname = pStageInformation.getLoggerName();
+    if (logname == null)
+      pLog = LogMgr.getInstance();
+    else
+      pLog = LogMgr.getInstance(logname);
+    
     pExecutionMethod = ExecutionMethod.Serial;
     pBatchSize = 0;
     pJobReqs = JobReqs.defaultJobReqs();
@@ -1434,7 +1440,6 @@ class BaseStage
   ) 
     throws PipelineException
   {
-    LogMgr pLog = LogMgr.getInstance();
     if (nodeName == null)
       return false;
     pLog.log(Kind.Ops, Level.Finest, "Checking for existence of the node (" + nodeName + ")");
@@ -1696,6 +1701,8 @@ class BaseStage
   protected MasterMgrClient pClient;
   
   protected PluginMgrClient pPlug;
+  
+  protected LogMgr pLog;
   
   /**
    * Was the node Checked Out by the {@link #checkExistance(String, ActionOnExistence)} 

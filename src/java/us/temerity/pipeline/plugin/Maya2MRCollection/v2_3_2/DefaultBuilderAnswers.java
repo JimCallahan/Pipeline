@@ -15,7 +15,8 @@ class DefaultBuilderAnswers
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
-    UtilContext context
+    UtilContext context,
+    String logger
   ) 
     throws PipelineException 
   {
@@ -23,7 +24,8 @@ class DefaultBuilderAnswers
           "The basic implementation of the AnswersBuilderQueries, provided by Temerity",
           mclient,
           qclient,
-          context);
+          context,
+          logger);
   }
 
   public ArrayList<String> 

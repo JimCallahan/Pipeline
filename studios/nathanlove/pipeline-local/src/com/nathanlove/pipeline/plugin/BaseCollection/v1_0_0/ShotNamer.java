@@ -24,14 +24,16 @@ class ShotNamer
   ShotNamer
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException
   {
     super("ShotNamer", 
           "The basic naming class for shots in the Nathan Love Base Collection",
           mclient,
-          qclient);
+          qclient,
+          info);
     
     {
       UtilityParam param =
@@ -522,13 +524,14 @@ class ShotNamer
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
+    BuilderInformation info,
     String project,
     String spotName,
     String shotName
   )
     throws PipelineException
   {
-    ShotNamer namer = new ShotNamer(mclient, qclient);
+    ShotNamer namer = new ShotNamer(mclient, qclient, info);
     namer.setParamValue(ParamNames.aProjectName, project);
     namer.setParamValue(ParamNames.aSpotName, spotName);
     namer.setParamValue(ParamNames.aShotName, shotName);
@@ -548,7 +551,8 @@ class ShotNamer
   (
     String nodeName,
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException
   {
@@ -568,7 +572,7 @@ class ShotNamer
         ("The node name (" + nodeName + ") does not appear to be a valid shot node.");
     String shotName = getNextComponent(nodeName, shotParent);
     
-    ShotNamer namer = new ShotNamer(mclient, qclient);
+    ShotNamer namer = new ShotNamer(mclient, qclient, info);
     namer.setParamValue(ParamNames.aProjectName, project);
     namer.setParamValue(ParamNames.aSpotName, spotName);
     namer.setParamValue(ParamNames.aShotName, shotName);

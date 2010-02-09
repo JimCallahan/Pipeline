@@ -940,10 +940,11 @@ class GUIExecution
     run()
     {
       try {
-        LogMgr.getInstance().log(Kind.Ops, Level.Warning, 
+        LogMgr log = getBuilder().getBuilderInformation().getLogMgr(); 
+        log.log(Kind.Ops, Level.Warning, 
           "All the nodes that were registered will now be released.");
         getRunningBuilder().releaseNodes();
-        LogMgr.getInstance().log
+        log.log
           (Kind.Ops, Level.Info, "Finished releasing all the nodes.");
         if (getReleaseView(true))
           SwingUtilities.invokeLater(pDialog.new AskAboutReleaseViewTask(true));
@@ -1022,7 +1023,7 @@ class GUIExecution
         MultiMap<String, String> params = top.getAllParamValues();
         BuilderInformation info = top.getBuilderInformation();
         BuilderInformation newInfo = 
-          new BuilderInformation(info.usingGui(), info.terminateAppOnQuit(), 
+          new BuilderInformation(info.getLoggerName(), info.usingGui(), info.terminateAppOnQuit(), 
                                  info.abortOnBadParam(), info.useBuilderLogging(), params);
         MasterMgrClient mclient = new MasterMgrClient();
         QueueMgrClient qclient = new QueueMgrClient();

@@ -239,7 +239,10 @@ class BaseBuilderCollection
    * Return an instance of the named builder.
    * <p>
    * The Builder Collection will create a new connection to the MasterMgr and QueueMgr and
-   * provide a new {@link BuilderInformation} for this Builder to use. 
+   * provide a new {@link BuilderInformation} for this Builder to use.  The new builder will
+   * use the default {@link LogMgr} for its logging.  If specialized logging is required, 
+   * please use the {@link #instantiateBuilder(String, MasterMgrClient, QueueMgrClient, 
+   * BuilderInformation)} method. 
    * 
    * @param builderName
    *   The short name of the Builder to instantiate.  This needs to be one of the names
@@ -263,6 +266,10 @@ class BaseBuilderCollection
    *   Log History panel in plui.  Setting this to false when not running the builder
    *   through plui will result in no logging output.
    *
+   * @return
+   *   The instance of the specified Builder or <code>null</code> if an error occurred while
+   *   creating the Builder, but an Exception was not thrown (due to internal error handling).
+   *
    * @throws PipelineException whenever anything goes wrong with instantiating the builder.
    *   This can be for a variety of reasons, including a misnamed builder, bad parameters,
    *   missing classes.
@@ -279,7 +286,7 @@ class BaseBuilderCollection
     throws PipelineException
   {
     BuilderInformation info = 
-      new BuilderInformation(true, terminateOnQuit, true, 
+      new BuilderInformation(null, true, terminateOnQuit, true, 
                              useBuilderLogging, new MultiMap<String, String>());
     return instantiateBuilder(builderName, mclient, qclient, info);
   }
@@ -288,7 +295,10 @@ class BaseBuilderCollection
    * Return an instance of the named builder.<p>
    * 
    * The Builder Collection will create a new connection to the MasterMgr and QueueMgr and
-   * provide a new {@link BuilderInformation} for this Builder to use. 
+   * provide a new {@link BuilderInformation} for this Builder to use.  The new builder will
+   * use the default {@link LogMgr} for its logging.  If specialized logging is required, 
+   * please use the {@link #instantiateBuilder(String, MasterMgrClient, QueueMgrClient, 
+   * BuilderInformation)} method. 
    * 
    * @param builderName
    *   The short name of the Builder to instantiate.  This needs to be one of the names
@@ -323,6 +333,10 @@ class BaseBuilderCollection
    *   Log History panel in plui.  Setting this to false when not running the builder
    *   through plui will result in no logging output.
    *   
+   * @return
+   *   The instance of the specified Builder or <code>null</code> if an error occurred while
+   *   creating the Builder, but an Exception was not thrown (due to internal error handling).
+   *   
    * @throws PipelineException 
    *   Whenever anything goes wrong with instantiating the builder.
    *   This can be for a variety of reasons, including a misnamed builder, bad parameters,
@@ -343,7 +357,7 @@ class BaseBuilderCollection
     throws PipelineException
   {
     BuilderInformation info = 
-      new BuilderInformation(useGui, terminateOnQuit, abortOnBadParam, 
+      new BuilderInformation(null, useGui, terminateOnQuit, abortOnBadParam, 
                              useBuilderLogging, paramValues);
     return instantiateBuilder(builderName, mclient, qclient, info);
   }
@@ -351,8 +365,9 @@ class BaseBuilderCollection
   /**
    * Return an instance of the named builder.<p>
    *
-   * The Builder Collection will create a new connection to the MasterMgr and QueueMgr and
-   * provide a new {@link BuilderInformation} for this Builder to use. 
+   * If no {@link BuilderInformation} is provided, the new builder will use the default 
+   * {@link LogMgr} for its logging.  If specialized logging is required, then an instance 
+   * of {@link BuilderInformation} has to be passed to this method.
    * 
    * @param builderName
    *   The short name of the Builder to instantiate.  This needs to be one of the names
@@ -393,8 +408,10 @@ class BaseBuilderCollection
     if (qclient == null)
       throw new PipelineException("The QueueMgrClient cannot be (null)!");
 
-    if (info == null)
-      info = new BuilderInformation(true, true, true, true, new MultiMap<String, String>());
+    BuilderInformation binfo = info;
+    if (binfo == null)
+      binfo = 
+        new BuilderInformation(null, true, true, true, true, new MultiMap<String, String>());
     
     TreeMap<String, String> list = getBuildersProvided();
     if (!list.keySet().contains(builderName))
@@ -409,12 +426,13 @@ class BaseBuilderCollection
         ("A valid string must be provided for the name of the builder class.  " +
          "The builder (" + builderName + ") does not return a valid builder class path.");
     
-    Level opLevel = LogMgr.getInstance().getLevel(Kind.Ops);
+    LogMgr log = binfo.getLogMgr();
+    Level opLevel = log.getLevel(Kind.Ops);
     switch(opLevel) {
     case Info:
     case Warning:
     case Severe:
-      LogMgr.getInstance().setLevel(Kind.Ops, Level.Fine);
+      log.setLevel(Kind.Ops, Level.Fine);
       break;
     }
     
@@ -426,7 +444,7 @@ class BaseBuilderCollection
         (MasterMgrClient.class, 
           QueueMgrClient.class, 
           BuilderInformation.class);
-      BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
+      BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, binfo);
       PassLayoutGroup layout = builder.getLayout();
       if (layout == null)
         throw new PipelineException
@@ -439,12 +457,12 @@ class BaseBuilderCollection
       String header = 
         "Was unable to instantiate the constructor for the specified Builder.  " +
         "This most likely means that the Builder was not meant to be run as a " +
-        "standalone builder.\n";
+        "stand alone builder.\n";
       String message = Exceptions.getFullMessage(header, ex);
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          message);
-      if (!info.useBuilderLogging() && !info.usingGui())
+      if (!binfo.useBuilderLogging() && !binfo.usingGui())
         throw new PipelineException(message); 
     }
     catch (InvocationTargetException ex) {
@@ -463,31 +481,31 @@ class BaseBuilderCollection
 
       String message = 
         Exceptions.getFullMessage
-        ("An Invocation Target Exception has occured.  This most likely indicates that " +
+        ("An Invocation Target Exception has occurred.  This most likely indicates that " +
          "the name of the builder being passed to BuilderApp is specified incorrectly or " +
-         "that an error occured in the Builder's constructor.", ex);
+         "that an error occurred in the Builder's constructor.", ex);
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          message);
-      if (!info.useBuilderLogging() && !info.usingGui())
+      if (!binfo.useBuilderLogging() && !binfo.usingGui())
         throw new PipelineException(message); 
     }
     catch (PipelineException ex) {
-      String message = "An error has occured while instantiating the Builder\n" + 
+      String message = "An error has occurred while instantiating the Builder\n" + 
         ex.getMessage();
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          message);
-      if (!info.useBuilderLogging() && !info.usingGui())
+      if (!binfo.useBuilderLogging() && !binfo.usingGui())
         throw ex; 
     }
     catch(Exception ex) {
       String message = Exceptions.getFullMessage
-        ("An error has occured while instantiating the Builder", ex);
+        ("An error has occurred while instantiating the Builder", ex);
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          message);
-      if (!info.useBuilderLogging() && !info.usingGui())
+      if (!binfo.useBuilderLogging() && !binfo.usingGui())
         throw new PipelineException(message); 
     }
     return null;
@@ -577,36 +595,6 @@ class BaseBuilderCollection
    return construct; 
   }
   
-  @SuppressWarnings("unchecked")
-  private static boolean 
-  checkConstructorArgs
-  (
-    Class[] a1, 
-    Class[] a2
-  ) 
-  {
-    LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
-      "Compairing constructor arguments:\n\t" + a1 + "\n\t" + a2 + "\n");
-    
-    if (a1 == null) 
-        return a2 == null || a2.length == 0;
-
-    if (a2 == null) 
-        return a1.length == 0;
-
-    if (a1.length != a2.length) 
-        return false;
-
-    for (int i = 0; i < a1.length; i++) {
-      String className1 = a1[i].getName();
-      String className2 = a2[i].getName();
-        if (!className1.equals(className2)) {
-            return false;
-        }
-    }
-
-    return true;
-}
   
   
   /*----------------------------------------------------------------------------------------*/

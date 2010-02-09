@@ -35,9 +35,10 @@ class AssetBuilder
   {
     this(mclient,
       qclient,
-      new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
-      new DefaultAssetNames(mclient, qclient),
-      new DefaultProjectNames(mclient, qclient),
+      new DefaultBuilderAnswers(mclient, qclient, 
+        UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()), 
+      new DefaultAssetNames(mclient, qclient, info),
+      new DefaultProjectNames(mclient, qclient, info),
       info);
   }
   

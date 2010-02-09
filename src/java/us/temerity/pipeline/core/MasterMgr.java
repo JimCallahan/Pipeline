@@ -13061,7 +13061,7 @@ class MasterMgr
           ckeys.removeLast(); 
         }
         
-        BuilderInformation info = new BuilderInformation(false, false, false, cparams);
+        BuilderInformation info = new BuilderInformation(null, false, false, false, cparams);
         MasterMgrClient mclient = new MasterMgrClient();  // MAKE THIS DIRECT!!
 
         QueueMgrControlClient qclient = acquireQueueMgrClient();
