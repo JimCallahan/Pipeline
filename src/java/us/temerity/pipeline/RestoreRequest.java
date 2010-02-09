@@ -37,13 +37,18 @@ class RestoreRequest
    * @param stamp
    *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
    *   request was submitted.
+   * 
+   * @param requestor
+   *   The name of the user making the restore request.
    */ 
   public 
   RestoreRequest
   (
-   long stamp
+   long stamp, 
+   String requestor
   ) 
   {
+    pRequestor = requestor;
     pSubmittedStamp = stamp;    
     pState = RestoreState.Pending;
   }
@@ -61,6 +66,15 @@ class RestoreRequest
   getState() 
   {
     return pState;
+  }
+
+  /**
+   * Gets the name of user making the restore request.
+   */ 
+  public String
+  getRequestor() 
+  {
+    return pRequestor; 
   }
 
   /**
@@ -142,6 +156,7 @@ class RestoreRequest
     throws GlueException
   {
     encoder.encode("State", pState);
+    encoder.encode("Requestor", pRequestor); 
     encoder.encode("SubmittedStamp", pSubmittedStamp);
 
     if(pResolvedStamp != null) 
@@ -162,6 +177,14 @@ class RestoreRequest
     if(state == null) 
       throw new GlueException("The \"State\" was missing!");
     pState = state;
+
+    {
+      String user = (String) decoder.decode("Requestor");
+      if(user == null) 
+        pRequestor = "Unknown";  /* backward compatibility */ 
+      else 
+        pRequestor = user;
+    }
 
     {
       Long stamp = (Long) decoder.decode("SubmittedStamp");
@@ -197,6 +220,11 @@ class RestoreRequest
    * The state of the restore request.
    */
   private RestoreState  pState; 
+
+  /**
+   * The name of user making the restore request.
+   */
+  private String  pRequestor; 
 
   /**
    * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the request 

@@ -10941,7 +10941,7 @@ class MasterMgr
 	    buf.append("\n");
 	  }
 	  
-	  Object obj = requestRestore(new MiscRequestRestoreReq(offlineVersions));
+	  Object obj = requestRestore(new MiscRequestRestoreReq(offlineVersions, req));
 	  if(obj instanceof FailureRsp) {
 	    FailureRsp rsp = (FailureRsp) obj;
 	    buf.append
@@ -11710,7 +11710,7 @@ class MasterMgr
 	  TreeMap<String,TreeSet<VersionID>> ovsns = new TreeMap<String,TreeSet<VersionID>>();
 	  ovsns.put(name, ovids);
 
-	  Object obj = requestRestore(new MiscRequestRestoreReq(ovsns));
+	  Object obj = requestRestore(new MiscRequestRestoreReq(ovsns, req));
 	  if(obj instanceof FailureRsp) {
 	    FailureRsp rsp = (FailureRsp) obj;
 	    buf.append
@@ -12072,7 +12072,7 @@ class MasterMgr
 	      buf.append("\n");
 	    }
 	    
-	    Object obj = requestRestore(new MiscRequestRestoreReq(vsns));
+	    Object obj = requestRestore(new MiscRequestRestoreReq(vsns, req));
 	    if(obj instanceof FailureRsp) {
 	      FailureRsp rsp = (FailureRsp) obj;
 	      buf.append
@@ -12551,7 +12551,7 @@ class MasterMgr
               new TreeMap<String,TreeSet<VersionID>>();
             vsns.put(name, vids);
 	    
-            Object obj = requestRestore(new MiscRequestRestoreReq(vsns));
+            Object obj = requestRestore(new MiscRequestRestoreReq(vsns, req));
             if(obj instanceof FailureRsp) {
               FailureRsp rsp = (FailureRsp) obj;
               throw new PipelineException
@@ -17317,7 +17317,7 @@ class MasterMgr
           for(String name : vsns.keySet()) {
             TreeMap<VersionID,RestoreRequest> restores = pRestoreReqs.get(name);
             for(VersionID vid : vsns.get(name)) {
-              RestoreRequest rr = new RestoreRequest(now);
+              RestoreRequest rr = new RestoreRequest(now, req.getRequestor());
               if(restores == null) {
                 restores = new TreeMap<VersionID,RestoreRequest>();
                 pRestoreReqs.put(name, restores);

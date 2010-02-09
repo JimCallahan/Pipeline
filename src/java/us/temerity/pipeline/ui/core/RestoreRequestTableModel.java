@@ -37,18 +37,19 @@ class RestoreRequestTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 6;
+      pNumColumns = 7;
 
       {
 	Class classes[] = { 
-	  String.class, String.class, String.class, String.class, String.class, String.class
+	  String.class, String.class, String.class, String.class, String.class, 
+          String.class, String.class
 	}; 
 	pColumnClasses = classes;
       }
 
       {
 	String names[] = {
-	  "Node Name", "Version", "State", "Submitted", "Completed", "Archive Volume"
+	  "Node Name", "Version", "State", "User", "Submitted", "Completed", "Archive Volume"
 	};
 	pColumnNames = names;
       }
@@ -58,6 +59,7 @@ class RestoreRequestTableModel
 	  "The fully resolved name of the node.", 
 	  "The revision number of the checked-in version.", 
 	  "The current state of the request.",
+          "The name of the user which submitted the restore request.", 
 	  "When the request to restore the checked-in version was submitted.",
 	  "When the either the checked-in version was restored or the request was denied.", 
 	  "The name of the archive volume from which the checked-in version was restored."
@@ -70,6 +72,7 @@ class RestoreRequestTableModel
           new Vector3i(180, 460, Integer.MAX_VALUE), 
           new Vector3i(80), 
           new Vector3i(80), 
+          new Vector3i(80, 120, Integer.MAX_VALUE), 
           new Vector3i(180), 
           new Vector3i(180),
           new Vector3i(240) 
@@ -84,6 +87,7 @@ class RestoreRequestTableModel
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER)
 	};
 	pRenderers = renderers;
@@ -91,7 +95,7 @@ class RestoreRequestTableModel
 
       {
 	TableCellEditor editors[] = { 
-	  null, null, null, null, null, null, null
+	  null, null, null, null, null, null, null, null
 	};
 	pEditors = editors;
       }
@@ -230,15 +234,19 @@ class RestoreRequestTableModel
 	value = rr.getState().toTitle();
 	break;
 
-      case 3:
+      case 3: 
+	value = rr.getRequestor();
+	break;
+
+      case 4:
 	value = rr.getSubmittedStamp();
 	break;
 	
-      case 4:
+      case 5:
         value = rr.getResolvedStamp();
 	break;
 	
-      case 5:
+      case 6:
         value = rr.getArchiveName();
       }
      
@@ -298,13 +306,16 @@ class RestoreRequestTableModel
     case 2: 
       return rr.getState().toTitle();
 
-    case 3:
+    case 3: 
+      return rr.getRequestor();
+
+    case 4:
       return TimeStamps.format(rr.getSubmittedStamp());
 	
-    case 4:
+    case 5:
       return TimeStamps.format(rr.getResolvedStamp());
       
-    case 5:
+    case 6:
       return rr.getArchiveName();
       
     default:

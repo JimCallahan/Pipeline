@@ -28,6 +28,29 @@ class MiscRequestRestoreReq
    * 
    * @param versions
    *   The fully resolved node names and revision numbers of the checked-in versions.
+   * 
+   * @param req
+   *   Use the requesting user name from the this request instead of the current user.
+   */
+  public
+  MiscRequestRestoreReq
+  (
+   TreeMap<String,TreeSet<VersionID>> versions, 
+   PrivilegedReq req 
+  )
+  { 
+    super(req); 
+
+    if(versions == null) 
+      throw new IllegalArgumentException("The node versions cannot be (null)!");
+    pVersions = versions;
+  }
+
+  /** 
+   * Constructs a new request.
+   * 
+   * @param versions
+   *   The fully resolved node names and revision numbers of the checked-in versions.
    */
   public
   MiscRequestRestoreReq
