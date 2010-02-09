@@ -26,8 +26,7 @@ admin_scripts = \
   plmaster \
   plmine \
   plpluginmgr \
-  plqueuemgr \
-  plvalidate
+  plqueuemgr
 endif IS_UNIX
 
 instsbin_SCRIPTS = \

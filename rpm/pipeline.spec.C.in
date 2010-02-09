@@ -10,7 +10,6 @@
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plmine
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plpluginmgr
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plqueuemgr
-@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plvalidate
 
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plfilemgr
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/pljobmgr
@@ -19,7 +18,6 @@
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plpluginmgr
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plqueuemgr
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plrestore
-@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plvalidate
 
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/sbin/plfilemgr
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/sbin/pljobmgr
