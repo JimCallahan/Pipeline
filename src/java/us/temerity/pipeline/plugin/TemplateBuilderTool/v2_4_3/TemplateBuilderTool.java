@@ -52,7 +52,7 @@ class TemplateBuilderTool
     
     
     BuilderInformation info = 
-      new BuilderInformation(true, false, false, false, new MultiMap<String, String>());
+      new BuilderInformation(null, true, false, false, false, new MultiMap<String, String>());
     TemplateInfoBuilder builder = 
       new TemplateInfoBuilder(mclient, qclient, info, pPrimary, getAuthor(), getView());
     

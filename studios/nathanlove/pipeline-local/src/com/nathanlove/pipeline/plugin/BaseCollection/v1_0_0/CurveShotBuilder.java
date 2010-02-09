@@ -51,7 +51,8 @@ class CurveShotBuilder
     this(mclient, 
          qclient, 
          builderInformation,
-         new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)));
+         new StudioDefinitions(mclient, qclient, 
+           UtilContext.getDefaultUtilContext(mclient), builderInformation.getLoggerName()));
   }
   
   public 
@@ -176,7 +177,7 @@ class CurveShotBuilder
         addParam(param);
       }
       
-      pProjectNamer = new ProjectNamer(mclient, qclient);
+      pProjectNamer = new ProjectNamer(mclient, qclient, builderInformation);
       addSubBuilder(pProjectNamer);
       addMappedParam(pProjectNamer.getName(), new ParamMapping(ParamNames.aProjectName), 
                      aProjectMapping);
@@ -306,7 +307,7 @@ class CurveShotBuilder
       String spot = (String) getParamValue(aSpotMapping);
       String shot = (String) getParamValue(aShotMapping);
       
-      pShotNamer = new ShotNamer(pClient, pQueue);
+      pShotNamer = new ShotNamer(pClient, pQueue, getBuilderInformation());
       
       addSubBuilder(pShotNamer);
       
@@ -387,7 +388,8 @@ class CurveShotBuilder
                        new ParamMapping(ParamNames.aProjectName), 
                        aProjectMapping);
         pCameraNames = 
-          AssetNamer.getGeneratedNamer(pClient, pQueue, pProject, "renderCam", AssetType.cam);
+          AssetNamer.getGeneratedNamer
+            (pClient, pQueue, getBuilderInformation(), pProject, "renderCam", AssetType.cam);
         disableParam(new ParamMapping(aCamera));
       }
       else {
@@ -426,7 +428,8 @@ class CurveShotBuilder
       if (pCameraNames == null) {
         String cameraName = (String) getParamValue(aCamera);
         pCameraNames = 
-          AssetNamer.getGeneratedNamer(pClient, pQueue, pProject, cameraName, AssetType.cam);
+          AssetNamer.getGeneratedNamer
+            (pClient, pQueue, getBuilderInformation(), pProject, cameraName, AssetType.cam);
       }
       pAssets.put(pCameraNames.getNamespace(), new AssetBundle(pCameraNames));
       
@@ -435,7 +438,8 @@ class CurveShotBuilder
         TreeSet<String> chars = (TreeSet<String>) getParamValue(aChars);
         for (String each : chars) {
           AssetNamer namer = 
-            AssetNamer.getGeneratedNamer(pClient, pQueue, pProject, each, AssetType.character);
+            AssetNamer.getGeneratedNamer
+              (pClient, pQueue, getBuilderInformation(), pProject, each, AssetType.character);
           if (pAssets.put(namer.getNamespace(), new AssetBundle(namer)) != null)
             throw new PipelineException
               ("Two assets with the namespace (" + namer.getNamespace()+ ") were specified " +
@@ -454,7 +458,8 @@ class CurveShotBuilder
         TreeSet<String> props = (TreeSet<String>) getParamValue(aProps);
         for (String each : props) {
           AssetNamer namer = 
-            AssetNamer.getGeneratedNamer(pClient, pQueue, pProject, each, AssetType.prop);
+            AssetNamer.getGeneratedNamer
+              (pClient, pQueue, getBuilderInformation(), pProject, each, AssetType.prop);
           if (pAssets.put(namer.getNamespace(), new AssetBundle(namer)) != null)
             throw new PipelineException
               ("Two assets with the namespace (" + namer.getNamespace()+ ") were specified " +
@@ -473,7 +478,8 @@ class CurveShotBuilder
         TreeSet<String> envs = (TreeSet<String>) getParamValue(aEnvs);
         for (String each : envs) {
           AssetNamer namer = 
-            AssetNamer.getGeneratedNamer(pClient, pQueue, pProject, each, AssetType.env);
+            AssetNamer.getGeneratedNamer
+              (pClient, pQueue, getBuilderInformation(), pProject, each, AssetType.env);
           if (pAssets.put(namer.getNamespace(), new AssetBundle(namer)) != null)
             throw new PipelineException
               ("Two assets with the namespace (" + namer.getNamespace()+ ") were specified " +

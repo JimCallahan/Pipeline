@@ -26,6 +26,7 @@ public class DefaultShotNames
     boolean existingDirs,
     MasterMgrClient mclient,
     QueueMgrClient qclient,
+    BuilderInformation info,
     AnswersBuilderQueries builderInfo
   ) 
     throws PipelineException
@@ -33,7 +34,8 @@ public class DefaultShotNames
     super("DefaultShotNames",
           "The basic naming class for a shot provided by Temerity",
           mclient,
-          qclient);
+          qclient,
+          info);
     
     pBuilderInfo = builderInfo;
     pProject = project;

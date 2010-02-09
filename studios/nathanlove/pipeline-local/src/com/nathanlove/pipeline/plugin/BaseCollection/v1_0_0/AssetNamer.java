@@ -27,7 +27,8 @@ class AssetNamer
   AssetNamer
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException 
   {
@@ -35,7 +36,8 @@ class AssetNamer
           "Define the names of nodes used to construct Asset networks in " +
           "the Nathan Love Base Collection",
           mclient,
-          qclient);
+          qclient,
+          info);
     {
       UtilityParam param =
         new StringUtilityParam
@@ -455,13 +457,14 @@ class AssetNamer
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
+    BuilderInformation info,
     String project,
     String assetName,
     AssetType assetType
   )
     throws PipelineException
   {
-    AssetNamer namer = new AssetNamer(mclient, qclient);
+    AssetNamer namer = new AssetNamer(mclient, qclient, info);
     namer.setParamValue(ParamNames.aProjectName, project);
     namer.setParamValue(ParamNames.aAssetType, assetType.toTitle());
     namer.setParamValue(ParamNames.aAssetName, assetName);
@@ -477,7 +480,8 @@ class AssetNamer
   (
     String nodeName,
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException
   {
@@ -497,7 +501,7 @@ class AssetNamer
       throw new PipelineException
         ("The node name (" + nodeName + ") does not appear to be a valid asset node.");
     String assetName = getNextComponent(nodeName, assetTypeParent);
-    AssetNamer namer = new AssetNamer(mclient, qclient);
+    AssetNamer namer = new AssetNamer(mclient, qclient, info);
     namer.setParamValue(ParamNames.aProjectName, project);
     namer.setParamValue(ParamNames.aAssetType, assetType);
     namer.setParamValue(ParamNames.aAssetName, assetName);

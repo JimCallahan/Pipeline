@@ -166,7 +166,7 @@ class TemplateStage
     for (String aName : annots.keySet()) {
       BaseAnnotation annot = annots.get(aName); 
       if (aName.matches("TemplateSettings")) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
+        pLog.log(Kind.Bld, Level.Finest, 
           "Found a template settings annotation.");
         pRemoveAction = (Boolean) annot.getParamValue(aPostRemoveAction);
         pDisableAction = (Boolean) annot.getParamValue(aPostDisableAction);
@@ -178,7 +178,7 @@ class TemplateStage
       }
       if (aName.startsWith("TemplateUnlink" )) {
         String unlink = (String) annot.getParamValue(aLinkName);
-        LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
+        pLog.log(Kind.Bld, Level.Finest, 
           "Found a Template Unlink annotation with the value (" + unlink + ").");
         pTemplateNodesToUnlink.add(unlink);
       }
@@ -189,7 +189,7 @@ class TemplateStage
       if (pActualRange != null) {
         targetSeq = new FileSeq(targetSeq.getFilePattern(), pActualRange);
       }
-      LogMgr.getInstance().log(Kind.Bld, Level.Finest,
+      pLog.log(Kind.Bld, Level.Finest,
         "Adding the secondary sequence: " + targetSeq);
       addSecondarySequence(targetSeq);
       pSecSeqs.put(seq, targetSeq);
@@ -198,11 +198,11 @@ class TemplateStage
     for (LinkMod link : sourceMod.getSources()) {
       String linkName = link.getName();
       
-      LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
+      pLog.log(Kind.Bld, Level.Finest, 
         "Checking the link: " + linkName);
       
       if (pSkippedNodes.contains(linkName)) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Fine,
+        pLog.log(Kind.Bld, Level.Fine,
           "The linked node was skipped during construction and the link is being ignored.");
         continue;
       }
@@ -215,7 +215,7 @@ class TemplateStage
       if (!pTemplateInfo.getNodesToBuild().contains(linkName)) { 
         if (pIgnorableProducts.contains(linkName)) {
           ignoreable = true;
-          LogMgr.getInstance().log(Kind.Bld, Level.Finest,
+          pLog.log(Kind.Bld, Level.Finest,
             "The link is in the ignorable product list.");
         }
       }
@@ -295,18 +295,18 @@ class TemplateStage
     
     String newSrc = stringReplace(oldSrc, replacements);
     if (pIgnoredNodes.contains(newSrc)) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
+      pLog.log(Kind.Bld, Level.Fine, 
         "Not linking source node (" + newSrc + ") because the template skipped building it.");
       return null;
     }
     
     if (!nodeExists(newSrc) && ignoreable) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
+      pLog.log(Kind.Bld, Level.Fine, 
         "Not linking source node (" + newSrc + ") because it doesn't exist");
       return null;
     }
     LinkMod newLink = new LinkMod(newSrc, link.getPolicy(), link.getRelationship(), link.getFrameOffset());
-    LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
+    pLog.log(Kind.Bld, Level.Fine, 
       "Linking source node (" + newSrc + ").");
     addLink(newLink);
     
@@ -351,7 +351,7 @@ class TemplateStage
     
     if (values == null || values.isEmpty()) {
       if (pAllowZeroContexts) {
-        LogMgr.getInstance().logAndFlush(Kind.Bld, Level.Warning, 
+        pLog.logAndFlush(Kind.Bld, Level.Warning, 
           "The context (" + currentContext + ") specified on (" + link.getName() + ") has " +
           "no values defined for it.");
         TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
@@ -518,14 +518,14 @@ class TemplateStage
     boolean build = super.build();
     if (build) {
       if (pSrcHasDisabledAction && !pEnableAction) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Disabling the action after building the node.");
         pRegisteredNodeMod.setActionEnabled(false);
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
         pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
       }
       if (pCloneFiles  && !pInhibitCopyFiles) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Cloning the files after building the node.");
         NodeID src = new NodeID(getAuthor(), getView(), pSourceMod.getName() );
         NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
@@ -548,7 +548,7 @@ class TemplateStage
         }
       }
       if (pTouchFiles) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Backing up the Action and replacing it with the Touch action.");
         pBackedUpAction = pRegisteredNodeMod.getAction();
         pRegisteredNodeMod.setAction(getAction(new PluginContext("Touch"), getToolset()));
@@ -600,7 +600,7 @@ class TemplateStage
           newExSeq = exSeq;
         }
         
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Creating the symbolic links to (" + newExSeq+ ").");
         SubProcessLight process = softLinkProcess(newExSeq);
         process.run();
@@ -805,12 +805,12 @@ class TemplateStage
     throws PipelineException
   {
     if (pDisableAction) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Disabling the action on (" + pRegisteredNodeName + ") as part of finalization.");
       pRegisteredNodeMod.setActionEnabled(false);
     }
     if (pRemoveAction) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Removing the action on (" + pRegisteredNodeName + ") as part of finalization.");
       pRegisteredNodeMod.setAction(null);
     }
@@ -823,7 +823,7 @@ class TemplateStage
     if (!pUnlinkNodes.isEmpty()) {
       for (String oldSrc : pUnlinkNodes.keySet()) {
         for (String newSrc : pUnlinkNodes.get(oldSrc)) {
-          LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+          pLog.log(Kind.Bld, Level.Finer, 
             "Unlinking the node (" + newSrc + ") from (" + pRegisteredNodeName + ") due to " +
             "an unlink annotation.");
           pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, newSrc);
@@ -834,7 +834,7 @@ class TemplateStage
     }
     
     if (pUnlinkAll) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Unlinking all sources from (" + pRegisteredNodeName + ") due to TemplateSettings " +
         "Annotation.");
       for (String source : pRegisteredNodeMod.getSourceNames()) {
@@ -843,7 +843,7 @@ class TemplateStage
     }
 
     if (pTouchFiles) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Restoring backed-up action to (" + pRegisteredNodeName + ") as part " +
         "of finalization.");
       pRegisteredNodeMod.setAction(pBackedUpAction);
@@ -852,7 +852,7 @@ class TemplateStage
       pRegisteredNodeMod = 
         pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
 
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Touching the files on (" + pRegisteredNodeName + ") to remove staleness as part of " +
         "finalization.");
       SubProcessLight process = touchFilesProcess();
@@ -873,7 +873,7 @@ class TemplateStage
     }
 
     if (pVouch) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Vouching for the node (" + pRegisteredNodeName + ") as part of finalization.");
       vouch();
     }

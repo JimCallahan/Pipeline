@@ -23,14 +23,16 @@ class DefaultAssetNames
   DefaultAssetNames
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException 
   {
     super("DefaultAssetNames", 
           "The basic naming class for an asset provided by Temerity",
           mclient,
-          qclient);
+          qclient,
+          info);
     {
       UtilityParam param =
 	new StringUtilityParam

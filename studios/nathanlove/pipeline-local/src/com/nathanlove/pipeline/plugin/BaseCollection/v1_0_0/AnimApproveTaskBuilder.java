@@ -88,7 +88,8 @@ class AnimApproveTaskBuilder
       super.validatePhase();
       
       pShotNamer = 
-        ShotNamer.getNamerFromNodeName(pSubmitNode, getMasterMgrClient(), getQueueMgrClient());
+        ShotNamer.getNamerFromNodeName
+          (pSubmitNode, getMasterMgrClient(), getQueueMgrClient(), getBuilderInformation());
     }
     private static final long serialVersionUID = -8739435007934849684L;
   }

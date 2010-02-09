@@ -316,12 +316,16 @@ class BaseBuilder
    * 
    * @param name
    *   The name of the Builder.
+   * 
    * @param desc
    *   A brief description of what the Builder is supposed to do.
+   * 
    * @param mclient
    *   The instance of the Master Manager that the Builder is going to use.
+   * 
    * @param qclient
    *   The instance of the Queue Manager that the Builder is going to use
+   * 
    * @param builderInformation
    *   The instance of the global information class used to share information between all the
    *   Builders that are invoked.
@@ -337,7 +341,7 @@ class BaseBuilder
   )
     throws PipelineException
   {
-    super(name, desc, mclient, qclient);
+    super(name, desc, mclient, qclient, builderInformation.getLoggerName());
     
     pNoBuild = false;
     
@@ -2493,12 +2497,22 @@ class BaseBuilder
     return pReleaseOnError;
   }
   
+  /**
+   * Get the instance of {@link BuilderInformation} that this builder is using.
+   */
   public BuilderInformation
   getBuilderInformation()
   {
     return pBuilderInformation;
   }
   
+  /**
+   * Get the instance of {@link StageInformation} that this builder is using. <p>
+   * 
+   * This same instance should be passed to all the stages that this builder invokes to 
+   * ensure that certain operations, like post builder execution clean-up, complete 
+   * successfully.
+   */
   public final StageInformation
   getStageInformation()
   {

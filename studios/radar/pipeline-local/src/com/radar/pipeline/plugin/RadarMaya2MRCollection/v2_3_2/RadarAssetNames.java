@@ -24,14 +24,16 @@ class RadarAssetNames
   RadarAssetNames
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException 
   {
     super("RadarAssetNames", 
           "The basic naming class for assets built at Radar",
           mclient,
-          qclient);
+          qclient,
+          info);
     {
       UtilityParam param =
 	new StringUtilityParam

@@ -40,6 +40,7 @@ class DeliverNamer
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
+    BuilderInformation info,
     StudioDefinitions studioDefs
   )
     throws PipelineException
@@ -47,7 +48,7 @@ class DeliverNamer
     super("DeliverNamer", 
           "Provides the names of nodes and node directories for a specific deliverable " + 
 	  "from a specific shot.", 
-          mclient, qclient, studioDefs); 
+          mclient, qclient, info, studioDefs); 
     
     {
       UtilityParam param =

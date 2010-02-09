@@ -47,11 +47,12 @@ class ShotNamer
    String desc,
    MasterMgrClient mclient,
    QueueMgrClient qclient,
+   BuilderInformation info,
    StudioDefinitions studioDefs
   )
     throws PipelineException
   {
-    super(name, desc, mclient, qclient);
+    super(name, desc, mclient, qclient, info);
 
     pStudioDefs = studioDefs;
     pBasePaths  = new DoubleMap<TaskType, NodePurpose, Path>();
@@ -101,13 +102,14 @@ class ShotNamer
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
+   BuilderInformation info,
    StudioDefinitions studioDefs
   )
     throws PipelineException
   {
     this("ShotNamer",
 	 "Provides the names of nodes and node directories which are shot specific.",
-	 mclient, qclient, studioDefs);
+	 mclient, qclient, info, studioDefs);
   }
 
 

@@ -25,6 +25,7 @@ public class RadarShotNames
     boolean existingDirs,
     MasterMgrClient mclient,
     QueueMgrClient qclient,
+    BuilderInformation info,
     AnswersBuilderQueries builderInfo
   )
     throws PipelineException 
@@ -32,7 +33,8 @@ public class RadarShotNames
     super("RadarShotNames", 
           "The basic naming class for shots built at Radar",
           mclient,
-          qclient);
+          qclient,
+          info);
     
     pBuilderInfo = builderInfo;
     pProject = project;

@@ -5,8 +5,7 @@ package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 import java.util.ArrayList;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseUtil;
-import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S T U D I O   D E F I N I T I O N S                                                    */
@@ -50,13 +49,14 @@ class StudioDefinitions
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
-   UtilContext context
+   UtilContext context,
+   String logger
   ) 
     throws PipelineException 
   {
     super("StudioDefinitions",
           "Provides information about the top-level organization at the studio.", 
-          mclient, qclient, context);
+          mclient, qclient, context, logger);
   }
   
   

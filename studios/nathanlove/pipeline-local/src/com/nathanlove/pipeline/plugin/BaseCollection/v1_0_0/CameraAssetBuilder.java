@@ -40,7 +40,8 @@ class CameraAssetBuilder
     throws PipelineException
   {
    this(mclient, qclient, builderInformation, 
-        new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
+        new StudioDefinitions(mclient, qclient, 
+          UtilContext.getDefaultUtilContext(mclient), builderInformation.getLoggerName()),
         null);
   }
   

@@ -27,8 +27,9 @@ class CurveShotBuilder
   {
     this(mclient, 
          qclient, 
-         new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
-         new DefaultProjectNames(mclient, qclient),
+         new DefaultBuilderAnswers(mclient, qclient, 
+           UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()),
+         new DefaultProjectNames(mclient, qclient, info),
          info);
   }
   
@@ -351,7 +352,9 @@ class CurveShotBuilder
       throws PipelineException
     {
       DefaultShotNames names = 
-	new DefaultShotNames(pProject, false, !pNewSequence, pClient, pQueue, pBuilderQueries);
+	new DefaultShotNames
+	  (pProject, false, !pNewSequence, pClient, pQueue, 
+	   getBuilderInformation(), pBuilderQueries);
       addSubBuilder(names);
       pShotNames = names;
       
@@ -436,7 +439,7 @@ class CurveShotBuilder
       pAssets = new TreeMap<String, AssetBundle>();
       
       {
-	pCameraNames = new DefaultAssetNames(pClient, pQueue);
+	pCameraNames = new DefaultAssetNames(pClient, pQueue, getBuilderInformation());
 	pCameraNames.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	pCameraNames.setParamValue(DefaultAssetNames.aAssetName, "renderCam");
 	pCameraNames.setParamValue(DefaultAssetNames.aAssetType, "cam");
@@ -445,7 +448,8 @@ class CurveShotBuilder
       
       TreeSet<String> chars = (TreeSet<String>) getParamValue(aChars);
       for (String each : chars) {
-	DefaultAssetNames names = new DefaultAssetNames(pClient, pQueue);
+	DefaultAssetNames names = 
+	  new DefaultAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "character");
@@ -455,7 +459,8 @@ class CurveShotBuilder
       
       TreeSet<String> props = (TreeSet<String>) getParamValue(aProps);
       for (String each : props) {
-	DefaultAssetNames names = new DefaultAssetNames(pClient, pQueue);
+	DefaultAssetNames names = 
+	  new DefaultAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "prop");
@@ -465,7 +470,8 @@ class CurveShotBuilder
       
       TreeSet<String> sets = (TreeSet<String>) getParamValue(aSets);
       for (String each : sets) {
-	DefaultAssetNames names = new DefaultAssetNames(pClient, pQueue);
+	DefaultAssetNames names = 
+	  new DefaultAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "set");

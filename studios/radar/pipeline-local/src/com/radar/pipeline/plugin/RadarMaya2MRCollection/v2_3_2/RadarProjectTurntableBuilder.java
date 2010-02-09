@@ -29,8 +29,9 @@ class RadarProjectTurntableBuilder
     super
       (mclient,
        qclient,
-       new RadarProjectNames(mclient, qclient),
-       new RadarBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
+       new RadarProjectNames(mclient, qclient, info),
+       new RadarBuilderAnswers(mclient, qclient, 
+         UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()), 
        info);
   }
   

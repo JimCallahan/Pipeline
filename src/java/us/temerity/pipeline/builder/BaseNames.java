@@ -13,13 +13,14 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- *  The parent class for all Namers.
- *  <p>
- *  Namers are simply Utility classes that exist to provide node names to Builders, which
+ *  The parent class for all Namers. <p>
+ *  
+ *  Namers are simple Utilities that exist to provide node names to Builders, which
  *  the Builders use to construct their node networks.  Namers are defined separately from
  *  Builders in order to make it easy to change the node name and directory structure that
- *  Builders make, without having to change any of the actual functionality of the Builder.
- *  <p>
+ *  Builders make, without having to change any of the actual functionality of the 
+ *  Builder. <p>
+ *  
  *  Namers must implement a single method, {@link #generateNames()}, which should evaluate
  *  any parameters that the Namer has and then generate the names that are going to be
  *  returned by its access methods.
@@ -32,17 +33,37 @@ class BaseNames
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct a new namer.
+   * 
+   * @param name
+   *   The name of the namer.
+   * 
+   * @param desc
+   *   A brief description of what the namer is supposed to do.
+   * 
+   * @param mclient
+   *   The instance of the Master Manager that the builder is going to use.
+   * 
+   * @param qclient
+   *   The instance of the Queue Manager that the builder is going to use
+   *   
+   * @param info
+   *   The instance of {@link BuilderInformation} that is being used by the parent Builder of
+   *   this namer.
+   */
   protected 
   BaseNames
   (
     String name,
     String desc,
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   ) 
     throws PipelineException
   {
-    super(name, desc, mclient, qclient);
+    super(name, desc, mclient, qclient, info.getLoggerName());
     pGenerated = false;
   }
   
@@ -98,6 +119,15 @@ class BaseNames
   {
     return 1;
   }
+  
+  /**
+   * Get the instance of {@link BuilderInformation} that this namer is using.
+   */
+  public BuilderInformation
+  getBuilderInformation()
+  {
+    return pBuilderInformation;
+  }
 
   
   
@@ -106,4 +136,6 @@ class BaseNames
   /*----------------------------------------------------------------------------------------*/
 
   private boolean pGenerated;
+  
+  private BuilderInformation pBuilderInformation;
 }

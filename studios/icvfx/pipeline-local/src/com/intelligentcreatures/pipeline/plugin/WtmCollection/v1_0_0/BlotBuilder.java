@@ -69,7 +69,8 @@ class BlotBuilder
     throws PipelineException
   {
     this(mclient, qclient, builderInfo,
-         new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
+         new StudioDefinitions(mclient, qclient, 
+           UtilContext.getDefaultUtilContext(mclient), builderInfo.getLoggerName()),
          null, null);
   }
 

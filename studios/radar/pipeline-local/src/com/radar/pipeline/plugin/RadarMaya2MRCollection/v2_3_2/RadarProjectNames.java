@@ -23,11 +23,12 @@ class RadarProjectNames
   public RadarProjectNames
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException 
   {
-    super(mclient, qclient);
+    super(mclient, qclient, info);
   }
   
   /*----------------------------------------------------------------------------------------*/

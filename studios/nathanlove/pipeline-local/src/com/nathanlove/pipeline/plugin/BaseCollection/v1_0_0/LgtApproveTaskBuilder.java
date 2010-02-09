@@ -91,9 +91,11 @@ class LgtApproveTaskBuilder
       super.validatePhase();
       
       pShotNamer = 
-        ShotNamer.getNamerFromNodeName(pSubmitNode, getMasterMgrClient(), getQueueMgrClient());
+        ShotNamer.getNamerFromNodeName
+          (pSubmitNode, pClient, pQueue, getBuilderInformation());
       pProjectNamer = 
-        ProjectNamer.getGeneratedNamer(pClient, pQueue, pProjectName);
+        ProjectNamer.getGeneratedNamer
+          (pClient, pQueue, getBuilderInformation(), pProjectName);
       
       pRequiredNodes = new TreeSet<String>();
       pRequiredNodes.add(pProjectNamer.getLightingProductMEL());

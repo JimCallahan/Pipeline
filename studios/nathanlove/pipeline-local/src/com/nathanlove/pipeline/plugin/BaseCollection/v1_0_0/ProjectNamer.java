@@ -27,14 +27,16 @@ extends BaseNames
   ProjectNamer
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    BuilderInformation info
   )
     throws PipelineException
   {
     super("ProjectNamer", 
           "The basic naming class for project specific files.",
           mclient,
-          qclient);
+          qclient,
+          info);
     {
       UtilityParam param =
         new StringUtilityParam
@@ -313,8 +315,13 @@ extends BaseNames
    * 
    * @param mclient
    *   The Master manager instance to build the Namer with.
+   * 
    * @param qclient
    *   The Queue manager instance to build the Namer with.
+   * 
+   * @param info
+   *   The Builder Information instance to build the Namer with.
+   * 
    * @param project
    *   The name of the project
    */
@@ -323,11 +330,12 @@ extends BaseNames
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
+    BuilderInformation info,
     String project
   )
     throws PipelineException
   {
-    ProjectNamer namer = new ProjectNamer(mclient, qclient);
+    ProjectNamer namer = new ProjectNamer(mclient, qclient, info);
     namer.setParamValue(ParamNames.aProjectName, project);
     namer.run();
     return namer;

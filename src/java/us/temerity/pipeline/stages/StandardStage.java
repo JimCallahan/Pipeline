@@ -394,12 +394,12 @@ class StandardStage
   build() 
     throws PipelineException
   {
-    LogMgr.getInstance().log
+    pLog.log
       (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
 
     ActionOnExistence actionOnExistence = 
       pStageInformation.getActionOnExistence(pRegisteredNodeName);
-    LogMgr.getInstance().log
+    pLog.log
       (Kind.Bld, Level.Finer, "Action on Existence for the node: " + actionOnExistence);
     if (!checkExistance(pRegisteredNodeName, actionOnExistence))
       return construct();
@@ -502,7 +502,7 @@ class StandardStage
   conform()
     throws PipelineException
   {
-    LogMgr.getInstance().log
+    pLog.log
       (Kind.Ops, Level.Finer, "Conforming the node: " + pRegisteredNodeName );
     pStageInformation.addConformedNode(pRegisteredNodeName); 
     pNodeConformed = true;

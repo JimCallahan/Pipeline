@@ -40,7 +40,8 @@ class ProjectBuilder
     throws PipelineException
   {
    this(mclient, qclient, builderInformation, 
-        new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)));
+        new StudioDefinitions(mclient, qclient, 
+          UtilContext.getDefaultUtilContext(mclient), builderInformation.getLoggerName()));
   }
   
   public
@@ -93,7 +94,7 @@ class ProjectBuilder
     addCheckinWhenDoneParam();
     
     
-    pProjectNamer = new ProjectNamer(mclient, qclient); 
+    pProjectNamer = new ProjectNamer(mclient, qclient, builderInformation); 
     addSubBuilder(pProjectNamer);
     addMappedParam(pProjectNamer.getName(), ParamNames.aProjectName, ParamNames.aProjectName);    
     

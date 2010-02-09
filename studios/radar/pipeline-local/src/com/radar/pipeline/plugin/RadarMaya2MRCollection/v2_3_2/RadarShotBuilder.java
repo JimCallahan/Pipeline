@@ -28,8 +28,9 @@ class RadarShotBuilder
   {
     this(mclient, 
          qclient, 
-         new RadarBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
-         new RadarProjectNames(mclient, qclient),
+         new RadarBuilderAnswers(mclient, qclient, 
+           UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()),
+         new RadarProjectNames(mclient, qclient, info),
          info);
   }
   
@@ -342,7 +343,9 @@ class RadarShotBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
         "Starting the init phase in the First Info Pass.");
       RadarShotNames names = 
-	new RadarShotNames(pProject, !pNewSequence, pClient, pQueue, pBuilderQueries);
+	new RadarShotNames
+	  (pProject, !pNewSequence, pClient, pQueue, 
+	   getBuilderInformation(), pBuilderQueries);
       addSubBuilder(names);
       pShotNames = names;
       
@@ -430,7 +433,7 @@ class RadarShotBuilder
       pAssets = new TreeMap<String, AssetBundle>();
       
       {
-	pCameraNames = new RadarAssetNames(pClient, pQueue);
+	pCameraNames = new RadarAssetNames(pClient, pQueue, getBuilderInformation());
 	pCameraNames.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	pCameraNames.setParamValue(DefaultAssetNames.aAssetName, "renderCam");
 	pCameraNames.setParamValue(DefaultAssetNames.aAssetType, "cam");
@@ -439,7 +442,8 @@ class RadarShotBuilder
       
       TreeSet<String> chars = (TreeSet<String>) getParamValue(aChars);
       for (String each : chars) {
-	RadarAssetNames names = new RadarAssetNames(pClient, pQueue);
+	RadarAssetNames names = 
+	  new RadarAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "character");
@@ -449,7 +453,8 @@ class RadarShotBuilder
       
       TreeSet<String> props = (TreeSet<String>) getParamValue(aProps);
       for (String each : props) {
-	RadarAssetNames names = new RadarAssetNames(pClient, pQueue);
+	RadarAssetNames names = 
+	  new RadarAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "prop");
@@ -459,7 +464,8 @@ class RadarShotBuilder
       
       TreeSet<String> sets = (TreeSet<String>) getParamValue(aSets);
       for (String each : sets) {
-	RadarAssetNames names = new RadarAssetNames(pClient, pQueue);
+	RadarAssetNames names = 
+	  new RadarAssetNames(pClient, pQueue, getBuilderInformation());
 	names.setParamValue(DefaultAssetNames.aProjectName, pProject);
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "set");

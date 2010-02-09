@@ -28,19 +28,26 @@ class BuilderInformation
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Make a new Builder Information.
-   * <p>
+   * Make a new Builder Information.  <p>
+   * 
    * Sets the terminateAppWithGui value to <code>true</code>.
+   * 
+   * @param logger
+   *   The instance of the {@link LogMgr} that the utility should use to write its logs or
+   *   <code>null</code> if the default instance should be used.
    * 
    * @param usingGui
    *   Should the Builder execute in GUI mode.  Setting this to <code>false</code> will cause
    *   the Builder to execute in batch mode. 
+   * 
    * @param abortOnBadParam
    *   Should the Builder terminate execution if an attempt is made to assign a command-line
    *   value to a parameter which cannot accept such a value. 
+   * 
    * @param useBuilderLogging
    *   Should the Builder use its own builder logging panel or should it disable it and allow 
    *   the plui instance that is running the builder to log to its own Logging Panel? 
+   * 
    * @param commandLineParams
    *   A MultiMap of parameter values to assign to the Builders, in which the first keys is the
    *   full {@link PrefixedName} of the the Builder or Namer the value is for and the remaining
@@ -52,30 +59,39 @@ class BuilderInformation
   public
   BuilderInformation
   (
+    String logger,
     boolean usingGui,
     boolean abortOnBadParam,
     boolean useBuilderLogging,
     MultiMap<String, String> commandLineParams
   )
   {
-    this(usingGui, true, abortOnBadParam, useBuilderLogging, commandLineParams);
+    this(logger, usingGui, true, abortOnBadParam, useBuilderLogging, commandLineParams);
   }
   
   /**
-   * Make a new Builder Information.
+   * Make a new Builder Information. <p>
+   * 
+   * @param logger
+   *   The instance of the {@link LogMgr} that the utility should use to write its logs or
+   *   <code>null</code> if the default instance should be used.
    * 
    * @param usingGui
    *   Should the Builder execute in GUI mode.  Setting this to <code>false</code> will cause
    *   the Builder to execute in batch mode. 
+   * 
    * @param terminateAppWithGui
    *   Should the instance of the JVM that is running the Builder be terminated when this
    *   Builder finishes execution?
+   * 
    * @param abortOnBadParam
    *   Should the Builder terminate execution if an attempt is made to assign a command-line
    *   value to a parameter which cannot accept such a value. 
+   * 
    * @param useBuilderLogging
    *   Should the Builder use its own builder logging panel or should it disable it and allow 
    *   the plui instance that is running the builder to log to its own Logging Panel? 
+   * 
    * @param commandLineParams
    *   A MultiMap of parameter values to assign to the Builders, in which the first keys is the
    *   full {@link PrefixedName} of the the Builder or Namer the value is for and the remaining
@@ -87,6 +103,7 @@ class BuilderInformation
   public
   BuilderInformation
   (
+    String logger,
     boolean usingGui,
     boolean terminateAppWithGui,
     boolean abortOnBadParam,
@@ -94,6 +111,7 @@ class BuilderInformation
     MultiMap<String, String> commandLineParams
   )
   {
+    pLogger = logger;
     pUsingGUI = usingGui;
     pAbortOnBadParam = abortOnBadParam;
     pUseBuilderLogging = useBuilderLogging;
@@ -129,6 +147,28 @@ class BuilderInformation
   /*----------------------------------------------------------------------------------------*/
   /*  A C C E S S                                                                           */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the name of the LogMgr instance the builder should use for logging or 
+   * <code>null</code> if the default instance should be used.
+   */
+  public final String
+  getLoggerName()
+  {
+    return pLogger;
+  }
+  
+  /**
+   * Get the LogMgr instance the builder should use for logging.
+   */
+  public final LogMgr
+  getLogMgr()
+  {
+    if (pLogger == null)
+      return LogMgr.getInstance();
+    else
+      return LogMgr.getInstance(pLogger);
+  }
   
   /**
    * Is the Builder executing in GUI mode?
@@ -814,6 +854,33 @@ class BuilderInformation
       pHardwareKeyStack.poll();
     }
 
+
+    
+    /*--------------------------------------------------------------------------------------*/
+    /*   A N N O T A T I O N S                                                              */
+    /*--------------------------------------------------------------------------------------*/
+    
+    /**
+     * Get the name of the LogMgr instance the stage should use for logging or 
+     * <code>null</code> if the default instance should be used.
+     */
+    public final String
+    getLoggerName()
+    {
+      return pLogger;
+    }
+    
+    /**
+     * Get the LogMgr instance the stage should use for logging.
+     */
+    public final LogMgr
+    getLogMgr()
+    {
+      if (pLogger == null)
+        return LogMgr.getInstance();
+      else
+        return LogMgr.getInstance(pLogger);
+    }
     
     
     /*--------------------------------------------------------------------------------------*/
@@ -1381,4 +1448,6 @@ class BuilderInformation
   private boolean pTerminateAppOnQuit;
   
   private StageState pBuilderStageState;
+  
+  private String pLogger;
 }

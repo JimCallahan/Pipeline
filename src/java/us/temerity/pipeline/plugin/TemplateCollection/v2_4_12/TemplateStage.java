@@ -169,11 +169,11 @@ class TemplateStage
       TemplateNode linkNode = pNodeDatabase.get(linkName);
       TemplateLink link = entry.getValue();
       
-      LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
+      pLog.log(Kind.Bld, Level.Finest, 
         "Checking the link: " + linkName);
       
       if (linkNode.wasSkipped()) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Fine,
+        pLog.log(Kind.Bld, Level.Fine,
           "The linked node was skipped during construction and the link is being ignored.");
         continue;
       }
@@ -369,14 +369,14 @@ class TemplateStage
     boolean build = super.build();
     if (build) {
       if (pSrcHasDisabledAction && !pTemplateNode.preEnableAction()) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Disabling the action after building the node.");
         pRegisteredNodeMod.setActionEnabled(false);
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
         pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
       }
       if (pTemplateNode.cloneFiles()  && !pInhibitCopyFiles) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Cloning the files after building the node.");
         NodeID src = new NodeID(getAuthor(), getView(), pSourceMod.getName());
         NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
@@ -406,7 +406,7 @@ class TemplateStage
       }
       
       if (pTemplateNode.touchFiles()) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Backing up the Action and replacing it with the Touch action.");
         pBackedUpAction = pRegisteredNodeMod.getAction();
         pRegisteredNodeMod.setAction(getAction(new PluginContext("Touch"), getToolset()));
@@ -459,7 +459,7 @@ class TemplateStage
           newExSeq = exSeq;
         }
         
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Creating the symbolic links to (" + newExSeq+ ").");
         SubProcessLight process = softLinkProcess(newExSeq);
         process.run();
@@ -512,13 +512,13 @@ class TemplateStage
     
     String newSrc = stringReplace(oldSrc, replacements);
     if (linkNode.getSkippedNodes().contains(newSrc)) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
+      pLog.log(Kind.Bld, Level.Fine, 
         "Not linking source node (" + newSrc + ") because the template skipped building it.");
       return null;
     }
     
     if (!nodeExists(newSrc) && ignoreable) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
+      pLog.log(Kind.Bld, Level.Fine, 
         "Not linking source node (" + newSrc + ") because it doesn't exist");
       return null;
     }
@@ -526,7 +526,7 @@ class TemplateStage
     LinkMod newLink = 
       new LinkMod(newSrc, link.getPolicy(), 
                   link.getRelationship(), link.getFrameOffset());
-    LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
+    pLog.log(Kind.Bld, Level.Fine, 
       "Linking source node (" + newSrc + ").");
     addLink(newLink);
     pAllLinkNames.add(newSrc);
@@ -577,7 +577,7 @@ class TemplateStage
     ArrayList<TreeMap<String, String>> values = pContexts.get(currentContext);
     
     if (values == null || values.isEmpty()) {
-      LogMgr.getInstance().logAndFlush(Kind.Bld, Level.Warning, 
+      pLog.logAndFlush(Kind.Bld, Level.Warning, 
         "The context (" + currentContext + ") specified on (" + link.getName() + ") has " +
         "no values defined for it.");
       TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
@@ -725,7 +725,7 @@ class TemplateStage
   stringReplaceFiles()
     throws PipelineException
   {
-    LogMgr.getInstance().log
+    pLog.log
       (Kind.Bld, Level.Fine, "String replacing inside the files.");
     
     NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
@@ -839,13 +839,13 @@ class TemplateStage
   {
     boolean changed = false;
     if (pTemplateNode.postDisableAction()) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Disabling the action on (" + pRegisteredNodeName + ") as part of finalization.");
       pRegisteredNodeMod.setActionEnabled(false);
       changed = true;
     }
     if (pTemplateNode.postRemoveAction()) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Removing the action on (" + pRegisteredNodeName + ") as part of finalization.");
       pRegisteredNodeMod.setAction(null);
       changed = true;
@@ -856,7 +856,7 @@ class TemplateStage
     }
 
     if (pTemplateNode.unlinkAll()) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Unlinking all sources from (" + pRegisteredNodeName + ") due to TemplateSettings " +
         "Annotation.");
       for (String source : pRegisteredNodeMod.getSourceNames()) {
@@ -867,7 +867,7 @@ class TemplateStage
     else if (!pUnlinkNodes.isEmpty()) {
       for (String oldSrc : pUnlinkNodes.keySet()) {
         for (String newSrc : pUnlinkNodes.get(oldSrc)) {
-          LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+          pLog.log(Kind.Bld, Level.Finer, 
             "Unlinking the node (" + newSrc + ") from (" + pRegisteredNodeName + ") due to " +
             "an unlink annotation.");
           pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, newSrc);
@@ -879,10 +879,10 @@ class TemplateStage
     String linkSync = pTemplateNode.getLinkSync();
     linkSync = stringReplace(linkSync, pReplacements);
     if (linkSync != null) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Syncing the links with (" + linkSync +")");
       if (!workingVersionExists(linkSync)) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Warning,
+        pLog.log(Kind.Bld, Level.Warning,
           "No working version of the node (" + linkSync +") which was supposed to be used " +
           "to sync the links of (" + pRegisteredNodeName +") exists.");
       }
@@ -901,7 +901,7 @@ class TemplateStage
     throws PipelineException
   {
     if (pTemplateNode.touchFiles()) {
-      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+      pLog.log(Kind.Bld, Level.Finer, 
         "Restoring backed-up action to (" + pRegisteredNodeName + ") as part " +
         "of finalization.");
       pRegisteredNodeMod.setAction(pBackedUpAction);
@@ -919,7 +919,7 @@ class TemplateStage
       }
 
       if (!pLateFileCopy) {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Touching the files on (" + pRegisteredNodeName + ") to remove staleness as part of " +
           "finalization.");
         SubProcessLight process = touchFilesProcess();
@@ -939,7 +939,7 @@ class TemplateStage
             process.getStdOut() + "\n" + process.getStdErr());
       }
       else {
-        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        pLog.log(Kind.Bld, Level.Finer, 
           "Cloning the files for(" + pRegisteredNodeName + ") to remove staleness as part " +
           "of finalization.");
 

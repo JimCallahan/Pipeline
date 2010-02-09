@@ -27,9 +27,10 @@ class RadarSimpleAssetBuilder
     super
       (mclient,
        qclient,
-       new RadarBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
-       new RadarAssetNames(mclient, qclient),
-       new RadarProjectNames(mclient, qclient),
+       new RadarBuilderAnswers(mclient, qclient, 
+         UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()), 
+       new RadarAssetNames(mclient, qclient, info),
+       new RadarProjectNames(mclient, qclient, info),
        info);
   }
   

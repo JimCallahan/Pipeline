@@ -28,8 +28,9 @@ class RadarProjectBuilder
   {
     super(mclient,
          qclient,
-         new RadarProjectNames(mclient, qclient),
-         new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
+         new RadarProjectNames(mclient, qclient, info),
+         new DefaultBuilderAnswers(mclient, qclient, 
+           UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()), 
          info);
   }
   

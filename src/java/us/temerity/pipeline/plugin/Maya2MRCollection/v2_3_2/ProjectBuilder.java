@@ -30,8 +30,9 @@ class ProjectBuilder
   {
     this(mclient,
          qclient,
-         new DefaultProjectNames(mclient, qclient),
-         new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
+         new DefaultProjectNames(mclient, qclient, info),
+         new DefaultBuilderAnswers(mclient, qclient, 
+           UtilContext.getDefaultUtilContext(mclient), info.getLoggerName()), 
          info);
   }
   

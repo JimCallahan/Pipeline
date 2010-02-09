@@ -76,7 +76,7 @@ class BaseShotBuilder
       pStudioDefs = studioDefs;
       pProjectNamer = projectNamer;
       if(pProjectNamer == null)
-	pProjectNamer = new ProjectNamer(mclient, qclient, pStudioDefs);
+	pProjectNamer = new ProjectNamer(mclient, qclient, builderInfo, pStudioDefs);
       pShotNamer = shotNamer;
       pTaskType = taskType;
 
@@ -331,7 +331,7 @@ class BaseShotBuilder
     {
       /* if we haven't been passed in a ShotNamer from a parent builder, make one now */
       if(pShotNamer == null)
-        pShotNamer = new ShotNamer(pClient, pQueue, pStudioDefs);
+        pShotNamer = new ShotNamer(pClient, pQueue, getBuilderInformation(), pStudioDefs);
 
       /* if no parent builder as already generated and initialized the ShotNamer,
 	   lets create one ourselves... */
