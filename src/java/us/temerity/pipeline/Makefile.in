@@ -446,7 +446,6 @@ PLG_BUILD_UTIL_SOURCES = $(shell ls $(srcdir)/build/*.java)
                    RemoteOptsParser \
                    TestNativeOptsParser \
                    ToolsetEnvParser \
-                   ValidateOptsParser \
                    VersionOptsParser
 
     GLUE_PARSERS = GlueParser

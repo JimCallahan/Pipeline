@@ -218,6 +218,7 @@ TOKEN :
 | <LOG_WRI: 	     "wri">
 | <LOG_USR: 	     "usr">
 | <LOG_BAK: 	     "bak">
+| <LOG_LCK: 	     "lck">
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -231,6 +232,7 @@ TOKEN :
 | <FINE:    	      "fine">    
 | <FINER :  	      "finer">   
 | <FINEST:    	      "finest">  
+| <DETAIL:    	      "detail">  
 | <COMMA:  	      ",">             : LOG_TYPE
 | <AE2:               (["\0"])+>       : DEFAULT
 | <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
@@ -497,7 +499,7 @@ LogMgr.Kind LogKind() :
   (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=GluKind() | 
    g=DspKind() | g=JobKind() | g=SelKind() | g=ColKind() | g=SchKind() | 
    g=SubKind() | g=SumKind() | g=ExtKind() | g=MemKind() | g=TimKind() |
-   g=WriKind() | g=UsrKind() | g=BakKind() )
+   g=WriKind() | g=UsrKind() | g=BakKind() | g=LckKind())
   {
     return g;
   }
@@ -665,6 +667,15 @@ LogMgr.Kind BakKind() :
   }
 }
 
+LogMgr.Kind LckKind() : 
+{}
+{
+  <LOG_LCK>
+  {
+    return LogMgr.Kind.Lck;
+  }
+}
+
 
 
 LogMgr.Level LogLevel() : 
@@ -673,7 +684,7 @@ LogMgr.Level LogLevel() :
 }
 {
   (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
-   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel() | v=DetailLevel()) 
   {
     return v;
   }
@@ -742,6 +753,17 @@ LogMgr.Level FinestLevel() :
   <FINEST> 
   {
     return LogMgr.Level.Finest;
+  }
+}
+
+LogMgr.Level DetailLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  (<DETAIL>) 
+  {
+    return LogMgr.Level.Detail;
   }
 }
 

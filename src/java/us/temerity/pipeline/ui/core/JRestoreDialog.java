@@ -137,7 +137,7 @@ class JRestoreDialog
 	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 
 	  {
-	    NodeVersionSizeTableModel model = new NodeVersionSizeTableModel(520);
+	    NodeVersionSizeTableModel model = new NodeVersionSizeTableModel(640);
 	    pRestoreTableModel = model;
 
 	    JTablePanel tpanel = new JTablePanel(model);

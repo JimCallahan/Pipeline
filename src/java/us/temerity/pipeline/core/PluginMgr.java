@@ -60,7 +60,7 @@ class PluginMgr
     pAdminPrivileges = new AdminPrivileges();
 
     {
-      pPluginLock = new ReentrantReadWriteLock();
+      pPluginLock = new LoggedLock("Plugin");
       
       pLoadCycleID = 1L;
       
@@ -150,7 +150,7 @@ class PluginMgr
 
       /* The lock to protect the session ID increments and resource installs to 
          the current plugin version directory. */
-      pResourceLock = new ReentrantReadWriteLock();
+      pResourceLock = new LoggedLock("Resource");
 
       /* Stores the request information for each resource install, so that when 
          all the resource have been transferred from the client the install can 
@@ -804,7 +804,7 @@ class PluginMgr
 
       /* make the backup tarball */ 
       timer.aquire();
-      pPluginLock.writeLock().lock();
+      pPluginLock.acquireWriteLock();
       try {
         timer.resume();
         
@@ -837,7 +837,7 @@ class PluginMgr
         return new SuccessRsp(timer);
       }
       finally {
-        pPluginLock.writeLock().unlock();
+        pPluginLock.releaseWriteLock();
       }
     }
     catch(PipelineException ex) {
@@ -870,7 +870,7 @@ class PluginMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pPluginLock.readLock().lock();
+    pPluginLock.acquireReadLock();
     try {
       timer.resume();
       
@@ -936,7 +936,7 @@ class PluginMgr
 				 pluginStatus); 
     }
     finally {
-      pPluginLock.readLock().unlock();
+      pPluginLock.releaseReadLock();
     }
   }  
 
@@ -971,7 +971,7 @@ class PluginMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pPluginLock.writeLock().lock();
+    pPluginLock.acquireWriteLock();
     try {
       try {
         timer.resume();
@@ -1236,7 +1236,7 @@ class PluginMgr
       return new FailureRsp(timer, Exceptions.getFullMessage("Internal Error:", ex));
     }
     finally {
-      pPluginLock.writeLock().unlock();
+      pPluginLock.releaseWriteLock();
     }
   }
 
@@ -1264,7 +1264,7 @@ class PluginMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pPluginLock.readLock().lock();
+    pPluginLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -1287,7 +1287,7 @@ class PluginMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pPluginLock.readLock().unlock();
+      pPluginLock.releaseReadLock();
     }
   }
 
@@ -1343,7 +1343,7 @@ class PluginMgr
 
       /* Note that since each resource install gets its own directory to work within
          this is only place for locking.  All the file copying can occur without a lock. */
-      pResourceLock.writeLock().lock();
+      pResourceLock.acquireWriteLock();
       try {
 	sessionID = pSessionID++;
 
@@ -1352,7 +1352,7 @@ class PluginMgr
 	  (sessionID, new PluginResource(sessionID, req));
       }
       finally {
-	pResourceLock.writeLock().unlock();
+	pResourceLock.releaseWriteLock();
       }
 
       if(sessionID == -1)
@@ -1549,7 +1549,7 @@ class PluginMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pResourceLock.writeLock().lock();
+    pResourceLock.acquireWriteLock();
     try {
       long sessionID = pluginResource.getSessionID();
       
@@ -1572,7 +1572,7 @@ class PluginMgr
       return rsp;
     }
     finally {
-      pResourceLock.writeLock().unlock();
+      pResourceLock.releaseWriteLock();
     }
   }
 
@@ -1586,7 +1586,7 @@ class PluginMgr
   )
     throws PipelineException
   {
-    pResourceLock.writeLock().lock();
+    pResourceLock.acquireWriteLock();
     try {
       if(!pPluginResourceInstalls.containsKey(sessionID))
 	throw new PipelineException
@@ -1604,7 +1604,7 @@ class PluginMgr
       pPluginResourceInstalls.remove(sessionID);
     }
     finally {
-      pResourceLock.writeLock().unlock();
+      pResourceLock.releaseWriteLock();
     }
   }
 
@@ -1634,13 +1634,13 @@ class PluginMgr
 
       long sessionID = req.getSessionID();
 
-      pResourceLock.readLock().lock();
+      pResourceLock.acquireReadLock();
       try {
 	if(!pPluginResourceInstalls.containsKey(sessionID))
 	  throw new PipelineException("Session ID (" + sessionID + ") is invalid!");
       }
       finally {
-	pResourceLock.readLock().unlock();
+	pResourceLock.releaseReadLock();
       }
 
       int chunksize = req.getChunkSize();
@@ -1675,12 +1675,12 @@ class PluginMgr
 
       PluginResource pluginResource = null;
 
-      pResourceLock.readLock().lock();
+      pResourceLock.acquireReadLock();
       try {
 	pluginResource = pPluginResourceInstalls.get(sessionID);
       }
       finally {
-	pResourceLock.readLock().unlock();
+	pResourceLock.releaseReadLock();
       }
 
       pluginResource.updateResourceChunk(path, chunksize, rpath);
@@ -3584,7 +3584,7 @@ class PluginMgr
   /**
    * The lock which protects access to the loaded plugin classes and load cycle counter.
    */ 
-  private ReentrantReadWriteLock  pPluginLock;
+  private LoggedLock  pPluginLock;
 
   /**
    * The load cycle identifier.
@@ -3687,7 +3687,7 @@ class PluginMgr
    * The lock which protects access to the plugin resources session ID, and the
    * install of resources.
    */ 
-  private ReentrantReadWriteLock  pResourceLock;
+  private LoggedLock  pResourceLock;
 
   /**
    * The root plugin scratch directory.

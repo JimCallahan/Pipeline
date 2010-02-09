@@ -47,7 +47,7 @@ class CpioFileArchiver
 	new DirectoryArchiverParam
 	("ArchiveDirectory", 
 	 "The location where archive files are stored.",
-	 PackageInfo.sTempPath.toString());
+	 PackageInfo.getTempPath(OsType.Unix).toOsString(OsType.Unix));
       addParam(param);
     }
 

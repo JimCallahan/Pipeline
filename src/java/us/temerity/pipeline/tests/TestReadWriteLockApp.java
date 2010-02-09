@@ -43,7 +43,7 @@ class TestReadWriteLockApp
   public
   TestReadWriteLockApp()
   { 
-    pLock     = new ReentrantReadWriteLock();
+    pLock     = new LoggedLock();
     pValue    = 1000000;
     pMaxValue = 1000010;
     pFactors  = new ArrayList<Long>();
@@ -179,7 +179,7 @@ class TestReadWriteLockApp
 
 	/* read and print the data */ 
 	long start = (new java.util.Date()).getTime();
-	pLock.readLock().lock();
+	pLock.acquireReadLock();
 	try {
 	  updateWait((new java.util.Date()).getTime() - start);
 	  printData();
@@ -190,7 +190,7 @@ class TestReadWriteLockApp
 	  }
 	}
 	finally {
-	  pLock.readLock().unlock();
+	  pLock.releaseReadLock();
 	}
       }
     }
@@ -214,7 +214,7 @@ class TestReadWriteLockApp
 
 	/* update and print the data */ 
 	long start = (new java.util.Date()).getTime();
-	pLock.writeLock().lock();
+	pLock.acquireWriteLock();
 	try {
 	  updateWait((new java.util.Date()).getTime() - start);
 
@@ -240,7 +240,7 @@ class TestReadWriteLockApp
 	  }
 	}
 	finally {
-	  pLock.writeLock().unlock();
+	  pLock.releaseWriteLock();
 	}
       }
     }
@@ -252,7 +252,7 @@ class TestReadWriteLockApp
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  private ReentrantReadWriteLock pLock;
+  private LoggedLock       pLock;
   private long             pValue;
   private long             pMaxValue;
   private ArrayList<Long>  pFactors;

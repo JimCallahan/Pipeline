@@ -34,6 +34,25 @@ class PrivilegedReq
     pRequestor = PackageInfo.sUser; 
   }
 
+  /** 
+   * Constructs a new request with the same requestor as the given request.<P> 
+   * 
+   * Useful for subclass constructors.
+   * 
+   * @param req
+   *    The request to copy.
+   */
+  protected
+  PrivilegedReq
+  (
+   PrivilegedReq req
+  ) 
+  {
+    if(req == null) 
+      throw new IllegalArgumentException("The request cannot (null)!"); 
+    pRequestor = req.getRequestor();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

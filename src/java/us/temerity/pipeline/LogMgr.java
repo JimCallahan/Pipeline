@@ -20,6 +20,23 @@ public
 class LogMgr
 {  
   /*----------------------------------------------------------------------------------------*/
+  /*   I N I T I A L I Z A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Initialize the static feilds.
+   */ 
+  static {
+    LogMgr mgr = new LogMgr("Default"); 
+    sDefaultLogMgr = mgr;
+
+    TreeMap<String,LogMgr> mgrs = new TreeMap<String,LogMgr>();
+    mgrs.put("Default", mgr); 
+    sLogMgrs = mgrs;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
@@ -80,7 +97,6 @@ class LogMgr
     return pName;
   }
   
-  
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -90,7 +106,7 @@ class LogMgr
   public static LogMgr
   getInstance() 
   {
-    return getInstance("Default"); 
+    return sDefaultLogMgr;
   }
 
   /**
@@ -870,7 +886,12 @@ class LogMgr
     /**
      * Activity of database synchronization and backup threads.
      */
-    Bak;
+    Bak, 
+
+    /**
+     * Activity of thread locking.
+     */
+    Lck;
 
     /**
      * Get the list of all possible states.
@@ -929,9 +950,14 @@ class LogMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The sole instance of this class.
+   * The default logger.
    */ 
-  private static TreeMap<String,LogMgr> sLogMgrs = new TreeMap<String,LogMgr>();
+  private static final LogMgr sDefaultLogMgr; 
+  
+  /**
+   * The named instances of this class indexed by logger name.
+   */ 
+  private static TreeMap<String,LogMgr>  sLogMgrs; 
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -972,7 +998,8 @@ class LogMgr
     "BLD",
     "WRI",
     "USR",
-    "BAK"
+    "BAK",
+    "LCK"
   };
 
 

@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.23)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.24)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -2002,7 +2002,6 @@ AC_CONFIG_FILES([
   docs/man/plpython.src.html
   docs/man/plui.src.html  
   docs/man/plversion.src.html
-  docs/man/plvalidate.src.html
   docs/manuals/Makefile
 
   src/Makefile
@@ -2060,7 +2059,6 @@ AC_CONFIG_FILES([
   src/java/scripts/plpython
   src/java/scripts/plui
   src/java/scripts/plui-j2dgl
-  src/java/scripts/plvalidate
   src/java/scripts/plversion
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
@@ -2086,7 +2084,6 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/pltestnative
   src/java/scripts/debug/pltestlight
   src/java/scripts/debug/pltestheavy
-  src/java/scripts/debug/plvalidate
   src/java/scripts/debug/plversion
 
   src/java/scripts/profile/Makefile
