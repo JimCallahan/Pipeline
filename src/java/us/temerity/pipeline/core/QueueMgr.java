@@ -999,20 +999,8 @@ class QueueMgr
     LogControls lc = new LogControls();
     {
       LogMgr mgr = LogMgr.getInstance(); 
-      lc.setLevel(LogMgr.Kind.Glu, mgr.getLevel(LogMgr.Kind.Glu));
-      lc.setLevel(LogMgr.Kind.Ops, mgr.getLevel(LogMgr.Kind.Ops));
-      lc.setLevel(LogMgr.Kind.Mem, mgr.getLevel(LogMgr.Kind.Mem));
-      lc.setLevel(LogMgr.Kind.Net, mgr.getLevel(LogMgr.Kind.Net));
-      lc.setLevel(LogMgr.Kind.Plg, mgr.getLevel(LogMgr.Kind.Plg));
-      lc.setLevel(LogMgr.Kind.Dsp, mgr.getLevel(LogMgr.Kind.Dsp));
-      lc.setLevel(LogMgr.Kind.Sel, mgr.getLevel(LogMgr.Kind.Sel));
-      lc.setLevel(LogMgr.Kind.Job, mgr.getLevel(LogMgr.Kind.Job));
-      lc.setLevel(LogMgr.Kind.Col, mgr.getLevel(LogMgr.Kind.Col));
-      lc.setLevel(LogMgr.Kind.Sch, mgr.getLevel(LogMgr.Kind.Sch));
-      lc.setLevel(LogMgr.Kind.Ext, mgr.getLevel(LogMgr.Kind.Ext));
-      lc.setLevel(LogMgr.Kind.Wri, mgr.getLevel(LogMgr.Kind.Wri));
-      lc.setLevel(LogMgr.Kind.Sum, mgr.getLevel(LogMgr.Kind.Sum));
-      lc.setLevel(LogMgr.Kind.Usr, mgr.getLevel(LogMgr.Kind.Usr));
+      for(LogMgr.Kind kind : LogMgr.Kind.all()) 
+        lc.setLevel(kind, mgr.getLevel(kind));
     }
 
     return new MiscGetLogControlsRsp(timer, lc);
@@ -1041,100 +1029,13 @@ class QueueMgr
 	  ("Only a user with Master Admin privileges may change the logging levels!");
 
       LogControls lc = req.getControls(); 
-      {
-	LogMgr mgr = LogMgr.getInstance(); 
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Glu);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Glu, level);
-	}
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Ops);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Ops, level);
-	}
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Mem);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Mem, level);
-	}
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Net);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Net, level);
-	}
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Plg);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Plg, level);
-	}
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Dsp);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Dsp, level);
-	}
-
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sel);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Sel, level);
-	}
-
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Job);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Job, level);
-	}
-
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Col);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Col, level);
-	}
-
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sch);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Sch, level);
-	}
-
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Ext);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Ext, level);
-	}
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sub);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Sub, level);
-	}
-	
-	{
-          LogMgr.Level level = lc.getLevel(LogMgr.Kind.Wri);
-          if(level != null) 
-            mgr.setLevel(LogMgr.Kind.Wri, level);
-        }
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sum);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Sum, level);
-	}
-	
-	{
-	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Usr);
-	  if(level != null) 
-	    mgr.setLevel(LogMgr.Kind.Usr, level);
-	}
+      LogMgr mgr = LogMgr.getInstance(); 
+      for(LogMgr.Kind kind : LogMgr.Kind.all()) {
+        LogMgr.Level level = lc.getLevel(kind);
+        if(level != null) 
+          mgr.setLevel(kind, level);
       }
-      
+    
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
