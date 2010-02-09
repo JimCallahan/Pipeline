@@ -52,7 +52,7 @@ class TarFileArchiver
 	new DirectoryArchiverParam
 	("ArchiveDirectory", 
 	 "The location where archive tarballs are stored.",
-	 PackageInfo.sTempDir.getPath());
+	 PackageInfo.getTempPath(OsType.Unix).toOsString(OsType.Unix));
       addParam(param);
     }
 
