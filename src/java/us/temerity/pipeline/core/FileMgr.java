@@ -164,7 +164,7 @@ class FileMgr
     setRuntimeControlsHelper(fileStatDir, checksumDir);
 
     /* init file system locks */ 
-    pCheckedInLocks = new TreeMap<String,ReentrantReadWriteLock>();
+    pCheckedInLocks = new TreeMap<String,LoggedLock>();
     pWorkingLocks   = new TreeMap<NodeID,Object>();
     pMakeDirLock    = new Object();
   }
@@ -507,8 +507,8 @@ class FileMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
-    checkedInLock.readLock().lock();
+    LoggedLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.acquireReadLock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
@@ -829,7 +829,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      checkedInLock.readLock().unlock();
+      checkedInLock.releaseReadLock();
     }  
   }
 
@@ -863,8 +863,8 @@ class FileMgr
     }
 
     timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
-    checkedInLock.writeLock().lock();
+    LoggedLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.acquireWriteLock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
@@ -1346,7 +1346,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      checkedInLock.writeLock().unlock();
+      checkedInLock.releaseWriteLock();
     }  
   }
    
@@ -1381,8 +1381,8 @@ class FileMgr
     }
 
     timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
-    checkedInLock.readLock().lock();
+    LoggedLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.acquireReadLock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
@@ -1606,7 +1606,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      checkedInLock.readLock().unlock();
+      checkedInLock.releaseReadLock();
     }  
   }  
 
@@ -1633,8 +1633,8 @@ class FileMgr
     TaskTimer timer = new TaskTimer("FileMgr.revert(): " + req.getNodeID());
 
     timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
-    checkedInLock.readLock().lock();
+    LoggedLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.acquireReadLock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
@@ -1824,7 +1824,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      checkedInLock.readLock().unlock();
+      checkedInLock.releaseReadLock();
     }  
   }
 
@@ -2322,8 +2322,8 @@ class FileMgr
     TaskTimer timer = new TaskTimer("FileMgr.deleteCheckedIn(): " + name);
     
     timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-    checkedInLock.writeLock().lock();
+    LoggedLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.acquireWriteLock();
     try {
       timer.resume();	
 
@@ -2393,7 +2393,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      checkedInLock.writeLock().unlock();
+      checkedInLock.releaseWriteLock();
     }  
   }  
 
@@ -3255,8 +3255,8 @@ class FileMgr
       VersionID vid = vsn.getVersionID();
 
       timer.aquire();
-      ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-      checkedInLock.writeLock().lock();
+      LoggedLock checkedInLock = getCheckedInLock(name);
+      checkedInLock.acquireWriteLock();
       try {
 	timer.resume();
 
@@ -3375,7 +3375,7 @@ class FileMgr
 	}
       }
       finally {
-        checkedInLock.writeLock().unlock();
+        checkedInLock.releaseWriteLock();
       }  
 
       return new SuccessRsp(timer);
@@ -3683,11 +3683,11 @@ class FileMgr
     TaskTimer timer = new TaskTimer("FileMgr.archive: " + archiveName);
 
     timer.aquire();
-    Stack<ReentrantReadWriteLock> locks = new Stack<ReentrantReadWriteLock>();
+    Stack<LoggedLock> locks = new Stack<LoggedLock>();
     try {
       for(String name : fseqs.keySet()) {
-	ReentrantReadWriteLock lock = getCheckedInLock(name);
-	lock.readLock().lock();
+	LoggedLock lock = getCheckedInLock(name);
+	lock.acquireReadLock();
 	locks.push(lock);
       }
       timer.resume();
@@ -3828,8 +3828,8 @@ class FileMgr
     }
     finally {
       while(!locks.isEmpty()) {
-	ReentrantReadWriteLock lock = locks.pop();
-	lock.readLock().unlock();
+	LoggedLock lock = locks.pop();
+	lock.releaseReadLock();
       }
     }
   }
@@ -3908,8 +3908,8 @@ class FileMgr
     TaskTimer timer = new TaskTimer("FileMgr.offline(): " + name + " (" + vid + ")");
     
     timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-    checkedInLock.writeLock().lock();
+    LoggedLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.acquireWriteLock();
     try {
       timer.resume();
 
@@ -4161,7 +4161,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      checkedInLock.writeLock().unlock();
+      checkedInLock.releaseWriteLock();
     }  
   }
 
@@ -4595,8 +4595,8 @@ class FileMgr
     TaskTimer timer = new TaskTimer("FileMgr.restore: " + archiveName);
 
     timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-    checkedInLock.writeLock().lock();
+    LoggedLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.acquireWriteLock();
     try {
       timer.resume();
 
@@ -4768,7 +4768,7 @@ class FileMgr
       return new FailureRsp(timer, Exceptions.getFullMessage(ex));
     }
     finally {
-      checkedInLock.writeLock().unlock();
+      checkedInLock.releaseWriteLock();
     }
   }
 
@@ -4843,17 +4843,17 @@ class FileMgr
    * @param name 
    *   The fully resolved node name
    */
-  private ReentrantReadWriteLock
+  private LoggedLock
   getCheckedInLock
   (
    String name
   ) 
   {
     synchronized(pCheckedInLocks) {
-      ReentrantReadWriteLock lock = pCheckedInLocks.get(name);
+      LoggedLock lock = pCheckedInLocks.get(name);
 
       if(lock == null) { 
-	lock = new ReentrantReadWriteLock();
+	lock = new LoggedLock("CheckedInFile");
 	pCheckedInLocks.put(name, lock);
       }
 
@@ -5172,7 +5172,7 @@ class FileMgr
    * will only access these checked-in file resources.  The per-node write-lock should be 
    * aquired when creating new files, symlinks or checksums.
    */
-  private TreeMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
+  private TreeMap<String,LoggedLock>  pCheckedInLocks;
 
   /**
    * The per-working version locks indexed by NodeID. <P> 

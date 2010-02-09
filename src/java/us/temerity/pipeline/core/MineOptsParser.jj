@@ -222,7 +222,8 @@ TOKEN :
 {
   <LOG_ALL:          "all">       
 | <LOG_ARG: 	     "arg">        
-| <LOG_OPS: 	     "ops">     
+| <LOG_OPS: 	     "ops">      
+| <LOG_LCK: 	     "lck">   
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -478,7 +479,7 @@ LogMgr.Kind LogKind() :
   LogMgr.Kind g;
 }
 {
-  (g=ArgKind() | g=OpsKind())
+  (g=ArgKind() | g=OpsKind() | g=LckKind())
   {
     return g;
   }
@@ -502,6 +503,14 @@ LogMgr.Kind OpsKind() :
   }
 }
 
+LogMgr.Kind LckKind() : 
+{}
+{
+  <LOG_LCK>
+  {
+    return LogMgr.Kind.Lck;
+  }
+}
 
 
 LogMgr.Level LogLevel() : 

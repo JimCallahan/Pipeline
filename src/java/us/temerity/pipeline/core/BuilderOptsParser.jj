@@ -240,7 +240,8 @@ TOKEN :
 | <LOG_PLG: 	     "plg">    
 | <LOG_SUB: 	     "sub">     
 | <LOG_TEX: 	     "tex">
-| <LOG_BLD:	     "bld">      
+| <LOG_BLD:	     "bld">         
+| <LOG_LCK: 	     "lck"> 
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -583,8 +584,8 @@ LogMgr.Kind LogKind() :
   LogMgr.Kind g;
 }
 {
-  (g=BldKind() | g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() 
-    | g=PlgKind() | g=TexKind())
+  (g=BldKind() | g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() | g=PlgKind() | 
+   g=TexKind() | g=LckKind()) 
   {
     return g;
   }
@@ -650,6 +651,15 @@ LogMgr.Kind TexKind() :
   <LOG_TEX>
   {
     return LogMgr.Kind.Tex;
+  }
+}
+
+LogMgr.Kind LckKind() : 
+{}
+{
+  <LOG_LCK>
+  {
+    return LogMgr.Kind.Lck;
   }
 }
 

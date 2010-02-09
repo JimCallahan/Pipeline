@@ -350,7 +350,7 @@ class MasterMgr
 
     /* initialize the fields */ 
     {
-      pDatabaseLock = new ReentrantReadWriteLock();
+      pDatabaseLock = new LoggedLock("Database");
 
       pAdminPrivileges = new AdminPrivileges();
 
@@ -358,7 +358,7 @@ class MasterMgr
       pArchivedIn         = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
       pArchivedOn         = new TreeMap<String,Long>();
       pRestoredOn         = new TreeMap<String,TreeSet<Long>>();
-      pOnlineOfflineLocks = new TreeMap<String,ReentrantReadWriteLock>();
+      pOnlineOfflineLocks = new TreeMap<String,LoggedLock>();
       pOfflinedLock       = new Object();
       pOfflined           = null;
       pRestoreReqs        = new TreeMap<String,TreeMap<VersionID,RestoreRequest>>();
@@ -410,23 +410,23 @@ class MasterMgr
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
       pNodeTree         = new NodeTree();
 
-      pAnnotationLocks = new TreeMap<String,ReentrantReadWriteLock>();
+      pAnnotationLocks = new TreeMap<String,LoggedLock>();
       pAnnotations     = new TreeMap<String,TreeMap<String,BaseAnnotation>>(); 
       pAnnotationsRead = new LinkedBlockingDeque<String>();
 
-      pCheckedInLocks   = new TreeMap<String,ReentrantReadWriteLock>();
+      pCheckedInLocks   = new TreeMap<String,LoggedLock>();
       pCheckedInBundles = new TreeMap<String,TreeMap<VersionID,CheckedInBundle>>();
       pCheckedInRead    = new LinkedBlockingDeque<String>();
 
-      pWorkingLocks   = new TreeMap<NodeID,ReentrantReadWriteLock>();
+      pWorkingLocks   = new TreeMap<NodeID,LoggedLock>();
       pWorkingBundles = new TreeMap<String,TreeMap<NodeID,WorkingBundle>>();    
       pWorkingRead    = new LinkedBlockingDeque<NodeID>();   
 
-      pCheckSumLocks   = new TreeMap<NodeID,ReentrantReadWriteLock>();
+      pCheckSumLocks   = new TreeMap<NodeID,LoggedLock>();
       pCheckSumBundles = new DoubleMap<String,NodeID,CheckSumBundle>();    
       pCheckSumsRead   = new LinkedBlockingDeque<NodeID>();
 
-      pDownstreamLocks = new TreeMap<String,ReentrantReadWriteLock>();
+      pDownstreamLocks = new TreeMap<String,LoggedLock>();
       pDownstream      = new TreeMap<String,DownstreamLinks>();
 
       pQueueSubmitLock = new Object();
@@ -1489,8 +1489,8 @@ class MasterMgr
       }
 
       timer.aquire();
-      ReentrantReadWriteLock lock = getCheckedInLock(name);
-      lock.readLock().lock();
+      LoggedLock lock = getCheckedInLock(name);
+      lock.acquireReadLock();
       try {
         timer.resume();	
         
@@ -1504,7 +1504,7 @@ class MasterMgr
         // ignore if no checked-in versions exist... 
       }
       finally {
-        lock.readLock().unlock();
+        lock.releaseReadLock();
       }  
 
       if(!offline.isEmpty()) 
@@ -1560,12 +1560,12 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getWorkGroups()");
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       return pAdminPrivileges.getWorkGroupsRsp(timer);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -1600,7 +1600,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       pAdminPrivileges.setWorkGroupsFromReq(timer, req);
       updateAdminPrivileges();
@@ -1614,7 +1614,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -1634,12 +1634,12 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getPrivileges()");
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       return pAdminPrivileges.getPrivilegesRsp(timer);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -1664,7 +1664,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.editPrivileges()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       pAdminPrivileges.editPrivilegesFromReq(timer, req);
       updateAdminPrivileges();
@@ -1674,7 +1674,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -1700,12 +1700,12 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getPrivilegesDetails()");
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       return pAdminPrivileges.getPrivilegeDetailsRsp(timer, req);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -2019,7 +2019,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pDefaultToolsetLock) {
 	timer.resume();	
@@ -2031,7 +2031,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2055,7 +2055,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.setDefaultToolsetName(): " + tname);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -2098,7 +2098,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2115,7 +2115,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pActiveToolsets) {
 	timer.resume();
@@ -2124,7 +2124,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2153,7 +2153,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setActiveToolsetName(): " + tname + " [" + active + "]");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -2209,7 +2209,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2232,7 +2232,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
 	timer.resume();
@@ -2248,7 +2248,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -2265,7 +2265,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
 	timer.resume();
@@ -2278,7 +2278,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -2327,7 +2327,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
 	timer.resume();
@@ -2355,7 +2355,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2378,7 +2378,7 @@ class MasterMgr
     throws PipelineException 
   {
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
 	timer.resume();
@@ -2404,7 +2404,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2423,7 +2423,7 @@ class MasterMgr
     throws PipelineException 
   {
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
 	timer.resume();
@@ -2444,7 +2444,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2518,7 +2518,7 @@ class MasterMgr
     throws PipelineException
   {
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
 	timer.resume();
@@ -2556,7 +2556,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2601,7 +2601,7 @@ class MasterMgr
     throws PipelineException
   {
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
 	timer.resume();
@@ -2638,7 +2638,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2668,7 +2668,7 @@ class MasterMgr
     /* lookup the packages */  
     Collection<PackageVersion> packages = new ArrayList<PackageVersion>();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
         timer.resume();
@@ -2688,7 +2688,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
       
     /* pre-op tests */
@@ -2702,7 +2702,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -2755,7 +2755,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2781,7 +2781,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
 	timer.resume();
@@ -2803,7 +2803,7 @@ class MasterMgr
       }  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }      
   }
 
@@ -2820,7 +2820,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
 	timer.resume();
@@ -2840,7 +2840,7 @@ class MasterMgr
       }  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }      
   }
 
@@ -2863,7 +2863,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
 	timer.resume();
@@ -2879,7 +2879,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -2902,7 +2902,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
 	timer.resume();
@@ -2926,7 +2926,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -3015,7 +3015,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -3074,7 +3074,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3108,7 +3108,7 @@ class MasterMgr
       return new FailureRsp(timer, "The toolset name cannot be (null)!");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -3228,7 +3228,7 @@ class MasterMgr
       return new MiscGetPluginMenuLayoutsRsp(timer, layouts);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3251,7 +3251,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -3403,7 +3403,7 @@ class MasterMgr
       return new MiscGetSelectPackagePluginsRsp(timer, allPlugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3431,7 +3431,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getEditorMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pEditorMenuLayouts) {
 	timer.resume();	
@@ -3449,7 +3449,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3475,7 +3475,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setEditorMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -3506,7 +3506,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3531,7 +3531,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -3576,7 +3576,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3599,7 +3599,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageEditorPlugins) {
 	timer.resume();
@@ -3612,7 +3612,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3635,7 +3635,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -3660,7 +3660,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3689,7 +3689,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getComparatorMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pComparatorMenuLayouts) {
 	timer.resume();	
@@ -3707,7 +3707,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3733,7 +3733,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setComparatorMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -3764,7 +3764,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3789,7 +3789,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -3834,7 +3834,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3857,7 +3857,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageComparatorPlugins) {
 	timer.resume();
@@ -3870,7 +3870,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3893,7 +3893,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -3918,7 +3918,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3947,7 +3947,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getActionMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pActionMenuLayouts) {
 	timer.resume();	
@@ -3965,7 +3965,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3991,7 +3991,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setActionMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -4022,7 +4022,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4047,7 +4047,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -4092,7 +4092,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4115,7 +4115,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageActionPlugins) {
 	timer.resume();
@@ -4128,7 +4128,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4151,7 +4151,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -4176,7 +4176,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4205,7 +4205,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getToolMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolMenuLayouts) {
 	timer.resume();	
@@ -4223,7 +4223,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4249,7 +4249,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setToolMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -4280,7 +4280,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4305,7 +4305,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -4350,7 +4350,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4373,7 +4373,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageToolPlugins) {
 	timer.resume();
@@ -4386,7 +4386,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4409,7 +4409,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -4434,7 +4434,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4463,7 +4463,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getArchiverMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pArchiverMenuLayouts) {
 	timer.resume();	
@@ -4481,7 +4481,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4507,7 +4507,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setArchiverMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -4538,7 +4538,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4563,7 +4563,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -4608,7 +4608,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4631,7 +4631,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageArchiverPlugins) {
 	timer.resume();
@@ -4644,7 +4644,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4667,7 +4667,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -4692,7 +4692,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4721,7 +4721,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getMasterExtMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pMasterExtMenuLayouts) {
 	timer.resume();	
@@ -4739,7 +4739,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4765,7 +4765,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setMasterExtMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -4796,7 +4796,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4821,7 +4821,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -4866,7 +4866,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4889,7 +4889,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageMasterExtPlugins) {
 	timer.resume();
@@ -4902,7 +4902,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4925,7 +4925,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -4950,7 +4950,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4979,7 +4979,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getQueueExtMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pQueueExtMenuLayouts) {
 	timer.resume();	
@@ -4997,7 +4997,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5023,7 +5023,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setQueueExtMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -5054,7 +5054,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5079,7 +5079,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -5124,7 +5124,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5147,7 +5147,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageQueueExtPlugins) {
 	timer.resume();
@@ -5160,7 +5160,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5183,7 +5183,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -5208,7 +5208,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5237,7 +5237,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getAnnotationMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pAnnotationMenuLayouts) {
 	timer.resume();	
@@ -5255,7 +5255,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5281,7 +5281,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setAnnotationMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -5312,7 +5312,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5337,7 +5337,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -5382,7 +5382,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5405,7 +5405,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageAnnotationPlugins) {
 	timer.resume();
@@ -5418,7 +5418,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5441,7 +5441,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -5466,7 +5466,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5495,7 +5495,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getKeyChooserMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pKeyChooserMenuLayouts) {
 	timer.resume();	
@@ -5513,7 +5513,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5539,7 +5539,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setKeyChooserMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -5570,7 +5570,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5595,7 +5595,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -5640,7 +5640,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5663,7 +5663,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageKeyChooserPlugins) {
 	timer.resume();
@@ -5676,7 +5676,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5699,7 +5699,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
@@ -5724,7 +5724,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -5752,7 +5752,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getBuilderCollectionMenuLayout(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pBuilderCollectionMenuLayouts) {
         timer.resume(); 
@@ -5770,7 +5770,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5796,7 +5796,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.setBuilderCollectionMenuLayout(): " + name);
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
         throw new PipelineException
@@ -5829,7 +5829,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());      
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5854,7 +5854,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
       synchronized(pToolsets) {
@@ -5899,7 +5899,7 @@ class MasterMgr
       return new MiscGetPackagePluginsRsp(timer, plugins); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5922,7 +5922,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageBuilderCollectionPlugins) {
         timer.resume();
@@ -5936,7 +5936,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5959,7 +5959,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
         throw new PipelineException
@@ -5985,7 +5985,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());      
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -6008,7 +6008,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pMasterExtensions) {
 	timer.resume();
@@ -6017,7 +6017,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -6041,7 +6041,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.removeMasterExtension(): " + name); 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isMasterAdmin(req))
 	throw new PipelineException
@@ -6063,7 +6063,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
   
@@ -6088,7 +6088,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.setMasterExtension(): " + name); 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isMasterAdmin(req))
 	throw new PipelineException
@@ -6112,7 +6112,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -6377,7 +6377,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSuffixEditors) {
 	timer.resume();
@@ -6399,7 +6399,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -6422,7 +6422,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSuffixEditors) {
 	timer.resume();
@@ -6439,7 +6439,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -6495,7 +6495,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.setSuffixEditors()");
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSuffixEditors) {
 	timer.resume();
@@ -6517,7 +6517,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -6543,14 +6543,14 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 	
       return new NodeGetWorkingAreasRsp(timer, pNodeTree.getViewsContaining(req.getName()));
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -6606,7 +6606,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -6635,7 +6635,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -6725,7 +6725,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 	
@@ -6822,7 +6822,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -6839,7 +6839,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pWorkingAreaViews) {
 	timer.resume();	
@@ -6852,7 +6852,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -6931,7 +6931,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getNodeNames(): [" + pattern + "]");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -6950,7 +6950,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -6974,7 +6974,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -6986,7 +6986,7 @@ class MasterMgr
       return new NodeUpdatePathsRsp(timer, author, view, rootComp);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -7009,14 +7009,14 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
       return new NodeGetNodeOwningRsp(timer, pNodeTree.getNodeOwning(req.getPath()));
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -7047,7 +7047,7 @@ class MasterMgr
     String aname = req.getAnnotationName(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
     
@@ -7059,7 +7059,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
 
@@ -7086,9 +7086,9 @@ class MasterMgr
     String aname  = req.getAnnotationName(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getWorkingLock(nodeID);
+    lock.acquireReadLock();
     try {
       timer.resume();
     
@@ -7105,8 +7105,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
   
@@ -7135,8 +7135,8 @@ class MasterMgr
     throws PipelineException 
   {
     timer.aquire();
-    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-    lock.readLock().lock();
+    LoggedLock lock = getAnnotationsLock(name); 
+    lock.acquireReadLock();
     try {
       timer.resume();
     
@@ -7152,7 +7152,7 @@ class MasterMgr
       return null;
     }
     finally {
-      lock.readLock().unlock();
+      lock.releaseReadLock();
     }   
   }
 
@@ -7177,7 +7177,7 @@ class MasterMgr
     String name = req.getName();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -7189,7 +7189,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -7215,9 +7215,9 @@ class MasterMgr
     String name   = nodeID.getName(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getWorkingLock(nodeID);
+    lock.acquireReadLock();
     try {
       timer.resume();
 
@@ -7237,8 +7237,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -7266,13 +7266,13 @@ class MasterMgr
       new DoubleMap<NodeID, String, BaseAnnotation>();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     timer.resume();
     try {
       for (NodeID nodeID : nodeIDs) {
         timer.aquire();
-        ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-        lock.readLock().lock();
+        LoggedLock lock = getWorkingLock(nodeID);
+        lock.acquireReadLock();
         try {
           timer.resume();
           String name = nodeID.getName();
@@ -7293,13 +7293,13 @@ class MasterMgr
           return new FailureRsp(timer, ex.getMessage());
         }
         finally {
-          lock.readLock().unlock();
+          lock.releaseReadLock();
         }
       }
       return new NodeGetAllAnnotationsRsp(timer, toReturn);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -7324,8 +7324,8 @@ class MasterMgr
      throws PipelineException
    {
      timer.aquire();
-     ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-     lock.readLock().lock();
+     LoggedLock lock = getAnnotationsLock(name); 
+     lock.acquireReadLock();
      try {
        timer.resume();
   
@@ -7340,7 +7340,7 @@ class MasterMgr
        return null;
      }
      finally {
-       lock.readLock().unlock();
+       lock.releaseReadLock();
      }  
    }
   
@@ -7367,14 +7367,14 @@ class MasterMgr
     BaseAnnotation annot = req.getAnnotation();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
       return addAnnotationHelper(req, timer, name, aname, annot);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
   
@@ -7454,8 +7454,8 @@ class MasterMgr
 
     timer.aquire();
 
-    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-    lock.writeLock().lock();
+    LoggedLock lock = getAnnotationsLock(name); 
+    lock.acquireWriteLock();
     try {
       timer.resume();
     
@@ -7498,7 +7498,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.writeLock().unlock();
+      lock.releaseWriteLock();
     }  
   }
 
@@ -7533,9 +7533,9 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-    lock.writeLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getAnnotationsLock(name); 
+    lock.acquireWriteLock();
     try {
       timer.resume();
     
@@ -7577,8 +7577,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseWriteLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -7602,12 +7602,12 @@ class MasterMgr
 
     String name = req.getNodeName();
     
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       return removeAnnotationsHelper(req, timer, name, false);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -7638,8 +7638,8 @@ class MasterMgr
   )
   {
     timer.aquire();
-    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-    lock.writeLock().lock();
+    LoggedLock lock = getAnnotationsLock(name); 
+    lock.acquireWriteLock();
     try {
       timer.resume();
     
@@ -7699,7 +7699,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.writeLock().unlock();
+      lock.releaseWriteLock();
     }  
   }
 
@@ -7736,7 +7736,7 @@ class MasterMgr
                     "[" + pattern + "]");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -7755,7 +7755,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -7782,7 +7782,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getWorkingRootNames(): " + author + "|" + view);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -7790,8 +7790,8 @@ class MasterMgr
 
       for(String name : pNodeTree.getMatchingWorkingNodes(author, view, null)) {
         timer.aquire();
-        ReentrantReadWriteLock lock = getDownstreamLock(name);
-        lock.readLock().lock();
+        LoggedLock lock = getDownstreamLock(name);
+        lock.acquireReadLock();
         try {
           timer.resume();
           
@@ -7801,7 +7801,7 @@ class MasterMgr
             roots.add(name);
         }
         finally {
-          lock.readLock().unlock();
+          lock.releaseReadLock();
         }
       }
 
@@ -7811,7 +7811,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -7834,9 +7834,9 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getWorkingLock(req.getNodeID());
+    lock.acquireReadLock();
     try {
       timer.resume();	
       
@@ -7847,8 +7847,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
 
@@ -7898,9 +7898,9 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-    workingLock.writeLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock workingLock = getWorkingLock(nodeID);
+    workingLock.acquireWriteLock();
     try {
       timer.resume();
       
@@ -7951,8 +7951,8 @@ class MasterMgr
                 NodeVersion vsn = null;
                 {
                   timer.aquire();
-                  ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-                  checkedInLock.readLock().lock();
+                  LoggedLock checkedInLock = getCheckedInLock(name);
+                  checkedInLock.acquireReadLock();
                   try {
                     timer.resume();	
                     
@@ -7978,7 +7978,7 @@ class MasterMgr
                     }
                   }
                   finally {
-                    checkedInLock.readLock().unlock();  
+                    checkedInLock.releaseReadLock();  
                   }
                 }
               
@@ -8015,8 +8015,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      workingLock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      workingLock.releaseWriteLock();
+      pDatabaseLock.releaseReadLock();
     }      
   }
   
@@ -8045,9 +8045,9 @@ class MasterMgr
       new TaskTimer("MasterMgr.setCTimeUpdate(): " + nodeID + " [" + stamp + "]");
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-    workingLock.writeLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock workingLock = getWorkingLock(nodeID);
+    workingLock.acquireWriteLock();
     try {
       timer.resume();
 
@@ -8076,8 +8076,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      workingLock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      workingLock.releaseWriteLock();
+      pDatabaseLock.releaseReadLock();
     }      
   }
 
@@ -8117,11 +8117,11 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
-    targetLock.writeLock().lock();
-    ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-    downstreamLock.writeLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock targetLock = getWorkingLock(targetID);
+    targetLock.acquireWriteLock();
+    LoggedLock downstreamLock = getDownstreamLock(source);
+    downstreamLock.acquireWriteLock();
     try {
       timer.resume();
 
@@ -8177,9 +8177,9 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      downstreamLock.writeLock().unlock();
-      targetLock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      downstreamLock.releaseWriteLock();
+      targetLock.releaseWriteLock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -8217,11 +8217,11 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
-    targetLock.writeLock().lock();
-    ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-    downstreamLock.writeLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock targetLock = getWorkingLock(targetID);
+    targetLock.acquireWriteLock();
+    LoggedLock downstreamLock = getDownstreamLock(source);
+    downstreamLock.acquireWriteLock();
     try {
       timer.resume();	
 
@@ -8272,9 +8272,9 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      downstreamLock.writeLock().unlock();
-      targetLock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      downstreamLock.releaseWriteLock();
+      targetLock.releaseWriteLock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -8312,7 +8312,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -8329,8 +8329,8 @@ class MasterMgr
       }
 
       timer.aquire();
-      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-      lock.writeLock().lock();
+      LoggedLock lock = getWorkingLock(nodeID);
+      lock.acquireWriteLock();
       try {
 	timer.resume();	
 	
@@ -8375,14 +8375,14 @@ class MasterMgr
 	return new FailureRsp(timer, ex.getMessage());
       }
       finally {
-	lock.writeLock().unlock();
+	lock.releaseWriteLock();
       }  
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -8417,9 +8417,9 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.writeLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getWorkingLock(nodeID);
+    lock.acquireWriteLock();
     try {
       timer.resume();	
 
@@ -8459,8 +8459,8 @@ class MasterMgr
       
       /* remove checksums for any obsolete files sequences */ 
       timer.aquire();
-      ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-      clock.writeLock().lock();
+      LoggedLock clock = getCheckSumLock(nodeID);
+      clock.acquireWriteLock();
       try {
         timer.resume();
         
@@ -8469,7 +8469,7 @@ class MasterMgr
         writeCheckSumCache(cbundle.getCache()); 
       }
       finally {
-        clock.writeLock().unlock();
+        clock.releaseWriteLock();
       }  
 
       /* record event */ 
@@ -8484,8 +8484,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseWriteLock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -8549,7 +8549,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -8572,8 +8572,8 @@ class MasterMgr
       SortedSet<FileSeq> secondary = null;
       {
 	timer.aquire();
-	ReentrantReadWriteLock lock = getWorkingLock(id);
-	lock.readLock().lock();
+	LoggedLock lock = getWorkingLock(id);
+	lock.acquireReadLock();
 	try {
 	  timer.resume();
 
@@ -8627,7 +8627,7 @@ class MasterMgr
 	  return new FailureRsp(timer, ex.getMessage());
 	}
 	finally {
-	  lock.readLock().unlock();
+	  lock.releaseReadLock();
 	}
       }
 
@@ -8668,8 +8668,8 @@ class MasterMgr
 	secondaryParams = new TreeMap<String,TreeMap<FilePattern,Collection<ActionParam>>>();
 
 	timer.aquire();
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
-	downstreamLock.writeLock().lock();
+	LoggedLock downstreamLock = getDownstreamLock(id.getName());
+	downstreamLock.acquireWriteLock();
 	try {
 	  timer.resume();
 	  
@@ -8679,8 +8679,8 @@ class MasterMgr
               NodeID targetID = new NodeID(id, target);
               
               timer.aquire();
-              ReentrantReadWriteLock lock = getWorkingLock(targetID);
-              lock.readLock().lock();
+              LoggedLock lock = getWorkingLock(targetID);
+              lock.acquireReadLock();
               try {
                 timer.resume();
                 
@@ -8724,7 +8724,7 @@ class MasterMgr
                 }
               }
               finally {
-                lock.readLock().unlock();
+                lock.releaseReadLock();
               }  
               
               timer.suspend();
@@ -8734,16 +8734,16 @@ class MasterMgr
           }
         }
 	finally {
-	  downstreamLock.writeLock().unlock();
+	  downstreamLock.releaseWriteLock();
 	}
       }
 
       {
 	timer.aquire();
-	ReentrantReadWriteLock lock = getWorkingLock(id);
-	lock.writeLock().lock();
-	ReentrantReadWriteLock nlock = getWorkingLock(nid);
-	nlock.writeLock().lock();
+	LoggedLock lock = getWorkingLock(id);
+	lock.acquireWriteLock();
+	LoggedLock nlock = getWorkingLock(nid);
+	nlock.acquireWriteLock();
 	try {
 	  timer.resume();
 	  
@@ -8849,8 +8849,8 @@ class MasterMgr
             CheckSumCache ocache = null;
             {
               timer.aquire();
-              ReentrantReadWriteLock clock = getCheckSumLock(id);
-              clock.writeLock().lock();
+              LoggedLock clock = getCheckSumLock(id);
+              clock.acquireWriteLock();
               try {
                 timer.resume();
                 
@@ -8867,7 +8867,7 @@ class MasterMgr
                 removeCheckSumCache(id);
               }
               finally {
-                clock.writeLock().unlock();
+                clock.releaseWriteLock();
               } 
             }
 
@@ -8919,8 +8919,8 @@ class MasterMgr
               
               /* update the save the checksum bundle to disk */ 
               timer.aquire();
-              ReentrantReadWriteLock clock = getCheckSumLock(nid);
-              clock.writeLock().lock();
+              LoggedLock clock = getCheckSumLock(nid);
+              clock.acquireWriteLock();
               try {
                 timer.resume();
               
@@ -8929,14 +8929,14 @@ class MasterMgr
                 writeCheckSumCache(cbundle.getCache()); 
               }
               finally {
-                clock.writeLock().unlock();
+                clock.releaseWriteLock();
               } 
             }
           }
 	}
 	finally {
-	  nlock.writeLock().unlock();
-	  lock.writeLock().unlock();
+	  nlock.releaseWriteLock();
+	  lock.releaseWriteLock();
 	}  
       }
 
@@ -8981,14 +8981,14 @@ class MasterMgr
 	      NodeMod targetMod = null;
 	      {
 		timer.aquire();
-		ReentrantReadWriteLock lock = getWorkingLock(targetID);
-		lock.readLock().lock();
+		LoggedLock lock = getWorkingLock(targetID);
+		lock.acquireReadLock();
 		try {
 		  timer.resume();
 		  targetMod = new NodeMod(getWorkingBundle(targetID).getVersion());
 		}
 		finally {
-		  lock.readLock().unlock();
+		  lock.releaseReadLock();
 		}  
 	      }
 	      
@@ -9088,7 +9088,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -9128,9 +9128,9 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.writeLock().lock(); 
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getWorkingLock(nodeID);
+    lock.acquireWriteLock(); 
     try {
       timer.resume();
 
@@ -9172,8 +9172,8 @@ class MasterMgr
 
       /* remove obsolete frames from checksum cache */ 
       timer.aquire();
-      ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-      clock.writeLock().lock();
+      LoggedLock clock = getCheckSumLock(nodeID);
+      clock.acquireWriteLock();
       try {
         timer.resume();
         
@@ -9182,7 +9182,7 @@ class MasterMgr
         writeCheckSumCache(cbundle.getCache()); 
       }
       finally {
-        clock.writeLock().unlock();
+        clock.releaseWriteLock();
       } 
 
       /* check for unfinished jobs associated with the obsolete files */ 
@@ -9207,8 +9207,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseWriteLock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -9240,7 +9240,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInNames(): [" + pattern + "]");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -9259,7 +9259,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -9283,9 +9283,9 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInVersionIDs(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getCheckedInLock(name);
+    lock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -9298,8 +9298,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
     
@@ -9324,9 +9324,9 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getIntermediateVersionIDs(): " + name);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getCheckedInLock(name);
+    lock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -9343,8 +9343,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
         
@@ -9370,9 +9370,9 @@ class MasterMgr
     VersionID vid = req.getVersionID();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getCheckedInLock(name);
+    lock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -9392,8 +9392,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
       
@@ -9418,9 +9418,9 @@ class MasterMgr
     String name = req.getName();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getCheckedInLock(name);
+    lock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -9442,8 +9442,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
 
@@ -9468,9 +9468,9 @@ class MasterMgr
     String name = req.getName();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getCheckedInLock(name);
+    lock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -9485,8 +9485,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
 
@@ -9512,9 +9512,9 @@ class MasterMgr
     String name = req.getName();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getCheckedInLock(name);
+    lock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -9543,8 +9543,8 @@ class MasterMgr
       return new NodeGetCheckedInFileNoveltyRsp(timer, name, novelty);
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
 
@@ -9569,9 +9569,9 @@ class MasterMgr
     String name = req.getName();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getCheckedInLock(name);
+    lock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -9597,8 +9597,8 @@ class MasterMgr
       return new NodeGetCheckedInLinksRsp(timer, links);
     }
     finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
 
@@ -9625,15 +9625,15 @@ class MasterMgr
     VersionID vid = req.getVersionID();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
       MappedSet<String,VersionID> dnodes = null;
       {
 	timer.aquire();
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	downstreamLock.readLock().lock();
+	LoggedLock downstreamLock = getDownstreamLock(name);
+	downstreamLock.acquireReadLock();
 	try {
 	  timer.resume();	
 
@@ -9641,7 +9641,7 @@ class MasterMgr
 	  dnodes = dlinks.getCheckedIn(vid);
 	}
 	finally {
-	  downstreamLock.readLock().unlock();
+	  downstreamLock.releaseReadLock();
 	}
       }
 	
@@ -9652,8 +9652,8 @@ class MasterMgr
 	for(String dname : dnodes.keySet()) {
 
 	  timer.aquire();
-	  ReentrantReadWriteLock lock = getCheckedInLock(dname);
-	  lock.readLock().lock();
+	  LoggedLock lock = getCheckedInLock(dname);
+	  lock.acquireReadLock();
 	  try {
 	    timer.resume();
 
@@ -9665,7 +9665,7 @@ class MasterMgr
 	    }
 	  }
 	  finally {
-	    lock.readLock().unlock();
+	    lock.releaseReadLock();
 	  }
 	}
       }
@@ -9676,7 +9676,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }  
 
@@ -9711,7 +9711,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
       
@@ -9730,7 +9730,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }    
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -9771,7 +9771,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -9798,10 +9798,10 @@ class MasterMgr
 
           NodeID nodeID = new NodeID(author, view, name); 
           timer.aquire();
-          ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-          workingLock.readLock().lock();
-          ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-          checkedInLock.readLock().lock();
+          LoggedLock workingLock = getWorkingLock(nodeID);
+          workingLock.acquireReadLock();
+          LoggedLock checkedInLock = getCheckedInLock(name);
+          checkedInLock.acquireReadLock();
           try {
             timer.resume();	
               
@@ -9822,8 +9822,8 @@ class MasterMgr
             }
           }
           finally {
-            checkedInLock.readLock().unlock();  
-            workingLock.readLock().unlock();
+            checkedInLock.releaseReadLock();  
+            workingLock.releaseReadLock();
           }
 
           if(found) 
@@ -9887,7 +9887,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }    
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -9924,7 +9924,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -9945,10 +9945,10 @@ class MasterMgr
 
           NodeID nodeID = new NodeID(author, view, name); 
           timer.aquire();
-          ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-          workingLock.readLock().lock();
-          ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-          checkedInLock.readLock().lock();
+          LoggedLock workingLock = getWorkingLock(nodeID);
+          workingLock.acquireReadLock();
+          LoggedLock checkedInLock = getCheckedInLock(name);
+          checkedInLock.acquireReadLock();
           try {
             timer.resume();	
               
@@ -9969,8 +9969,8 @@ class MasterMgr
             }
           }
           finally {
-            checkedInLock.readLock().unlock();  
-            workingLock.readLock().unlock();
+            checkedInLock.releaseReadLock();  
+            workingLock.releaseReadLock();
           }
 
           if(found) 
@@ -9999,7 +9999,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }    
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -10065,7 +10065,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
       
@@ -10093,8 +10093,8 @@ class MasterMgr
       }
       
       timer.aquire();
-      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-      lock.writeLock().lock();
+      LoggedLock lock = getWorkingLock(nodeID);
+      lock.acquireWriteLock();
       try {
 	timer.resume();
 	
@@ -10133,8 +10133,8 @@ class MasterMgr
         /* create an checksum cache for the new working version */ 
         {
           timer.aquire();
-          ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-          clock.writeLock().lock();
+          LoggedLock clock = getCheckSumLock(nodeID);
+          clock.acquireWriteLock();
           try {
             timer.resume();
 
@@ -10142,7 +10142,7 @@ class MasterMgr
             writeCheckSumCache(cbundle.getCache()); 
           }
           finally {
-            clock.writeLock().unlock();
+            clock.releaseWriteLock();
           }  
         }
 
@@ -10153,14 +10153,14 @@ class MasterMgr
 	return new NodeGetWorkingRsp(timer, req.getNodeID(), returnMod);
       }
       finally {
-	lock.writeLock().unlock();
+	lock.releaseWriteLock();
       }  
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -10201,7 +10201,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
     
@@ -10221,8 +10221,8 @@ class MasterMgr
 	  NodeID nodeID = new NodeID(author, view, name);
 	  
 	  timer.aquire();
-	  ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-	  lock.readLock().lock(); 
+	  LoggedLock lock = getWorkingLock(nodeID);
+	  lock.acquireReadLock(); 
 	  try {
 	    timer.resume();
 	    
@@ -10240,7 +10240,7 @@ class MasterMgr
 	    }
 	  }
 	  finally {
-	    lock.readLock().unlock();
+	    lock.releaseReadLock();
 	  }    
 	}
       }
@@ -10323,7 +10323,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
 
@@ -10365,8 +10365,8 @@ class MasterMgr
     /* unlink the downstream working versions from the to be released working version */ 
     {
       timer.aquire();
-      ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-      downstreamLock.writeLock().lock();
+      LoggedLock downstreamLock = getDownstreamLock(name);
+      downstreamLock.acquireWriteLock();
       try {
 	timer.resume();
 	  
@@ -10388,13 +10388,13 @@ class MasterMgr
 	}
       }
       finally {
-	downstreamLock.writeLock().unlock();
+	downstreamLock.releaseWriteLock();
       }
     }
       
     timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.writeLock().lock();
+    LoggedLock lock = getWorkingLock(nodeID);
+    lock.acquireWriteLock();
     try {
       timer.resume();
 
@@ -10449,8 +10449,8 @@ class MasterMgr
       /* update the downstream links of this node */ 
       {
 	timer.aquire();	
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	downstreamLock.writeLock().lock();
+	LoggedLock downstreamLock = getDownstreamLock(name);
+	downstreamLock.acquireWriteLock();
 	try {
 	  timer.resume();
 	    
@@ -10458,7 +10458,7 @@ class MasterMgr
 	  links.removeAllWorking(nodeID);
 	}  
 	finally {
-	  downstreamLock.writeLock().unlock();
+	  downstreamLock.releaseWriteLock();
 	} 
       }
 	
@@ -10467,8 +10467,8 @@ class MasterMgr
 	String source = link.getName();
 	  
 	timer.aquire();	
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-	downstreamLock.writeLock().lock();
+	LoggedLock downstreamLock = getDownstreamLock(source);
+	downstreamLock.acquireWriteLock();
 	try {
 	  timer.resume();
 
@@ -10477,7 +10477,7 @@ class MasterMgr
 	  links.removeWorking(sourceID, name);
 	}  
 	finally {
-	  downstreamLock.writeLock().unlock();
+	  downstreamLock.releaseWriteLock();
 	}    
       }
 	
@@ -10499,8 +10499,8 @@ class MasterMgr
       /* remove the checksum cache for the released working version */ 
       if(removeCheckSumCache) {
         timer.aquire();
-        ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-        clock.writeLock().lock();
+        LoggedLock clock = getCheckSumLock(nodeID);
+        clock.acquireWriteLock();
         try {
           synchronized(pCheckSumBundles) {
             timer.resume();
@@ -10511,7 +10511,7 @@ class MasterMgr
           removeCheckSumCache(nodeID); 
         }
         finally {
-          clock.writeLock().unlock();
+          clock.releaseWriteLock();
         }  
       }
 
@@ -10519,7 +10519,7 @@ class MasterMgr
       pPendingEvents.add(new ReleasedNodeEvent(nodeID));
     }
     finally {
-      lock.writeLock().unlock();
+      lock.releaseWriteLock();
     }  
   }
 
@@ -10559,7 +10559,7 @@ class MasterMgr
 
     timer.aquire();
     {
-      ReentrantReadWriteLock.WriteLock wlock = pDatabaseLock.writeLock(); 
+      LoggedLock.WriteLock wlock = pDatabaseLock.writeLock(); 
       try {
         long start = System.currentTimeMillis();
         while(true) {
@@ -10745,7 +10745,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.writeLock().unlock();
+      pDatabaseLock.releaseWriteLock();
     }
   }
 
@@ -10774,7 +10774,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.checkIn(): " + nodeID);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -10792,8 +10792,8 @@ class MasterMgr
 	String name = nodeID.getName();
 
 	timer.aquire();
-	ReentrantReadWriteLock lock = getCheckedInLock(name);
-	lock.readLock().lock();
+	LoggedLock lock = getCheckedInLock(name);
+	lock.acquireReadLock();
 	try {
 	  timer.resume();
 	  TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
@@ -10808,7 +10808,7 @@ class MasterMgr
 	  rootVersionID = new VersionID();
 	}
 	finally {
-	  lock.readLock().unlock();
+	  lock.releaseReadLock();
 	}
       }
 
@@ -10822,7 +10822,7 @@ class MasterMgr
 			    ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -10851,7 +10851,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.checkOut(): " + nodeID);
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	      
 
@@ -10901,7 +10901,7 @@ class MasterMgr
 
       /* lock online/offline status of all required nodes */ 
       timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = 
+      List<LoggedLock> onOffLocks = 
 	onlineOfflineReadLock(requiredVersions.keySet());
       try {
 	timer.resume();	
@@ -10981,7 +10981,7 @@ class MasterMgr
 			    ex.getMessage());
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
 
@@ -11075,10 +11075,10 @@ class MasterMgr
     }
 
     timer.aquire();
-    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-    workingLock.readLock().lock();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-    checkedInLock.readLock().lock();
+    LoggedLock workingLock = getWorkingLock(nodeID);
+    workingLock.acquireReadLock();
+    LoggedLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.acquireReadLock();
     try {
       timer.resume();	
       
@@ -11182,8 +11182,8 @@ class MasterMgr
       }
     }
     finally {
-      checkedInLock.readLock().unlock();  
-      workingLock.readLock().unlock();
+      checkedInLock.releaseReadLock();  
+      workingLock.releaseReadLock();
     }
 
     /* pop the current node off of the end of the branch */ 
@@ -11298,10 +11298,10 @@ class MasterMgr
     }
 
     timer.aquire();
-    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-    workingLock.writeLock().lock();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-    checkedInLock.readLock().lock();
+    LoggedLock workingLock = getWorkingLock(nodeID);
+    workingLock.acquireWriteLock();
+    LoggedLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.acquireReadLock();
     try {
       timer.resume();	
       
@@ -11537,8 +11537,8 @@ class MasterMgr
 	    String source = link.getName();
 	    
 	    timer.aquire();
-	    ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-	    downstreamLock.writeLock().lock();  
+	    LoggedLock downstreamLock = getDownstreamLock(source);
+	    downstreamLock.acquireWriteLock();  
 	    try {
 	      timer.resume();
 	      
@@ -11546,7 +11546,7 @@ class MasterMgr
 	      links.removeWorking(new NodeID(nodeID, source), name);
 	    }
 	    finally {
-	      downstreamLock.writeLock().unlock();
+	      downstreamLock.releaseWriteLock();
 	    }
 	  }
 	}  
@@ -11558,8 +11558,8 @@ class MasterMgr
 	  String lname = link.getName();
 	  
 	  timer.aquire();
-	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
-	  downstreamLock.writeLock().lock();
+	  LoggedLock downstreamLock = getDownstreamLock(lname);
+	  downstreamLock.acquireWriteLock();
 	  try {
 	    timer.resume();
 	    
@@ -11567,7 +11567,7 @@ class MasterMgr
 	    dsl.addWorking(new NodeID(nodeID, lname), name);
 	  }  
 	  finally {
-	    downstreamLock.writeLock().unlock();
+	    downstreamLock.releaseWriteLock();
 	  }     
 	}
       }
@@ -11603,8 +11603,8 @@ class MasterMgr
 
         /* update the save the checksum bundle to disk */ 
         timer.aquire();
-        ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-        clock.writeLock().lock();
+        LoggedLock clock = getCheckSumLock(nodeID);
+        clock.acquireWriteLock();
         try { 
           timer.resume();
 
@@ -11614,7 +11614,7 @@ class MasterMgr
           writeCheckSumCache(cbundle.getCache()); 
         }
         finally {
-          clock.writeLock().unlock();
+          clock.releaseWriteLock();
         }  
       }
 
@@ -11627,8 +11627,8 @@ class MasterMgr
 	startExtensionTasks(timer, new CheckOutExtFactory(nodeID, new NodeMod(nwork)));
     }
     finally {
-      checkedInLock.readLock().unlock();  
-      workingLock.writeLock().unlock();
+      checkedInLock.releaseReadLock();  
+      workingLock.releaseWriteLock();
     }
 
     /* pop the current node off of the end of the branch */ 
@@ -11670,7 +11670,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -11684,8 +11684,8 @@ class MasterMgr
 
       /* lock online/offline status of the node to lock */ 
       timer.aquire();
-      ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
-      onOffLock.readLock().lock();
+      LoggedLock onOffLock = getOnlineOfflineLock(name);
+      onOffLock.acquireReadLock();
       try {
 	timer.resume();
 
@@ -11728,10 +11728,10 @@ class MasterMgr
 
 	/* lock the node */ 
 	timer.aquire();
-	ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-	workingLock.writeLock().lock();
-	ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-	checkedInLock.readLock().lock();
+	LoggedLock workingLock = getWorkingLock(nodeID);
+	workingLock.acquireWriteLock();
+	LoggedLock checkedInLock = getCheckedInLock(name);
+	checkedInLock.acquireReadLock();
 	try {
 	  timer.resume();	
 
@@ -11879,8 +11879,8 @@ class MasterMgr
 	      String source = link.getName();
 	      
 	      timer.aquire();
-	      ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-	      downstreamLock.writeLock().lock();  
+	      LoggedLock downstreamLock = getDownstreamLock(source);
+	      downstreamLock.acquireWriteLock();  
 	      try {
 		timer.resume();
 	      
@@ -11888,7 +11888,7 @@ class MasterMgr
 		links.removeWorking(new NodeID(nodeID, source), name);
 	      }
 	      finally {
-		downstreamLock.writeLock().unlock();
+		downstreamLock.releaseWriteLock();
 	      }
 	    }
 	  }
@@ -11924,8 +11924,8 @@ class MasterMgr
 
             /* update the save the checksum bundle to disk */ 
             timer.aquire();
-            ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-            clock.writeLock().lock();
+            LoggedLock clock = getCheckSumLock(nodeID);
+            clock.acquireWriteLock();
             try {
               timer.resume();
               
@@ -11934,7 +11934,7 @@ class MasterMgr
               writeCheckSumCache(cbundle.getCache()); 
             }
             finally {
-              clock.writeLock().unlock();
+              clock.releaseWriteLock();
             }  
           }
 
@@ -11950,19 +11950,19 @@ class MasterMgr
 	  return new FailureRsp(timer, ex.getMessage());
 	}
 	finally {
-	  checkedInLock.readLock().unlock();  
-	  workingLock.writeLock().unlock();
+	  checkedInLock.releaseReadLock();  
+	  workingLock.releaseWriteLock();
 	}
       }
       finally {
-	onOffLock.readLock().unlock();
+	onOffLock.releaseReadLock();
       }
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, "Lock operation aborted!\n\n" + ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -12001,7 +12001,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	      
       
@@ -12015,8 +12015,8 @@ class MasterMgr
       boolean isLinked = false;
       {
 	timer.aquire(); 
-	ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-	lock.readLock().lock();
+	LoggedLock lock = getWorkingLock(nodeID);
+	lock.acquireReadLock();
 	try {
 	  timer.resume();
 
@@ -12033,14 +12033,14 @@ class MasterMgr
 	  isLinked = mod.isActionEnabled();
 	}
 	finally {
-	  lock.readLock().unlock();
+	  lock.releaseReadLock();
 	}
       }
 
       /* lock online/offline status of the node */ 
       timer.aquire();
-      ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
-      onOffLock.readLock().lock();
+      LoggedLock onOffLock = getOnlineOfflineLock(name);
+      onOffLock.acquireReadLock();
       try {
 	timer.resume();	
 
@@ -12101,7 +12101,7 @@ class MasterMgr
 	}
       }
       finally {
-	onOffLock.readLock().unlock();
+	onOffLock.releaseReadLock();
       }
 
       /* copy checksums from the repository versions */ 
@@ -12113,8 +12113,8 @@ class MasterMgr
           for(VersionID vid : vfiles.keySet()) {
 
             timer.aquire();
-            ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-            checkedInLock.readLock().lock();
+            LoggedLock checkedInLock = getCheckedInLock(name);
+            checkedInLock.acquireReadLock();
             try {
               timer.resume();
 
@@ -12134,7 +12134,7 @@ class MasterMgr
               }
             }
             finally {
-              checkedInLock.readLock().unlock();  
+              checkedInLock.releaseReadLock();  
             }
           }
         }
@@ -12153,8 +12153,8 @@ class MasterMgr
         /* update the save the checksum bundle to disk, 
              while setting the updated-in timestamps to match the reverted files */ 
         timer.aquire();
-        ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-        clock.writeLock().lock();
+        LoggedLock clock = getCheckSumLock(nodeID);
+        clock.acquireWriteLock();
         try {
           timer.resume();
           
@@ -12173,7 +12173,7 @@ class MasterMgr
           writeCheckSumCache(cache); 
         }
         finally {
-          clock.writeLock().unlock();
+          clock.releaseWriteLock();
         }  
       }
 
@@ -12186,7 +12186,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -12253,7 +12253,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	      
       
@@ -12265,8 +12265,8 @@ class MasterMgr
       FileSeq sourceSeq = null;
       {
 	timer.aquire(); 
-	ReentrantReadWriteLock lock = getWorkingLock(sourceID);
-	lock.readLock().lock();
+	LoggedLock lock = getWorkingLock(sourceID);
+	lock.acquireReadLock();
 	try {
 	  timer.resume();
 
@@ -12289,7 +12289,7 @@ class MasterMgr
 	  }
 	}
 	finally {
-	  lock.readLock().unlock();
+	  lock.releaseReadLock();
 	}
       }
       
@@ -12297,8 +12297,8 @@ class MasterMgr
       boolean writeable = true;
       {
 	timer.aquire(); 
-	ReentrantReadWriteLock lock = getWorkingLock(targetID);
-	lock.readLock().lock();
+	LoggedLock lock = getWorkingLock(targetID);
+	lock.acquireReadLock();
 	try {
 	  timer.resume();
 
@@ -12329,7 +12329,7 @@ class MasterMgr
 	  writeable = !mod.isActionEnabled();
 	}
 	finally {
-	  lock.readLock().unlock();
+	  lock.releaseReadLock();
 	}
       }
       
@@ -12390,8 +12390,8 @@ class MasterMgr
         CheckSumCache ocache = null;
         {
           timer.aquire();
-          ReentrantReadWriteLock clock = getCheckSumLock(sourceID);
-          clock.writeLock().lock();
+          LoggedLock clock = getCheckSumLock(sourceID);
+          clock.acquireWriteLock();
           try {
             timer.resume();
 
@@ -12399,7 +12399,7 @@ class MasterMgr
             ocache = new CheckSumCache(cbundle.getCache()); 
           }
           finally {
-            clock.writeLock().unlock();
+            clock.releaseWriteLock();
           }  
         }
         
@@ -12437,8 +12437,8 @@ class MasterMgr
         /* use them to initialize the target node's cache */ 
         {
           timer.aquire();
-          ReentrantReadWriteLock clock = getCheckSumLock(targetID);
-          clock.writeLock().lock();
+          LoggedLock clock = getCheckSumLock(targetID);
+          clock.acquireWriteLock();
           try {
             timer.resume();
 
@@ -12447,7 +12447,7 @@ class MasterMgr
             writeCheckSumCache(cbundle.getCache()); 
           }
           finally {
-            clock.writeLock().unlock();
+            clock.releaseWriteLock();
           } 
         }
       }
@@ -12461,7 +12461,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -12501,7 +12501,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -12513,8 +12513,8 @@ class MasterMgr
       /* verify the checked-in revision number */ 
       {
 	timer.aquire();
-	ReentrantReadWriteLock lock = getCheckedInLock(name);
-	lock.readLock().lock();
+	LoggedLock lock = getCheckedInLock(name);
+	lock.acquireReadLock();
 	try {
 	  timer.resume();	
 
@@ -12529,14 +12529,14 @@ class MasterMgr
 	  return new FailureRsp(timer, ex.getMessage());
 	}
 	finally {
-	  lock.readLock().unlock();
+	  lock.releaseReadLock();
 	}  
       }
 
       /* lock online/offline status of the node */ 
       timer.aquire();
-      ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
-      onOffLock.readLock().lock();
+      LoggedLock onOffLock = getOnlineOfflineLock(name);
+      onOffLock.acquireReadLock();
       try {
 	timer.resume();	
 
@@ -12572,8 +12572,8 @@ class MasterMgr
 	
 	/* change the checked-in version number for the working version */ 
 	timer.aquire();
-	ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-	lock.writeLock().lock();
+	LoggedLock lock = getWorkingLock(nodeID);
+	lock.acquireWriteLock();
 	try {
 	  timer.resume();
 	  
@@ -12592,11 +12592,11 @@ class MasterMgr
 	  bundle.setVersion(mod);
 	}
 	finally {
-	  lock.writeLock().unlock();
+	  lock.releaseWriteLock();
 	}  
       }
       finally {
-	onOffLock.readLock().unlock();
+	onOffLock.releaseReadLock();
       }  
 
       /* record event */ 
@@ -12611,7 +12611,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -12646,7 +12646,7 @@ class MasterMgr
       return new SuccessRsp(timer);    
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -12655,8 +12655,8 @@ class MasterMgr
         CheckSumCache qcache = entry.getValue();
         if(!qcache.isEmpty()) {
           timer.aquire();
-          ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-          clock.writeLock().lock();
+          LoggedLock clock = getCheckSumLock(nodeID);
+          clock.acquireWriteLock();
           try {
             timer.resume();
             
@@ -12671,7 +12671,7 @@ class MasterMgr
             }
           }
           finally {
-            clock.writeLock().unlock();
+            clock.releaseWriteLock();
           } 
         }
       }
@@ -12682,7 +12682,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -12746,7 +12746,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -12769,8 +12769,8 @@ class MasterMgr
         String nname = mod.getName();
 
         timer.aquire();
-        ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-        lock.readLock().lock();
+        LoggedLock lock = getAnnotationsLock(name); 
+        lock.acquireReadLock();
         try {
           timer.resume();
     
@@ -12781,7 +12781,7 @@ class MasterMgr
           }
         }
         finally {
-          lock.readLock().unlock();
+          lock.releaseReadLock();
         }
       }
 
@@ -12863,7 +12863,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -13007,7 +13007,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -13151,7 +13151,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -13190,7 +13190,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
  
@@ -13202,8 +13202,8 @@ class MasterMgr
       NodeVersion vsn = null;
       {
         timer.aquire();
-        ReentrantReadWriteLock lock = getCheckedInLock(name);
-        lock.readLock().lock();
+        LoggedLock lock = getCheckedInLock(name);
+        lock.acquireReadLock();
         try {
           timer.resume();	
 
@@ -13215,7 +13215,7 @@ class MasterMgr
           vsn = new NodeVersion(bundle.getVersion());
         }
         finally {
-          lock.readLock().unlock();
+          lock.releaseReadLock();
         }
       }
 
@@ -13252,7 +13252,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -13294,7 +13294,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -13316,7 +13316,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -13345,7 +13345,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -13368,8 +13368,8 @@ class MasterMgr
         VersionID vid = vsn.getVersionID();
 
         timer.aquire();
-        ReentrantReadWriteLock lock = getCheckedInLock(name);
-        lock.readLock().lock();
+        LoggedLock lock = getCheckedInLock(name);
+        lock.acquireReadLock();
         try {
           timer.resume();	
           
@@ -13383,7 +13383,7 @@ class MasterMgr
           isInserted = ((checkedIn != null) && checkedIn.containsKey(vid));
         }
         finally {
-          lock.readLock().unlock();
+          lock.releaseReadLock();
         }  
       }
 
@@ -13393,7 +13393,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -13423,7 +13423,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -13446,8 +13446,8 @@ class MasterMgr
         VersionID svid = link.getVersionID();
 
         timer.aquire();
-        ReentrantReadWriteLock lock = getCheckedInLock(sname);
-        lock.readLock().lock();
+        LoggedLock lock = getCheckedInLock(sname);
+        lock.acquireReadLock();
         try {
           timer.resume();	
 
@@ -13462,7 +13462,7 @@ class MasterMgr
             missing.put(sname, svid);
         }
         finally {
-          lock.readLock().unlock();
+          lock.releaseReadLock();
         }  
       }
 
@@ -13472,7 +13472,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -13501,7 +13501,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -13542,8 +13542,8 @@ class MasterMgr
       /* insert the version into the database */ 
       {
         timer.aquire();
-        ReentrantReadWriteLock lock = getCheckedInLock(name);
-        lock.writeLock().lock();
+        LoggedLock lock = getCheckedInLock(name);
+        lock.acquireWriteLock();
         try {
           timer.resume();	
           
@@ -13568,8 +13568,8 @@ class MasterMgr
               VersionID svid = link.getVersionID();
               
               timer.aquire();
-              ReentrantReadWriteLock slock = getCheckedInLock(sname);
-              slock.readLock().lock();
+              LoggedLock slock = getCheckedInLock(sname);
+              slock.acquireReadLock();
               try {
                 timer.resume();	
                 
@@ -13584,7 +13584,7 @@ class MasterMgr
                   missing.put(sname, svid);
               }
               finally {
-                slock.readLock().unlock();
+                slock.releaseReadLock();
               }  
             }
 
@@ -13639,8 +13639,8 @@ class MasterMgr
 	    String lname = link.getName();
 
 	    timer.aquire();
-	    ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
-	    downstreamLock.writeLock().lock();
+	    LoggedLock downstreamLock = getDownstreamLock(lname);
+	    downstreamLock.acquireWriteLock();
 	    try {
 	      timer.resume();
 
@@ -13648,12 +13648,12 @@ class MasterMgr
 	      dsl.addCheckedIn(link.getVersionID(), name, vid);
 	    }  
 	    finally {
-	      downstreamLock.writeLock().unlock();
+	      downstreamLock.releaseWriteLock();
 	    }     
 	  }
         }
         finally {
-          lock.writeLock().unlock();
+          lock.releaseWriteLock();
         }  
       }
 
@@ -13683,7 +13683,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -13859,7 +13859,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
       
@@ -13879,7 +13879,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -13909,7 +13909,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -13930,7 +13930,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -15430,9 +15430,9 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.writeLock().lock();
+    pDatabaseLock.acquireReadLock();
+    LoggedLock lock = getWorkingLock(nodeID);
+    lock.acquireWriteLock();
     try {
       timer.resume();
       
@@ -15480,8 +15480,8 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
+      lock.releaseWriteLock();
+      pDatabaseLock.releaseReadLock();
     }      
   }
 
@@ -15519,7 +15519,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
       
@@ -15533,8 +15533,8 @@ class MasterMgr
       TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
       
       timer.aquire();
-      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-      lock.readLock().lock();
+      LoggedLock lock = getWorkingLock(nodeID);
+      lock.acquireReadLock();
       try {
 	timer.resume();
 	
@@ -15604,7 +15604,7 @@ class MasterMgr
 	}
       }
       finally {
-	lock.readLock().unlock();
+	lock.releaseReadLock();
       }    
       
       if(hasLimbo) 
@@ -15637,8 +15637,8 @@ class MasterMgr
       /* clear the checksum caches for the removed files */ 
       {
         timer.aquire();
-        ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-        clock.writeLock().lock();
+        LoggedLock clock = getCheckSumLock(nodeID);
+        clock.acquireWriteLock();
         try {
           timer.resume();
           
@@ -15647,7 +15647,7 @@ class MasterMgr
           writeCheckSumCache(cbundle.getCache()); 
         }
         finally {
-          clock.writeLock().unlock();
+          clock.releaseWriteLock();
         } 
       }
 
@@ -15660,7 +15660,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }    
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -15696,7 +15696,7 @@ class MasterMgr
                     "[" + pattern + "]");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -15711,8 +15711,8 @@ class MasterMgr
           {
             NodeID nodeID = new NodeID(author, view, name); 
             timer.aquire();
-            ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-            lock.readLock().lock();
+            LoggedLock lock = getWorkingLock(nodeID);
+            lock.acquireReadLock();
             try {
               timer.resume();	
               
@@ -15721,7 +15721,7 @@ class MasterMgr
             catch(PipelineException ex) {
             }
             finally {
-              lock.readLock().unlock();
+              lock.releaseReadLock();
             }  
           }
           
@@ -15746,7 +15746,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -15778,7 +15778,7 @@ class MasterMgr
                     "[" + pattern + "]");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -15795,8 +15795,8 @@ class MasterMgr
           {
             NodeID nodeID = new NodeID(author, view, name); 
             timer.aquire();
-            ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-            lock.readLock().lock();
+            LoggedLock lock = getWorkingLock(nodeID);
+            lock.acquireReadLock();
             try {
               timer.resume();	
               
@@ -15805,7 +15805,7 @@ class MasterMgr
             catch(PipelineException ex) {
             }
             finally {
-              lock.readLock().unlock();
+              lock.releaseReadLock();
             }  
           }
           
@@ -15827,7 +15827,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -15950,7 +15950,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -15987,8 +15987,8 @@ class MasterMgr
 	  
         /* lock online/offline status */ 
         timer.aquire();
-        ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
-        onOffLock.readLock().lock();
+        LoggedLock onOffLock = getOnlineOfflineLock(name);
+        onOffLock.acquireReadLock();
         try {
           timer.resume();	
 
@@ -15997,8 +15997,8 @@ class MasterMgr
 	  TreeMap<VersionID,Long> stamps = new TreeMap<VersionID,Long>();
 	  {
 	    timer.aquire();
-	    ReentrantReadWriteLock lock = getCheckedInLock(name);
-	    lock.readLock().lock();  
+	    LoggedLock lock = getCheckedInLock(name);
+	    lock.acquireReadLock();  
 	    try {
 	      timer.resume();	
 	      TreeMap<VersionID,CheckedInBundle> checkedIn = 
@@ -16014,7 +16014,7 @@ class MasterMgr
 	      return new FailureRsp(timer, "Internal Error: " + ex.getMessage());
 	    }
 	    finally {
-	      lock.readLock().unlock();  
+	      lock.releaseReadLock();  
 	    }
 	  }
 	
@@ -16066,7 +16066,7 @@ class MasterMgr
 	  }
 	}
         finally {
-          onOffLock.readLock().unlock();
+          onOffLock.releaseReadLock();
         }  
       }
 
@@ -16076,7 +16076,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -16100,7 +16100,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -16114,8 +16114,8 @@ class MasterMgr
         {
           /* lock online/offline status */ 
           timer.aquire();
-          ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
-          onOffLock.readLock().lock();
+          LoggedLock onOffLock = getOnlineOfflineLock(name);
+          onOffLock.acquireReadLock();
           try {
             timer.resume();	
 
@@ -16123,8 +16123,8 @@ class MasterMgr
             MappedSet<VersionID,FileSeq> vfseqs = new MappedSet<VersionID,FileSeq>();
             { 
               timer.aquire();
-              ReentrantReadWriteLock lock = getCheckedInLock(name);
-              lock.readLock().lock(); 
+              LoggedLock lock = getCheckedInLock(name);
+              lock.acquireReadLock(); 
               try {
                 timer.resume();
                 
@@ -16141,7 +16141,7 @@ class MasterMgr
                 }
               }
               finally {
-                lock.readLock().unlock();
+                lock.releaseReadLock();
               }
             }
             
@@ -16157,7 +16157,7 @@ class MasterMgr
             }
           }
           finally {
-            onOffLock.readLock().unlock();
+            onOffLock.releaseReadLock();
           }
         }
       }
@@ -16168,7 +16168,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   } 
 
@@ -16207,7 +16207,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -16230,7 +16230,7 @@ class MasterMgr
 
       /* lock online/offline status of the nodes to be archived */ 
       timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
+      List<LoggedLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
       try {
 	timer.resume();	
 
@@ -16257,8 +16257,8 @@ class MasterMgr
 	  for(String name : versions.keySet()) {
 
 	    timer.aquire();
-	    ReentrantReadWriteLock lock = getCheckedInLock(name);
-	    lock.readLock().lock(); 
+	    LoggedLock lock = getCheckedInLock(name);
+	    lock.acquireReadLock(); 
 	    try {
 	      timer.resume();
 
@@ -16304,7 +16304,7 @@ class MasterMgr
               }
 	    }
 	    finally {
-	      lock.readLock().unlock();
+	      lock.releaseReadLock();
 	    }
 	    
 	    if(total > archiver.getCapacity()) 
@@ -16436,7 +16436,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -16463,7 +16463,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -16503,7 +16503,7 @@ class MasterMgr
       
       /* lock online/offline status */ 
       timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(matches);
+      List<LoggedLock> onOffLocks = onlineOfflineReadLock(matches);
       try {
 	timer.resume();	
 
@@ -16516,8 +16516,8 @@ class MasterMgr
 	  TreeSet<VersionID> vids = new TreeSet<VersionID>();
 	  {	    
 	    timer.aquire();
-	    ReentrantReadWriteLock lock = getCheckedInLock(name);
-	    lock.readLock().lock();  
+	    LoggedLock lock = getCheckedInLock(name);
+	    lock.acquireReadLock();  
 	    try {
 	      timer.resume();	
 	      TreeMap<VersionID,CheckedInBundle> checkedIn = 
@@ -16541,7 +16541,7 @@ class MasterMgr
 	      return new FailureRsp(timer, "Internal Error: " + ex.getMessage());
 	    }
 	    finally {
-	      lock.readLock().unlock();  
+	      lock.releaseReadLock();  
 	    }
 	  }
 
@@ -16605,8 +16605,8 @@ class MasterMgr
 		    NodeID nodeID = new NodeID(author, view, name);
 		    
 		    timer.aquire();
-		    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-		    lock.readLock().lock();
+		    LoggedLock lock = getWorkingLock(nodeID);
+		    lock.acquireReadLock();
 		    try {
 		      timer.resume();	
 		      
@@ -16624,7 +16624,7 @@ class MasterMgr
 		      }		      
 		    } 
 		    finally {
-		      lock.readLock().unlock();
+		      lock.releaseReadLock();
 		    } 
 		    
 		    if(vid.equals(latestID))
@@ -16655,7 +16655,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }    
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -16678,7 +16678,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -16686,8 +16686,8 @@ class MasterMgr
 
       /* lock online/offline status of the node */ 
       timer.aquire();
-      ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
-      onOffLock.readLock().lock();
+      LoggedLock onOffLock = getOnlineOfflineLock(name);
+      onOffLock.acquireReadLock();
       try {
 	timer.resume();	
 
@@ -16698,14 +16698,14 @@ class MasterMgr
 	return new NodeGetVersionIDsRsp(timer, offlined);
       }
       finally {
-	onOffLock.readLock().unlock();
+	onOffLock.releaseReadLock();
       }      
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -16734,7 +16734,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -16751,8 +16751,8 @@ class MasterMgr
 
         /* lock online/offline status */ 
         timer.aquire();
-        ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
-        onOffLock.readLock().lock();
+        LoggedLock onOffLock = getOnlineOfflineLock(name);
+        onOffLock.acquireReadLock();
         try {
           timer.resume();	
 
@@ -16765,8 +16765,8 @@ class MasterMgr
           MappedSet<VersionID,File> contribute = new MappedSet<VersionID,File>();
           {
             timer.aquire();
-            ReentrantReadWriteLock lock = getCheckedInLock(name);
-            lock.readLock().lock(); 
+            LoggedLock lock = getCheckedInLock(name);
+            lock.acquireReadLock(); 
             try {
               timer.resume();
                 
@@ -16826,7 +16826,7 @@ class MasterMgr
               }
             }
             finally {
-              lock.readLock().unlock();
+              lock.releaseReadLock();
             }
           }
 
@@ -16842,7 +16842,7 @@ class MasterMgr
           }
         }
         finally {
-          onOffLock.readLock().unlock();
+          onOffLock.releaseReadLock();
         }
       }
 
@@ -16852,7 +16852,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -16896,7 +16896,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       boolean cacheModified = false;
       try {
@@ -16913,7 +16913,7 @@ class MasterMgr
   
         /* write lock online/offline status */ 
         timer.aquire();
-        List<ReentrantReadWriteLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
+        List<LoggedLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
         try {
           timer.resume();	
         
@@ -16924,22 +16924,22 @@ class MasterMgr
           /* process each node */ 
           for(String name : versions.keySet()) {	
             timer.aquire();
-            ArrayList<ReentrantReadWriteLock> workingLocks = 
-              new ArrayList<ReentrantReadWriteLock>();
+            ArrayList<LoggedLock> workingLocks = 
+              new ArrayList<LoggedLock>();
             {
               TreeMap<String,TreeSet<String>> views = pNodeTree.getViewsContaining(name);
               for(String author : views.keySet()) {
                 for(String view : views.get(author)) {
                   NodeID nodeID = new NodeID(author, view, name);
-                  ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-                  workingLock.readLock().lock();
+                  LoggedLock workingLock = getWorkingLock(nodeID);
+                  workingLock.acquireReadLock();
                   workingLocks.add(workingLock);
                 }
               }
             }
 
-            ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-            checkedInLock.readLock().lock();  
+            LoggedLock checkedInLock = getCheckedInLock(name);
+            checkedInLock.acquireReadLock();  
             try {
               timer.resume();	
               TreeMap<VersionID,CheckedInBundle> checkedIn = 
@@ -17085,11 +17085,11 @@ class MasterMgr
               }
             }
             finally {
-              checkedInLock.readLock().unlock();  
+              checkedInLock.releaseReadLock();  
 
               Collections.reverse(workingLocks);
-              for(ReentrantReadWriteLock workingLock : workingLocks) 
-                workingLock.readLock().unlock();
+              for(LoggedLock workingLock : workingLocks) 
+                workingLock.releaseReadLock();
             }
           }
         
@@ -17127,7 +17127,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -17193,7 +17193,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -17235,7 +17235,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }    
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -17270,7 +17270,7 @@ class MasterMgr
     }    
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       try {
         timer.resume();
@@ -17279,7 +17279,7 @@ class MasterMgr
         TreeMap<String,TreeSet<VersionID>> vsns = new TreeMap<String,TreeSet<VersionID>>();
         {
           timer.aquire();
-          List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
+          List<LoggedLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
           try {
             timer.resume();
 
@@ -17344,7 +17344,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -17383,7 +17383,7 @@ class MasterMgr
 	(timer, "Only a user with Master Admin privileges may deny restore requests!");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       try {
         synchronized(pRestoreReqs) {
@@ -17422,7 +17422,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -17440,7 +17440,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pRestoreReqs) {
 	timer.resume();
@@ -17485,7 +17485,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -17515,7 +17515,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
       
@@ -17598,7 +17598,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
   
@@ -17642,7 +17642,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       boolean cacheModified = false;
       try {
@@ -17681,7 +17681,7 @@ class MasterMgr
 
         /* write lock online/offline status */ 
         timer.aquire();
-        List<ReentrantReadWriteLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
+        List<LoggedLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
         try {
           timer.resume();	
 
@@ -17694,8 +17694,8 @@ class MasterMgr
           for(String name : versions.keySet()) {
 	  
             timer.aquire();
-            ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-            checkedInLock.readLock().lock();  
+            LoggedLock checkedInLock = getCheckedInLock(name);
+            checkedInLock.acquireReadLock();  
             try {
               timer.resume();	
               TreeMap<VersionID,CheckedInBundle> checkedIn = 
@@ -17750,7 +17750,7 @@ class MasterMgr
               }
             }
             finally {
-              checkedInLock.readLock().unlock();  
+              checkedInLock.releaseReadLock();  
             }
           }
 
@@ -17827,8 +17827,8 @@ class MasterMgr
           for(String name : versions.keySet()) {
 
             timer.aquire();
-            ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-            checkedInLock.readLock().lock();  
+            LoggedLock checkedInLock = getCheckedInLock(name);
+            checkedInLock.acquireReadLock();  
             try {
               timer.resume();	
               TreeMap<VersionID,CheckedInBundle> checkedIn =
@@ -17923,7 +17923,7 @@ class MasterMgr
               }
             }
             finally {
-              checkedInLock.readLock().unlock();  
+              checkedInLock.releaseReadLock();  
             }	  
           }
 
@@ -17982,7 +17982,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -18002,7 +18002,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pArchivedOn) {
 	timer.resume();
@@ -18011,7 +18011,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -18028,7 +18028,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pRestoredOn) {
 	timer.resume();
@@ -18037,7 +18037,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -18155,7 +18155,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pArchivedIn) {
 	timer.resume();
@@ -18181,7 +18181,7 @@ class MasterMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -18204,7 +18204,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -18214,7 +18214,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -18332,8 +18332,8 @@ class MasterMgr
     
     timer.aquire();
     NodeID id = new NodeID(targetID, name);
-    ReentrantReadWriteLock lock = getWorkingLock(id);
-    lock.readLock().lock();
+    LoggedLock lock = getWorkingLock(id);
+    lock.acquireReadLock();
     try {
       timer.resume();
 
@@ -18354,7 +18354,7 @@ class MasterMgr
       }
     }
     finally {
-      lock.readLock().unlock();
+      lock.releaseReadLock();
     }   
   }
 
@@ -18606,8 +18606,8 @@ class MasterMgr
       annotations = new TreeMap<String,BaseAnnotation>();
 
       timer.aquire();
-      ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-      lock.readLock().lock();
+      LoggedLock lock = getAnnotationsLock(name); 
+      lock.acquireReadLock();
       try {
         timer.resume();
       
@@ -18621,21 +18621,21 @@ class MasterMgr
         }
       }
       finally {
-        lock.readLock().unlock();
+        lock.releaseReadLock();
       }   
     }
 
     timer.aquire();
-    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+    LoggedLock workingLock = getWorkingLock(nodeID);
     if(!isLightweight && nodeOp.writesWorking()) 
-      workingLock.writeLock().lock();
+      workingLock.acquireWriteLock();
     else 
-      workingLock.readLock().lock();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+      workingLock.acquireReadLock();
+    LoggedLock checkedInLock = getCheckedInLock(name);
     if(!isLightweight && nodeOp.writesCheckedIn())
-      checkedInLock.writeLock().lock();
+      checkedInLock.acquireWriteLock();
     else 
-      checkedInLock.readLock().lock();
+      checkedInLock.acquireReadLock();
     try {
       timer.resume();	
 
@@ -18948,8 +18948,8 @@ class MasterMgr
               ArrayList<JobState> js = new ArrayList<JobState>();
               
               timer.aquire();
-              ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-              clock.writeLock().lock();
+              LoggedLock clock = getCheckSumLock(nodeID);
+              clock.acquireWriteLock();
               try {
                 timer.resume();
               
@@ -18977,7 +18977,7 @@ class MasterMgr
                 } 
               }
               finally {
-                clock.writeLock().unlock();
+                clock.releaseWriteLock();
               }  
  
               if(jobIDs.length != jids.size())
@@ -19042,8 +19042,8 @@ class MasterMgr
                   latestCheckSums = latest.getCheckSums();
 
                 timer.aquire();
-                ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-                clock.writeLock().lock();
+                LoggedLock clock = getCheckSumLock(nodeID);
+                clock.acquireWriteLock();
                 try {
                   timer.resume();
 
@@ -19074,7 +19074,7 @@ class MasterMgr
                   }
                 }
                 finally {
-                  clock.writeLock().unlock();
+                  clock.releaseWriteLock();
                 }  
               }
               finally {
@@ -19726,13 +19726,13 @@ class MasterMgr
     }
     finally {
       if(!isLightweight && nodeOp.writesCheckedIn())
-	checkedInLock.writeLock().unlock();
+	checkedInLock.releaseWriteLock();
       else 
-	checkedInLock.readLock().unlock(); 
+	checkedInLock.releaseReadLock(); 
       if(!isLightweight && nodeOp.writesWorking()) 
-        workingLock.writeLock().unlock();
+        workingLock.releaseWriteLock();
       else 
-        workingLock.readLock().unlock();
+        workingLock.releaseReadLock();
     }
 
 
@@ -19856,8 +19856,8 @@ class MasterMgr
 
         timer.aquire();      
         String name = nodeID.getName();
-        ReentrantReadWriteLock lock = getCheckedInLock(name);
-        lock.readLock().lock();
+        LoggedLock lock = getCheckedInLock(name);
+        lock.acquireReadLock();
         try {
           timer.resume();	
         
@@ -19867,7 +19867,7 @@ class MasterMgr
         catch(PipelineException ex) {
         }
         finally {
-          lock.readLock().unlock();
+          lock.releaseReadLock();
         }  
 
         for(VersionID vid : vids) 
@@ -19952,8 +19952,8 @@ class MasterMgr
     TreeMap<VersionID,MappedSet<String,VersionID>> downstream = null;
     {
       timer.aquire();
-      ReentrantReadWriteLock lock = getDownstreamLock(name);
-      lock.readLock().lock();
+      LoggedLock lock = getDownstreamLock(name);
+      lock.acquireReadLock();
       try {
         timer.resume();
         
@@ -19961,7 +19961,7 @@ class MasterMgr
         downstream = dsl.getAllCheckedIn();
       }
       finally {
-        lock.readLock().unlock();
+        lock.releaseReadLock();
       }
     }
 
@@ -19990,8 +19990,8 @@ class MasterMgr
     /* if no downstream versions are the latest version, then check to see if this one is */ 
     if(status == null) {
       timer.aquire();
-      ReentrantReadWriteLock lock = getCheckedInLock(name);
-      lock.readLock().lock();
+      LoggedLock lock = getCheckedInLock(name);
+      lock.acquireReadLock();
       try {
         timer.resume();	
         
@@ -20000,7 +20000,7 @@ class MasterMgr
           status = lookupOrCreateNodeStatus(nodeID, table);
       }
       finally {
-        lock.readLock().unlock();
+        lock.releaseReadLock();
       }  
     }
     
@@ -20050,8 +20050,8 @@ class MasterMgr
     TreeSet<String> links = null;
     {
       timer.aquire();
-      ReentrantReadWriteLock lock = getDownstreamLock(name);
-      lock.readLock().lock();
+      LoggedLock lock = getDownstreamLock(name);
+      lock.acquireReadLock();
       try {
         timer.resume();
         
@@ -20059,7 +20059,7 @@ class MasterMgr
         links = dsl.getWorking(nodeID); 
       }
       finally {
-        lock.readLock().unlock();
+        lock.releaseReadLock();
       }
     }
 
@@ -20147,8 +20147,8 @@ class MasterMgr
 
     /* add the current node */ 
     timer.aquire();
-    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-    workingLock.readLock().lock(); 
+    LoggedLock workingLock = getWorkingLock(nodeID);
+    workingLock.acquireReadLock(); 
     try {
       timer.resume();
     
@@ -20165,7 +20165,7 @@ class MasterMgr
       }
     }
     finally {
-      workingLock.readLock().unlock();
+      workingLock.releaseReadLock();
     }
       
     /* process any downstream nodes... */ 
@@ -20286,17 +20286,17 @@ class MasterMgr
    * @param name 
    *   The fully resolved node name
    */
-  private ReentrantReadWriteLock
+  private LoggedLock
   getOnlineOfflineLock
   (
    String name
   ) 
   {
     synchronized(pOnlineOfflineLocks) {
-      ReentrantReadWriteLock lock = pOnlineOfflineLocks.get(name);
+      LoggedLock lock = pOnlineOfflineLocks.get(name);
 
       if(lock == null) { 
-	lock = new ReentrantReadWriteLock();
+	lock = new LoggedLock("OnlineOffline");
 	pOnlineOfflineLocks.put(name, lock);
       }
 
@@ -20314,17 +20314,17 @@ class MasterMgr
    * @param names
    *   The fully resolved names of the nodes to lock.
    */ 
-  private List<ReentrantReadWriteLock> 
+  private List<LoggedLock> 
   onlineOfflineReadLock
   (
    Collection<String> names
   ) 
   {
     TreeSet<String> sorted = new TreeSet<String>(names);
-    ArrayList<ReentrantReadWriteLock> locks = new ArrayList<ReentrantReadWriteLock>();
+    ArrayList<LoggedLock> locks = new ArrayList<LoggedLock>();
     for(String name : sorted) {
-      ReentrantReadWriteLock lock = getOnlineOfflineLock(name);
-      lock.readLock().lock();
+      LoggedLock lock = getOnlineOfflineLock(name);
+      lock.acquireReadLock();
       locks.add(lock);
     }
     
@@ -20342,11 +20342,11 @@ class MasterMgr
   private void 
   onlineOfflineReadUnlock
   (
-   List<ReentrantReadWriteLock> locks
+   List<LoggedLock> locks
   ) 
   {
-    for(ReentrantReadWriteLock lock : locks) 
-      lock.readLock().unlock();
+    for(LoggedLock lock : locks) 
+      lock.releaseReadLock();
   }
   
   /**
@@ -20359,17 +20359,17 @@ class MasterMgr
    * @param names
    *   The fully resolved names of the nodes to lock.
    */ 
-  private List<ReentrantReadWriteLock> 
+  private List<LoggedLock> 
   onlineOfflineWriteLock
   (
    Collection<String> names
   ) 
   {
     TreeSet<String> sorted = new TreeSet<String>(names);
-    ArrayList<ReentrantReadWriteLock> locks = new ArrayList<ReentrantReadWriteLock>();
+    ArrayList<LoggedLock> locks = new ArrayList<LoggedLock>();
     for(String name : sorted) {
-      ReentrantReadWriteLock lock = getOnlineOfflineLock(name);
-      lock.writeLock().lock();
+      LoggedLock lock = getOnlineOfflineLock(name);
+      lock.acquireWriteLock();
       locks.add(lock);
     }
     
@@ -20387,11 +20387,11 @@ class MasterMgr
   private void 
   onlineOfflineWriteUnlock
   (
-   List<ReentrantReadWriteLock> locks
+   List<LoggedLock> locks
   ) 
   {
-    for(ReentrantReadWriteLock lock : locks) 
-      lock.writeLock().unlock();
+    for(LoggedLock lock : locks) 
+      lock.releaseWriteLock();
   }
   
 
@@ -20404,17 +20404,17 @@ class MasterMgr
    * @param name 
    *   The fully resolved node name
    */
-  private ReentrantReadWriteLock
+  private LoggedLock
   getAnnotationsLock
   (
    String name
   ) 
   {
     synchronized(pAnnotationLocks) {
-      ReentrantReadWriteLock lock = pAnnotationLocks.get(name);
+      LoggedLock lock = pAnnotationLocks.get(name);
 
       if(lock == null) { 
-	lock = new ReentrantReadWriteLock();
+	lock = new LoggedLock("Annotations");
 	pAnnotationLocks.put(name, lock);
       }
 
@@ -20429,17 +20429,17 @@ class MasterMgr
    * @param name 
    *   The fully resolved node name
    */
-  private ReentrantReadWriteLock
+  private LoggedLock
   getCheckedInLock
   (
    String name
   ) 
   {
     synchronized(pCheckedInLocks) {
-      ReentrantReadWriteLock lock = pCheckedInLocks.get(name);
+      LoggedLock lock = pCheckedInLocks.get(name);
 
       if(lock == null) { 
-	lock = new ReentrantReadWriteLock();
+	lock = new LoggedLock("CheckedInNode");
 	pCheckedInLocks.put(name, lock);
       }
 
@@ -20453,17 +20453,17 @@ class MasterMgr
    * @param id 
    *   The unique working version identifier.
    */
-  private ReentrantReadWriteLock
+  private LoggedLock
   getWorkingLock
   (
    NodeID id
   ) 
   {
     synchronized(pWorkingLocks) {
-      ReentrantReadWriteLock lock = pWorkingLocks.get(id);
+      LoggedLock lock = pWorkingLocks.get(id);
 
       if(lock == null) { 
-	lock = new ReentrantReadWriteLock();
+	lock = new LoggedLock("WorkingNode");
 	pWorkingLocks.put(id, lock);
       }
 
@@ -20477,17 +20477,17 @@ class MasterMgr
    * @param id 
    *   The unique working version identifier.
    */
-  private ReentrantReadWriteLock
+  private LoggedLock
   getCheckSumLock
   (
    NodeID id
   ) 
   {
     synchronized(pCheckSumLocks) {
-      ReentrantReadWriteLock lock = pCheckSumLocks.get(id);
+      LoggedLock lock = pCheckSumLocks.get(id);
 
       if(lock == null) { 
-	lock = new ReentrantReadWriteLock();
+	lock = new LoggedLock("CheckSum");
 	pCheckSumLocks.put(id, lock);
       }
 
@@ -20501,17 +20501,17 @@ class MasterMgr
    * @param name 
    *   The fully resolved node name
    */
-  private ReentrantReadWriteLock
+  private LoggedLock
   getDownstreamLock
   (
    String name
   ) 
   {
     synchronized(pDownstreamLocks) {
-      ReentrantReadWriteLock lock = pDownstreamLocks.get(name);
+      LoggedLock lock = pDownstreamLocks.get(name);
 
       if(lock == null) { 
-	lock = new ReentrantReadWriteLock();
+	lock = new LoggedLock("Downstream");
 	pDownstreamLocks.put(name, lock);
       }
 
@@ -20897,8 +20897,8 @@ class MasterMgr
           }
           
           tm.aquire();
-          ReentrantReadWriteLock lock = getCheckedInLock(name);
-          lock.writeLock().lock();
+          LoggedLock lock = getCheckedInLock(name);
+          lock.acquireWriteLock();
           try {
             tm.resume();	
             
@@ -20915,7 +20915,7 @@ class MasterMgr
             }
           }
           finally {
-            lock.writeLock().unlock();
+            lock.releaseWriteLock();
           }  
         }
 
@@ -20949,8 +20949,8 @@ class MasterMgr
           }
           
           tm.aquire();
-          ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-          workingLock.writeLock().lock();
+          LoggedLock workingLock = getWorkingLock(nodeID);
+          workingLock.acquireWriteLock();
           try {
             tm.resume();	
             
@@ -20974,7 +20974,7 @@ class MasterMgr
             }
           }
           finally {
-            workingLock.writeLock().unlock();
+            workingLock.releaseWriteLock();
           }  
         }
         
@@ -21008,8 +21008,8 @@ class MasterMgr
           }
           
           tm.aquire();
-          ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-          clock.writeLock().lock();
+          LoggedLock clock = getCheckSumLock(nodeID);
+          clock.acquireWriteLock();
           try {
             tm.resume();	
             
@@ -21028,7 +21028,7 @@ class MasterMgr
             }
           }
           finally {
-            clock.writeLock().unlock();
+            clock.releaseWriteLock();
           }  
         }
         
@@ -21062,8 +21062,8 @@ class MasterMgr
           }
 
           tm.aquire();
-          ReentrantReadWriteLock clock = getAnnotationsLock(name);
-          clock.writeLock().lock();
+          LoggedLock clock = getAnnotationsLock(name);
+          clock.acquireWriteLock();
           try {
             tm.resume();	
             
@@ -21080,7 +21080,7 @@ class MasterMgr
             }
           }
           finally {
-            clock.writeLock().unlock();
+            clock.releaseWriteLock();
           }  
         }
         
@@ -21622,7 +21622,7 @@ class MasterMgr
                                    "(" + (needsLock ? "locked" : "live") + ")");
       tm.aquire();
       if(needsLock) 
-        pDatabaseLock.writeLock().lock();
+        pDatabaseLock.acquireWriteLock();
       try {
         tm.resume();	
         
@@ -21664,7 +21664,7 @@ class MasterMgr
       }
       finally {
         if(needsLock) 
-          pDatabaseLock.writeLock().unlock();
+          pDatabaseLock.releaseWriteLock();
       }
 
       return true;
@@ -25071,8 +25071,8 @@ class MasterMgr
 	    try {
 
               timer.aquire();
-              ReentrantReadWriteLock clock = getCheckSumLock(nodeID);
-              clock.writeLock().lock();
+              LoggedLock clock = getCheckSumLock(nodeID);
+              clock.acquireWriteLock();
               try {
                 timer.resume();
 
@@ -25096,7 +25096,7 @@ class MasterMgr
                 checksums = updatedCheckSums.getVersionCheckSums(); 
               }
               finally {
-                clock.writeLock().unlock();
+                clock.releaseWriteLock();
               }  
 	    }
 	    finally {
@@ -25184,8 +25184,8 @@ class MasterMgr
 	    String lname = link.getName();
 
 	    timer.aquire();
-	    ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
-	    downstreamLock.writeLock().lock();
+	    LoggedLock downstreamLock = getDownstreamLock(lname);
+	    downstreamLock.acquireWriteLock();
 	    try {
 	      timer.resume();
 
@@ -25193,7 +25193,7 @@ class MasterMgr
 	      dsl.addCheckedIn(link.getVersionID(), name, vsn.getVersionID());
 	    }  
 	    finally {
-	      downstreamLock.writeLock().unlock();
+	      downstreamLock.releaseWriteLock();
 	    }     
 	  }
 
@@ -25774,7 +25774,7 @@ class MasterMgr
    * 
    * This lock exists primary to support write-locked database backups and node deletion. <P> 
    */ 
-  private ReentrantReadWriteLock  pDatabaseLock;
+  private LoggedLock  pDatabaseLock;
 
   /**
    * The amount of time to wait between attempts to acquire the database write-lock.
@@ -25907,7 +25907,7 @@ class MasterMgr
    * write-lock should be aquired when changing the online/offline status of versions of a 
    * node.
    */
-  private TreeMap<String,ReentrantReadWriteLock>  pOnlineOfflineLocks;
+  private TreeMap<String,LoggedLock>  pOnlineOfflineLocks;
 
   /**
    * The fully resolved node names and revision numbers of the checked-in versions which
@@ -26164,7 +26164,7 @@ class MasterMgr
    * The per-node write-lock should be aquired when adding new annotations, modifying or 
    * removing existing annotations for a node. 
    */
-  private TreeMap<String,ReentrantReadWriteLock>  pAnnotationLocks;
+  private TreeMap<String,LoggedLock>  pAnnotationLocks;
 
   /**
    * The annotations associated with nodes indexed by fully resolved node name. 
@@ -26197,7 +26197,7 @@ class MasterMgr
    * the table of checked-in versions for a node.  No existing checked-in bundle entries in 
    * these tables should ever be modified.
    */
-  private TreeMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
+  private TreeMap<String,LoggedLock>  pCheckedInLocks;
 
   /**
    * The checked-in version related information of nodes indexed by fully resolved node 
@@ -26231,7 +26231,7 @@ class MasterMgr
    * working versions, modifying the information associated with existing working versions 
    * or removing existing working versions.
    */
-  private TreeMap<NodeID,ReentrantReadWriteLock>  pWorkingLocks;
+  private TreeMap<NodeID,LoggedLock>  pWorkingLocks;
 
   /**
    * The working version related information of nodes indexed by fully resolved node 
@@ -26265,7 +26265,7 @@ class MasterMgr
    * creating new checksum caches, modifying the contents of the cache or removing existing 
    * caches. 
    */
-  private TreeMap<NodeID,ReentrantReadWriteLock>  pCheckSumLocks;
+  private TreeMap<NodeID,LoggedLock>  pCheckSumLocks;
   
   /**
    * The checksum caches for files associated with each working version of a node 
@@ -26296,7 +26296,7 @@ class MasterMgr
    * should be aquired for operations which will only access the downstream links of a node.
    * The per-node write-lock should be aquired when adding or removing links for a node.
    */
-  private TreeMap<String,ReentrantReadWriteLock>  pDownstreamLocks;
+  private TreeMap<String,LoggedLock>  pDownstreamLocks;
   
   /**
    * The table of downstream links indexed by fully resolved node name. <P> 

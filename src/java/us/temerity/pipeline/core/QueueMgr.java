@@ -108,7 +108,7 @@ class QueueMgr
   { 
     /* initialize the fields */ 
     {
-      pDatabaseLock = new ReentrantReadWriteLock();
+      pDatabaseLock = new LoggedLock("Database");
 
       pMakeDirLock = new Object(); 
 
@@ -1203,7 +1203,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pLicenseKeys) {
         timer.resume();
@@ -1222,7 +1222,7 @@ class QueueMgr
       } 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -1244,7 +1244,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pLicenseKeys) {
         timer.resume();
@@ -1260,7 +1260,7 @@ class QueueMgr
       } 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -1276,7 +1276,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pLicenseKeys) {
         timer.resume();
@@ -1287,7 +1287,7 @@ class QueueMgr
       } 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -1314,7 +1314,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.addLicenseKey(): " + key.getName());
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1338,7 +1338,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -1362,7 +1362,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeLicenseKey(): " + kname); 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1381,7 +1381,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
   
@@ -1425,7 +1425,7 @@ class QueueMgr
     TaskTimer timer = 
       new TaskTimer("QueueMgr.setMaxLicenses(): " + kname + "[" + scheme + ": " + msg + "]");
     timer.aquire();
-    pDatabaseLock.readLock().lock();  
+    pDatabaseLock.acquireReadLock();  
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1459,7 +1459,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     } 
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -1487,7 +1487,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSelectionKeys) {
         timer.resume();
@@ -1506,7 +1506,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -1528,7 +1528,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSelectionKeys) {
         timer.resume();
@@ -1544,7 +1544,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -1560,7 +1560,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSelectionKeys) {
         timer.resume();
@@ -1571,7 +1571,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -1598,7 +1598,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionKey(): " + key.getName());
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1623,7 +1623,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -1647,7 +1647,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionKey(): " + kname); 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1683,7 +1683,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -1701,7 +1701,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSelectionGroups) {
         timer.resume();
@@ -1711,7 +1711,7 @@ class QueueMgr
       } 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -1726,7 +1726,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSelectionGroups) {
         timer.resume();
@@ -1735,7 +1735,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -1758,7 +1758,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionGroup(): " + name);
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1788,7 +1788,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
 
@@ -1812,7 +1812,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionGroups():");
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1864,7 +1864,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
 
@@ -1890,7 +1890,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editSelectionGroups()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -1926,7 +1926,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     } 
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }    
   }
 
@@ -1944,7 +1944,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSelectionSchedules) {
         timer.resume();
@@ -1954,7 +1954,7 @@ class QueueMgr
       } 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -1969,7 +1969,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSelectionSchedules) {
         timer.resume();
@@ -1978,7 +1978,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2001,7 +2001,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionSchedule(): " + name);
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2024,7 +2024,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -2048,7 +2048,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionSchedules():");
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2085,7 +2085,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
 
@@ -2108,7 +2108,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editSelectionSchedules()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2135,7 +2135,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }     
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -2163,7 +2163,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pHardwareKeys) {
         timer.resume();
@@ -2182,7 +2182,7 @@ class QueueMgr
       } 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2204,7 +2204,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pHardwareKeys) {
         timer.resume();
@@ -2220,7 +2220,7 @@ class QueueMgr
       } 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -2235,7 +2235,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pHardwareKeys) {
         timer.resume();
@@ -2246,7 +2246,7 @@ class QueueMgr
       } 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2273,7 +2273,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.addHardwareKey(): " + key.getName());
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2298,7 +2298,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2322,7 +2322,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeHardwareKey(): " + kname); 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2358,7 +2358,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -2376,7 +2376,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pHardwareGroups) {
         timer.resume();
@@ -2386,7 +2386,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2401,7 +2401,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pHardwareGroups) {
         timer.resume();
@@ -2410,7 +2410,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2433,7 +2433,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addHardwareGroup(): " + name);
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2458,7 +2458,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     } 
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
 
@@ -2482,7 +2482,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeHardwareGroups():");
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2523,7 +2523,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -2549,7 +2549,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editHardwareGroups()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -2585,7 +2585,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
   
@@ -2602,7 +2602,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pDispatchControls) {
         timer.resume();
@@ -2612,7 +2612,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2627,7 +2627,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pDispatchControls) {
         timer.resume();
@@ -2636,7 +2636,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2659,7 +2659,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addDispatchControl(): " + name);
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2684,7 +2684,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
 
@@ -2708,7 +2708,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeDispatchControls():");
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2749,7 +2749,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -2775,7 +2775,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editDispatchControls()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2801,7 +2801,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
 
@@ -2818,7 +2818,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pUserBalanceGroups) {
         timer.resume();
@@ -2828,7 +2828,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2843,7 +2843,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pUserBalanceGroups) {
         timer.resume();
@@ -2852,7 +2852,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2873,7 +2873,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pUserBalanceGroups) {
         timer.resume();
@@ -2892,7 +2892,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -2915,7 +2915,7 @@ class QueueMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("QueueMgr.addUserBalanceGroup(): " + name);
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -2941,7 +2941,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     } 
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
   
@@ -2966,7 +2966,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeUserBalanceGroups():");
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -3009,7 +3009,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     } 
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
 
@@ -3032,7 +3032,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editBalanceGroups()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -3057,7 +3057,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -3072,7 +3072,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.getBalanceGroupUsage()");
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
       
@@ -3082,7 +3082,7 @@ class QueueMgr
       return new QueueGetBalanceGroupUsageRsp(timer, toReturn);    
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -3169,7 +3169,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pQueueExtensions) {
         timer.resume();
@@ -3178,7 +3178,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -3202,7 +3202,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.removeQueueExtension(): " + name); 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -3224,7 +3224,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
   
@@ -3249,7 +3249,7 @@ class QueueMgr
 
     TaskTimer timer = new TaskTimer("QueueMgr.setQueueExtension(): " + name); 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -3273,7 +3273,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }  
 
@@ -3299,7 +3299,7 @@ class QueueMgr
 
     /* instantiate the plugins */ 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pQueueExtensions) {
         timer.resume();
@@ -3345,7 +3345,7 @@ class QueueMgr
       return table;
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3601,7 +3601,7 @@ class QueueMgr
 
     /* process the hosts */ 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pHostsInfo) {
         timer.resume();
@@ -3747,7 +3747,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3783,7 +3783,7 @@ class QueueMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
@@ -3820,7 +3820,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }    
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -3846,7 +3846,7 @@ class QueueMgr
 
     TreeSet<String> deadHosts = new TreeSet<String>();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       /* filter out non-existent hosts */ 
       TreeSet<String> hostnames = new TreeSet<String>();
@@ -3919,7 +3919,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -3966,7 +3966,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editHosts()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -4120,7 +4120,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -4770,7 +4770,7 @@ class QueueMgr
     TreeMap<String,ResourceSampleCache> samples = new TreeMap<String,ResourceSampleCache>();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSamples) {
         timer.resume();
@@ -4813,7 +4813,7 @@ class QueueMgr
       return new QueueGetHostResourceSamplesRsp(timer, samples);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -4846,7 +4846,7 @@ class QueueMgr
 
     /* sort the host information into histogram catagories */ 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pHostsInfo) {
         timer.resume();
@@ -4858,7 +4858,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -5036,7 +5036,7 @@ class QueueMgr
     TreeMap<String,Long> latestUpdates = req.getLatestUpdates(); 
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
       synchronized(pNodeJobIDs) {
@@ -5095,7 +5095,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5125,7 +5125,7 @@ class QueueMgr
     long stamp = req.getTimeStamp();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
       synchronized(pNodeJobIDs) {
@@ -5166,7 +5166,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5194,7 +5194,7 @@ class QueueMgr
     TreeMap<String,FileSeq> fseqs = req.getFileSeqs();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
       synchronized(pNodeJobIDs) {
@@ -5235,7 +5235,7 @@ class QueueMgr
       return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5259,7 +5259,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.getUnfinishedJobsForNodeFiles()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
       synchronized(pNodeJobIDs) {
@@ -5296,7 +5296,7 @@ class QueueMgr
       return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5320,7 +5320,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -5331,7 +5331,7 @@ class QueueMgr
       return new QueueGetJobStateDistributionRsp(timer, dist);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5354,7 +5354,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       TreeSet<Long> jobIDs = new TreeSet<Long>();
       synchronized(pJobGroups) {
@@ -5397,7 +5397,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5413,7 +5413,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume(); 
 
@@ -5464,7 +5464,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5486,7 +5486,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pJobs) {
         timer.resume();
@@ -5513,7 +5513,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5535,7 +5535,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pJobInfo) {
         timer.resume();
@@ -5559,7 +5559,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -5576,7 +5576,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();  
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume(); 
       
@@ -5622,7 +5622,7 @@ class QueueMgr
       return new QueueGetRunningJobInfoRsp(timer, running);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5648,7 +5648,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.submitJobs():");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       QueueJobGroup group = req.getJobGroup();
       synchronized(pJobGroups) {
@@ -5713,7 +5713,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -5738,7 +5738,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.preemptJobs()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       boolean unprivileged = false; 
       synchronized(pJobs) {
@@ -5767,7 +5767,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }    
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
 
@@ -5790,7 +5790,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.killJobs()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       boolean unprivileged = false; 
       synchronized(pJobs) {
@@ -5818,7 +5818,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }     
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -5841,7 +5841,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.pauseJobs()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       boolean unprivileged = false; 
       synchronized(pJobs) {
@@ -5890,7 +5890,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
 
@@ -5913,7 +5913,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.resumeJobs()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       boolean unprivileged = false; 
       synchronized(pJobs) {
@@ -5961,7 +5961,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
   
@@ -5996,7 +5996,7 @@ class QueueMgr
     LinkedList<JobReqsDelta> changes = req.getJobReqsChanges();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pJobs) {
         timer.resume();
@@ -6112,7 +6112,7 @@ class QueueMgr
       }     
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -6142,7 +6142,7 @@ class QueueMgr
     TreeMap<String, Boolean> privileges = new TreeMap<String, Boolean>();
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pJobs) {
         timer.resume();
@@ -6254,7 +6254,7 @@ class QueueMgr
       }     
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
     
@@ -6391,7 +6391,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
       
@@ -6402,7 +6402,7 @@ class QueueMgr
         (timer, (chooserUpdate > lastUpdate), "doJobKeysNeedUpdate"); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -6429,7 +6429,7 @@ class QueueMgr
     TreeSet<Long> jobIDsToFix = new TreeSet<Long>();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized (pJobs) {
         timer.resume();
@@ -6474,7 +6474,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
     return new SuccessRsp(timer);
   }
@@ -6491,14 +6491,14 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       long time = pChooserUpdateTime.get();
       
       return new MiscGetLongRsp(timer, time, "QueueMgr.getChooserUpdateTime()");
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -6514,7 +6514,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
         throw new PipelineException
@@ -6527,7 +6527,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());      
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
     return new SuccessRsp(timer); 
     
@@ -6573,7 +6573,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.preemptNodeJobs()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -6635,7 +6635,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
 
@@ -6658,7 +6658,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.killNodeJobs()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -6721,7 +6721,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
 
@@ -6744,7 +6744,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.pauseNodeJobs()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try { 
       timer.resume();
 
@@ -6805,7 +6805,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
   
@@ -6828,7 +6828,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.resumeNodeJobs()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -6888,7 +6888,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }   
   }
 
@@ -6914,7 +6914,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pJobGroups) {
         timer.resume();
@@ -6932,7 +6932,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }   
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -6958,7 +6958,7 @@ class QueueMgr
     String view   = req.getView();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pJobGroups) {
         timer.resume();
@@ -6979,7 +6979,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -7002,7 +7002,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.deleteJobGroups()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -7043,7 +7043,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     } 
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }  
   }
 
@@ -7066,7 +7066,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.deleteViewJobGroups()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -7107,7 +7107,7 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }  
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     } 
   }
 
@@ -7130,7 +7130,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.deleteAllJobGroups()");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       synchronized(pJobGroups) {
         timer.resume();
@@ -7154,7 +7154,7 @@ class QueueMgr
       return new SuccessRsp(timer);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
 
@@ -7246,7 +7246,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("Collector");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -7461,7 +7461,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
 
     /* if we're ahead of schedule, take a nap */ 
@@ -7505,7 +7505,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("User Balance Info");
    
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -7513,7 +7513,7 @@ class QueueMgr
       pUserBalanceRecalculated.set(true);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
 
     LogMgr.getInstance().logStage
@@ -7577,7 +7577,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("Writer");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -7725,7 +7725,7 @@ class QueueMgr
          timer); 
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
   }
   
@@ -7744,7 +7744,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("Dispatcher");
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
@@ -7801,7 +7801,7 @@ class QueueMgr
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
 
     /* if we're ahead of schedule, take a nap */ 
@@ -10069,14 +10069,14 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("Scheduler");
     
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
       doScheduler(timer);
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.releaseReadLock();
     }
     
     /* if we're ahead of schedule, take a nap */ 
@@ -10334,7 +10334,7 @@ class QueueMgr
                                    "(" + (needsLock ? "locked" : "live") + ")");
       tm.aquire();
       if(needsLock) 
-        pDatabaseLock.writeLock().lock();
+        pDatabaseLock.acquireWriteLock();
       try {
         tm.resume();	
         
@@ -10385,7 +10385,7 @@ class QueueMgr
       }
       finally {
         if(needsLock) 
-          pDatabaseLock.writeLock().unlock();
+          pDatabaseLock.releaseWriteLock();
       }
 
       return true;
@@ -12809,7 +12809,7 @@ class QueueMgr
       TaskTimer timer = new TaskTimer("Demand Scheduler");
 
       timer.aquire();
-      pDatabaseLock.readLock().lock();
+      pDatabaseLock.acquireReadLock();
       try {
         timer.resume();
 
@@ -12825,7 +12825,7 @@ class QueueMgr
            Exceptions.getFullMessage("Internal Error:", ex));
       }
       finally {
-        pDatabaseLock.readLock().unlock();
+        pDatabaseLock.releaseReadLock();
       }
     }
   }
@@ -12920,7 +12920,7 @@ class QueueMgr
       TaskTimer timer = new TaskTimer("SubCollector " + pID + " [Total]");
 
       timer.aquire();
-      pDatabaseLock.readLock().lock();
+      pDatabaseLock.acquireReadLock();
       try {
         timer.resume();
 
@@ -12975,7 +12975,7 @@ class QueueMgr
            Exceptions.getFullMessage("Internal Error:", ex));
       }
       finally {
-        pDatabaseLock.readLock().unlock();
+        pDatabaseLock.releaseReadLock();
       }
     }
 
@@ -13073,7 +13073,7 @@ class QueueMgr
       TaskTimer timer = new TaskTimer("Monitor - Job " + jobID);
 
       timer.aquire();
-      pDatabaseLock.readLock().lock();
+      pDatabaseLock.acquireReadLock();
       try {
         try {
           timer.resume();
@@ -13404,7 +13404,7 @@ class QueueMgr
            Exceptions.getFullMessage("Internal Error:", ex));
       }
       finally {
-        pDatabaseLock.readLock().unlock();
+        pDatabaseLock.releaseReadLock();
       }
     }
 
@@ -13920,7 +13920,7 @@ class QueueMgr
     {
       JobMgrControlClient client = null;
 
-      pDatabaseLock.readLock().lock();
+      pDatabaseLock.acquireReadLock();
       try {
         try {
           client = new JobMgrControlClient(pHostname);	
@@ -13952,7 +13952,7 @@ class QueueMgr
            Exceptions.getFullMessage("Internal Error:", ex2));
       }
       finally {
-        pDatabaseLock.readLock().unlock();
+        pDatabaseLock.releaseReadLock();
       }
     }
 
@@ -13985,7 +13985,7 @@ class QueueMgr
     public void 
     run() 
     {
-      pDatabaseLock.readLock().lock();
+      pDatabaseLock.acquireReadLock();
       try {
         TreeSet<String> hnames = new TreeSet<String>();
         synchronized(pHosts) {
@@ -14022,7 +14022,7 @@ class QueueMgr
            Exceptions.getFullMessage("Internal Error:", ex));
       }
       finally {
-        pDatabaseLock.readLock().unlock();
+        pDatabaseLock.releaseReadLock();
       }
     }
 
@@ -14099,7 +14099,7 @@ class QueueMgr
    * 
    * This lock exists primary to support write-locked database backups. <P> 
    */ 
-  private ReentrantReadWriteLock  pDatabaseLock;
+  private LoggedLock  pDatabaseLock;
 
   /**
    * The common back-end directories.

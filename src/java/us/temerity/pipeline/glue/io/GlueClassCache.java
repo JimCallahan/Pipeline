@@ -5,7 +5,6 @@ package us.temerity.pipeline.glue.io;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.parser.*;
 
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -29,7 +28,7 @@ class GlueClassCache
   GlueClassCache()
   {
     pClasses     = new TreeMap<String,Class>();
-    pClassesLock = new ReentrantReadWriteLock();
+    pClassesLock = new LoggedLock("GlueClasses");
   }
 
   
@@ -74,14 +73,14 @@ class GlueClassCache
     throws ParseException
   {
     /* first see if its already been defined */ 
-    pClassesLock.readLock().lock();
+    pClassesLock.acquireReadLock();
     try {
       Class cls = pClasses.get(cname);
       if(cls != null) 
         return cls;
     }
     finally {
-      pClassesLock.readLock().unlock();
+      pClassesLock.releaseReadLock();
     }
     
     /* otherwise, try to define it... */ 
@@ -113,13 +112,13 @@ class GlueClassCache
       if(cls == null) 
         throw new ParseException("Unable to locate class: " + cname);
 
-      pClassesLock.writeLock().lock();
+      pClassesLock.acquireWriteLock();
       try {
         pClasses.put(cname, cls);
         return cls;
       }
       finally {
-        pClassesLock.writeLock().unlock();
+        pClassesLock.releaseWriteLock();
       }
     }
   }
@@ -156,7 +155,7 @@ class GlueClassCache
    * Access to this field should be protected by the read/write lock below.
    */
   private TreeMap<String,Class>   pClasses;
-  private ReentrantReadWriteLock  pClassesLock;
+  private LoggedLock  pClassesLock;
 
 }
 

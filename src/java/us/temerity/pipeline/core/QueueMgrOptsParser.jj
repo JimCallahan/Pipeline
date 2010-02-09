@@ -232,6 +232,7 @@ TOKEN :
 | <FINE:    	      "fine">    
 | <FINER :  	      "finer">   
 | <FINEST:    	      "finest">  
+| <DETAIL:    	      "detail">  
 | <COMMA:  	      ",">             : LOG_TYPE
 | <AE2:               (["\0"])+>       : DEFAULT
 | <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
@@ -683,7 +684,7 @@ LogMgr.Level LogLevel() :
 }
 {
   (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
-   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel() | v=DetailLevel()) 
   {
     return v;
   }
@@ -752,6 +753,17 @@ LogMgr.Level FinestLevel() :
   <FINEST> 
   {
     return LogMgr.Level.Finest;
+  }
+}
+
+LogMgr.Level DetailLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  (<DETAIL>) 
+  {
+    return LogMgr.Level.Detail;
   }
 }
 
