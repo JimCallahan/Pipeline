@@ -10558,29 +10558,13 @@ class MasterMgr
     }
 
     timer.aquire();
-    {
-      LoggedLock.WriteLock wlock = pDatabaseLock.writeLock(); 
-      try {
-        long start = System.currentTimeMillis();
-        while(true) {
-          if(wlock.tryLock() || 
-             wlock.tryLock(sDatabaseWriteLockTimeout, TimeUnit.MILLISECONDS))
-            break;
-
-          long wait = System.currentTimeMillis() - start;
-          if(wait > sDeleteTimeout)
-            return new FailureRsp
-              (timer, "Giving up after attempting to Delete node (" + name + ") for " + 
-               "(" + TimeStamps.formatInterval(wait) + ").\n\n" + 
-               "The Pipeline server is simply too busy at the moment to allow Delete " + 
-               "operations to proceed without causing unacceptable delays for other " + 
-               "users.  Please try again later, preferably during non-peak hours."); 
-        }
-      }
-      catch(InterruptedException ex) {
-        return new FailureRsp
-          (timer, "Interrupted while attempting to acquire the database write-lock!"); 
-      }
+    if(!pDatabaseLock.tryWriteLock(sDeleteTimeout)) {
+      return new FailureRsp
+        (timer, "Giving up after attempting to Delete node (" + name + ") for " + 
+         "(" + TimeStamps.formatInterval(sDeleteTimeout) + ").\n\n" + 
+         "The Pipeline server is simply too busy at the moment to allow Delete " + 
+         "operations to proceed without causing unacceptable delays for other " + 
+         "users.  Please try again later, preferably during non-peak hours."); 
     }
     try {
       timer.resume();	
@@ -21512,6 +21496,7 @@ class MasterMgr
       catch(InterruptedException ex) {
         return;
       }
+      pBackupSyncTrigger.drainPermits();
     }
 
     TaskTimer timer = new TaskTimer();
@@ -21599,6 +21584,7 @@ class MasterMgr
 	   "Database Backup Sync: Overbudget by " + 
            "(" + TimeStamps.formatInterval(-nap) + ")..."); 
       }
+      pBackupSyncTrigger.drainPermits();
     }
   }
 
@@ -21621,8 +21607,16 @@ class MasterMgr
       TaskTimer tm = new TaskTimer("Database Backup Synchronized " + 
                                    "(" + (needsLock ? "locked" : "live") + ")");
       tm.aquire();
-      if(needsLock) 
-        pDatabaseLock.acquireWriteLock();
+      if(needsLock) {
+        if(!pDatabaseLock.tryWriteLock(sBackupTimeout)) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Bak, LogMgr.Level.Warning,
+             "Giving up attempting to acquire the Database Write-Lock needed to " + 
+             "perform the Backup after " + 
+             "(" + TimeStamps.formatInterval(sBackupTimeout) + ")."); 
+          return false;
+        }
+      }
       try {
         tm.resume();	
         
@@ -25777,15 +25771,16 @@ class MasterMgr
   private LoggedLock  pDatabaseLock;
 
   /**
-   * The amount of time to wait between attempts to acquire the database write-lock.
-   */ 
-  private static final long  sDatabaseWriteLockTimeout = 5000L;   /* 5-seconds */ 
-
-  /**
-   * The total amount of time to attempt to acquire the database write-lock during a
+   * The amount of time to attempt to acquire the database write-lock during a
    * Delete operation before giving up. 
    */ 
   private static final long  sDeleteTimeout = 300000L;   /* 5-minutes */ 
+
+  /**
+   * The amount of time to attempt to acquire the database write-lock during a
+   * Backup operation before giving up. 
+   */ 
+  private static final long  sBackupTimeout = 1800000L;   /* 30-minutes */ 
 
 
 

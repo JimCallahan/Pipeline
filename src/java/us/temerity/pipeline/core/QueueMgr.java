@@ -10224,6 +10224,7 @@ class QueueMgr
       catch(InterruptedException ex) {
         return;
       }
+      pBackupSyncTrigger.drainPermits();
     }
 
     TaskTimer timer = new TaskTimer();
@@ -10311,6 +10312,7 @@ class QueueMgr
 	   "Database Backup Sync: Overbudget by " + 
            "(" + TimeStamps.formatInterval(-nap) + ")..."); 
       }
+      pBackupSyncTrigger.drainPermits();
     }
   }
 
@@ -10333,8 +10335,16 @@ class QueueMgr
       TaskTimer tm = new TaskTimer("Database Backup Synchronized " + 
                                    "(" + (needsLock ? "locked" : "live") + ")");
       tm.aquire();
-      if(needsLock) 
-        pDatabaseLock.acquireWriteLock();
+      if(needsLock) {
+        if(!pDatabaseLock.tryWriteLock(sBackupTimeout)) {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Bak, LogMgr.Level.Warning,
+             "Giving up attempting to acquire the Database Write-Lock needed to " + 
+             "perform the Backup after " + 
+             "(" + TimeStamps.formatInterval(sBackupTimeout) + ")."); 
+          return false;
+        }
+      }
       try {
         tm.resume();	
         
@@ -14070,6 +14080,12 @@ class QueueMgr
    */
   private static JobRankSorter sDefaultDispatchControl = 
     new JobRankSorter(new DispatchControl("Built-In"));
+
+  /**
+   * The amount of time to attempt to acquire the database write-lock during a
+   * Backup operation before giving up. 
+   */ 
+  private static final long  sBackupTimeout = 1800000L;   /* 30-minutes */ 
 
 
 
