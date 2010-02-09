@@ -23,7 +23,7 @@ import us.temerity.pipeline.plugin.*;
  * <DIV style="margin-left: 40px;">
  *   Template Scene<BR>
  *   <DIV style="margin-left: 40px;">
- *     The template AfterFX scene which is going to have it sources replaced..
+ *     The template AfterFX scene which is going to have it sources replaced.
  *   </DIV> <BR>
  *   
  *   Fix Paths<BR>
