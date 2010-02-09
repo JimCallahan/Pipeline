@@ -357,20 +357,28 @@ class AfterFXBuildAction
           ("The ADOBE_CS_VERSION given (" + vsn + ") was not a number!"); 
       }
 
-      if(csv < 3)
+      if(csv < 2)
         throw new PipelineException
-          ("The Mac OS X is only supported for Adobe After Effects CS3 and above!");         
+          ("The Mac OS X is only supported for Adobe After Effects CS2 and above!");         
+
+      File tempFile = createTemp(agenda, "oas");
+      
+      try {
+        BufferedWriter out = new BufferedWriter(new FileWriter(tempFile));
+        
+        writeAfterFXAppleScriptLauncher(out, script, String.valueOf(csv));  
+          
+        out.close();
+      }
+      catch (IOException ex) {
+        throw new PipelineException
+          ("Unable to write temporary appleScript file (" + script + ") to launch the " + 
+           "AfterFX Editor!\n" +
+           ex.getMessage());
+      }
 
       ArrayList<String> args = new ArrayList<String>();
-      args.add("-e");
-      args.add("tell application \"Adobe After Effects CS" + csv + "\"");
-      
-      String macpath = script.getAbsolutePath().substring(1).replace("/",":");
-      args.add("-e");
-      args.add("DoScriptFile \"" + macpath + "\"");
-      
-      args.add("-e");
-      args.add("end tell");
+      args.add(tempFile.getPath());
       
       return createSubProcess(agenda, "osascript", args, outFile, errFile);
     }
