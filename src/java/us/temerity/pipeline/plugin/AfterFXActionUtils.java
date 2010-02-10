@@ -171,9 +171,6 @@ class AfterFXActionUtils
    *   
    * @param agenda
    *   The ActionAgenda for the action
-   * 
-   * @param csv
-   *   The version of AfterFX being used in the action's toolset. 
    *   
    * @throws PipelineException
    * @throws IOException
