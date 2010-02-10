@@ -64,7 +64,7 @@ class LoggedLock
   { 
     boolean success = false; 
     try {
-      logPreLock(false); 
+      logPreLock(true); 
       if(readLock().tryLock() || 
          readLock().tryLock(timeout, TimeUnit.MILLISECONDS))
         success = true; 
@@ -191,7 +191,7 @@ class LoggedLock
    * @param isReadLock
    *   Set to <CODE>true</CODE> for a read-lock and <CODE>false</CODE> for a write-lock.
    */ 
-  private void
+  protected void
   logPreLock
   (
    boolean isReadLock
@@ -215,7 +215,7 @@ class LoggedLock
    * @param isAcquired
    *   Set to <CODE>true</CODE> for acquisition and <CODE>false</CODE> for release.
    */ 
-  private void
+  protected void
   logPostLock
   (
    boolean isReadLock, 
@@ -238,10 +238,29 @@ class LoggedLock
    * @param isReadLock
    *   Set to <CODE>true</CODE> for a read-lock and <CODE>false</CODE> for a write-lock.
    */ 
-  private void
+  protected void
   logLockFail
   (
    boolean isReadLock
+  ) 
+  {
+    logLockFail(isReadLock, ""); 
+  }
+
+  /**
+   * Log the failure to acquire a lock.
+   * 
+   * @param isReadLock
+   *   Set to <CODE>true</CODE> for a read-lock and <CODE>false</CODE> for a write-lock.
+   * 
+   * @param extra
+   *   Extra information to display between the lock description and the call info.
+   */ 
+  protected void
+  logLockFail
+  (
+   boolean isReadLock, 
+   String extra 
   ) 
   {
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Lck, LogMgr.Level.Fine)) {
@@ -249,14 +268,15 @@ class LoggedLock
       LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Lck, LogMgr.Level.Fine, 
          "Failed to Acquire " + pTitle + " " + (isReadLock ? "Read" : "Write") + "-Lock " + 
-         "in Thread " + thread.getName() + "[" + thread.getId() + "]" + getCallInfo(thread));
+         "in Thread " + thread.getName() + "[" + thread.getId() + "]" + extra + 
+         getCallInfo(thread));
     }
   }
 
   /**
    * Get a string containing information about the locking method call site.
    */ 
-  private String
+  protected String
   getCallInfo
   (
    Thread thread
