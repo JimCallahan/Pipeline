@@ -1919,11 +1919,15 @@ class JQueueJobDetailsPanel
   public void 
   doShowOutput()
   {
-    if((pJob != null) && (pJobInfo != null) && (pJobInfo.getHostname() != null)) {
-      if((pStdOutDialog == null) || !pStdOutDialog.isVisible())
-	pStdOutDialog = new JMonitorJobStdOutDialog(pJob, pJobInfo);
-      
-      pStdOutDialog.setVisible(true);
+    if((pJob != null) && (pJobInfo != null)) {
+      switch(pJobInfo.getState()) {
+      case Running:
+      case Finished:
+      case Failed:
+        if((pStdOutDialog == null) || !pStdOutDialog.isVisible())
+          pStdOutDialog = new JMonitorJobStdOutDialog(pJob, pJobInfo);
+        pStdOutDialog.setVisible(true);
+      }
     }
   }
 
@@ -1933,11 +1937,15 @@ class JQueueJobDetailsPanel
   public void 
   doShowErrors()
   {
-    if((pJob != null) && (pJobInfo != null) && (pJobInfo.getHostname() != null)) {
-      if((pStdErrDialog == null) || !pStdErrDialog.isVisible())
-	pStdErrDialog = new JMonitorJobStdErrDialog(pJob, pJobInfo);
-      
-      pStdErrDialog.setVisible(true);
+    if((pJob != null) && (pJobInfo != null)) {
+      switch(pJobInfo.getState()) {
+      case Running:
+      case Finished:
+      case Failed:
+        if((pStdErrDialog == null) || !pStdErrDialog.isVisible())
+          pStdErrDialog = new JMonitorJobStdErrDialog(pJob, pJobInfo);
+        pStdErrDialog.setVisible(true);
+      }
     }
   }
   

@@ -313,8 +313,10 @@ class QueueJobInfo
     if(hostname == null) 
       throw new IllegalArgumentException
 	("The hostname cannot be (null)!");
-    if(pHostname == null) 
-      pHostname = hostname; 
+    if(pHostname == null) {
+      pHostname = hostname;
+      initShortHostname();
+    } 
 
     return limbo(); 
   }
@@ -343,10 +345,7 @@ class QueueJobInfo
   public synchronized JobState
   preempted() 
   {
-    pHostname      = null;
-    pShortHostname = null;
-    pStartedStamp  = null;
-    pOsType        = null;
+    pCompletedStamp = System.currentTimeMillis();
 
     JobState prev = pState;
     pState = JobState.Preempted;
