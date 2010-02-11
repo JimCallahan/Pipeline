@@ -7278,24 +7278,33 @@ class JNodeViewerPanel
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
+          StringBuilder errors = new StringBuilder();
 	  for(String name : pVersions.keySet()) {
-	    master.updatePanelOp(pGroupID, "Checking-Out: " + name);
+            try {
+              master.updatePanelOp(pGroupID, "Checking-Out: " + name);
+              
+              TreeMap<String,TreeSet<Long>> jobIDs = 
+                client.checkOut(pAuthor, pView, name, 
+                                pVersions.get(name), pModes.get(name), pMethods.get(name));
+              
+              if((jobIDs != null) && !jobIDs.isEmpty()) {
+                ShowUnfinishedJobsTask task = new ShowUnfinishedJobsTask(name, jobIDs);
+                SwingUtilities.invokeLater(task);
+                return;
+              }
+            }
+            catch(PipelineException ex) {
+              if(errors.length() > 0) 
+                errors.append("\n\n---------------------------------\n");
+              errors.append(ex.getMessage()); 
+            }
+          }
 
-	    TreeMap<String,TreeSet<Long>> jobIDs = 
-	      client.checkOut(pAuthor, pView, name, 
-			      pVersions.get(name), pModes.get(name), pMethods.get(name));
-
-	    if((jobIDs != null) && !jobIDs.isEmpty()) {
-	      ShowUnfinishedJobsTask task = new ShowUnfinishedJobsTask(name, jobIDs);
-	      SwingUtilities.invokeLater(task);
-	      return;
-	    }
-	  }
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
+          if(errors.length() > 0) {
+            master.showErrorDialog("Error:", errors.toString());
+            return;
+          }            
+        }
 	finally {
 	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
@@ -7376,14 +7385,23 @@ class JNodeViewerPanel
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
+          StringBuilder errors = new StringBuilder();
 	  for(String name : pVersions.keySet()) {
-	    master.updatePanelOp(pGroupID, "Locking: " + name);
-	    client.lock(pAuthor, pView, name, pVersions.get(name));
-	  }
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
+            try {
+              master.updatePanelOp(pGroupID, "Locking: " + name);
+              client.lock(pAuthor, pView, name, pVersions.get(name));
+            }
+            catch(PipelineException ex) {
+              if(errors.length() > 0) 
+                errors.append("\n\n---------------------------------\n");
+              errors.append(ex.getMessage()); 
+            }
+          }
+
+          if(errors.length() > 0) {
+            master.showErrorDialog("Error:", errors.toString());
+            return;
+          }            
 	}
 	finally {
 	  master.releaseMasterMgrClient(client);
@@ -7423,15 +7441,24 @@ class JNodeViewerPanel
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
+          StringBuilder errors = new StringBuilder();
 	  for(String name : pVersions.keySet()) {
-	    master.updatePanelOp(pGroupID, "Evolving Node: " + name);
+            try {
+              master.updatePanelOp(pGroupID, "Evolving Node: " + name);
+              
+              client.evolve(pAuthor, pView, name, pVersions.get(name));
+            }
+            catch(PipelineException ex) {
+              if(errors.length() > 0) 
+                errors.append("\n\n---------------------------------\n");
+              errors.append(ex.getMessage()); 
+            }
+          }
 
-	    client.evolve(pAuthor, pView, name, pVersions.get(name));
-	  }
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
+          if(errors.length() > 0) {
+            master.showErrorDialog("Error:", errors.toString());
+            return;
+          }            
 	}
 	finally {
 	  master.releaseMasterMgrClient(client);
