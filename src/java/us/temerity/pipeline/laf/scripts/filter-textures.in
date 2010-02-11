@@ -107,6 +107,10 @@ do
   frame=$(($frame + 1))	
 done
 
+frame=25
+mkmipmaps $frame Node-MissingSome
+mkicon $frame Node-MissingSome
+
 
 
 #---------------------------------------------------------------------------------------------
@@ -198,8 +202,6 @@ do
     anynewer1=1
   fi
 done
-
-
 
 
 

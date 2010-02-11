@@ -196,23 +196,46 @@ class ViewerNode
         String nstate = null;
         if(pStatus.hasHeavyDetails()) {
           NodeDetailsHeavy details = pStatus.getHeavyDetails();
-          if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
-            VersionID wvid = details.getWorkingVersion().getWorkingID();
-            VersionID lvid = details.getLatestVersion().getVersionID();
-            switch(wvid.compareLevel(lvid)) {
-            case Major:
-              nstate = "Node-NeedsCheckOutMajor";
-              break;
-              
-            case Minor:
-              nstate = "Node-NeedsCheckOut";
-              break;
-              
-            case Micro:
-              nstate = "Node-NeedsCheckOutMicro";
+          switch(details.getOverallNodeState()) {
+          case NeedsCheckOut:
+            {
+              VersionID wvid = details.getWorkingVersion().getWorkingID();
+              VersionID lvid = details.getLatestVersion().getVersionID();
+              switch(wvid.compareLevel(lvid)) {
+              case Major:
+                nstate = "Node-NeedsCheckOutMajor";
+                break;
+                
+              case Minor:
+                nstate = "Node-NeedsCheckOut";
+                break;
+                
+              case Micro:
+                nstate = "Node-NeedsCheckOutMicro";
+              }
             }
-          }
-          else {
+            break;
+
+          case Missing:
+            {
+              boolean allMissing = true;
+              for(FileSeq fseq : details.getFileStateSequences()) {
+                for(FileState fstate : details.getFileState(fseq)) {
+                  if(fstate != FileState.Missing) {
+                    allMissing = false;
+                    break;
+                  }
+                }
+                
+                if(!allMissing) 
+                  break;
+              }
+
+              nstate = ("Node-Missing" + (allMissing ? "" : "Some"));
+            }
+            break;
+ 
+          default:
             nstate = ("Node-" + details.getOverallNodeState()); 
           }
         }

@@ -151,6 +151,9 @@ class TextureLoader
         pTextures32.add("Node-NeedsCheckOutMajor");
         pIcons21.add("Node-NeedsCheckOutMajor");
         
+        pTextures32.add("Node-MissingSome");
+        pIcons21.add("Node-MissingSome");
+        
         pIcons21.add("Node-Added");
         pIcons21.add("Node-Obsolete");
         
@@ -341,12 +344,7 @@ class TextureLoader
 
     public void 
     run() 
-    {  
- //    if(pCardPanel != null) { 
-//         CardLayout layout = (CardLayout) (pCardPanel.getLayout()); 
-//         layout.show(pCardPanel, "OpenGL");
-//       }
-
+    { 
       pDrawable.display(); 
     }
   }

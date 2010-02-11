@@ -157,7 +157,7 @@ class TextureMgr
    * Set the OpenGL texture handles for a given font.
    * 
    * This method should only be called by the {@link #verifyFontTextures verifyFontTextures} 
-   * method or by {@link JTextureLoaderBar} during plui(1) startup.
+   * method or by {@link TextureLoader} during plui(1) startup.
    */ 
   public synchronized void
   setFontTextures
@@ -181,7 +181,7 @@ class TextureMgr
    * a specific character in the given font.
    * 
    * This method should only be called by the {@link #verifyFontTextures verifyFontTextures} 
-   * method or by {@link JTextureLoaderBar} during plui(1) startup.
+   * method or by {@link TextureLoader} during plui(1) startup.
    * 
    * @return 
    *   The OpenDL texture handle for the character.
@@ -621,7 +621,7 @@ class TextureMgr
    * Cache the current user preferences for Swing icon colors.<P> 
    * 
    * This method should only be called by the {@link #rebuildIcons rebuildIcons} method
-   * or by {@link JTextureLoaderBar} during plui(1) startup.
+   * or by {@link TextureLoader} during plui(1) startup.
    */ 
   public synchronized void
   cacheIconColors() 
@@ -652,7 +652,7 @@ class TextureMgr
    * and queue state colors.<P> 
    * 
    * This method should only be called by the {@link #rebuildIcons rebuildIcons} method
-   * or by {@link JTextureLoaderBar} during plui(1) startup.
+   * or by {@link TextureLoader} during plui(1) startup.
    */ 
   public synchronized void
   rebuildNodeIcons() 
@@ -761,7 +761,7 @@ class TextureMgr
    * and queue state colors.<P> 
    * 
    * This method should only be called by the {@link #rebuildIcons rebuildIcons} method
-   * or by {@link JTextureLoaderBar} during plui(1) startup.
+   * or by {@link TextureLoader} during plui(1) startup.
    */ 
   public synchronized void
   rebuildExtraNodeIcons() 
@@ -828,9 +828,10 @@ class TextureMgr
       /**
        * 32x32: NeedsCheckOutMajor-<QueueState>-Normal
        *        NeedsCheckOutMicro-<QueueState>-Normal
+       *        MissingSome-<QueueState>-Normal
        */
       {
-        String[] prefix = { "NeedsCheckOutMajor", "NeedsCheckOutMicro" };
+        String[] prefix = { "NeedsCheckOutMajor", "NeedsCheckOutMicro", "MissingSome" };
         
         SelectionMode mode = SelectionMode.Normal;
         Color3d ringColor = NodeStyles.getSelectionColor3d(mode);
@@ -1031,7 +1032,7 @@ class TextureMgr
    * and queue state colors.<P> 
    * 
    * This method should only be called by the {@link #rebuildIcons rebuildIcons} method
-   * or by {@link JTextureLoaderBar} during plui(1) startup.
+   * or by {@link TextureLoader} during plui(1) startup.
    */ 
   public synchronized void
   rebuildJobIcons() 

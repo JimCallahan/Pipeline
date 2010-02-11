@@ -374,24 +374,48 @@ class JBaseNodeDetailPanel
       String iname = "Blank-Normal"; 
       if(pStatus != null) {	
         if(pStatus.hasHeavyDetails()) {
-          NodeDetailsHeavy details = pStatus.getHeavyDetails();
-          if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
-            VersionID wvid = details.getWorkingVersion().getWorkingID();
-            VersionID lvid = details.getLatestVersion().getVersionID();
-            switch(wvid.compareLevel(lvid)) {
-            case Major:
-              iname = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
-              break;
-              
-            case Minor:
-              iname = ("NeedsCheckOut-" + details.getOverallQueueState());
-              break;
-              
-            case Micro:
-              iname = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
+          NodeDetailsHeavy details = pStatus.getHeavyDetails(); 
+          switch(details.getOverallNodeState()) {
+          case NeedsCheckOut: 
+            {
+              VersionID wvid = details.getWorkingVersion().getWorkingID();
+              VersionID lvid = details.getLatestVersion().getVersionID();
+              switch(wvid.compareLevel(lvid)) {
+              case Major:
+                iname = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
+                break;
+                
+              case Minor:
+                iname = ("NeedsCheckOut-" + details.getOverallQueueState());
+                break;
+                
+              case Micro:
+                iname = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
+              }
             }
-          }
-          else {
+            break; 
+            
+          case Missing: 
+            {
+              boolean allMissing = true;
+              for(FileSeq fseq : details.getFileStateSequences()) {
+                for(FileState fstate : details.getFileState(fseq)) {
+                  if(fstate != FileState.Missing) {
+                    allMissing = false;
+                    break;
+                  }
+                }
+                
+                if(!allMissing) 
+                  break;
+              }
+
+              iname = ("Missing" + (allMissing ? "" : "Some") + "-" + 
+                       details.getOverallQueueState());
+            }
+            break;
+
+          default:
             iname = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
           }
           
