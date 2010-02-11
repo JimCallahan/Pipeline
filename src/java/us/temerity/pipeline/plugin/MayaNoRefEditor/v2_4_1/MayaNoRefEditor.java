@@ -70,6 +70,7 @@ class MayaNoRefEditor
    * 
    * @see SubProcessLight
    */  
+  @Override
   public SubProcessLight
   prep
   (
@@ -133,7 +134,7 @@ class MayaNoRefEditor
     }
     else if(PackageInfo.sOsType == OsType.Windows) {
       args.add("-command");
-      args.add("file -open -lnr \\\"" + fseq.getPath(0) + "\\\"");
+      args.add("\"file -open -lnr \\\"" + fseq.getPath(0) + "\\\"\"");
     } 
     else {
       args.add("-command");
@@ -185,5 +186,4 @@ class MayaNoRefEditor
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = -3022438536909553023L;
-
 }

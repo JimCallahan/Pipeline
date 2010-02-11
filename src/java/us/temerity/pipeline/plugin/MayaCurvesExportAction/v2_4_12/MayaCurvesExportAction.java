@@ -446,8 +446,7 @@ class MayaCurvesExportAction
         String sceneType = entry.getValue();
         String suffix = pSuffix.get(exportSet);
         
-        File tempFile = createTemp(agenda, suffix);
-        Path newScene = new Path(tempFile);
+        Path newScene = createTempPath(agenda, suffix);
         pLocalScenes.put(exportSet, newScene);
         
         out.write("{\n");
