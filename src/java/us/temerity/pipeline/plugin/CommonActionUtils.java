@@ -5,6 +5,7 @@ package us.temerity.pipeline.plugin;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 
+import java.security.*;
 import java.util.*;
 import java.io.*;
 
@@ -201,6 +202,41 @@ class CommonActionUtils
       return createTemp(agenda, "bat");
     else 
       return createTemp(agenda, 0644, "bash");
+  }
+  
+  /**
+   * Generate a unique name for a file in the job's scratch area. <p>
+   * 
+   * Calls to {@link #createTemp(ActionAgenda, String)} can suffer from write permission 
+   * problems if the SubProcess attempts to write to them after the 
+   * {@link #prep(ActionAgenda, File, File)} method has created it.  This provides an 
+   * alternative way to get a unique file name, without actually having the file created, 
+   * avoiding possible permission errors.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffix
+   *   The suffix for the temporary file.
+   *   
+   * @return
+   *   A unique file path in the Action's scratch directory.
+   */
+  public final Path
+  createTempPath
+  (
+    ActionAgenda agenda,
+    String suffix
+  )
+  {
+    long n = sSecureRandom.nextLong();
+    if (n == Long.MAX_VALUE)
+       n = 0;
+    else
+      n = Math.abs(n);
+    Path p = getTempPath(agenda);
+    String fileName = pName + "_" + agenda.getJobID()  + n + "." + suffix;
+    return new Path(p, fileName);
   }
 
 
@@ -2746,6 +2782,8 @@ class CommonActionUtils
   private static final long serialVersionUID = -826177190846836889L;
   
   public static final String aExtraOptions = "ExtraOptions"; 
+  
+  private static final SecureRandom sSecureRandom = new SecureRandom();
 
 }
 
