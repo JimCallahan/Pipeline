@@ -1,0 +1,11 @@
+To create the SSH tunnel from port 43050 at a studio to my local port 43050:
+
+$ ssh -v -N -R 43050:studio-ip-addr:43050 studio@my-ip-addr
+
+
+For example:
+
+$ ssh -v -N -R 43050:192.168.3.66:43050 rv@98.149.71.108
+
+                           
+
