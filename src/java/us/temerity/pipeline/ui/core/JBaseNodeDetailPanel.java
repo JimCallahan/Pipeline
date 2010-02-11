@@ -396,23 +396,8 @@ class JBaseNodeDetailPanel
             break; 
             
           case Missing: 
-            {
-              boolean allMissing = true;
-              for(FileSeq fseq : details.getFileStateSequences()) {
-                for(FileState fstate : details.getFileState(fseq)) {
-                  if(fstate != FileState.Missing) {
-                    allMissing = false;
-                    break;
-                  }
-                }
-                
-                if(!allMissing) 
-                  break;
-              }
-
-              iname = ("Missing" + (allMissing ? "" : "Some") + "-" + 
-                       details.getOverallQueueState());
-            }
+            iname = ("Missing" + (details.isAllMissing() ? "" : "Some") + "-" + 
+                     details.getOverallQueueState());
             break;
 
           default:

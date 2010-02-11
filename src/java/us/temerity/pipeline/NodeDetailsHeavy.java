@@ -37,7 +37,7 @@ class NodeDetailsHeavy
    * (newest) for determining when each file index was last modified.  This timestamp may be
    * the last modification date for the primary/secondary file sequence, the timestamp of 
    * when the last critical modification of node properties or links occurred.  For missing
-   * files, this timestamp will be when the node state was computed last computed.<P> 
+   * files, this timestamp will be when the node state was last computed.<P> 
    * 
    * @param work
    *   The working version of the node or <CODE>null</CODE> if the node has not been 
@@ -119,8 +119,8 @@ class NodeDetailsHeavy
     if(fileStates == null) 
       throw new IllegalArgumentException("The file states cannot be (null)!");
     pFileStates = new TreeMap<FileSeq,FileState[]>(); 
-    for(FileSeq fseq : fileStates.keySet())
-      pFileStates.put(fseq, fileStates.get(fseq).clone());
+    for(Map.Entry<FileSeq,FileState[]> entry : fileStates.entrySet()) 
+      pFileStates.put(entry.getKey(), entry.getValue().clone());
 
     if(fileTimeStamps == null) 
       throw new IllegalArgumentException("The file time stamps cannot be (null)!");
@@ -137,6 +137,28 @@ class NodeDetailsHeavy
     if(updateStates == null) 
       throw new IllegalArgumentException("The update states cannot be (null)!");
     pUpdateStates = updateStates.clone();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether all of the per-file states are Missing.
+   */ 
+  public boolean 
+  isAllMissing()
+  {
+    for(FileState[] fs : pFileStates.values()) {
+      for(FileState fstate : fs) {
+        if(fstate != FileState.Missing) 
+          return false; 
+      }
+    }
+
+    return true;
   }
 
 
@@ -198,7 +220,7 @@ class NodeDetailsHeavy
   }
 
   /**
-   * Get the newest timestamp which needs to be considered when computing wheter each file 
+   * Get the newest timestamp which needs to be considered when computing whether each file 
    * index is {@link QueueState#Stale Stale}. 
    */ 
   public long[] 

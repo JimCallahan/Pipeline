@@ -217,22 +217,7 @@ class ViewerNode
             break;
 
           case Missing:
-            {
-              boolean allMissing = true;
-              for(FileSeq fseq : details.getFileStateSequences()) {
-                for(FileState fstate : details.getFileState(fseq)) {
-                  if(fstate != FileState.Missing) {
-                    allMissing = false;
-                    break;
-                  }
-                }
-                
-                if(!allMissing) 
-                  break;
-              }
-
-              nstate = ("Node-Missing" + (allMissing ? "" : "Some"));
-            }
+            nstate = ("Node-Missing" + (details.isAllMissing() ? "" : "Some"));
             break;
  
           default:
