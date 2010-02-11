@@ -1,0 +1,12 @@
+To create the SSH tunnel from port 43050 at a studio to my local port 43050:
+
+$ ssh -v -N -R 43050:studio-ip-addr:43050 studio@my-ip-addr
+
+
+For RV: 
+
+$ ssh -v -N -R 43010:192.168.3.66:43010 rv@98.149.71.108    # plpluginmgr
+$ ssh -v -N -R 43020:192.168.3.66:43020 rv@98.149.71.108    # plmaster
+$ ssh -v -N -R 43040:192.168.3.66:43040 rv@98.149.71.108    # plqueuemgr
+$ ssh -v -N -R 43060:192.168.3.66:43060 rv@98.149.71.108    # plui
+                          

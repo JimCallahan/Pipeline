@@ -3,6 +3,7 @@
 package us.temerity.pipeline;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.*; 
 
 /*------------------------------------------------------------------------------------------*/
@@ -45,6 +46,46 @@ class LoggedLock
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Attempt to acquire the read-lock, with a timeout.<P> 
+   * 
+   * Adds logging to the call of <CODE>readLock().tryLock()</CODE>.
+   * 
+   * @param timeout
+   *   The number of milliseconds to wait to acquire the lock before giving up.
+   * 
+   * @return 
+   *   Whether the lock was acquired.
+   */ 
+  public boolean
+  tryReadLock
+  (
+   long timeout
+  ) 
+  { 
+    boolean success = false; 
+    try {
+      logPreLock(true); 
+      if(readLock().tryLock() || 
+         readLock().tryLock(timeout, TimeUnit.MILLISECONDS))
+        success = true; 
+    }
+    catch(InterruptedException ex) {
+      Thread thread = Thread.currentThread(); 
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Bak, LogMgr.Level.Warning,
+         "Interrupted while attempting to Acquire " + pTitle + " Read-Lock in Thread " + 
+         thread.getName() + "[" + thread.getId() + "] " + getCallInfo(thread));
+    }
+
+    if(success) 
+      logPostLock(true, true); 
+    else
+      logLockFail(true);
+
+    return success; 
+  }
+  
+  /**
    * Acquire the read-lock.<P> 
    * 
    * Adds logging to the call of <CODE>readLock().lock()</CODE>.
@@ -72,6 +113,46 @@ class LoggedLock
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Attempt to acquire the write-lock, with a timeout.<P> 
+   * 
+   * Adds logging to the call of <CODE>writeLock().tryLock()</CODE>.
+   * 
+   * @param timeout
+   *   The number of milliseconds to wait to acquire the lock before giving up.
+   * 
+   * @return 
+   *   Whether the lock was acquired.
+   */ 
+  public boolean
+  tryWriteLock
+  (
+   long timeout
+  ) 
+  { 
+    boolean success = false; 
+    try {
+      logPreLock(false); 
+      if(writeLock().tryLock() || 
+         writeLock().tryLock(timeout, TimeUnit.MILLISECONDS))
+        success = true; 
+    }
+    catch(InterruptedException ex) {
+      Thread thread = Thread.currentThread(); 
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Bak, LogMgr.Level.Warning,
+         "Interrupted while attempting to Acquire " + pTitle + " Write-Lock in Thread " + 
+         thread.getName() + "[" + thread.getId() + "]" + getCallInfo(thread));
+    }
+
+    if(success) 
+      logPostLock(false, true); 
+    else
+      logLockFail(false);
+
+    return success; 
+  }
+  
   /**
    * Acquire the write-lock.<P> 
    * 
@@ -110,7 +191,7 @@ class LoggedLock
    * @param isReadLock
    *   Set to <CODE>true</CODE> for a read-lock and <CODE>false</CODE> for a write-lock.
    */ 
-  private void
+  protected void
   logPreLock
   (
    boolean isReadLock
@@ -121,7 +202,7 @@ class LoggedLock
       LogMgr.getInstance().logAndFlush
         (LogMgr.Kind.Lck, LogMgr.Level.Finer, 
          "Acquiring " + pTitle + " " + (isReadLock ? "Read" : "Write") + "-Lock in Thread " + 
-         thread.getName() + "[" + thread.getId() + "] " + getCallInfo(thread)); 
+         thread.getName() + "[" + thread.getId() + "]" + getCallInfo(thread)); 
     }
   }
    
@@ -134,7 +215,7 @@ class LoggedLock
    * @param isAcquired
    *   Set to <CODE>true</CODE> for acquisition and <CODE>false</CODE> for release.
    */ 
-  private void
+  protected void
   logPostLock
   (
    boolean isReadLock, 
@@ -147,14 +228,55 @@ class LoggedLock
         (LogMgr.Kind.Lck, LogMgr.Level.Fine, 
          pTitle + " " + (isReadLock ? "Read" : "Write") + "-Lock " + 
          (isAcquired ? "Acquired" : "Released") + " in Thread " + 
-         thread.getName() + "[" + thread.getId() + "] " + getCallInfo(thread));
+         thread.getName() + "[" + thread.getId() + "]" + getCallInfo(thread));
+    }
+  }
+
+  /**
+   * Log the failure to acquire a lock.
+   * 
+   * @param isReadLock
+   *   Set to <CODE>true</CODE> for a read-lock and <CODE>false</CODE> for a write-lock.
+   */ 
+  protected void
+  logLockFail
+  (
+   boolean isReadLock
+  ) 
+  {
+    logLockFail(isReadLock, ""); 
+  }
+
+  /**
+   * Log the failure to acquire a lock.
+   * 
+   * @param isReadLock
+   *   Set to <CODE>true</CODE> for a read-lock and <CODE>false</CODE> for a write-lock.
+   * 
+   * @param extra
+   *   Extra information to display between the lock description and the call info.
+   */ 
+  protected void
+  logLockFail
+  (
+   boolean isReadLock, 
+   String extra 
+  ) 
+  {
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Lck, LogMgr.Level.Fine)) {
+      Thread thread = Thread.currentThread(); 
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Lck, LogMgr.Level.Fine, 
+         "Failed to Acquire " + pTitle + " " + (isReadLock ? "Read" : "Write") + "-Lock " + 
+         "in Thread " + thread.getName() + "[" + thread.getId() + "]" + extra + 
+         getCallInfo(thread));
     }
   }
 
   /**
    * Get a string containing information about the locking method call site.
    */ 
-  private String
+  protected String
   getCallInfo
   (
    Thread thread

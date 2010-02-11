@@ -891,13 +891,19 @@ class JRestoreDialog
 	  for(VersionID vid : vsizes.keySet()) {
 	    Long size = vsizes.get(vid);
 	    if(size == null) {
-	      String aname = pContains.get(name,vid).first();
-	      ArchiveVolume vol = pArchiveVolumes.get(aname);
-	      size = vol.getSize(name, vid);
-	      vsizes.put(vid, size);
-	    }
+              TreeSet<String> anames = pContains.get(name, vid);
+              if((anames != null) && !anames.isEmpty()) {
+                String aname = anames.first();
+                ArchiveVolume vol = pArchiveVolumes.get(aname);
+                if(vol != null) {
+                  size = vol.getSize(name, vid);
+                  vsizes.put(vid, size);
+                }
+              }
+            }
 	    
-	    total += size;
+            if(size != null) 
+              total += size;
 	  }
 	}
 
