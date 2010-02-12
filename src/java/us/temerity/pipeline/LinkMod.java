@@ -117,7 +117,13 @@ class LinkMod
 
   /**
    * Set the link's {@link OverallNodeState OverallNodeState} and
-   * {@link OverallQueueState OverallQueueState} propagation policy.
+   * {@link OverallQueueState OverallQueueState} propagation policy. <P> 
+   * 
+   * If set to Association, the relationship is set to None and frame offset to 
+   * <CODE>null</CODE>.<P> 
+   * 
+   * If set to Dependency or Reference and the relationship is currently None, 
+   * the relationship is changed to All and the frame offset to <CODE>null</CODE>.
    */ 
   public void 
   setPolicy
@@ -128,11 +134,34 @@ class LinkMod
     if(policy == null) 
       throw new IllegalArgumentException("The policy cannot be (null)!");
     pPolicy = policy;
+
+    switch(pPolicy) {
+    case Association:
+      pRelationship = LinkRelationship.None;
+      pFrameOffset  = null;
+      break;
+
+    default:
+      switch(pRelationship) {
+      case None:
+        pRelationship = LinkRelationship.All;
+        pFrameOffset  = null;
+      }
+    }
   }
 
   /**
    * Set the nature of the relationship between files associated with the source and 
-   * target nodes. 
+   * target nodes. <P> 
+   * 
+   * Attempting to change the relationship to one that is illegal for the current 
+   * policy will generate an IllegalArgumentException.<P> 
+   * 
+   * Changing the relationship to 1:1 from All or None will change the frame offset to 
+   * (0). <P>
+   * 
+   * While changing the relationship to to All or None will change the frame offset to 
+   * <CODE>null</CODE>.
    */ 
   public void 
   setRelationship
@@ -142,6 +171,27 @@ class LinkMod
   {
     if(relationship == null) 
       throw new IllegalArgumentException("The link relationship cannot be (null)!");
+    
+    switch(pPolicy) {
+    case Association:
+      switch(relationship) {
+      case OneToOne:
+      case All:
+        throw new IllegalArgumentException
+          ("The link relationship cannot be (" + relationship.toTitle() + ") " + 
+           "if the policy is Association!"); 
+      }
+      break;
+
+    default:
+      switch(relationship) {
+      case None:
+        throw new IllegalArgumentException
+          ("The link relationship cannot be (" + relationship.toTitle() + ") " + 
+           "unless the policy is Association!"); 
+      }
+    }        
+
     pRelationship = relationship;
 
     switch(pRelationship) {

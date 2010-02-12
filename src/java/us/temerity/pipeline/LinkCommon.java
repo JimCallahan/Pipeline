@@ -67,24 +67,48 @@ class LinkCommon
 
     if(policy == null) 
       throw new IllegalArgumentException("The policy cannot be (null)!");
-    pPolicy = policy;
 
     if(relationship == null) 
       throw new IllegalArgumentException("The link relationship cannot be (null)!");
-    pRelationship = relationship;
 
-    if(relationship == LinkRelationship.OneToOne) {
+    switch(policy) {
+    case Association:
+      switch(relationship) {
+      case OneToOne:
+      case All:
+        throw new IllegalArgumentException
+          ("The link relationship cannot be (" + relationship.toTitle() + ") " + 
+           "if the policy is Association!"); 
+      }
+      break;
+
+    default:
+      switch(relationship) {
+      case None:
+        throw new IllegalArgumentException
+          ("The link relationship cannot be (" + relationship.toTitle() + ") " + 
+           "unless the policy is Association!"); 
+      }
+    }
+
+    switch(relationship) {
+    case OneToOne:
       if(offset == null) 
 	throw new IllegalArgumentException
 	  ("The frame index offset cannot be (null) for links with a " + 
-	   "(OneToOne) relationship!");
-      pFrameOffset = offset;
+	   relationship.toTitle() + " relationship!");
+      break;
+
+    default:
+      if(offset != null) 
+        throw new IllegalArgumentException
+          ("The frame index offset must be (null) for links with a " + 
+           relationship.toTitle() + " relationship!");
     }
-    else if(offset != null) {
-      throw new IllegalArgumentException
-	("The frame index offset must be (null) for links with a (" + relationship.name() +
-	 ") relationship!");
-    }
+
+    pPolicy = policy;
+    pRelationship = relationship;
+    pFrameOffset = offset;
   }
 
   /** 
