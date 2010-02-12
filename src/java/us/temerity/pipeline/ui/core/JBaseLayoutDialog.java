@@ -207,13 +207,15 @@ class JBaseLayoutDialog
     {
       Path current = new Path(root, local);
       File files[] = current.toFile().listFiles();
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	String name = files[wk].getName();
-	if(files[wk].isDirectory()) 
-	  subdirs.add(new Path(local, name)); 
-	else if(files[wk].isFile()) 
-	  layouts.add(name);
+      if(files != null) {
+        int wk;
+        for(wk=0; wk<files.length; wk++) {
+          String name = files[wk].getName();
+          if(files[wk].isDirectory()) 
+            subdirs.add(new Path(local, name)); 
+          else if(files[wk].isFile()) 
+            layouts.add(name);
+        }
       }
     }
     

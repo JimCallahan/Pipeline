@@ -284,11 +284,13 @@ class MineApp
     boolean allDirs = true;
     {
       File files[] = current.listFiles(); 
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-        if(!files[wk].isDirectory()) 
-          allDirs = false;
-        snames.add(files[wk].getName());
+      if(files != null) {
+        int wk;
+        for(wk=0; wk<files.length; wk++) {
+          if(!files[wk].isDirectory()) 
+            allDirs = false;
+          snames.add(files[wk].getName());
+        }
       }
     }
     

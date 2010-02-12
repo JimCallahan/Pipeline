@@ -490,42 +490,49 @@ class JobMgr
       TreeSet<Long> live = req.getJobIDs();
 
       File files[] = pJobDir.listFiles(); 
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	File dir = files[wk];
-	try {
-	  if(dir.isDirectory()) {
-	    Long jobID = new Long(dir.getName());
-	    if(!live.contains(jobID)) {
-	      boolean executing = false;
-	      {
-		timer.aquire();
-		synchronized(pExecuteTasks) {
-		  timer.resume();
-		  executing = pExecuteTasks.containsKey(jobID);
-		}
-	      }
-	      
-	      if(!executing) {
-		LogMgr.getInstance().log
-		  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-		   "Cleaning Job: " + jobID);
-		deadDirs.add(dir);
-	      }
-	    }
-	  }
-	  else {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe, 
-	       "Illegal file encountered in the job output directory (" + dir + ")!");
-	  }
-	}
-	catch(NumberFormatException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Illegal job output directory encountered (" + dir + ")!");
-	}
+      if(files != null) {
+        int wk;
+        for(wk=0; wk<files.length; wk++) {
+          File dir = files[wk];
+          try {
+            if(dir.isDirectory()) {
+              Long jobID = new Long(dir.getName());
+              if(!live.contains(jobID)) {
+                boolean executing = false;
+                {
+                  timer.aquire();
+                  synchronized(pExecuteTasks) {
+                    timer.resume();
+                    executing = pExecuteTasks.containsKey(jobID);
+                  }
+                }
+                
+                if(!executing) {
+                  LogMgr.getInstance().log
+                    (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+                     "Cleaning Job: " + jobID);
+                  deadDirs.add(dir);
+                }
+              }
+            }
+            else {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Glu, LogMgr.Level.Severe, 
+                 "Illegal file encountered in the job output directory (" + dir + ")!");
+            }
+          }
+          catch(NumberFormatException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+               "Illegal job output directory encountered (" + dir + ")!");
+          }
+        }
       }
+      else {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Unable to determine the contents of the Jobs directory (" + pJobDir + ")!"); 
+      }     
     }
 
     if(!deadDirs.isEmpty()) {

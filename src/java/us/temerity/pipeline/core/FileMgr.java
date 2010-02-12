@@ -4088,10 +4088,12 @@ class FileMgr
  	ArrayList<String> args = new ArrayList<String>();
  	{
  	  File files[] = rdir.listFiles(); 
- 	  int wk;
- 	  for(wk=0; wk<files.length; wk++) 
- 	    args.add(files[wk].getName());
- 	}
+          if(files != null) {
+            int wk;
+            for(wk=0; wk<files.length; wk++) 
+              args.add(files[wk].getName());
+          }
+        }
 	
 	LinkedList<SubProcessLight> procs = 
 	  SubProcessLight.createMultiSubProcess

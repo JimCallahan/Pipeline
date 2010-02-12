@@ -605,31 +605,39 @@ class MasterMgr
 	{
 	  File dir = new File(pNodeDir, "archives/manifests");
 	  File files[] = dir.listFiles(); 
-	  int wk;
-	  for(wk=0; wk<files.length; wk++) {
-	    ArchiveVolume archive = readArchive(files[wk].getName());
+          if(files != null) {
+            int wk;
+            for(wk=0; wk<files.length; wk++) {
+              ArchiveVolume archive = readArchive(files[wk].getName());
+              
+              for(String name : archive.getNames()) {
+                TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
+                if(versions == null) {
+                  versions = new TreeMap<VersionID,TreeSet<String>>();
+                  pArchivedIn.put(name, versions);
+                }
+                
+                for(VersionID vid : archive.getVersionIDs(name)) { 
+                  TreeSet<String> anames = versions.get(vid);
+                  if(anames == null) {
+                    anames = new TreeSet<String>();
+                    versions.put(vid, anames);
+                  }
+                  
+                  anames.add(archive.getName());
+                }
+              }
 	    
-	    for(String name : archive.getNames()) {
-	      TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
-	      if(versions == null) {
-		versions = new TreeMap<VersionID,TreeSet<String>>();
-		pArchivedIn.put(name, versions);
-	      }
-	      
-	      for(VersionID vid : archive.getVersionIDs(name)) { 
-		TreeSet<String> anames = versions.get(vid);
-		if(anames == null) {
-		  anames = new TreeSet<String>();
-		  versions.put(vid, anames);
-		}
-		
-		anames.add(archive.getName());
-	      }
-	    }
-	    
-	    pArchivedOn.put(archive.getName(), archive.getTimeStamp());
-	  }
-	}
+              pArchivedOn.put(archive.getName(), archive.getTimeStamp());
+            }
+          }
+          else {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+               "Unable to determine the contents of the Archive Manifests directory " + 
+               "(" + dir + ")!"); 
+          }
+        }
 	
         LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Rebuilt"); 
       }
@@ -642,27 +650,35 @@ class MasterMgr
 	{
 	  File dir = new File(pNodeDir, "archives/output/restore");
 	  File files[] = dir.listFiles(); 
-	  int wk;
-	  for(wk=0; wk<files.length; wk++) {
-	    String fname = files[wk].getName();
-	    for(String aname : pArchivedOn.keySet()) {
-	      if(fname.startsWith(aname)) {
-		try {
-		  Long stamp = Long.parseLong(fname.substring(aname.length()+1));
-		  TreeSet<Long> stamps = pRestoredOn.get(aname);
-		  if(stamps == null) {
-		    stamps = new TreeSet<Long>();
-		    pRestoredOn.put(aname, stamps);
-		  }
-		  stamps.add(stamp);
-		}
-		catch(NumberFormatException ex) {
-		}
-		break;
-	      }
-	    }
-	  }    
-	}      
+          if(files != null) {
+            int wk;
+            for(wk=0; wk<files.length; wk++) {
+              String fname = files[wk].getName();
+              for(String aname : pArchivedOn.keySet()) {
+                if(fname.startsWith(aname)) {
+                  try {
+                    Long stamp = Long.parseLong(fname.substring(aname.length()+1));
+                    TreeSet<Long> stamps = pRestoredOn.get(aname);
+                    if(stamps == null) {
+                      stamps = new TreeSet<Long>();
+                      pRestoredOn.put(aname, stamps);
+                    }
+                    stamps.add(stamp);
+                  }
+                  catch(NumberFormatException ex) {
+                  }
+                  break;
+                }
+              }
+            }    
+          }
+          else {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+               "Unable to determine the contents of the Restore Output directory " + 
+               "(" + dir + ")!"); 
+          }
+        }
 
         LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Rebuilt"); 
       }
@@ -778,118 +794,141 @@ class MasterMgr
     {
       File dir = new File(pNodeDir, "toolsets/toolsets");
       File tsets[] = dir.listFiles(); 
-      int tk;
-      for(tk=0; tk<tsets.length; tk++) {
-	if(tsets[tk].isDirectory()) {
-	  String tname = tsets[tk].getName();
-	  boolean hasToolset = false;
-	  for(OsType os : OsType.all()) {
-	    File file = new File(tsets[tk], os.toString());
-	    if(file.isFile()) {
-	      hasToolset = true;
+      if(tsets != null) {
+        int tk;
+        for(tk=0; tk<tsets.length; tk++) {
+          if(tsets[tk].isDirectory()) {
+            String tname = tsets[tk].getName();
+            boolean hasToolset = false;
+            for(OsType os : OsType.all()) {
+              File file = new File(tsets[tk], os.toString());
+              if(file.isFile()) {
+                hasToolset = true;
 
-	      TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
-	      if(toolsets == null) {
-		toolsets = new TreeMap<OsType,Toolset>();
-		pToolsets.put(tname, toolsets);
-	      }
+                TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+                if(toolsets == null) {
+                  toolsets = new TreeMap<OsType,Toolset>();
+                  pToolsets.put(tname, toolsets);
+                }
 
-	      toolsets.put(os, null);
-	    }
-	  }
+                toolsets.put(os, null);
+              }
+            }
 
-	  if(hasToolset) {
-	    readPluginMenuLayout(tname, "editor", 
-				 pEditorMenuLayouts);
+            if(hasToolset) {
+              readPluginMenuLayout(tname, "editor", 
+                                   pEditorMenuLayouts);
 
-	    readPluginMenuLayout(tname, "comparator", 
-				 pComparatorMenuLayouts); 
+              readPluginMenuLayout(tname, "comparator", 
+                                   pComparatorMenuLayouts); 
 
-	    readPluginMenuLayout(tname, "action", 
-				 pActionMenuLayouts); 
+              readPluginMenuLayout(tname, "action", 
+                                   pActionMenuLayouts); 
 
-	    readPluginMenuLayout(tname, "tool", 
-				 pToolMenuLayouts); 
+              readPluginMenuLayout(tname, "tool", 
+                                   pToolMenuLayouts); 
 
-	    readPluginMenuLayout(tname, "archiver", 
-				 pArchiverMenuLayouts); 
+              readPluginMenuLayout(tname, "archiver", 
+                                   pArchiverMenuLayouts); 
 
-	    readPluginMenuLayout(tname, "master extension", 
-				 pMasterExtMenuLayouts); 
+              readPluginMenuLayout(tname, "master extension", 
+                                   pMasterExtMenuLayouts); 
 
-	    readPluginMenuLayout(tname, "queue extension", 
-				 pQueueExtMenuLayouts); 
+              readPluginMenuLayout(tname, "queue extension", 
+                                   pQueueExtMenuLayouts); 
 
-	    readPluginMenuLayout(tname, "annotation", 
-				 pAnnotationMenuLayouts); 
+              readPluginMenuLayout(tname, "annotation", 
+                                   pAnnotationMenuLayouts); 
 
-	    readPluginMenuLayout(tname, "key chooser", 
-				 pKeyChooserMenuLayouts);
+              readPluginMenuLayout(tname, "key chooser", 
+                                   pKeyChooserMenuLayouts);
 	    
-	    readPluginMenuLayout(tname, "builder collection", 
-                                 pBuilderCollectionMenuLayouts); 
-	  }
-	}
+              readPluginMenuLayout(tname, "builder collection", 
+                                   pBuilderCollectionMenuLayouts); 
+            }
+          }
+        }
       }
+      else {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Unable to determine the contents of the Toolsets directory (" + dir + ")!"); 
+      }        
     }
 
     /* initialize package keys and plugin tables */ 
     {
       File dir = new File(pNodeDir, "toolsets/packages");
       File pkgs[] = dir.listFiles(); 
-      int pk;
-      for(pk=0; pk<pkgs.length; pk++) {
-	if(pkgs[pk].isDirectory()) {
-	  String pname = pkgs[pk].getName();
-	  for(OsType os : OsType.all()) {
-	    File osdir = new File(pkgs[pk], os.toString());
-	    if(osdir.isDirectory()) {
-	      File vsns[] = osdir.listFiles(); 
-	      int vk;
-	      for(vk=0; vk<vsns.length; vk++) {
-		if(vsns[vk].isFile()) {
-		  VersionID vid = new VersionID(vsns[vk].getName());
-
-		  pToolsetPackages.put(pname, os, vid, null);
-
-		  switch(os) {
-		  case Unix:
-		    readPackagePlugins(pname, vid, "editor", 
-				       pPackageEditorPlugins);
-
-		    readPackagePlugins(pname, vid, "comparator", 
-				       pPackageComparatorPlugins);
-
-		    readPackagePlugins(pname, vid, "action", 
-				       pPackageActionPlugins);
-
-		    readPackagePlugins(pname, vid, "tool", 
-				       pPackageToolPlugins);
-
-		    readPackagePlugins(pname, vid, "archiver", 
-				       pPackageArchiverPlugins);
-
-		    readPackagePlugins(pname, vid, "master extension", 
-				       pPackageMasterExtPlugins);
-
-		    readPackagePlugins(pname, vid, "queue extension", 
-				       pPackageQueueExtPlugins);
-
-		    readPackagePlugins(pname, vid, "annotation", 
-				       pPackageAnnotationPlugins);
-
-		    readPackagePlugins(pname, vid, "key chooser", 
-				       pPackageKeyChooserPlugins);
-		    
-		    readPackagePlugins(pname, vid, "builder collection", 
-                                       pPackageBuilderCollectionPlugins);
-		  }
-		}
-	      }
-	    }
-	  }
-	}
+      if(pkgs != null) {
+        int pk;
+        for(pk=0; pk<pkgs.length; pk++) {
+          if(pkgs[pk].isDirectory()) {
+            String pname = pkgs[pk].getName();
+            for(OsType os : OsType.all()) {
+              File osdir = new File(pkgs[pk], os.toString());
+              if(osdir.isDirectory()) {
+                File vsns[] = osdir.listFiles(); 
+                if(vsns != null) {
+                  int vk;
+                  for(vk=0; vk<vsns.length; vk++) {
+                    if(vsns[vk].isFile()) {
+                      VersionID vid = new VersionID(vsns[vk].getName());
+                      
+                      pToolsetPackages.put(pname, os, vid, null);
+                      
+                      switch(os) {
+                      case Unix:
+                        readPackagePlugins(pname, vid, "editor", 
+                                           pPackageEditorPlugins);
+                        
+                        readPackagePlugins(pname, vid, "comparator", 
+                                           pPackageComparatorPlugins);
+                        
+                        readPackagePlugins(pname, vid, "action", 
+                                           pPackageActionPlugins);
+                        
+                        readPackagePlugins(pname, vid, "tool", 
+                                           pPackageToolPlugins);
+                        
+                        readPackagePlugins(pname, vid, "archiver", 
+                                           pPackageArchiverPlugins);
+                        
+                        readPackagePlugins(pname, vid, "master extension", 
+                                           pPackageMasterExtPlugins);
+                        
+                        readPackagePlugins(pname, vid, "queue extension", 
+                                           pPackageQueueExtPlugins);
+                        
+                        readPackagePlugins(pname, vid, "annotation", 
+                                           pPackageAnnotationPlugins);
+                        
+                        readPackagePlugins(pname, vid, "key chooser", 
+                                           pPackageKeyChooserPlugins);
+                        
+                        readPackagePlugins(pname, vid, "builder collection", 
+                                           pPackageBuilderCollectionPlugins);
+                      }
+                    }
+                  }
+                }
+                else {
+                  LogMgr.getInstance().logAndFlush
+                    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+                     "Unable to determine the contents of the Toolset Package Version " + 
+                     "directory (" + osdir + ")!"); 
+                }   
+              }
+            }
+          }
+        }
       }
+      else {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Unable to determine the contents of the Toolset Packages directory " + 
+           "(" + dir + ")!"); 
+      }   
     }
 
     LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
@@ -935,32 +974,48 @@ class MasterMgr
     {
       File dir = new File(pNodeDir, "working");
       File authors[] = dir.listFiles(); 
-      int ak;
-      for(ak=0; ak<authors.length; ak++) {
-	if(!authors[ak].isDirectory())
-	  throw new IllegalStateException
-	    ("Non-directory file found in the root working area directory!"); 
-	String author = authors[ak].getName();
+      if(authors != null) {
+        int ak;
+        for(ak=0; ak<authors.length; ak++) {
+          if(!authors[ak].isDirectory())
+            throw new IllegalStateException
+              ("Non-directory file found in the root working area directory!"); 
+          String author = authors[ak].getName();
 	
-	File views[] = authors[ak].listFiles();  
-	int vk;
-	for(vk=0; vk<views.length; vk++) {
-	  if(!views[vk].isDirectory())
-	    throw new IllegalStateException
-	      ("Non-directory file found in the user (" + author + ") root working " + 
-               "area directory!"); 
-	  String view = views[vk].getName();
-	  
-	  synchronized(pWorkingAreaViews) {
-	    TreeSet<String> vs = pWorkingAreaViews.get(author);
-	    if(vs == null) {
-	      vs = new TreeSet<String>();
-              pWorkingAreaViews.put(author, vs);
-	    }
-	    vs.add(view);
-	  }
-	}
+          File views[] = authors[ak].listFiles();  
+          if(views != null) {
+            int vk;
+            for(vk=0; vk<views.length; vk++) {
+              if(!views[vk].isDirectory())
+                throw new IllegalStateException
+                  ("Non-directory file found in the user (" + author + ") root working " + 
+                   "area directory!"); 
+              String view = views[vk].getName();
+              
+              synchronized(pWorkingAreaViews) {
+                TreeSet<String> vs = pWorkingAreaViews.get(author);
+                if(vs == null) {
+                  vs = new TreeSet<String>();
+                  pWorkingAreaViews.put(author, vs);
+                }
+                vs.add(view);
+              }
+            }
+          }
+          else {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+               "Unable to determine the contents of the Working Area directory " + 
+               "(" + authors[ak] + ") for user (" + author + ")!");  
+          }   
+        }
       }
+      else {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Unable to determine the contents of the Root Working Area directory " + 
+           "(" + dir + ")!"); 
+      }          
     }
     
     LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
@@ -23167,12 +23222,20 @@ class MasterMgr
 
 	  File dir = new File(pNodeDir, "events/authors");
 	  File subdirs[] = dir.listFiles();
-	  int wk;
-	  for(wk=0; wk<subdirs.length; wk++) {
-	    File sdir = subdirs[wk];
-	    if(sdir.isDirectory()) 
-	      scanUserNodeEventDirs(sdir.getName(), start, finish, eventFiles);
-	  }
+          if(subdirs != null) {
+            int wk;
+            for(wk=0; wk<subdirs.length; wk++) {
+              File sdir = subdirs[wk];
+              if(sdir.isDirectory()) 
+                scanUserNodeEventDirs(sdir.getName(), start, finish, eventFiles);
+            }
+          }
+          else {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+               "Unable to determine the contents of the User Event directory " + 
+               "(" + dir + ")!"); 
+          }          
 	}
 	
 	/* all events for the given users within the interval */ 
@@ -23239,39 +23302,47 @@ class MasterMgr
 
     File dir = new File(pNodeDir, "events/authors/" + user);
     File subdirs[] = dir.listFiles();
-    int wk;
-    for(wk=0; wk<subdirs.length; wk++) {
-      File sdir = subdirs[wk];
-      
-      if(sdir.isDirectory()) {
-	Long dstart  = null;
-	Long dfinish = null;
-	try {
-	  String sname = sdir.getName();
-	  int year  = Integer.parseInt(sname.substring(0, 4));
-	  int month = Integer.parseInt(sname.substring(4, 6));
-	  int day   = Integer.parseInt(sname.substring(6, 8));
+    if(subdirs != null) {
+      int wk;
+      for(wk=0; wk<subdirs.length; wk++) {
+        File sdir = subdirs[wk];
+        
+        if(sdir.isDirectory()) {
+          Long dstart  = null;
+          Long dfinish = null;
+          try {
+            String sname = sdir.getName();
+            int year  = Integer.parseInt(sname.substring(0, 4));
+            int month = Integer.parseInt(sname.substring(4, 6));
+            int day   = Integer.parseInt(sname.substring(6, 8));
 	  
-	  calendar.clear();
-	  calendar.set(year, month-1, day);
-	  dstart = calendar.getTimeInMillis(); 
+            calendar.clear();
+            calendar.set(year, month-1, day);
+            dstart = calendar.getTimeInMillis(); 
 	  
-	  calendar.add(Calendar.DAY_OF_MONTH, 1); 
-	  dfinish = calendar.getTimeInMillis(); 
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().logAndFlush
-	    (LogMgr.Kind.Glu, LogMgr.Level.Warning,
-	     "Illegal node event directory (" + sdir + ") encountered:\n" + 
-	     "  " + ex.getMessage());
-	}
+            calendar.add(Calendar.DAY_OF_MONTH, 1); 
+            dfinish = calendar.getTimeInMillis(); 
+          }
+          catch(Exception ex) {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+               "Illegal node event directory (" + sdir + ") encountered:\n" + 
+               "  " + ex.getMessage());
+          }
 	
-	if((dstart != null) && (dfinish != null) && 
-	   (start <= dfinish) && (finish >= dstart)) {
-	  scanNodeEventDir(sdir, start, finish, found);
-	}
+          if((dstart != null) && (dfinish != null) && 
+             (start <= dfinish) && (finish >= dstart)) {
+            scanNodeEventDir(sdir, start, finish, found);
+          }
+        }
       }
     }
+    else {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         "Unable to determine the contents of the User Event subdirectory (" + dir + ") " + 
+         "for user (" + user + ")!"); 
+    }  
   }
  
   /** 
@@ -23288,35 +23359,42 @@ class MasterMgr
   )
   {
     File files[] = dir.listFiles();
-    int wk;
-    for(wk=0; wk<files.length; wk++) {
-      File file = files[wk];
-      if(file.isFile()) {
-        String fname = file.getName();
-        String parts[] = fname.split("\\.");
+    if(files != null) {
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+        File file = files[wk];
+        if(file.isFile()) {
+          String fname = file.getName();
+          String parts[] = fname.split("\\.");
 
-        Long stamp = null;
-        if(parts.length >= 1) {
-          try {
-            stamp = Long.parseLong(parts[0]); 
+          Long stamp = null;
+          if(parts.length >= 1) {
+            try {
+              stamp = Long.parseLong(parts[0]); 
+            }
+            catch(NumberFormatException ex) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+                 "Illegal node event file (" + file + ") encountered:\n" + 
+                 "  " + ex.getMessage());
+            }
           }
-          catch(NumberFormatException ex) {
+          else {
             LogMgr.getInstance().logAndFlush
               (LogMgr.Kind.Glu, LogMgr.Level.Warning,
-               "Illegal node event file (" + file + ") encountered:\n" + 
-               "  " + ex.getMessage());
+               "Illegal node event file (" + file + ") encountered:"); 
           }
-        }
-        else {
-          LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Glu, LogMgr.Level.Warning,
-             "Illegal node event file (" + file + ") encountered:"); 
-        }
 	
-	if((stamp != null) && (stamp >= start) && (stamp <= finish)) 
-	  found.put(stamp, file);
+          if((stamp != null) && (stamp >= start) && (stamp <= finish)) 
+            found.put(stamp, file);
+        }
       }
     }
+    else {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         "Unable to determine the contents of the Node Event subdirectory (" + dir + ")!"); 
+    }  
   }
   
   
@@ -23651,58 +23729,64 @@ class MasterMgr
 
     TreeMap<VersionID,CheckedInBundle> table = new TreeMap<VersionID,CheckedInBundle>();
     File files[] = dir.listFiles();
-    int wk;
-    for(wk=0; wk<files.length; wk++) {
-      if(!files[wk].isFile()) 
-	throw new PipelineException
-	  ("Somehow the node version file (" + files[wk] + ") was not a regular file!");
+    if(files != null) {
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+        if(!files[wk].isFile()) 
+          throw new PipelineException
+            ("Somehow the node version file (" + files[wk] + ") was not a regular file!");
 
-      NodeVersion vsn = null;
-      try {
-        vsn = (NodeVersion) GlueDecoderImpl.decodeFile("NodeVersion", files[wk]);
-      }	
-      catch(GlueException ex) {
-        throw new PipelineException(ex);
-      }
-
-      if(table.containsKey(vsn.getVersionID()))
-	throw new PipelineException
-	  ("Somehow the version (" + vsn.getVersionID() + ") of node (" + name + ") " + 
-	   "was represented by more than one file!");
-      
-      /* insure that checksums are embedded */ 
-      if(vsn.getCheckSums().isEmpty()) {
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Sum, LogMgr.Level.Warning,
-           "Adding per-file checksums to node version file: " + files[wk]); 
-        
+        NodeVersion vsn = null;
         try {
-          TreeMap<String,CheckSum> checksums = new TreeMap<String,CheckSum>(); 
-          
-          Path cdir = 
-            new Path(PackageInfo.sProdPath, 
-                     "checksum/repository" + vsn.getName() + "/" + vsn.getVersionID());
-          for(FileSeq fseq : vsn.getSequences()) {
-            for(Path path : fseq.getPaths()) {
-              Path cpath = new Path(cdir, path); 
-              byte[] bytes = CheckSum.readBytes(cpath); 
-              checksums.put(path.toString(), new CheckSum(bytes));
-            }
-          }
-          
-          NodeVersion fixed = new NodeVersion(vsn, checksums); 
-          writeCheckedInVersion(fixed, true); 
-          vsn = fixed;
+          vsn = (NodeVersion) GlueDecoderImpl.decodeFile("NodeVersion", files[wk]);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
         }
-        catch(Exception ex) {
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Sum, LogMgr.Level.Severe,
-             (Exceptions.getFullMessage
-              ("Unable to add per-file checksums to node version file: " + files[wk], ex)));
-        }
-      }
 
-      table.put(vsn.getVersionID(), new CheckedInBundle(vsn));
+        if(table.containsKey(vsn.getVersionID()))
+          throw new PipelineException
+            ("Somehow the version (" + vsn.getVersionID() + ") of node (" + name + ") " + 
+             "was represented by more than one file!");
+      
+        /* insure that checksums are embedded */ 
+        if(vsn.getCheckSums().isEmpty()) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Sum, LogMgr.Level.Warning,
+             "Adding per-file checksums to node version file: " + files[wk]); 
+        
+          try {
+            TreeMap<String,CheckSum> checksums = new TreeMap<String,CheckSum>(); 
+          
+            Path cdir = 
+              new Path(PackageInfo.sProdPath, 
+                       "checksum/repository" + vsn.getName() + "/" + vsn.getVersionID());
+            for(FileSeq fseq : vsn.getSequences()) {
+              for(Path path : fseq.getPaths()) {
+                Path cpath = new Path(cdir, path); 
+                byte[] bytes = CheckSum.readBytes(cpath); 
+                checksums.put(path.toString(), new CheckSum(bytes));
+              }
+            }
+          
+            NodeVersion fixed = new NodeVersion(vsn, checksums); 
+            writeCheckedInVersion(fixed, true); 
+            vsn = fixed;
+          }
+          catch(Exception ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Sum, LogMgr.Level.Severe,
+               (Exceptions.getFullMessage
+                ("Unable to add per-file checksums to node version file: " + files[wk], ex)));
+          }
+        }
+
+        table.put(vsn.getVersionID(), new CheckedInBundle(vsn));
+      }
+    }
+    else {
+      throw new PipelineException
+        ("Unable to determine the contents of the node database directory (" + dir + ")!");
     }
 
     return table;
@@ -24309,35 +24393,41 @@ class MasterMgr
       boolean allFiles = true;
       
       File files[] = dir.listFiles(); 
-      
-      for(File file : files) {
-        if(file.isDirectory()) 
-          allFiles = false;
-        else if(file.isFile()) 
-          allDirs = false;
+      if(files != null) {
+        for(File file : files) {
+          if(file.isDirectory()) 
+            allFiles = false;
+          else if(file.isFile()) 
+            allDirs = false;
+          else {
+            throw new PipelineException
+              ("Unknown type of file (" + file + ") encountered in the checked-in node " + 
+               "database!");
+          }
+        }
+        
+        if(allFiles) {
+          String full = dir.getPath();  
+          pFound.add(full.substring(prefix.length()));
+          pNumNodes++;
+          pNumVersions += files.length;
+        }
+        else if(allDirs) {
+          for(File file : files) 
+            collectNodeNames(prefix, file); 
+        }
         else {
           throw new PipelineException
-            ("Unknown type of file (" + file + ") encountered in the checked-in node " + 
-             "database!");
+            ("Somehow, the checked-in node database directory (" + dir + ") contained " + 
+             "mixtures of files and directories when it should have been either all files " + 
+             "or all directories!"); 
         }
-      }
-      
-      if(allFiles) {
-        String full = dir.getPath();  
-        pFound.add(full.substring(prefix.length()));
-        pNumNodes++;
-        pNumVersions += files.length;
-      }
-      else if(allDirs) {
-        for(File file : files) 
-          collectNodeNames(prefix, file); 
       }
       else {
         throw new PipelineException
-          ("Somehow, the checked-in node database directory (" + dir + ") contained " + 
-           "mixtures of files and directories when it should have been either all files " + 
-           "or all directories!"); 
-      }
+          ("Unable to determine the contents of the Checked-In Node directory " + 
+           "(" + dir + ")!"); 
+      }         
     }
 
     private LinkedBlockingQueue<String> pFound;
@@ -24486,28 +24576,42 @@ class MasterMgr
         File root = new File(pNodeDir, "working"); 
         
 	File authors[] = root.listFiles(); 
-	int ak;
-	for(ak=0; ak<authors.length; ak++) {
-          File afile = authors[ak];
-	  if(!afile.isDirectory()) 
-	    throw new PipelineException
-	      ("Non-directory file found (" + afile +") in the root working area " + 
-               "directory (" + root + ")!"); 
+        if(authors != null) {
+          int ak;
+          for(ak=0; ak<authors.length; ak++) {
+            File afile = authors[ak];
+            if(!afile.isDirectory()) 
+              throw new PipelineException
+                ("Non-directory file found (" + afile +") in the root working area " + 
+                 "directory (" + root + ")!"); 
 
-	  String author = afile.getName();
+            String author = afile.getName();
 	  
-	  File views[] = afile.listFiles();  
-	  int vk;
-	  for(vk=0; vk<views.length; vk++) { 
-            File vfile = views[vk];
-	    if(!vfile.isDirectory())
-	      throw new PipelineException
-		("Non-directory file found (" + vfile +") in the root working area " + 
-                 "directory (" + root + ") for user (" + author + ")!"); 
-	    String view = vfile.getName();
-	    
-	    collectNodeIDs(author, view, vfile.getPath(), vfile);
-	  }
+            File views[] = afile.listFiles();  
+            if(views != null) {
+              int vk;
+              for(vk=0; vk<views.length; vk++) { 
+                File vfile = views[vk];
+                if(!vfile.isDirectory())
+                  throw new PipelineException
+                    ("Non-directory file found (" + vfile +") in the root working area " + 
+                     "directory (" + root + ") for user (" + author + ")!"); 
+                String view = vfile.getName();
+                
+                collectNodeIDs(author, view, vfile.getPath(), vfile);
+              }
+            }
+            else {
+              throw new PipelineException
+                ("Unable to determine the contents of the Working Area directory " + 
+                 "(" + afile + ") for user (" + author + ")!");  
+            }
+          }
+        }
+        else {
+          throw new PipelineException
+            ("Unable to determine the contents of the Root Working Area directory " + 
+             "(" + root + ")!");
         }
       }
       catch(PipelineException ex) {
@@ -24543,18 +24647,26 @@ class MasterMgr
     ) 
       throws PipelineException
     {
-      for(File file : dir.listFiles()) {
-        if(file.isDirectory()) 
-          collectNodeIDs(author, view, prefix, file);
-        else {
-          String path = file.getPath();
-          if(!path.endsWith(".backup")) {
-            String name = path.substring(prefix.length());
-            NodeID nodeID = new NodeID(author, view, name);
-            pFound.add(nodeID);
-            pCounter++;
+      File files[] = dir.listFiles(); 
+      if(files != null) {
+        for(File file : files) {
+          if(file.isDirectory()) 
+            collectNodeIDs(author, view, prefix, file);
+          else {
+            String path = file.getPath();
+            if(!path.endsWith(".backup")) {
+              String name = path.substring(prefix.length());
+              NodeID nodeID = new NodeID(author, view, name);
+              pFound.add(nodeID);
+              pCounter++;
+            }
           }
         }
+      }
+      else {
+        throw new PipelineException
+          ("Unable to determine the contents of the Working Area directory " + 
+           "(" + dir + ") for user (" + author + ")!");  
       }
     }
 

@@ -1757,10 +1757,17 @@ class PluginMgr
   ) 
   {
     File[] dirs = root.listFiles();
-    int wk;
-    for(wk=0; wk<dirs.length; wk++) {
-      if(dirs[wk].isDirectory()) 
-	findPluginHelper(root, dirs[wk]);
+    if(dirs != null) {
+      int wk;
+      for(wk=0; wk<dirs.length; wk++) {
+        if(dirs[wk].isDirectory()) 
+          findPluginHelper(root, dirs[wk]);
+      }
+    }
+    else {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Plg, LogMgr.Level.Severe,
+         "Unable to determine the contents of the Plugins directory (" + root + ")!"); 
     }
   }
 
@@ -1782,48 +1789,55 @@ class PluginMgr
   {
     String dpath = root.getPath();
     File[] fs = dir.listFiles();
-    int wk;
-    for(wk=0; wk<fs.length; wk++) {
-      if(fs[wk].isFile()) {
-	File file = fs[wk];
-	String fpath = file.getPath();
+    if(fs != null) {
+      int wk;
+      for(wk=0; wk<fs.length; wk++) {
+        if(fs[wk].isFile()) {
+          File file = fs[wk];
+          String fpath = file.getPath();
 
-	/* Pipeline plugins are in class or jar form only.  All other files 
-	   are ignored. */
-	if(!fpath.endsWith(".class") && !fpath.endsWith(".jar"))
-	  continue;
+          /* Pipeline plugins are in class or jar form only.  All other files 
+             are ignored. */
+          if(!fpath.endsWith(".class") && !fpath.endsWith(".jar"))
+            continue;
 
-	/* Create a path that is independent of the root directory of 
-	   installed plugins so we are left with a path that follows: 
-	   Vendor-name/plugin-type/plugin-name/plugin-version
+          /* Create a path that is independent of the root directory of 
+             installed plugins so we are left with a path that follows: 
+             Vendor-name/plugin-type/plugin-name/plugin-version
 	   
-	   This will allow for a convenient way to use the required plugins 
-	   database to control the plugin loading. */
-	Path pluginPath = new Path(fpath.substring(dpath.length() + 1));
-	String parentPath = pluginPath.getParent();
+             This will allow for a convenient way to use the required plugins 
+             database to control the plugin loading. */
+          Path pluginPath = new Path(fpath.substring(dpath.length() + 1));
+          String parentPath = pluginPath.getParent();
 
-	/* Plugins with resources have an intermediate step where a scratch 
-	   directory is used to write the resources before it is moved to the 
-	   installed plugins directory.  Before the plugin is moved, the currently 
-	   installed plugin is renamed with -backup appended to the version.  In 
-	   normal cases the backup directory is removed when the plugin is 
-	   successfully installed or renamed back to the original name if the 
-	   plugin install fails, but if due to an error it is still around during 
-	   startup it needs to be andled differently.  Therefore, it is stored in a 
-	   different table with only plugin files with a version directory with 
-	   backup appended. */
-	if(parentPath.endsWith("-backup")) {
-	  pBackupPluginPathTable.put(parentPath.substring(0, parentPath.length() - 7), 
-	                             file.getName());
-	}
-	else {
-	  pPluginPathTable.put(parentPath, 
-	                       file.getName());
-	}
+          /* Plugins with resources have an intermediate step where a scratch 
+             directory is used to write the resources before it is moved to the 
+             installed plugins directory.  Before the plugin is moved, the currently 
+             installed plugin is renamed with -backup appended to the version.  In 
+             normal cases the backup directory is removed when the plugin is 
+             successfully installed or renamed back to the original name if the 
+             plugin install fails, but if due to an error it is still around during 
+             startup it needs to be andled differently.  Therefore, it is stored in a 
+             different table with only plugin files with a version directory with 
+             backup appended. */
+          if(parentPath.endsWith("-backup")) {
+            pBackupPluginPathTable.put(parentPath.substring(0, parentPath.length() - 7), 
+                                       file.getName());
+          }
+          else {
+            pPluginPathTable.put(parentPath, 
+                                 file.getName());
+          }
+        }
+        else if(fs[wk].isDirectory()) {
+          findPluginHelper(root, fs[wk]);
+        }
       }
-      else if(fs[wk].isDirectory()) {
-	findPluginHelper(root, fs[wk]);
-      }
+    }
+    else {
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Plg, LogMgr.Level.Severe,
+         "Unable to determine the contents of the Plugins directory (" + root + ")!"); 
     }
   }
 

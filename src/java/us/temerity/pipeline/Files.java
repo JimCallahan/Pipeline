@@ -33,9 +33,11 @@ class Files
 
     if(root.isDirectory()) {
       File files[] = root.listFiles();
-      int wk;
-      for(wk=0; wk<files.length; wk++)
-	deleteAll(files[wk]);
+      if(files != null) {
+        int wk;
+        for(wk=0; wk<files.length; wk++)
+          deleteAll(files[wk]);
+      }
     }
 
     root.delete();

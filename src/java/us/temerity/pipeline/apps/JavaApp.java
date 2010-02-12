@@ -252,8 +252,13 @@ class JavaApp
       task.call();
     }
 
-    for(File file : classDir.listFiles())
-      FileCleaner.add(file);
+    {
+      File fs[] = classDir.listFiles();
+      if(fs != null) {
+        for(File file : fs)
+          FileCleaner.add(file);
+      }
+    }
     
     Set<Path> classPaths = new TreeSet<Path>();
     classPaths.add(classPath);

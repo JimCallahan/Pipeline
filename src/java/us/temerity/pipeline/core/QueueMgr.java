@@ -466,61 +466,68 @@ class QueueMgr
 
       File dir = new File(pQueueDir, "queue/job-groups");
       File files[] = dir.listFiles(); 
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	if(files[wk].isFile()) {
-	  try {
-	    Long groupID = new Long(files[wk].getName());
-	    QueueJobGroup group = readJobGroup(groupID);
-	    if(group == null) 
-	      throw new IllegalStateException("The job group cannot be (null)!");
+      if(files != null) {
+        int wk;
+        for(wk=0; wk<files.length; wk++) {
+          if(files[wk].isFile()) {
+            try {
+              Long groupID = new Long(files[wk].getName());
+              QueueJobGroup group = readJobGroup(groupID);
+              if(group == null) 
+                throw new IllegalStateException("The job group cannot be (null)!");
 
-            /* validate the group */ 
-            TreeSet<Long> missingJobIDs = new TreeSet<Long>();
-            for(Long jobID : group.getAllJobIDs()) {
-              synchronized(pJobs) {
-                if(pJobs.get(jobID) == null) 
-                  missingJobIDs.add(jobID);
-              }
+              /* validate the group */ 
+              TreeSet<Long> missingJobIDs = new TreeSet<Long>();
+              for(Long jobID : group.getAllJobIDs()) {
+                synchronized(pJobs) {
+                  if(pJobs.get(jobID) == null) 
+                    missingJobIDs.add(jobID);
+                }
               
-              synchronized(pJobInfo) {
-                if(pJobInfo.get(jobID) == null) 
-                  missingJobIDs.add(jobID);
+                synchronized(pJobInfo) {
+                  if(pJobInfo.get(jobID) == null) 
+                    missingJobIDs.add(jobID);
+                }
               }
-            }
             
-            if(missingJobIDs.isEmpty()) {
-              synchronized(pJobGroups) {
-                pJobGroups.put(groupID, group);
+              if(missingJobIDs.isEmpty()) {
+                synchronized(pJobGroups) {
+                  pJobGroups.put(groupID, group);
+                }
               }
-            }
-            else {
-              StringBuilder buf = new StringBuilder();
-              buf.append("Skipping invalid job group (" + groupID + ") due to its " + 
-                         "reference of the following missing jobs:");
-              for(Long jobID : missingJobIDs) 
-                buf.append(" " + jobID);
+              else {
+                StringBuilder buf = new StringBuilder();
+                buf.append("Skipping invalid job group (" + groupID + ") due to its " + 
+                           "reference of the following missing jobs:");
+                for(Long jobID : missingJobIDs) 
+                  buf.append(" " + jobID);
               
-              LogMgr.getInstance().logAndFlush
-                (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-                 buf.toString()); 
+                LogMgr.getInstance().logAndFlush
+                  (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                   buf.toString()); 
 
-              try {
-                backupJobGroupFile(groupID);
-              }
-              catch(PipelineException ex) {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-                   ex.getMessage());
+                try {
+                  backupJobGroupFile(groupID);
+                }
+                catch(PipelineException ex) {
+                  LogMgr.getInstance().log
+                    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+                     ex.getMessage());
+                }
               }
             }
-	  }
-	  catch(NumberFormatException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	       "Illegal job group file encountered (" + files[wk] + ")!");
-	  }
-	}
+            catch(NumberFormatException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+                 "Illegal job group file encountered (" + files[wk] + ")!");
+            }
+          }
+        }
+      }
+      else {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Unable to determine the contents of the Job Groups directory (" + dir + ")!"); 
       }
 
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
@@ -11553,31 +11560,39 @@ class QueueMgr
       TreeSet<File> sfiles = new TreeSet<File>();
       {
 	File files[] = dir.listFiles(); 
-	int wk;
-	for(wk=files.length-1; wk>=0; wk--) {
-	  File file = files[wk];
-	  if(file.isFile()) {
-	    try {
-	      String parts[] = file.getName().split(":");
-	      if(parts.length != 3) 
-		throw new NumberFormatException(); 
-
-	      Long fstamp  = new Long(parts[0]);
-	      Long lstamp  = new Long(parts[1]);
-	      Integer size = new Integer(parts[2]);
-
-	      if((fstamp <= last) && (lstamp >= first)) {
-		sfiles.add(file);
-		numSamples += size;
-	      }
-	    }
-	    catch(NumberFormatException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Glu, LogMgr.Level.Severe,
-		 "Ignoring illegally named resource sample file (" + file + ")!"); 
-	    }	    
-	  }
-	}
+        if(files != null) {
+          int wk;
+          for(wk=files.length-1; wk>=0; wk--) {
+            File file = files[wk];
+            if(file.isFile()) {
+              try {
+                String parts[] = file.getName().split(":");
+                if(parts.length != 3) 
+                  throw new NumberFormatException(); 
+                
+                Long fstamp  = new Long(parts[0]);
+                Long lstamp  = new Long(parts[1]);
+                Integer size = new Integer(parts[2]);
+                
+                if((fstamp <= last) && (lstamp >= first)) {
+                  sfiles.add(file);
+                  numSamples += size;
+                }
+              }
+              catch(NumberFormatException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                   "Ignoring illegally named resource sample file (" + file + ")!"); 
+              }	    
+            }
+          }
+        }
+        else {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+             "Unable to determine the contents of the Resource Samples directory " + 
+             "(" + dir + ")!"); 
+        }
       }
 	      
       if(sfiles.isEmpty()) 
@@ -11639,30 +11654,39 @@ class QueueMgr
           File dir = sfiles[sk];
           if(dir.isDirectory()) {
             File files[] = dir.listFiles(); 
-            int wk;
-            for(wk=0; wk<files.length; wk++) {
-              File file = files[wk];
-              try {
-                String parts[] = file.getName().split(":");
-                if(parts.length != 3) 
-                  throw new NumberFormatException();
-                
-                Long stamp = new Long(parts[1]);
-                if((pLastSampleWritten.get() - stamp) > PackageInfo.sSampleCleanupInterval) {
-                  LogMgr.getInstance().log
-                    (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-                     "Deleting Resource Sample File: " + file);
-                  if(!file.delete()) 
+            if(files != null) {
+              int wk;
+              for(wk=0; wk<files.length; wk++) {
+                File file = files[wk];
+                try {
+                  String parts[] = file.getName().split(":");
+                  if(parts.length != 3) 
+                    throw new NumberFormatException();
+                  
+                  Long stamp = new Long(parts[1]);
+                  if((pLastSampleWritten.get() - stamp) > 
+                     PackageInfo.sSampleCleanupInterval) {
                     LogMgr.getInstance().log
-                      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-                       "Unable to delete old resource sample file (" + file + ")!");
+                      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+                       "Deleting Resource Sample File: " + file);
+                    if(!file.delete()) 
+                      LogMgr.getInstance().log
+                        (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                         "Unable to delete old resource sample file (" + file + ")!");
+                  }
+                }
+                catch(NumberFormatException ex) {
+                  LogMgr.getInstance().log
+                    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                     "Illegal resource sample file (" + file + ") encountered!");
                 }
               }
-              catch(NumberFormatException ex) {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-                   "Illegal resource sample file (" + file + ") encountered!");
-              }
+            }
+            else {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                 "Unable to determine the contents of the Resource Samples subdirectory " + 
+                 "(" + dir + ")!");  
             }
           }
 	}
@@ -11670,7 +11694,7 @@ class QueueMgr
       else {
         LogMgr.getInstance().log
           (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-           "Unable to determine the contents of the resource sample directory " + 
+           "Unable to determine the contents of the Resource Samples directory " + 
            "(" + sdir + ")!");  
       }
     }
@@ -12514,10 +12538,18 @@ class QueueMgr
       TaskTimer timer = new TaskTimer(); 
       try {
         File dir = new File(pQueueDir, "queue/jobs");
-        for(File file : dir.listFiles()) {
-          pFound.add(file);   
-          pCounter++;
-        }
+        File files[] = dir.listFiles();
+        if(files != null) {
+          for(File file : files) {
+            pFound.add(file);   
+            pCounter++;
+          }
+        }    
+        else {
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+             "Unable to determine the contents of the Jobs directory (" + dir + ")!"); 
+        }          
       }
       catch(Exception ex) {
         LogMgr.getInstance().logAndFlush
