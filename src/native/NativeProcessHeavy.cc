@@ -171,8 +171,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_closeStdIn
 
   /* close the STDIN pipe */ 
   if(close(stdin_fd) == -1) {
-    sprintf(msg, "unable to close the parent STDIN pipe: %s", 
-	    strerror(errno));
+    sprintf(msg, "unable to close the parent STDIN pipe: %s", strerror(errno));
     env->ThrowNew(IOException, msg);
   }
 }
@@ -402,7 +401,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
       delete[] cmdarray;
     }
 
-    sprintf(msg, "unable to create the STDIN pipe: %s", dir, strerror(errno));
+    sprintf(msg, "unable to create the STDIN pipe: %s", strerror(errno));
     env->ThrowNew(IOException, msg);
     return -1;
   }
@@ -475,7 +474,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 	  
 	  /* redirect the STDOUT to the newly opened file */ 
 	  if(open(outFile, O_CREAT|O_WRONLY|O_TRUNC, 00644) != 1) {
-	    sprintf(msg, "unable to redirect the STDOUT to the output file (%s)!", 
+	    sprintf(msg, "unable to redirect the STDOUT to the output file (%s): %s", 
 		    outFile, strerror(errno));
 	    perror(msg);
 	    exit(EXIT_FAILURE);    
@@ -492,7 +491,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 	  
 	  /* redirect the STDERR to the newly opened file */ 
 	  if(open(errFile, O_CREAT|O_WRONLY|O_TRUNC, 00644) != 2) {
-	    sprintf(msg, "unable to redirect the STDERR to the output file (%s)!", 
+	    sprintf(msg, "unable to redirect the STDERR to the output file (%s): %s", 
 		    errFile, strerror(errno));
 	    perror(msg);
 	    exit(EXIT_FAILURE);    

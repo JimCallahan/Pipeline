@@ -167,8 +167,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_closeStdIn
 
   /* close the STDIN pipe */ 
   if(close(stdin_fd) == -1) {
-    sprintf(msg, "unable to close the parent STDIN pipe: %s", 
-	    strerror(errno));
+    sprintf(msg, "unable to close the parent STDIN pipe: %s", strerror(errno));
     env->ThrowNew(IOException, msg);
   }
 }
@@ -263,8 +262,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_closeStdOut
 
   /* close the STDOUT pipe */ 
   if(close(stdout_fd) == -1) {
-    sprintf(msg, "unable to close the parent STDOUT pipe: %s", 
-	    strerror(errno));
+    sprintf(msg, "unable to close the parent STDOUT pipe: %s", strerror(errno));
     env->ThrowNew(IOException, msg);
   }
 }
@@ -359,8 +357,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_closeStdErr
 
   /* close the STDERR pipe */ 
   if(close(stderr_fd) == -1) {
-    sprintf(msg, "unable to close the parent STDERR pipe: %s", 
-	    strerror(errno));
+    sprintf(msg, "unable to close the parent STDERR pipe: %s", strerror(errno));
     env->ThrowNew(IOException, msg);
   }
 }
@@ -576,7 +573,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	delete[] cmdarray;
       }
 
-      sprintf(msg, "unable to create the STDIN pipe: %s", dir, strerror(errno));
+      sprintf(msg, "unable to create the STDIN pipe: %s", strerror(errno));
       env->ThrowNew(IOException, msg);
       return -1;
     }
@@ -595,7 +592,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	delete[] cmdarray;
       }
 
-      sprintf(msg, "unable to create the STDOUT pipe: %s", dir, strerror(errno));
+      sprintf(msg, "unable to create the STDOUT pipe: %s", strerror(errno));
       env->ThrowNew(IOException, msg);
       return -1;
     }
@@ -614,7 +611,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	delete[] cmdarray;
       }
 
-      sprintf(msg, "unable to create the STDERR pipe: %s", dir, strerror(errno));
+      sprintf(msg, "unable to create the STDERR pipe: %s", strerror(errno));
       env->ThrowNew(IOException, msg);
       return -1;
     }
