@@ -11633,37 +11633,45 @@ class QueueMgr
 	return;
 
       File sfiles[] = sdir.listFiles(); 
-      int sk;
-      for(sk=0; sk<sfiles.length; sk++) {
-	File dir = sfiles[sk];
-	if(dir.isDirectory()) {
-	  File files[] = dir.listFiles(); 
-	  int wk;
-	  for(wk=0; wk<files.length; wk++) {
-	    File file = files[wk];
-	    try {
-	      String parts[] = file.getName().split(":");
-	      if(parts.length != 3) 
-		throw new NumberFormatException();
-
-	      Long stamp = new Long(parts[1]);
-	      if((pLastSampleWritten.get() - stamp) > PackageInfo.sSampleCleanupInterval) {
-		LogMgr.getInstance().log
-		  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-		   "Deleting Resource Sample File: " + file);
-		if(!file.delete()) 
-		  LogMgr.getInstance().log
-		    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-		     "Unable to delete old resource sample file (" + file + ")!");
-	      }
-	    }
-	    catch(NumberFormatException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Glu, LogMgr.Level.Severe,
-		 "Illegal resource sample file (" + file + ") encountered!");
-	    }
-	  }
+      if(sfiles != null) {
+        int sk;
+        for(sk=0; sk<sfiles.length; sk++) {
+          File dir = sfiles[sk];
+          if(dir.isDirectory()) {
+            File files[] = dir.listFiles(); 
+            int wk;
+            for(wk=0; wk<files.length; wk++) {
+              File file = files[wk];
+              try {
+                String parts[] = file.getName().split(":");
+                if(parts.length != 3) 
+                  throw new NumberFormatException();
+                
+                Long stamp = new Long(parts[1]);
+                if((pLastSampleWritten.get() - stamp) > PackageInfo.sSampleCleanupInterval) {
+                  LogMgr.getInstance().log
+                    (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+                     "Deleting Resource Sample File: " + file);
+                  if(!file.delete()) 
+                    LogMgr.getInstance().log
+                      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                       "Unable to delete old resource sample file (" + file + ")!");
+                }
+              }
+              catch(NumberFormatException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                   "Illegal resource sample file (" + file + ") encountered!");
+              }
+            }
+          }
 	}
+      }
+      else {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+           "Unable to determine the contents of the resource sample directory " + 
+           "(" + sdir + ")!");  
       }
     }
   }
