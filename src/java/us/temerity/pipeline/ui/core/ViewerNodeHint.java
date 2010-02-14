@@ -212,8 +212,8 @@ class ViewerNodeHint
       
       if(pStatus.hasHeavyDetails()) {
         NodeDetailsHeavy details = pStatus.getHeavyDetails();
-        for(FileSeq fseq : details.getFileStateSequences()) {
-          FileState fs[] = details.getFileState(fseq);
+        for(FileSeq fseq : details.getFileSequences()) {
+          FileState fs[] = details.getFileStates(fseq);
           int wk;
           for(wk=0; wk<fs.length; wk++) {
             Integer fcnt = pFileStates.get(fs[wk]);
@@ -224,7 +224,7 @@ class ViewerNodeHint
         }
         
         {
-          QueueState qs[] = details.getQueueState();
+          QueueState qs[] = details.getQueueStates();
           int wk;
           for(wk=0; wk<qs.length; wk++) {
             Integer qcnt = pQueueStates.get(qs[wk]);

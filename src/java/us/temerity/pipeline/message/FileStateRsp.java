@@ -39,9 +39,9 @@ class FileStateRsp
    *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
    *   the working version indexed by file sequence.
    * 
-   * @param timestamps
-   *   The last modification timestamp of each the primary and secondary file associated with 
-   *   the working version indexed by file sequence or <CODE>null</CODE> if frozen.
+   * @param fileInfos
+   *   Per-file information for each primary and secondary file associated with the working 
+   *   version indexed by file sequence or <CODE>null</CODE> if not checked-out.
    * 
    * @param updatedCheckSums
    *   The updated cache of checksums for files associated with the working version.
@@ -52,7 +52,7 @@ class FileStateRsp
    TaskTimer timer, 
    NodeID id, 
    TreeMap<FileSeq,FileState[]> states,
-   TreeMap<FileSeq,Long[]> timestamps, 
+   TreeMap<FileSeq,NativeFileInfo[]> fileInfos,
    CheckSumCache updatedCheckSums
   )
   { 
@@ -66,7 +66,7 @@ class FileStateRsp
       throw new IllegalArgumentException("The working file states cannot (null)!");
     pStates = states;
 
-    pTimeStamps = timestamps;
+    pFileInfos = fileInfos; 
 
     if(updatedCheckSums == null) 
       throw new IllegalArgumentException("The updated checksums cannot (null)!");
@@ -108,15 +108,15 @@ class FileStateRsp
   }
 
   /**
-   * Gets the last modification timestamp of each the primary and secondary file associated 
-   * with the working version indexed by file sequence. <P> 
+   * Gets the er-file information for each primary and secondary file associated with the 
+   * working version indexed by file sequence or <CODE>null</CODE> if not checked-out.
    * 
    * Individual timestamps may be <CODE>null</CODE> if no corresponding working file exists.
    */
-  public TreeMap<FileSeq,Long[]>
-  getTimeStamps() 
+  public TreeMap<FileSeq,NativeFileInfo[]>
+  getFileInfos()
   {
-    return pTimeStamps;
+    return pFileInfos; 
   }
 
   /**
@@ -153,18 +153,18 @@ class FileStateRsp
    */
   private TreeMap<FileSeq,FileState[]>  pStates; 
 
-  /** 
-   * The last modification timestamp of each the primary and secondary file associated 
-   * with the working version indexed by file sequence. <P> 
+  /**
+   * The per-file information for each primary and secondary file associated with the working 
+   * version indexed by file sequence or <CODE>null</CODE> if not checked-out.
    * 
    * Individual timestamps may be <CODE>null</CODE> if no corresponding working file exists.
-   */
-  private TreeMap<FileSeq,Long[]>  pTimeStamps; 
+   */ 
+  private TreeMap<FileSeq,NativeFileInfo[]> pFileInfos; 
 
   /**
    * The updated cache of checksums for files associated with the working version.
    */ 
-  public CheckSumCache  pUpdatedCheckSums; 
+  private CheckSumCache  pUpdatedCheckSums; 
   
 }
   

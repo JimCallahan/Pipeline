@@ -59,6 +59,9 @@ class FileSeqTableModel
    * @param fstates
    *   The file states of the working files.
    * 
+   * @param finfos
+   *   The per-file status information of the working files.
+   * 
    * @param qstates
    *   The queue states of the working files.
    *
@@ -77,6 +80,7 @@ class FileSeqTableModel
    ArrayList<FileSeq> singles,
    SortedSet<FileSeq> enabled, 
    TreeMap<FileSeq,FileState> fstates, 
+   TreeMap<FileSeq,NativeFileInfo> finfos, 
    TreeMap<FileSeq,QueueState> qstates,
    SortedMap<FileSeq,Boolean[]> novel
   )
@@ -107,6 +111,7 @@ class FileSeqTableModel
       pSeqIndices         = new Integer[pNumRows];
       pIsEnabled          = new boolean[pNumRows];
       pFileStates         = new FileState[pNumRows];
+      pFileInfos          = new NativeFileInfo[pNumRows];
       pQueueStates        = new QueueState[pNumRows];
       pIsNovel            = new Boolean[pNumRows][];
       pSelectedVersionIDs = new VersionID[pNumRows];
@@ -121,14 +126,15 @@ class FileSeqTableModel
         }
       }
 
-      int row, col; 
+      int row; 
       for(row=0; row<pNumRows; row++) {
         FileSeq sfseq = pSingles[row];
 
-        pSeqIndices[row]  = ptoi.get(sfseq.getPath(0));
-        pIsEnabled[row]   = enabled.contains(sfseq); 
-        pFileStates[row]  = fstates.get(sfseq); 
-        pQueueStates[row] = qstates.get(sfseq); 
+        pSeqIndices[row]     = ptoi.get(sfseq.getPath(0));
+        pIsEnabled[row]      = enabled.contains(sfseq); 
+        pFileStates[row]     = fstates.get(sfseq); 
+        pFileInfos[row]      = finfos.get(sfseq); 
+        pQueueStates[row]    = qstates.get(sfseq); 
 
         Boolean[] flags = novel.get(sfseq); 
         if(flags != null) {
@@ -146,7 +152,7 @@ class FileSeqTableModel
     /* initialize the columns */ 
     {
       pStateRenderer = new JFileStateTableCellRenderer(this); 
-      pNameRenderer  = new JFileNameTableCellRenderer(this); 
+      pNameRenderer  = new JFileNameTableCellRenderer(this);
       pCellRenderer  = new JFileNoveltyTableCellRenderer(this); 
 
       pCellEditor = new JFileNoveltyTableCellEditor(this); 
@@ -240,16 +246,13 @@ class FileSeqTableModel
    int col
   ) 
   {
-    switch(col) {
-    case 0:
-    case 1:
+    if(col < 4) 
       return null;
-    }
 
     Boolean[] flags = pIsNovel[row];
     if(flags == null) 
       return null;
-    return flags[col-2];
+    return flags[col-4];
   }
 
 
@@ -262,7 +265,7 @@ class FileSeqTableModel
    int col
   ) 
   {
-    return pVersionIDs[col-2];
+    return pVersionIDs[col-4];
   }  
 
   
@@ -292,13 +295,10 @@ class FileSeqTableModel
    int col
   ) 
   {
-    switch(col) {
-    case 0:
-    case 1:
+    if(col < 4) 
       return null;
-    }
 
-    int ncol = col-2;
+    int ncol = col-4;
 
     boolean isEnabled = pIsEnabled[row];
     boolean isOffline = pIsOffline[ncol]; 
@@ -453,7 +453,15 @@ class FileSeqTableModel
             value = fseq.getFrameRange().getStart(); 
         }
         break;
-        
+
+      case 2: 
+        value = pFileInfos[idx].getFileSize();
+        break;
+
+      case 3: 
+        value = pFileInfos[idx].getTimeStamp();
+        break;
+
       default:
         value = getIconStateUnsorted(idx, pSortColumn); 
       }
@@ -492,6 +500,8 @@ class FileSeqTableModel
     switch(col) {
     case 0:
     case 1:
+    case 2:
+    case 3:
       return String.class;
 
     default:
@@ -506,7 +516,7 @@ class FileSeqTableModel
   public int
   getColumnCount()
   {
-    return pNumCols+2;
+    return pNumCols+4;
   }
 
   /**
@@ -526,8 +536,14 @@ class FileSeqTableModel
     case 1:
       return "File Name";
 
+    case 2: 
+      return "File Size"; 
+      
+    case 3: 
+      return "Modified"; 
+
     default:
-      return pVersionIDs[col-2].toString();
+      return pVersionIDs[col-4].toString();
     }
   }
 
@@ -547,6 +563,12 @@ class FileSeqTableModel
 
     case 1:
       return new Vector3i(80, 160, 800);
+
+    case 2:
+      return new Vector3i(80); 
+
+    case 3:
+      return new Vector3i(120); 
 
     default:
       return new Vector3i(70); 
@@ -584,8 +606,14 @@ class FileSeqTableModel
     case 1:
       return ("Names of each file in the sequence."); 
 
+    case 2:
+      return ("Sizes (in bytes) of each file in the sequence."); 
+
+    case 3:
+      return ("When each file in the sequence was last modified."); 
+
     default:
-      return ("Files associated with version (" + pVersionIDs[col-2] + ") of node."); 
+      return ("Files associated with version (" + pVersionIDs[col-4] + ") of node."); 
     }
   }
 
@@ -607,6 +635,8 @@ class FileSeqTableModel
       return pStateRenderer; 
 
     case 1:
+    case 2:
+    case 3: 
       return pNameRenderer;
 
     default:
@@ -624,14 +654,9 @@ class FileSeqTableModel
    int col   
   )
   {
-    switch(col) {
-    case 0:
-    case 1:
+    if(col < 4) 
       return null;
-      
-    default:
-      return pCellEditor;
-    }
+    return pCellEditor;
   }
 
 
@@ -647,13 +672,10 @@ class FileSeqTableModel
    int col
   ) 
   {
-    switch(col) {
-    case 0:
-    case 1:
+    if(col < 4) 
       return false;
-    }
 
-    int ncol = col-2;
+    int ncol = col-4;
 
     if(pIsReadOnly)
       return false;
@@ -712,8 +734,32 @@ class FileSeqTableModel
         return str;
       }
 
+    case 2:
+      {
+        NativeFileInfo info = pFileInfos[vrow];
+        if(info != null) {
+          long size = info.getFileSize();
+          if(info.isSymlink()) 
+            return ("[" + ByteSize.longToFloatString(size) + "]"); 
+          else
+            return ByteSize.longToFloatString(size); 
+        }
+        else {
+          return "-";
+        }
+      }
+
+    case 3:
+      {
+        NativeFileInfo info = pFileInfos[vrow];
+        if(info != null) 
+          return TimeStamps.formatHumanRelative(info.getTimeStamp()); 
+        else 
+          return "-";
+      }
+
     default:
-      return pVersionIDs[col-2].equals(pSelectedVersionIDs[vrow]);
+      return pVersionIDs[col-4].equals(pSelectedVersionIDs[vrow]);
     }
   }
 
@@ -760,11 +806,8 @@ class FileSeqTableModel
    int col
   ) 
   {  
-    switch(col) {
-    case 0:
-    case 1:
+    if(col < 4) 
       return false;
-    }
 
     boolean edited = false;
     Boolean isSelected = (Boolean) value;
@@ -909,6 +952,11 @@ class FileSeqTableModel
   private FileState  pFileStates[]; 
 
   /**
+   * The file status information of each row (may be null).
+   */ 
+  private NativeFileInfo  pFileInfos[]; 
+
+  /**
    * The queue states of each row (may be null).
    */ 
   private QueueState  pQueueStates[]; 
@@ -935,7 +983,7 @@ class FileSeqTableModel
    * The shared renderers for all cells in the table.
    */ 
   private TableCellRenderer pStateRenderer;    
-  private TableCellRenderer pNameRenderer;            
+  private TableCellRenderer pNameRenderer;             
   private TableCellRenderer pCellRenderer; 
 
   /**

@@ -61,6 +61,9 @@ class JFileSeqPanel
    * @param fstates
    *   The file states of the working files.
    * 
+   * @param finfos
+   *   The per-file status information of the working files.
+   * 
    * @param qstates
    *   The queue states of the working files.
    * 
@@ -82,6 +85,7 @@ class JFileSeqPanel
    SortedSet<VersionID> offline, 
    ArrayList<FileSeq> singles,
    TreeMap<FileSeq,FileState> fstates, 
+   TreeMap<FileSeq,NativeFileInfo> finfos, 
    TreeMap<FileSeq,QueueState> qstates, 
    SortedSet<FileSeq> enabled, 
    SortedMap<FileSeq,Boolean[]> novel
@@ -281,7 +285,8 @@ class JFileSeqPanel
         {
           pTableModel = 
             new FileSeqTableModel(this, fseq, pIsFrozen, pIsReadOnly, 
-                                  vids, offline, singles, enabled, fstates, qstates, novel); 
+                                  vids, offline, singles, enabled, fstates, finfos,
+                                  qstates, novel); 
 
           JTablePanel tpanel =
             new JTablePanel(pTableModel, 
@@ -515,29 +520,22 @@ class JFileSeqPanel
             if((row != -1) && (col != -1)) {
               FileSeq fseq = pTableModel.getFileSeq(row);
               Integer idx  = pTableModel.getFileIndex(row);
-              switch(col) {
-              case 0:
-              case 1:
-                {
-                  pTargetSeqs.put(fseq, idx); 
-                  for(int srow : table.getSelectedRows()) {
-                    if(pTableModel.isEnabled(srow)) {
-                      pTargetSeqs.put(pTableModel.getFileSeq(srow), 
-                                      pTableModel.getFileIndex(srow));
-                    }
+              if(col < 4) {
+                pTargetSeqs.put(fseq, idx); 
+                for(int srow : table.getSelectedRows()) {
+                  if(pTableModel.isEnabled(srow)) {
+                    pTargetSeqs.put(pTableModel.getFileSeq(srow), 
+                                    pTableModel.getFileIndex(srow));
                   }
                 }
-                break;
+              }
+              else {
+                Boolean novel = pTableModel.getNovelty(row, col);
+                if(novel == null)
+                  return;
                 
-              default:
-                {
-                  Boolean novel = pTableModel.getNovelty(row, col);
-                  if(novel == null)
-                    return;
-                  
-                  pTargetSeqs.put(fseq, idx); 
-                  pTargetVersionID = pTableModel.getNoveltyColumnVersion(col);
-                }
+                pTargetSeqs.put(fseq, idx); 
+                pTargetVersionID = pTableModel.getNoveltyColumnVersion(col);
               }
               
               JPopupMenu menu = null;

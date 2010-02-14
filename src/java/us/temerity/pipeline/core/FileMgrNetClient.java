@@ -245,10 +245,9 @@ class FileMgrNetClient
    *   primary and secondary file associated with the working version indexed by file 
    *   sequence.
    * 
-   * @param timestamps
-   *   An empty table which will be filled with the last modification timestamps of 
-   *   each primary and secondary file associated with the working version indexed by file 
-   *   sequence.  
+   * @param fileInfos
+   *   An empty table which will be filled with per-file information for each primary and 
+   *   secondary file associated with the working version indexed by file sequence.  
    * 
    * @return
    *   The updated cache of checksums for files associated with the working version.
@@ -271,7 +270,7 @@ class FileMgrNetClient
    SortedMap<String,CheckSum> latestCheckSums, 
    CheckSumCache workingCheckSums, 
    TreeMap<FileSeq, FileState[]> states, 
-   TreeMap<FileSeq, Long[]> timestamps
+   TreeMap<FileSeq,NativeFileInfo[]> fileInfos
   ) 
     throws PipelineException 
   {
@@ -292,8 +291,8 @@ class FileMgrNetClient
     if(obj instanceof FileStateRsp) {
       FileStateRsp rsp = (FileStateRsp) obj;
       states.putAll(rsp.getFileStates());
-      if(rsp.getTimeStamps() != null) 
-	timestamps.putAll(rsp.getTimeStamps());
+      if(rsp.getFileInfos() != null) 
+	fileInfos.putAll(rsp.getFileInfos());
       return rsp.getUpdatedCheckSums(); 
     }
     else {
@@ -332,6 +331,10 @@ class FileMgrNetClient
    *   A table into which the timestamps are recorded for files before being moved into the
    *   repository and the symlink created after the move.
    * 
+   * @param fileInfos
+   *   An table into which per-file information is recorded for each file sequence after 
+   *   the check-in takes place.
+   * 
    * @return
    *   The updated cache of checksums for files associated with the working version.
    * 
@@ -347,7 +350,8 @@ class FileMgrNetClient
    VersionID latest, 
    TreeMap<FileSeq,boolean[]> isNovel, 
    CheckSumCache workingCheckSums, 
-   TreeMap<String,Long[]> movedStamps
+   TreeMap<String,Long[]> movedStamps, 
+   TreeMap<FileSeq,NativeFileInfo[]> fileInfos
   ) 
     throws PipelineException 
   {
@@ -363,6 +367,7 @@ class FileMgrNetClient
     if(obj instanceof FileCheckInRsp) {
       FileCheckInRsp rsp = (FileCheckInRsp) obj;
       movedStamps.putAll(rsp.getMovedStamps());
+      fileInfos.putAll(rsp.getFileInfos());
       return rsp.getUpdatedCheckSums(); 
     }
     else {

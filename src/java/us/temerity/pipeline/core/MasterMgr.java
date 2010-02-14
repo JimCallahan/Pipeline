@@ -11851,7 +11851,7 @@ class MasterMgr
               {
                 NodeMod omod = details.getWorkingVersion(); 
                 if(!omod.isLocked() && vid.equals(omod.getWorkingID())) {
-                  long fts[] = details.getFileTimeStamps();
+                  long fts[] = details.getUpdateTimeStamps();
 
                   int wk;
                   for(wk=0; wk<fts.length; wk++) {
@@ -14504,7 +14504,7 @@ class MasterMgr
       bsize = batchSize;
     
     Long[] jobIDs = details.getJobIDs();
-    QueueState[] queueStates = details.getQueueState();
+    QueueState[] queueStates = details.getQueueStates();
     if(jobIDs.length != queueStates.length)
       throw new IllegalStateException(); 
 
@@ -19031,7 +19031,8 @@ class MasterMgr
         }
 
         /* get per-file FileStates and timestamps */ 
-        TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
+        TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>();
+        TreeMap<FileSeq,NativeFileInfo[]> fileInfos = new TreeMap<FileSeq,NativeFileInfo[]>();
         boolean[] anyMissing = null;
         Long[] newestStamps = null;
         Long[] oldestStamps = null;
@@ -19047,6 +19048,7 @@ class MasterMgr
               fs[wk] = FileState.CheckedIn;
 
             fileStates.put(fseq, fs);
+            fileInfos.put(fseq, new NativeFileInfo[fs.length]);
 
             if(anyMissing == null) 
               anyMissing = new boolean[fs.length];
@@ -19061,9 +19063,6 @@ class MasterMgr
 
         default:
           {
-            /* get the per-file states and timestamps */
-            TreeMap<FileSeq, Long[]> stamps = new TreeMap<FileSeq, Long[]>();
-
             /* query the file manager */
             {	     
               FileMgrClient fclient = acquireFileMgrClient();
@@ -19099,7 +19098,7 @@ class MasterMgr
                   CheckSumCache updatedCheckSums = 
                     fclient.states(nodeID, work, versionState, jobStates, workIsFrozen, vid, 
                                    binter, baseCheckSums, linter, latestCheckSums, 
-                                   cbundle.getCache(), fileStates, stamps);
+                                   cbundle.getCache(), fileStates, fileInfos);
 
                   if(updatedCheckSums.wasModified()) {
                     try {
@@ -19123,25 +19122,33 @@ class MasterMgr
               /* if frozen, all the files are just links so use the working time stamp */ 
               if(workIsFrozen) {
                 for(FileSeq fseq : work.getSequences()) {
-                  Long ts[] = new Long[fseq.numFrames()];
+                  NativeFileInfo infos[] = fileInfos.get(fseq);
+                  if(infos == null) {
+                    infos = new NativeFileInfo[fseq.numFrames()];
+                    fileInfos.put(fseq, infos); 
+                  }
                   
                   int wk;
-                  for(wk=0; wk<ts.length; wk++) 
-                    ts[wk] = work.getTimeStamp();
-                  
-                  stamps.put(fseq, ts);
+                  for(wk=0; wk<infos.length; wk++) {
+                    if(infos[wk] != null) 
+                      infos[wk].setTimeStamp(work.getTimeStamp());
+                    else 
+                      infos[wk] = new NativeFileInfo(0, work.getTimeStamp(), true); 
+                  }
                 }
               }
               /* otherwise, correct the timestamps for any symlinks we've made 
                  during a previous check-in */ 
               else {
-                for(FileSeq fseq : work.getSequences()) {
-                  Long ts[] = stamps.get(fseq); 
-                  if(ts != null) {
+                for(FileSeq fseq : work.getSequences()) {                  
+                  NativeFileInfo infos[] = fileInfos.get(fseq); 
+                  if(infos != null) {
                     int wk=0;
                     for(Path path : fseq.getPaths()) {
-                      if(ts[wk] != null) 
-                        ts[wk] = work.correctStamp(path.toString(), ts[wk]);
+                      if(infos[wk] != null) {
+                        long ostamp = infos[wk].getTimeStamp();
+                        infos[wk].setTimeStamp(work.correctStamp(path.toString(), ostamp));
+                      }
                       wk++;
                     }
                   }
@@ -19150,26 +19157,27 @@ class MasterMgr
             }
 
             /* get the newest/oldest of the timestamp for each file sequence index */ 
-            for(FileSeq fseq : stamps.keySet()) {
-              Long[] ts = stamps.get(fseq);
+            for(Map.Entry<FileSeq,NativeFileInfo[]> entry : fileInfos.entrySet()) {
+              FileSeq fseq = entry.getKey();
+              NativeFileInfo infos[] = entry.getValue(); 
 
               if(newestStamps == null) 
-                newestStamps = new Long[ts.length];
+                newestStamps = new Long[infos.length];
 
               if(oldestStamps == null) 
-                oldestStamps = new Long[ts.length];
+                oldestStamps = new Long[infos.length];
 
               int wk;
-              for(wk=0; wk<ts.length; wk++) {
-                /* the newest among the primary/secondary files for the index */ 
-                if((newestStamps[wk] == null) || 
-                   ((ts[wk] != null) && (ts[wk] > newestStamps[wk])))
-                  newestStamps[wk] = ts[wk];
+              for(wk=0; wk<infos.length; wk++) {
+                NativeFileInfo info = infos[wk];
+                if(info != null) {
+                  long stamp = info.getTimeStamp();
+                  if((newestStamps[wk] == null) || (stamp > newestStamps[wk]))
+                    newestStamps[wk] = stamp; 
 
-                /* the oldest among the primary/secondary files for the index */ 
-                if((oldestStamps[wk] == null) || 
-                   ((ts[wk] != null) && (ts[wk] < oldestStamps[wk])))
-                  oldestStamps[wk] = ts[wk];
+                  if((oldestStamps[wk] == null) || (stamp < oldestStamps[wk]))
+                    oldestStamps[wk] = stamp; 
+                } 
               }
             }
 
@@ -19451,8 +19459,8 @@ class MasterMgr
                     NodeStatus lstatus = status.getSource(link.getName());
                     NodeDetailsHeavy ldetails = lstatus.getHeavyDetails();
                     
-                    long lstamps[]    = ldetails.getFileTimeStamps();
-                    UpdateState lus[] = ldetails.getUpdateState();
+                    long lstamps[]    = ldetails.getUpdateTimeStamps();
+                    UpdateState lus[] = ldetails.getUpdateStates();
                       
                     boolean foundStaleLink = false;
                     switch(link.getRelationship()) {
@@ -19580,7 +19588,7 @@ class MasterMgr
          * Propagate staleness from upstream per-file dependencies.
          * 
          * ---------------------------------------------------------------------------------
-         * Set the per-file time stamps of each file to be the newest of:
+         * Set the per-file update time stamps of each file to be the newest of:
          * 
          * + If the FileState is Missing, the time stamp of when the FileState was computed.
          * 
@@ -19609,7 +19617,7 @@ class MasterMgr
          * + Dubious: if the local QueueState is Dubious or if any upstream file via 
          *            Dependency/Reference has UpdateState of Stale.
          */
-        long[] fileStamps = new long[oldestStamps.length];
+        long[] updateStamps = new long[oldestStamps.length];
         UpdateState updateStates[] = new UpdateState[oldestStamps.length];
         switch(versionState) {
         case CheckedIn: 
@@ -19624,7 +19632,7 @@ class MasterMgr
           if(workIsLocked) {
             int wk;
             for(wk=0; wk<queueStates.length; wk++) {
-              fileStamps[wk]   = newestStamps[wk];
+              updateStamps[wk]   = newestStamps[wk];
               updateStates[wk] = UpdateState.Unknown;
             }
           }
@@ -19650,17 +19658,17 @@ class MasterMgr
               
               /* newest of the timestamps */ 
               if(anyMissing[wk] || (newestStamps[wk] == null)) 
-                fileStamps[wk] = missingStamp;
+                updateStamps[wk] = missingStamp;
               else 
-                fileStamps[wk] = newestStamps[wk];
+                updateStamps[wk] = newestStamps[wk];
 
               long criticalProps = work.getLastCriticalModification();
-              if(criticalProps > fileStamps[wk])
-                fileStamps[wk] = criticalProps;
+              if(criticalProps > updateStamps[wk])
+                updateStamps[wk] = criticalProps;
 
               long criticalLinks = work.getLastCriticalSourceModification();
-              if(criticalLinks > fileStamps[wk]) 
-                fileStamps[wk] = criticalLinks;
+              if(criticalLinks > updateStamps[wk]) 
+                updateStamps[wk] = criticalLinks;
                     
               /* process upstream per-file dependencies... */ 
               for(LinkMod link : work.getSources()) { 
@@ -19674,9 +19682,9 @@ class MasterMgr
                     NodeStatus lstatus = status.getSource(link.getName());
                     NodeDetailsHeavy ldetails = lstatus.getHeavyDetails();
                     
-                    long lstamps[]    = ldetails.getFileTimeStamps();
-                    UpdateState lus[] = ldetails.getUpdateState();
-                    QueueState lqs[]  = ldetails.getQueueState();
+                    long lstamps[]    = ldetails.getUpdateTimeStamps();
+                    UpdateState lus[] = ldetails.getUpdateStates();
+                    QueueState lqs[]  = ldetails.getQueueStates();
 
                     boolean foundStaleLink = false;
                     switch(link.getRelationship()) {
@@ -19685,9 +19693,9 @@ class MasterMgr
                         Integer offset = link.getFrameOffset();
                         int idx = wk+offset;
                         if((idx >= 0) && (idx < lus.length)) {
-                          if((lstamps[idx] > fileStamps[wk]) &&
+                          if((lstamps[idx] > updateStamps[wk]) &&
                              (!isDepend || (isDepend && (lqs[idx] != QueueState.Finished)))) {
-                            fileStamps[wk] = lstamps[idx];
+                            updateStamps[wk] = lstamps[idx];
                             foundStaleLink = true;
                           }
 
@@ -19710,9 +19718,9 @@ class MasterMgr
                       {
                         int fk;
                         for(fk=0; fk<lus.length; fk++) {
-                          if((lstamps[fk] > fileStamps[wk]) &&
+                          if((lstamps[fk] > updateStamps[wk]) &&
                              (!isDepend || (isDepend && (lqs[fk] != QueueState.Finished)))) {
-                            fileStamps[wk] = lstamps[fk];
+                            updateStamps[wk] = lstamps[fk];
                             foundStaleLink = true;
                           }
 
@@ -19753,7 +19761,8 @@ class MasterMgr
           new NodeDetailsHeavy(work, base, latest, versionIDs, 
                                overallNodeState, overallQueueState, 
                                versionState, propertyState, linkState, 
-                               fileStates, fileStamps, jobIDs, queueStates, updateStates);
+                               fileStates, fileInfos, updateStamps,
+                               jobIDs, queueStates, updateStates);
 
         /* add details and annotations to the node's status */ 
         status.setHeavyDetails(details);
@@ -25135,8 +25144,8 @@ class MasterMgr
             boolean allNovel = (!work.isIntermediate() && 
                                 (latest != null) && latest.isIntermediate());
             
-            for(FileSeq fseq : details.getFileStateSequences()) {
-              FileState[] states = details.getFileState(fseq);
+            for(FileSeq fseq : details.getFileSequences()) {
+              FileState[] states = details.getFileStates(fseq);
               boolean flags[] = new boolean[states.length];
 
               int wk;
@@ -25172,6 +25181,8 @@ class MasterMgr
 	  /* check-in the files */ 
           TreeMap<String,CheckSum> checksums = null;
           TreeMap<String,Long[]> correctedStamps = work.getCorrectedStamps();
+          TreeMap<FileSeq,NativeFileInfo[]> fileInfos = 
+            new TreeMap<FileSeq,NativeFileInfo[]>();
 	  {
 	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
@@ -25186,7 +25197,7 @@ class MasterMgr
 
                 CheckSumCache updatedCheckSums = 
                   fclient.checkIn(nodeID, work, vid, latestID, isNovel, 
-                                  cbundle.getCache(), correctedStamps); 
+                                  cbundle.getCache(), correctedStamps, fileInfos); 
 
                 if(updatedCheckSums.wasModified()) {
                   try {
@@ -25235,7 +25246,7 @@ class MasterMgr
 	  QueueState[] queueStates = null;
 	  UpdateState[] updateStates = null;
 	  {
-	    for(FileSeq fseq : details.getFileStateSequences()) {
+	    for(FileSeq fseq : details.getFileSequences()) {
 	      FileState fs[] = new FileState[fseq.numFrames()];
 
 	      if(jobIDs == null) 
@@ -25271,6 +25282,21 @@ class MasterMgr
 	  /* update the working bundle */ 
 	  working.setVersion(nwork);
 
+          /* correct the timestamps for any symlinks we've made during the check-in */ 
+          for(FileSeq fseq : work.getSequences()) {
+            NativeFileInfo infos[] = fileInfos.get(fseq); 
+            if(infos != null) {
+              int wk=0;
+              for(Path path : fseq.getPaths()) {
+                if(infos[wk] != null) {
+                  long ostamp = infos[wk].getTimeStamp();
+                  infos[wk].setTimeStamp(nwork.correctStamp(path.toString(), ostamp));
+                }
+                wk++;
+              }
+            }
+          }
+
 	  /* update the node status details */ 
 	  NodeDetailsHeavy ndetails = 
 	    new NodeDetailsHeavy
@@ -25278,7 +25304,8 @@ class MasterMgr
                   checkedIn.keySet(),
                   OverallNodeState.Identical, OverallQueueState.Finished, 
                   VersionState.Identical, PropertyState.Identical, LinkState.Identical, 
-                  fileStates, details.getFileTimeStamps(), jobIDs, queueStates, updateStates);
+                  fileStates, fileInfos, details.getUpdateTimeStamps(), 
+                  jobIDs, queueStates, updateStates);
 
 	  status.setHeavyDetails(ndetails);
 

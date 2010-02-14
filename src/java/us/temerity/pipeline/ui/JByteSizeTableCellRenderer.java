@@ -38,8 +38,28 @@ class JByteSizeTableCellRenderer
    int align
   ) 
   {
+    this(align, false); 
+  }
+
+  /**
+   * Construct a new renderer.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   * 
+   * @param asFloat
+   *   Whether to display as a floating point value string.
+   */
+  public 
+  JByteSizeTableCellRenderer
+  (
+   int align, 
+   boolean asFloat
+  ) 
+  {
     setName("SimpleTableCellRenderer");
     setHorizontalAlignment(align);
+    pAsFloat = asFloat;
   }
 
 
@@ -63,10 +83,15 @@ class JByteSizeTableCellRenderer
   )
   {
     Long size = (Long) value; 
-    if(size != null) 
-      setText(ByteSize.longToString(size));
-    else 
+    if(size != null) {
+      if(pAsFloat) 
+        setText(ByteSize.longToFloatString(size));
+      else
+        setText(ByteSize.longToString(size));
+    }
+    else {
       setText("-");
+    }
 
     setForeground(isSelected ? Color.yellow : Color.white);
 
@@ -79,5 +104,17 @@ class JByteSizeTableCellRenderer
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -690498372994587454L;
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to display as a floating point value string.
+   */ 
+  private boolean pAsFloat; 
+
 
 }

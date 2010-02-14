@@ -4393,13 +4393,13 @@ class ScriptApp
 	     pad("-- File Sequences ", '-', 80));
 
 	  boolean ffirst = true;
-	  QueueState qs[] = hdetails.getQueueState();
-	  for(FileSeq fseq : hdetails.getFileStateSequences()) {
+	  QueueState qs[] = hdetails.getQueueStates();
+	  for(FileSeq fseq : hdetails.getFileSequences()) {
 	    if(!ffirst) 
 	      buf.append("\n");
 	    ffirst = false;
 
-	    FileState fs[] = hdetails.getFileState(fseq);
+	    FileState fs[] = hdetails.getFileStates(fseq);
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
 	      buf.append("\n" + 

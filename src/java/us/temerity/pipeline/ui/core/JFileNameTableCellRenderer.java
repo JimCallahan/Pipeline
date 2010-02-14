@@ -35,6 +35,7 @@ class JFileNameTableCellRenderer
   ) 
   {
     super(JLabel.CENTER); 
+    setName("SimpleMarginTableCellRenderer");
     pModel = model;
   }
 

@@ -627,7 +627,7 @@ class JBaseNodeDetailPanel
         NodeDetailsHeavy details = pStatus.getHeavyDetails();
         
         Long[] jobIDs   = details.getJobIDs();
-        QueueState[] qs = details.getQueueState();
+        QueueState[] qs = details.getQueueStates();
         assert(jobIDs.length == qs.length);
         
         int wk;
@@ -660,7 +660,7 @@ class JBaseNodeDetailPanel
         NodeDetailsHeavy details = pStatus.getHeavyDetails();
         
         Long[] jobIDs   = details.getJobIDs();
-        QueueState[] qs = details.getQueueState();
+        QueueState[] qs = details.getQueueStates();
         assert(jobIDs.length == qs.length);
         
         int wk;

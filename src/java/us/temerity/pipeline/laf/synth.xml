@@ -1905,6 +1905,16 @@
   </style>
   <bind style="SimpleTableCellRenderer" type="name" key="SimpleTableCellRenderer"/>
   
+  <style id="SimpleMarginTableCellRenderer">
+    <imagePainter path="ValuePanelMargin.png"
+                  method="labelBackground"
+                  sourceInsets="3 4 3 5"/>
+    <insets top="2" bottom="2" right="10" left="9"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="SimpleMarginTableCellRenderer" type="name" 
+        key="SimpleMarginTableCellRenderer"/>
+  
   <style id="GreyCheckTableCellRenderer">
     <imagePainter path="GreyCheckPanel.png"
                   method="labelBackground"

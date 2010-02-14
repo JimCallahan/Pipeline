@@ -529,7 +529,8 @@ class FileMgr
         wcheck.resetModified(); 
 
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
-	TreeMap<FileSeq, Long[]> timestamps = new TreeMap<FileSeq, Long[]>();
+        TreeMap<FileSeq,NativeFileInfo[]> fileInfos = new TreeMap<FileSeq,NativeFileInfo[]>();
+	TreeMap<FileSeq, Long[]> fileSizes = new TreeMap<FileSeq, Long[]>();
 
         Path statPath = new Path(pFileStatPath.get());
 
@@ -546,26 +547,26 @@ class FileMgr
 
               for(FileSeq fseq : req.getFileSequences()) {
                 FileState fs[] = new FileState[fseq.numFrames()];
-                Long stamps[]  = new Long[fseq.numFrames()];
-
+                NativeFileInfo infos[] = new NativeFileInfo[fs.length];
+                
                 int wk = 0;
                 for(Path path : fseq.getPaths()) {
                   NativeFileStat work = new NativeFileStat(new Path(wpath, path));
 
                   if(!work.isFile()) {
-                    /* this means that someone has manually removed the symlink! */ 
+                    /* this means that someone has manually removed or broken the symlink! */ 
                     fs[wk] = FileState.Missing; 
                   }
                   else {
                     fs[wk] = FileState.Identical;
-                    stamps[wk] = work.lastCriticalChange(ctime); 
+                    infos[wk] = new NativeFileInfo(work, ctime); 
                   }
                   
                   wk++;
                 }
 
                 states.put(fseq, fs);
-                timestamps.put(fseq, stamps);
+                fileInfos.put(fseq, infos);
               }
             }
 	    break;
@@ -577,7 +578,7 @@ class FileMgr
 
               for(FileSeq fseq : req.getFileSequences()) {
                 FileState fs[] = new FileState[fseq.numFrames()];
-                Long stamps[]  = new Long[fseq.numFrames()];
+                NativeFileInfo infos[] = new NativeFileInfo[fs.length];
                 
                 int wk = 0;
                 for(Path path : fseq.getPaths()) {
@@ -589,10 +590,10 @@ class FileMgr
 
                   if((linter && (lsum == null)) || (!linter && !latest.isFile())) {
                     fs[wk] = FileState.Obsolete;
-                    stamps[wk] = work.lastCriticalChange(ctime); 
+                    infos[wk] = new NativeFileInfo(work, ctime); 
                   }
                   else if(!work.isFile()) {
-                    /* this means that someone has manually removed the symlink! */ 
+                    /* this means that someone has manually removed or broken the symlink! */ 
                     fs[wk] = FileState.Missing;  
                   }
                   else {
@@ -610,14 +611,14 @@ class FileMgr
                         fs[wk] = FileState.NeedsCheckOut;
                     }
 
-                    stamps[wk] = work.lastCriticalChange(ctime); 
+                    infos[wk] = new NativeFileInfo(work, ctime); 
                   }
 
                   wk++;
                 }
                
                 states.put(fseq, fs);
-                timestamps.put(fseq, stamps);
+                fileInfos.put(fseq, infos);
               }
             }
           }
@@ -635,7 +636,7 @@ class FileMgr
               
               for(FileSeq fseq : req.getFileSequences()) {
                 FileState fs[] = new FileState[fseq.numFrames()];
-                Long stamps[]  = new Long[fseq.numFrames()];
+                NativeFileInfo infos[] = new NativeFileInfo[fs.length];
 
                 int wk = 0;
                 for(Path path : fseq.getPaths()) {
@@ -643,7 +644,7 @@ class FileMgr
                   
                   if(work.isFile()) {
                     fs[wk] = FileState.Pending;
-                    stamps[wk] = work.lastCriticalChange(ctime); 
+                    infos[wk] = new NativeFileInfo(work, ctime); 
                   }
                   else {
                     fs[wk] = FileState.Missing;
@@ -653,7 +654,7 @@ class FileMgr
                 }
                 
                 states.put(fseq, fs);
-                timestamps.put(fseq, stamps);
+                fileInfos.put(fseq, infos);
               }
             }
 	    break;
@@ -671,7 +672,7 @@ class FileMgr
 
               for(FileSeq fseq : req.getFileSequences()) {
                 FileState fs[] = new FileState[fseq.numFrames()];
-                Long stamps[]  = new Long[fseq.numFrames()];
+                NativeFileInfo infos[] = new NativeFileInfo[fs.length];
                 
                 int wk = 0;
                 for(Path path : fseq.getPaths()) {
@@ -709,14 +710,14 @@ class FileMgr
                         fs[wk] = FileState.Modified;
                     }
 
-                    stamps[wk] = work.lastCriticalChange(ctime); 
+                    infos[wk] = new NativeFileInfo(work, ctime); 
                   }
                   
                   wk++;
                 }
                 
                 states.put(fseq, fs);
-                timestamps.put(fseq, stamps);
+                fileInfos.put(fseq, infos);
               }
             }
 	    break;
@@ -732,7 +733,7 @@ class FileMgr
               
               for(FileSeq fseq : req.getFileSequences()) {
                 FileState fs[] = new FileState[fseq.numFrames()];
-                Long stamps[]  = new Long[fseq.numFrames()];
+                NativeFileInfo infos[] = new NativeFileInfo[fs.length];
                 
                 int wk = 0;
                 for(Path path : fseq.getPaths()) {
@@ -793,14 +794,14 @@ class FileMgr
                       }
                     }
                       
-                    stamps[wk] = work.lastCriticalChange(ctime); 
+                    infos[wk] = new NativeFileInfo(work, ctime); 
                   }
                   
                   wk++;
                 }
                 
                 states.put(fseq, fs);
-                timestamps.put(fseq, stamps);
+                fileInfos.put(fseq, infos);
               }
             }
           }
@@ -818,8 +819,7 @@ class FileMgr
          * recommended, but since the cache can be large and this is one of the more time 
          * critical methods in Pipeine, I'm intentionally breaking the rules here.
          */
-        
-        return new FileStateRsp(timer, nodeID, states, timestamps, wcheck);
+        return new FileStateRsp(timer, nodeID, states, fileInfos, wcheck);
       }
     }
     catch(PipelineException ex) {
@@ -1324,6 +1324,30 @@ class FileMgr
         /* make the repository directory read-only */ 
         rdir.setReadOnly();
 
+        /* record the post check-in file information,
+             identical to what FileMgr.states() returns */ 
+        TreeMap<FileSeq,NativeFileInfo[]> fileInfos = new TreeMap<FileSeq,NativeFileInfo[]>();
+        {
+          Path wpath = new Path(statPath, nodeID.getWorkingParent());
+          for(FileSeq fseq : req.getFileSequences()) {  
+            NativeFileInfo infos[] = new NativeFileInfo[fseq.numFrames()];
+
+            int wk;
+            for(wk=0; wk<infos.length; wk++) {
+              Path path = fseq.getPath(wk);
+              try {
+                NativeFileStat work = new NativeFileStat(new Path(wpath, path));
+                infos[wk] = new NativeFileInfo(work, ctime); 
+              }
+              catch(IOException ex) {
+                /* silently ignore */ 
+              }
+            }
+
+            fileInfos.put(fseq, infos);
+          }
+        }
+
         /**
          * You might be wondering why "wcheck" is read from the FileCheckInReq, locally 
          * modified and then passed directly back to FileCheckInRsp.  If you look at these 
@@ -1336,7 +1360,7 @@ class FileMgr
          * recommended, but since the cache can be large and this is one of the more time 
          * critical methods in Pipeine, I'm intentionally breaking the rules here.
          */
-	return new FileCheckInRsp(timer, wcheck, movedStamps); 
+	return new FileCheckInRsp(timer, wcheck, movedStamps, fileInfos); 
       }
     }
     catch(PipelineException ex) {

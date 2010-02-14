@@ -33,7 +33,11 @@ class NodeDetailsHeavy
    * <CODE>null</CODE> members if no queue job exists which generates that particular 
    * file. <P> 
    * 
-   * The <CODE>fileTimeStamps</CODE> argument contains the timestamp which is most relevant
+   * The <CODE>fileInfos</CODE> argument contains the results of {@link NativeFileStat} on 
+   * each primary and secondary file associated with the node.  The entry may be
+   * <CODE>null</CODE> for individual files if they are missing.<P> 
+   * 
+   * The <CODE>updateTimeStamps</CODE> argument contains the timestamp which is most relevant
    * (newest) for determining when each file index was last modified.  This timestamp may be
    * the last modification date for the primary/secondary file sequence, the timestamp of 
    * when the last critical modification of node properties or links occurred.  For missing
@@ -73,7 +77,11 @@ class NodeDetailsHeavy
    * @param fileStates
    *   The files states associated with each file sequence. 
    * 
-   * @param fileTimeStamps
+   * @param fileInfo
+   *   The per-file status information for each primary and secondary file associated with 
+   *   the working version indexed by file sequence.
+   * 
+   * @param updateTimeStamps
    *   The newest timestamp which needs to be considered when computing whether each file 
    *   index is {@link QueueState#Stale Stale}.
    * 
@@ -99,7 +107,8 @@ class NodeDetailsHeavy
    PropertyState propertyState, 
    LinkState linkState, 
    TreeMap<FileSeq,FileState[]> fileStates, 
-   long[] fileTimeStamps, 
+   TreeMap<FileSeq,NativeFileInfo[]> fileInfos,
+   long[] updateTimeStamps, 
    Long[] jobIDs, 
    QueueState[] queueStates, 
    UpdateState[] updateStates
@@ -116,15 +125,30 @@ class NodeDetailsHeavy
       throw new IllegalArgumentException("The overall queue state cannot be (null)!");
     pOverallQueueState = overallQueueState;
 
-    if(fileStates == null) 
-      throw new IllegalArgumentException("The file states cannot be (null)!");
-    pFileStates = new TreeMap<FileSeq,FileState[]>(); 
-    for(Map.Entry<FileSeq,FileState[]> entry : fileStates.entrySet()) 
-      pFileStates.put(entry.getKey(), entry.getValue().clone());
+    {
+      if(fileStates == null) 
+        throw new IllegalArgumentException("The file states cannot be (null)!");
 
-    if(fileTimeStamps == null) 
+      if(fileInfos == null) 
+        throw new IllegalArgumentException("The file status information cannot be (null)!");
+
+      if(!fileStates.keySet().equals(fileInfos.keySet())) 
+        throw new IllegalArgumentException
+          ("The file sequence indices of both file states and file status information " + 
+           "must match!");
+
+      pFileStates = new TreeMap<FileSeq,FileState[]>(); 
+      for(Map.Entry<FileSeq,FileState[]> entry : fileStates.entrySet()) 
+        pFileStates.put(entry.getKey(), entry.getValue().clone());
+      
+      pFileInfos = new TreeMap<FileSeq,NativeFileInfo[]>(); 
+      for(Map.Entry<FileSeq,NativeFileInfo[]> entry : fileInfos.entrySet()) 
+        pFileInfos.put(entry.getKey(), entry.getValue().clone());
+    }
+
+    if(updateTimeStamps == null) 
       throw new IllegalArgumentException("The file time stamps cannot be (null)!");
-    pFileTimeStamps = fileTimeStamps.clone();
+    pUpdateTimeStamps = updateTimeStamps.clone();
 
     if(jobIDs == null) 
       throw new IllegalArgumentException("The job IDs cannot be (null)!");
@@ -196,10 +220,14 @@ class NodeDetailsHeavy
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the set of file sequences for which file state information is defined.
+   * Get the set of file sequences for which both file state and status information is
+   * defined. <P> 
+   * 
+   * These file sequences should be used with {@link #getFileStates getFileStates()} and 
+   * {@link #getFileInfos getFileInfos()}. 
    */ 
   public Set<FileSeq>
-  getFileStateSequences() 
+  getFileSequences() 
   {
     return Collections.unmodifiableSet(pFileStates.keySet());
   }
@@ -211,7 +239,7 @@ class NodeDetailsHeavy
    *   The file sequences to lookup.
    */ 
   public FileState[]
-  getFileState
+  getFileStates
   (
    FileSeq fseq
   ) 
@@ -219,14 +247,90 @@ class NodeDetailsHeavy
     return pFileStates.get(fseq);
   }
 
+  /** 
+   * Get the per-file status information for each primary and secondary file associated with 
+   * the working version indexed by file sequence.
+   *
+   * @param fseq
+   *   The file sequences to lookup.
+   * 
+   * @return
+   *   The status information for each file index.  Individual elements can be 
+   *   <CODE>null</CODE> if the corresponding file is missng.
+   */ 
+  public NativeFileInfo[]
+  getFileInfos
+  (
+   FileSeq fseq
+  ) 
+  {
+    return pFileInfos.get(fseq);
+  } 
+
+  /** 
+   * Get the newest of all of the critical timestamps associated with the node. 
+   * 
+   * @return
+   *   The newest timestamp or <CODE>null</CODE> if all files are missing.
+   */ 
+  public Long
+  getNewestFileTimeStamp() 
+  {
+    Long newest = null;
+    for(NativeFileInfo[] infos : pFileInfos.values()) {
+      for(NativeFileInfo info : infos) {
+        if(info != null) {
+          long stamp = info.getTimeStamp();
+          if((newest == null) || (stamp > newest))
+            newest = stamp;
+        }
+      }
+    }
+    return newest;
+  } 
+
+  /** 
+   * Get the total size of all working files associated with the node. 
+   * 
+   * @param includeLinked
+   *   Whether to include the sizes of repository files pointed to by working area symbolic 
+   *   links in the file size total returned.  If <CODE>false</CODE>, then only regular 
+   *   working area files will be considered.
+   * 
+   * @return
+   *   The total or <CODE>null</CODE> if all matching files are missing.
+   */ 
+  public Long 
+  getTotalFileSize
+  (
+   boolean includeLinked
+  ) 
+  {
+    Long total = null;
+    for(NativeFileInfo[] infos : pFileInfos.values()) {
+      for(NativeFileInfo info : infos) {
+        if((info != null) && (includeLinked || !info.isSymlink())) {
+          if(total == null) 
+            total = 0L;
+          total += info.getFileSize();
+        }
+      }
+    }
+    return total;
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the newest timestamp which needs to be considered when computing whether each file 
    * index is {@link QueueState#Stale Stale}. 
    */ 
   public long[] 
-  getFileTimeStamps() 
+  getUpdateTimeStamps() 
   {
-    return pFileTimeStamps;
+    return pUpdateTimeStamps;
   }
 
   /**
@@ -242,7 +346,7 @@ class NodeDetailsHeavy
    * Get the queue states associated with the file sequences.
    */ 
   public QueueState[]
-  getQueueState() 
+  getQueueStates() 
   {
     return pQueueStates;
   }
@@ -251,7 +355,7 @@ class NodeDetailsHeavy
    * Get the update states associated with the file sequences.
    */ 
   public UpdateState[]
-  getUpdateState() 
+  getUpdateStates() 
   {
     return pUpdateStates;
   }
@@ -275,7 +379,8 @@ class NodeDetailsHeavy
     encoder.encode("OverallQueueState", pOverallQueueState);
 
     encoder.encode("FileStates", pFileStates);
-    encoder.encode("FileTimeStamps", pFileTimeStamps);
+    encoder.encode("FileInfos", pFileInfos);
+    encoder.encode("UpdateTimeStamps", pUpdateTimeStamps);
     encoder.encode("JobIDs", pJobIDs);
     encoder.encode("QueueStates", pQueueStates);
     encoder.encode("UpdateStates", pUpdateStates);
@@ -325,11 +430,17 @@ class NodeDetailsHeavy
    */   
   private TreeMap<FileSeq,FileState[]> pFileStates;
   
+  /** 
+   * The per-file status information for each primary and secondary file associated with 
+   * the working version indexed by file sequence.
+   */   
+  private TreeMap<FileSeq,NativeFileInfo[]> pFileInfos;
+  
   /**
    * The newest timestamp which needs to be considered when computing whether each file 
    * index is up-to-date.  
    */
-  private long[] pFileTimeStamps;
+  private long[] pUpdateTimeStamps;
 
   /** 
    * The unique job identifiers of the job which generates individual files associated with 

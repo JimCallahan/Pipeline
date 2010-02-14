@@ -441,6 +441,7 @@ class JNodeFilesPanel
     ArrayList<FileSeq> singles = new ArrayList<FileSeq>(); 
     TreeSet<FileSeq> enabled = new TreeSet<FileSeq>();
     TreeMap<FileSeq,FileState>  fstates = new TreeMap<FileSeq,FileState>();
+    TreeMap<FileSeq,NativeFileInfo> finfos = new TreeMap<FileSeq,NativeFileInfo>();
     TreeMap<FileSeq,QueueState> qstates = new TreeMap<FileSeq,QueueState>();
     TreeMap<FileSeq,Boolean[]> novel = new TreeMap<FileSeq,Boolean[]>();
     {
@@ -450,18 +451,17 @@ class JNodeFilesPanel
           if(pStatus.hasHeavyDetails()) {
             NodeDetailsHeavy details = pStatus.getHeavyDetails();
 
-            FileState[]  fs = details.getFileState(fseq);
-            QueueState[] qs = details.getQueueState();
-            if((fs != null) && (qs != null)) {
-              assert(fs.length == fseq.numFrames());
-              assert(qs.length == fseq.numFrames());
-              
+            FileState[]  fs = details.getFileStates(fseq);
+            QueueState[] qs = details.getQueueStates();
+            NativeFileInfo[] infos = details.getFileInfos(fseq); 
+            if((fs != null) && (qs != null) && (infos != null)) {
               int wk;
               for(wk=0; wk<fs.length; wk++) {
                 FileSeq sfseq = new FileSeq(fseq, wk);
                 wsingles.put(sfseq, wk);
                 
                 fstates.put(sfseq, fs[wk]);
+                finfos.put(sfseq, infos[wk]); 
                 qstates.put(sfseq, qs[wk]);
                 
                 if(fs[wk] != FileState.CheckedIn) 
@@ -539,7 +539,8 @@ class JNodeFilesPanel
     {
       JFileSeqPanel panel = 
         new JFileSeqPanel(this, pManagerPanel, pStatus, pPrivilegeDetails, 
-                          fseq, vids, pOffline, singles, fstates, qstates, enabled, novel); 
+                          fseq, vids, pOffline, singles, fstates, finfos, qstates, 
+                          enabled, novel); 
 
       pFileSeqsTab.addTab(null, sTabIcon, panel); 
       pFileSeqPanels.put(fseq, panel); 

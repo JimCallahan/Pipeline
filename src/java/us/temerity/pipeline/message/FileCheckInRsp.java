@@ -32,13 +32,17 @@ class FileCheckInRsp
    * @param movedStamps
    *   The timestamps recorded for files before being moved into the repository and the 
    *   symlink created after the move.
+   * 
+   * @param fileInfos
+   *   Per-file information for each file sequence after the check-in takes place.
    */
   public
   FileCheckInRsp
   (
    TaskTimer timer, 
    CheckSumCache updatedCheckSums, 
-   TreeMap<String,Long[]> movedStamps
+   TreeMap<String,Long[]> movedStamps, 
+   TreeMap<FileSeq,NativeFileInfo[]> fileInfos
   )
   { 
     super(timer);
@@ -50,6 +54,10 @@ class FileCheckInRsp
     if(movedStamps == null) 
       throw new IllegalArgumentException("The moved timestamps cannot (null)!");
     pMovedStamps = movedStamps; 
+
+    if(fileInfos == null) 
+      throw new IllegalArgumentException("The file information cannot (null)!");
+    pFileInfos = fileInfos; 
 
     LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
@@ -80,7 +88,16 @@ class FileCheckInRsp
     return pMovedStamps; 
   }
   
-
+  /**
+   * The per-file information for each file sequence after the check-in takes place.
+   */ 
+  public TreeMap<FileSeq,NativeFileInfo[]>
+  getFileInfos()
+  {
+    return pFileInfos; 
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -104,6 +121,11 @@ class FileCheckInRsp
    * symlink created after the move.
    */ 
   private TreeMap<String,Long[]>  pMovedStamps; 
+
+  /**
+   * The per-file information for each file sequence after the check-in takes place.
+   */ 
+  private TreeMap<FileSeq,NativeFileInfo[]> pFileInfos; 
 
 }
   
