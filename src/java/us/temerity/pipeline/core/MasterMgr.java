@@ -15940,20 +15940,24 @@ class MasterMgr
       pBackupSyncTarget.set(target); 
       pBackupSyncTrigger.release();
 
-      QueueMgrControlClient qclient = acquireQueueMgrClient();
-      try {
-        qclient.backupDatabase(targetDir, dateStr);
-      }
-      finally {
-        releaseQueueMgrClient(qclient);
+      if(req.withQueueMgr()) {
+        QueueMgrControlClient qclient = acquireQueueMgrClient();
+        try {
+          qclient.backupDatabase(targetDir, dateStr);
+        }
+        finally {
+          releaseQueueMgrClient(qclient);
+        }
       }
 
-      PluginMgrControlClient pclient = new PluginMgrControlClient();
-      try {
-        pclient.backupDatabase(targetDir, dateStr);
-      }
-      finally {
-        pclient.disconnect();
+      if(req.withPluginMgr()) {
+        PluginMgrControlClient pclient = new PluginMgrControlClient();
+        try {
+          pclient.backupDatabase(targetDir, dateStr);
+        }
+        finally {
+          pclient.disconnect();
+        }
       }
 
       /* post-op tasks */ 
@@ -25976,7 +25980,7 @@ class MasterMgr
    * processing it.
    */ 
   private AtomicReference<Path>  pBackupSyncTarget; 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
  

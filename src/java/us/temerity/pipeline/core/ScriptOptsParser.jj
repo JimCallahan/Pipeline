@@ -160,10 +160,16 @@ ScriptOptsParser
   private Boolean  pIsNodeManager; 
 
   /**
-   * admin options. 
+   * admin --shutdown options. 
    */ 
   private boolean  pShutdownJobMgrs;
   private boolean  pShutdownPluginMgr;
+
+  /**
+   * admin --backup options. 
+   */ 
+  private boolean  pBackupQueueMgr;
+  private boolean  pBackupPluginMgr;
 
   /**
    * runtime options. 
@@ -189,7 +195,6 @@ ScriptOptsParser
 
   private Long  pRestoreCleanupInterval;
   private Long  pMasterBackupSyncInterval;
- 
 
   private Path    pFileStatDir;
   private Path    pCheckSumDir;
@@ -408,6 +413,8 @@ TOKEN :
 | <NODE_MANAGER:       "--node-manager">    
 | <SHUTDOWN_JOBMGRS:   "--shutdown-jobmgrs">       
 | <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr"> 
+| <BACKUP_QUEUEMGR:    "--backup-queuemgr"> 
+| <BACKUP_PLUGINMGR:   "--backup-pluginmgr"> 
 | <REMOTE_LOG:               "--remote-log">                : REMOTE_LOG_SEP
 
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">      : INTEGER_SEP
@@ -3136,16 +3143,47 @@ AdminBackup()
   throws PipelineException : 
 {
   Token t;
+  pBackupQueueMgr = false;
+  pBackupPluginMgr = false;
 }
 {
-  <BACKUP> EQ() t=<PATH_ARG> AE() 
+  <BACKUP> EQ() t=<PATH_ARG> AE() (BackupOpts())* 
   {
-    pMasterMgrClient.backupDatabase(new Path(t.image)); 
+    pMasterMgrClient.backupDatabase(new Path(t.image), pBackupQueueMgr, pBackupPluginMgr); 
     LogMgr.getInstance().logAndFlush
     (LogMgr.Kind.Ops, LogMgr.Level.Info,
      "Database Backup Started."); 
   }
 }
+
+void 
+BackupOpts() : 
+{}
+{
+  (BackupQueueMgr() | BackupPluginMgr())
+  {}
+}
+
+void 
+BackupQueueMgr() :
+{}
+{
+  <BACKUP_QUEUEMGR> AE()
+  {
+    pBackupQueueMgr = true;
+  }
+}
+
+void 
+BackupPluginMgr() :
+{}
+{
+  <BACKUP_PLUGINMGR> AE()
+  {
+    pBackupPluginMgr = true;
+  }
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/

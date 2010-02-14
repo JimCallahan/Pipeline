@@ -3,7 +3,7 @@
 <HTML>
 <HEAD>
   <META name="generator" content=
-  "HTML Tidy for Linux (vers 7 December 2008), see www.w3.org">
+  "HTML Tidy for Linux (vers 31 October 2006), see www.w3.org">
 
   <TITLE>plscript</TITLE>
   <META content="text/html; charset=us-ascii" http-equiv=
@@ -218,12 +218,14 @@ a.c1 {font-style: italic}
                 "#admin_--shutdown">--shutdown</A> <SPAN class=
                 "c5">[<SPAN class="c1">--shutdown-jobmgrs</SPAN>]
                 [<SPAN class=
-                "c1">--shutdown-pluginmgr</SPAN>]</SPAN><A href=
-                "#admin_--shutdown"><BR></A></LI>
+                "c1">--shutdown-pluginmgr</SPAN>]</SPAN></LI>
 
                 <LI class="c4"><A href=
-                "#admin_--backup">--backup</A><SPAN class=
-                "c5">=</SPAN><SPAN class="c7">dir</SPAN></LI>
+                "#admin_--backup">--backup</A> <SPAN class=
+                "c5">=</SPAN><SPAN class="c7">dir</SPAN>
+                <SPAN class="c5">[<SPAN class=
+                "c1">--backup-queuemgr</SPAN>] [<SPAN class=
+                "c1">--backup-pluginmgr</SPAN>]</SPAN></LI>
               </UL>
 
               <UL>
@@ -2817,22 +2819,27 @@ a.c1 {font-style: italic}
   <DIV class="c14">
     <SPAN class="c1"><A name="admin_--backup" id=
     "admin_--backup"></A>admin --backup</SPAN>=<SPAN class=
-    "c2">dir</SPAN><BR>
+    "c2">dir</SPAN> <SPAN class="c5">[<SPAN class=
+    "c1">--backup-queuemgr</SPAN>] [<SPAN class=
+    "c1">--backup-pluginmgr</SPAN>]</SPAN><BR>
     <BR>
 
     <DIV class="c14">
       Creates a tarball in the given directory (dir) which contains
       a backup of the current state of the Pipeline database.&nbsp;
       Note that backup directory path is local to the host running
-      <A href="plmaster.html"><SPAN class=
-      "c1">plmaster</SPAN></A>(1).&nbsp; All database operations
-      are blocked while the backup is in progress to insure a that
-      the backup is complete and in a consistent state.&nbsp; The
-      name of the generated backup file is printed when the backup
-      is complete.<BR>
+      the particular server in question.&nbsp; All database
+      operations are blocked while the backup is in progress to
+      insure that the backup is complete and in a consistent
+      state.<BR>
       <BR>
+      The Master Manager database is always backed up by this
+      command, but the Queue Manager and Plugin Manager databases
+      may also be included using the <SPAN class=
+      "c1">--backup-queuemgr</SPAN> and <SPAN class=
+      "c1">--backup-queuemgr</SPAN> options respectively.
     </DIV>
-  </DIV>
+  </DIV><BR>
 
   <DIV class="c14">
     <SPAN class="c1"><A name="admin_--archive" id=

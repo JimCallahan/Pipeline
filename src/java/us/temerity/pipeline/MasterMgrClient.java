@@ -7997,11 +7997,14 @@ class MasterMgrClient
    * until the backup is complete.  The this reason, the backup should be performed during 
    * non-peak hours. <P> 
    * 
+   * The Master Manager database files are always included in the backup, but backup of the
+   * Queue and Plugin Manager related files is optional. <P> 
+   * 
    * The database backup files will be automatically named: <P> 
    * <DIV style="margin-left: 40px;">
-   *   plmaster-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
-   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
-   *   plpluginmgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plmaster-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
+   *   plpluginmgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
    * </DIV>
    * 
    * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
@@ -8016,19 +8019,27 @@ class MasterMgrClient
    *   interpreted as local to each of the machines running the plmaster, plqueuemgr and
    *   plpluginmgr daemons.
    * 
+   * @param withQueueMgr
+   *   Whether to also backup the database files associated with the Queue Manager.
+   * 
+   * @param withPluginMgr
+   *   Whether to also backup the database files associated with the Plugin Manager.
+   * 
    * @throws PipelineException 
    *   If unable to perform the backup.
    */ 
   public synchronized void
   backupDatabase
   (
-   Path dir
+   Path dir, 
+   boolean withQueueMgr, 
+   boolean withPluginMgr
   ) 
     throws PipelineException
   {
     verifyConnection();
     
-    MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(dir); 
+    MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(dir, withQueueMgr, withPluginMgr); 
 
     Object obj = performLongTransaction(MasterRequest.BackupDatabase, req, 15000, 60000);  
     handleSimpleResponse(obj);    
@@ -8047,8 +8058,8 @@ class MasterMgrClient
    * 
    * @param maxArchives
    *   The maximum allowable number of archive volumes which contain the checked-in version
-   *   in order for it to be included in the returned list or <CODE>null</CODE> for any number 
-   *   of archives.
+   *   in order for it to be included in the returned list or <CODE>null</CODE> for any 
+   *   number of archives.
    * 
    * @return 
    *   Information about the archival state of each matching checked-in version. 

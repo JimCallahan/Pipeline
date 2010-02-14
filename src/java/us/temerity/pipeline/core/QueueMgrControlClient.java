@@ -156,7 +156,7 @@ class QueueMgrControlClient
    * 
    * The database backup files will be automatically named: <P> 
    * <DIV style="margin-left: 40px;">
-   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plqueuemgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
    * </DIV>
    * 
    * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 

@@ -109,7 +109,7 @@ class PluginMgrControlClient
    * 
    * The database backup files will be automatically named: <P> 
    * <DIV style="margin-left: 40px;">
-   *   plpluginmgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   *   plpluginmgr-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tar<P>
    * </DIV>
    * 
    * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 

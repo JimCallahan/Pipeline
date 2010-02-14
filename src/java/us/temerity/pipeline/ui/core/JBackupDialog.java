@@ -60,6 +60,26 @@ class JBackupDialog
              "where the database backup files should be stored.");
 	  pDirectoryField = field;
 	}
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 6);
+
+	pQueueMgrField = 
+	  UIFactory.createTitledBooleanField
+	  (tpanel, "Backup Queue Manager:", sTSize, 
+	   vpanel, sVSize, 
+	   "Also backup the database files associated with the Queue Manager?");
+	pQueueMgrField.setValue(true);
+        
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 6);
+
+	pPluginMgrField = 
+	  UIFactory.createTitledBooleanField
+	  (tpanel, "Backup Plugin Manager:", sTSize, 
+	   vpanel, sVSize, 
+	   "Also backup the database files associated with the Plugin Manager?");
+	pPluginMgrField.setValue(true);
+        
+	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
       super.initUI("Backup Database:", body, "Start Backup", null, null, "Cancel");
@@ -82,6 +102,23 @@ class JBackupDialog
     return pDirectoryField.getPath();
   }
   
+  /**
+   * Whether to also backup the database files associated with the Queue Manager.
+   */ 
+  public boolean
+  withQueueMgr() 
+  {
+    return pQueueMgrField.getValue();
+  }
+
+  /**
+   * Whether to also backup the database files associated with the Plugin Manager.
+   */ 
+  public boolean
+  withPluginMgr() 
+  {
+    return pQueueMgrField.getValue();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -103,5 +140,15 @@ class JBackupDialog
    * The backup directory path.
    */ 
   private JPathField  pDirectoryField; 
+
+  /**
+   * Whether to also backup the database files associated with the Queue Manager.
+   */
+  private JBooleanField  pQueueMgrField;
+
+  /**
+   * Whether to also backup the database files associated with the Plugin Manager.
+   */
+  private JBooleanField  pPluginMgrField;
 
 }

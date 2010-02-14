@@ -3919,6 +3919,8 @@ class UIMaster
       pBackupDialog.setVisible(true);
       if(pBackupDialog.wasConfirmed()) {
         Path dir = pBackupDialog.getDirectory();
+        boolean withQueueMgr = pBackupDialog.withQueueMgr(); 
+        boolean withPluginMgr = pBackupDialog.withPluginMgr(); 
         if((dir != null) && dir.isAbsolute()) {
           JConfirmDialog diag = 
             new JConfirmDialog
@@ -3929,7 +3931,7 @@ class UIMaster
           
           diag.setVisible(true);
           if(diag.wasConfirmed()) {
-            BackupTask task = new BackupTask(dir);
+            BackupTask task = new BackupTask(dir, withQueueMgr, withPluginMgr);
             task.start();	
           }
 
@@ -6902,11 +6904,16 @@ class UIMaster
     public 
     BackupTask
     (
-     Path dir
+     Path dir, 
+     boolean withQueueMgr, 
+     boolean withPluginMgr 
     ) 
     {
       super("UIMaster:BackupTask");
-      pBackupDir = dir;
+
+      pBackupDir     = dir;
+      pWithQueueMgr  = withQueueMgr;
+      pWithPluginMgr = withPluginMgr;
     }
 
     @Override
@@ -6917,7 +6924,7 @@ class UIMaster
       long opID = master.beginDialogOp("Database Backup...");
       MasterMgrClient client = master.acquireMasterMgrClient();
       try {
-        client.backupDatabase(pBackupDir);
+        client.backupDatabase(pBackupDir, pWithQueueMgr, pWithPluginMgr);
       }
       catch(PipelineException ex) {
         master.showErrorDialog(ex);
@@ -6929,7 +6936,9 @@ class UIMaster
       }
     }
 
-    private Path pBackupDir; 
+    private Path    pBackupDir; 
+    private boolean pWithQueueMgr; 
+    private boolean pWithPluginMgr; 
   }
 
 

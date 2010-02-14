@@ -31,11 +31,19 @@ class MiscBackupDatabaseReq
    * 
    * @param path 
    *   The name of the backup directory.
+   * 
+   * @param withQueueMgr
+   *   Whether to also backup the database files associated with the Queue Manager.
+   * 
+   * @param withPluginMgr
+   *   Whether to also backup the database files associated with the Plugin Manager.
    */
   public
   MiscBackupDatabaseReq
   (
-   Path path
+   Path path, 
+   boolean withQueueMgr, 
+   boolean withPluginMgr
   )
   {
     super();
@@ -43,6 +51,9 @@ class MiscBackupDatabaseReq
     if(path == null) 
       throw new IllegalArgumentException("The backup file cannot be (null)!");
     pBackupDirectory = path;
+
+    pWithQueueMgr = withQueueMgr;
+    pWithPluginMgr = withPluginMgr;
   }
 
 
@@ -60,12 +71,32 @@ class MiscBackupDatabaseReq
     return pBackupDirectory;
   }
 
+  /**
+   * Whether to also backup the database files associated with the Queue Manager.
+   */ 
+  public boolean
+  withQueueMgr() 
+  {
+    return pWithQueueMgr;
+  }
+
+  /**
+   * Whether to also backup the database files associated with the Plugin Manager.
+   */ 
+  public boolean
+  withPluginMgr() 
+  {
+    return pWithPluginMgr;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -8124024748124976739L;
+
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -76,6 +107,16 @@ class MiscBackupDatabaseReq
    * The name of the backup directory.
    */
   private Path  pBackupDirectory;
+
+  /**
+   * Whether to also backup the database files associated with the Queue Manager.
+   */ 
+  private boolean pWithQueueMgr;
+
+  /**
+   * Whether to also backup the database files associated with the Plugin Manager.
+   */ 
+  private boolean pWithPluginMgr;
 
 }
   
