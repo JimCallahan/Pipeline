@@ -13122,16 +13122,17 @@ class QueueMgr
       long jobID = getJobID();
       TaskTimer timer = new TaskTimer("Monitor - Job " + jobID);
 
-      timer.aquire();
-      pDatabaseLock.acquireReadLock();
       try {
+        boolean balked = false;
+
+        timer.aquire();
+        pDatabaseLock.acquireReadLock();
         try {
           timer.resume();
 
           /* attempt to start the job on the selected server, 
              no environment means the job has been started previously */  
           QueueJobInfo startedInfo = null;
-          boolean balked = false;
           if(pCookedEnvs != null) {
             timer.suspend();
             TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Start]"); 
@@ -13226,31 +13227,49 @@ class QueueMgr
           /* post-started tasks */ 
           if(startedInfo != null) 
             startExtensionTasks(timer, new JobStartedExtFactory(pJob, startedInfo));
+        }
+        finally {
+          pDatabaseLock.releaseReadLock();
+        }
 
-          /* if job was successfully started... */  
-          QueueJobInfo finishedInfo = null;
-          boolean preempted = false;
-          if(!balked) {
-            timer.suspend();
-            TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Wait]");
-
+        /* if job was successfully started... */  
+        QueueJobInfo finishedInfo = null;
+        boolean preempted = false;
+        if(!balked) {   
+          timer.suspend();
+          TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Wait]");
+          
+          tm.aquire();
+          pDatabaseLock.acquireReadLock();
+          try {
+            tm.resume();
             pUserBalanceInfo.addJobChange
               (pHostname, pJob.getJobID(), 
                pJob.getNodeID().getAuthor(), true);
-
-            /* wait for the job to finish and collect the results */ 
-            tm.aquire(); 
-            QueueJobResults results = null;
-            Boolean isTerminal = null;
-            {
-              JobMgrControlClient client = new JobMgrControlClient(pHostname);
+          }
+          finally {
+            pDatabaseLock.releaseReadLock();
+          }
+       
+          /* wait for the job to finish and collect the results */ 
+          QueueJobResults results = null;
+          Boolean isTerminal = null;
+          {
+            JobMgrControlClient client = new JobMgrControlClient(pHostname);
+            try {
+              /* wait for the job to finish */ 
               try {
-                /* wait for the job to finish */ 
+                results = client.jobWait(jobID);
+              }
+              catch(Exception ex2) { 
+                tm.aquire();
+                pDatabaseLock.acquireReadLock();
                 try {
-                  results = client.jobWait(jobID);
-                }
-                catch(Exception ex2) { 
+                  tm.resume();
+                  
+                  tm.aquire();
                   synchronized(pHosts) {
+                    tm.resume();
                     QueueHost host = pHosts.get(pHostname);
                     if(host != null) 
                       setHostStatus(host, QueueHost.Status.Limbo);
@@ -13267,7 +13286,9 @@ class QueueMgr
                   /* if the job manager is already shutdown or missing,
                      then the job must die too */
                   isTerminal = true;
+                  tm.aquire();
                   synchronized(pHosts) {
+                    tm.resume();
                     QueueHost host = pHosts.get(pHostname);
                     if(host != null) {
                       switch(host.getStatus()) {
@@ -13285,23 +13306,40 @@ class QueueMgr
                     remonitorJob(this); 
                     remonitored = true;
                   }
+                }  
+                finally {
+                  pDatabaseLock.releaseReadLock();
                 }
+              }
 
-                /* perform post-completion file system tasks */ 
-                if(!remonitored) 
+              /* perform post-completion file system tasks */ 
+              if(!remonitored) {
+                tm.aquire();
+                pDatabaseLock.acquireReadLock();
+                try {
+                  tm.resume();
                   postFinishFileOps(results);
-              }
-              catch(Exception ex) {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Job, LogMgr.Level.Warning,
-                   Exceptions.getFullMessage
-                   ("Failed to wait for the results of the executing job (" + jobID + ")!", 
-                    ex));
-              }
-              finally {
-                client.disconnect();
+                }
+                finally {
+                  pDatabaseLock.releaseReadLock();
+                }
               }
             }
+            catch(Exception ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Job, LogMgr.Level.Warning,
+                 Exceptions.getFullMessage
+                 ("Failed to wait for the results of the executing job (" + jobID + ")!", 
+                  ex));
+            }
+            finally {
+              client.disconnect();
+            }
+          }
+
+          tm.aquire();
+          pDatabaseLock.acquireReadLock();
+          try {
             tm.resume();
 
             /* update the user balance group */ 
@@ -13309,14 +13347,18 @@ class QueueMgr
               pUserBalanceInfo.addJobChange(pHostname, pJob.getJobID(), null, false);
 
               String bgroup = null;
+              tm.aquire();
               synchronized(pHosts) {
+                tm.resume();
                 QueueHost host = pHosts.get(pHostname);
                 if(host != null)
                   bgroup = host.getBalanceGroup();
               }
 
               if(bgroup != null) {
+                tm.aquire();
                 synchronized(pJobsFinishedLock) {
+                  tm.resume();
                   pJobsFinished.apply(bgroup, pJob.getNodeID().getAuthor(), 1); 
                 }
               }
@@ -13366,17 +13408,26 @@ class QueueMgr
                  (remonitored ? " become in Limbo" : "completed") + 
                  ", but somehow there was no QueueJobInfo entry to update!"); 
             }
-
-            LogMgr.getInstance().logSubStage
-              (LogMgr.Kind.Job, LogMgr.Level.Finer, 
-               tm, timer);
+          }
+          finally {
+            pDatabaseLock.releaseReadLock();
           }
 
-          /* abort eary since we are not done monitoring the job yet... */ 
-          if(remonitored) 
-            return;
+          LogMgr.getInstance().logSubStage
+            (LogMgr.Kind.Job, LogMgr.Level.Finer, 
+             tm, timer);
+        }
 
-          /* clean up... */ 
+        /* abort eary since we are not done monitoring the job yet... */ 
+        if(remonitored) 
+          return;
+
+        /* clean up... */ 
+        timer.aquire();
+        pDatabaseLock.acquireReadLock();
+        try {
+          timer.resume();
+
           {
             timer.suspend();
             TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Cleanup]"); 
@@ -13438,14 +13489,9 @@ class QueueMgr
             startExtensionTasks(timer, new JobBalkedExtFactory(pJob, pHostname));
           else if(finishedInfo != null) 
             startExtensionTasks(timer, new JobFinishedExtFactory(pJob, finishedInfo));
-
-          LogMgr.getInstance().logStage
-            (LogMgr.Kind.Job, LogMgr.Level.Fine,
-             timer); 
         }
         finally {
-          if(!remonitored) 
-            unmonitorJob(this); 
+          pDatabaseLock.releaseReadLock();
         }
       }
       catch(Exception ex) {
@@ -13454,8 +13500,22 @@ class QueueMgr
            Exceptions.getFullMessage("Internal Error:", ex));
       }
       finally {
-        pDatabaseLock.releaseReadLock();
+        if(!remonitored) {
+          timer.aquire();
+          pDatabaseLock.acquireReadLock();
+          try {
+            timer.resume();
+            unmonitorJob(this); 
+          }
+          finally {
+            pDatabaseLock.releaseReadLock();
+          }
+        }
       }
+
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Col, LogMgr.Level.Fine,
+	 timer); 
     }
 
     /*-- HELPERS ---------------------------------------------------------------------------*/
