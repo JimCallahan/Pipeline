@@ -1,0 +1,144 @@
+-*- mode: compilation; default-directory: "~/code-trex/src/pipeline/src/java/misc/" -*-
+Compilation started at Sat Feb 13 15:36:25
+
+pljava --source=TestIsLink.java -- stat
+Using debug port (45140).
+Listening for transport dt_socket at address: 45140
+stat/linkToNothing:
+  IsValid : false
+ USymlink : true
+ FSymlink : true
+    UFile : false
+    RFile : false
+     UDir : false
+     RDir : false
+-----
+INode : 0
+LMode : 120777
+ Mode : 0
+ Size : 0
+ATime : 2010-02-13 15:36:26 (1266104186000)
+MTime : 2010-02-13 15:01:29 (1266102089000)
+CTime : 2010-02-13 15:01:29 (1266102089000)
+
+stat/regularFile:
+  IsValid : true
+ USymlink : false
+ FSymlink : false
+    UFile : true
+    RFile : true
+     UDir : false
+     RDir : false
+-----
+INode : 5066700
+LMode : 100644
+ Mode : 100644
+ Size : 13
+ATime : 2010-02-13 15:35:24 (1266104124000)
+MTime : 2010-02-13 15:20:06 (1266103206000)
+CTime : 2010-02-13 15:20:06 (1266103206000)
+
+stat/linkToLinkToNothing:
+  IsValid : false
+ USymlink : true
+ FSymlink : true
+    UFile : false
+    RFile : false
+     UDir : false
+     RDir : false
+-----
+INode : 0
+LMode : 120777
+ Mode : 0
+ Size : 0
+ATime : 2010-02-13 15:36:26 (1266104186000)
+MTime : 2010-02-13 15:25:10 (1266103510000)
+CTime : 2010-02-13 15:25:10 (1266103510000)
+
+stat/regularDir:
+  IsValid : true
+ USymlink : false
+ FSymlink : false
+    UFile : false
+    RFile : false
+     UDir : true
+     RDir : true
+-----
+INode : 4786176
+LMode : 40755
+ Mode : 40755
+ Size : 48
+ATime : 2010-02-13 15:35:24 (1266104124000)
+MTime : 2010-02-13 15:00:14 (1266102014000)
+CTime : 2010-02-13 15:00:14 (1266102014000)
+
+stat/linkToFile:
+  IsValid : true
+ USymlink : true
+ FSymlink : true
+    UFile : false
+    RFile : true
+     UDir : false
+     RDir : false
+-----
+INode : 5066700
+LMode : 120777
+ Mode : 100644
+ Size : 13
+ATime : 2010-02-13 15:36:26 (1266104186000)
+MTime : 2010-02-13 15:00:42 (1266102042000)
+CTime : 2010-02-13 15:00:42 (1266102042000)
+
+stat/linkToDir:
+  IsValid : true
+ USymlink : true
+ FSymlink : true
+    UFile : false
+    RFile : false
+     UDir : false
+     RDir : true
+-----
+INode : 4786176
+LMode : 120777
+ Mode : 40755
+ Size : 48
+ATime : 2010-02-13 15:36:26 (1266104186000)
+MTime : 2010-02-13 15:00:51 (1266102051000)
+CTime : 2010-02-13 15:00:51 (1266102051000)
+
+stat/linkToLinkToDir:
+  IsValid : true
+ USymlink : true
+ FSymlink : true
+    UFile : false
+    RFile : false
+     UDir : false
+     RDir : true
+-----
+INode : 4786176
+LMode : 120777
+ Mode : 40755
+ Size : 48
+ATime : 2010-02-13 15:36:26 (1266104186000)
+MTime : 2010-02-13 15:01:13 (1266102073000)
+CTime : 2010-02-13 15:01:13 (1266102073000)
+
+stat/linkToLinkToFile:
+  IsValid : true
+ USymlink : true
+ FSymlink : true
+    UFile : false
+    RFile : true
+     UDir : false
+     RDir : false
+-----
+INode : 5066700
+LMode : 120777
+ Mode : 100644
+ Size : 13
+ATime : 2010-02-13 15:36:26 (1266104186000)
+MTime : 2010-02-13 15:01:04 (1266102064000)
+CTime : 2010-02-13 15:01:04 (1266102064000)
+
+
+Compilation finished at Sat Feb 13 15:36:26

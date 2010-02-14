@@ -73,7 +73,8 @@ class NativeFileStat
    *   3. File name too long.<BR>
    *   4. A component of the path path does not exist, or the path is an empty string.<BR>
    *   5. A component of the path is not a directory.<BR>
-   *   6. Kernel is out of memory.<BR>
+   *   6. The path contains a symbolic link which does not point to a valid target.<BR>
+   *   7. Kernel is out of memory.<BR>
    * </DIV> 
    */ 
   public boolean
@@ -102,7 +103,7 @@ class NativeFileStat
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Whether the given path specifies a regular file.
+   * Whether the given path after resolving any possible symlinks specifies a regular file.
    */ 
   public boolean
   isFile() 
@@ -111,24 +112,46 @@ class NativeFileStat
   }
   
   /** 
-   * Whether the given path specifies a directory.
+   * Whether the given path after resolving any possible symlinks specifies a directory.
    */ 
   public boolean
   isDirectory() 
   {
     return ((pMode & sIFMT) == sIFDIR);
   }
- 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Whether the given path without resolving any possible symlinks specifies a regular file.
+   */ 
+  public boolean
+  isUnresolvedFile() 
+  {
+    return ((pLMode & sIFMT) == sIFREG); 
+  }
+  
+  /** 
+   * Whether the given path without resolving any possible symlinks specifies a directory.
+   */ 
+  public boolean
+  isUnresolvedDirectory() 
+  {
+    return ((pLMode & sIFMT) == sIFDIR);
+  }
+
   /** 
    * Whether the given path specifies a symbolic link.
    */ 
   public boolean
-  isSymlink() 
+  isUnresolvedSymlink() 
   {
-    return ((pMode & sIFMT) == sIFLNK); 
+    return ((pLMode & sIFMT) == sIFLNK); 
   }
  
 
+ 
   /*----------------------------------------------------------------------------------------*/
   /*   F I L E   S I Z E                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -153,7 +176,7 @@ class NativeFileStat
    * The modification time (mtime) is changed by file modifications, e.g. by mknod(2), 
    * truncate(2), utime(2) and write(2). <P> 
    * 
-   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * Note that if this is a symbolic link, then this time stamp is of the symlink itself 
    * and not the eventual target of the symlink.
    */ 
   public long
@@ -168,7 +191,7 @@ class NativeFileStat
    * The modification time (mtime) is changed by file modifications, e.g. by mknod(2), 
    * truncate(2), utime(2) and write(2). <P> 
    * 
-   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * Note that if this is a symbolic link, then this time stamp is of the symlink itself 
    * and not the eventual target of the symlink.
    */ 
   public long
@@ -183,7 +206,7 @@ class NativeFileStat
    * The change time (ctime) is changed by writing or by setting inode information 
    * (owner, group, link count, mode, etc.). <P> 
    * 
-   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * Note that if this is a symbolic link, then this time stamp is of the symlink itself 
    * and not the eventual target of the symlink.
    */ 
   public long
@@ -200,7 +223,7 @@ class NativeFileStat
    * truncate(2), utime(2) and write(2). The change time (ctime) changed by writing or 
    * by setting inode information (owner, group, link count, mode, etc.). <P> 
    * 
-   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * Note that if this is a symbolic link, then this time stamp is of the symlink itself 
    * and not the eventual target of the symlink.
    */ 
   public long
@@ -230,7 +253,7 @@ class NativeFileStat
    * All times are measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).
    * <P>
    * 
-   * Note that if this is a symbolic link, then this time stamps is of the symlink itself 
+   * Note that if this is a symbolic link, then this time stamp is of the symlink itself 
    * and not the eventual target of the symlink.
    * 
    * @param critical
@@ -263,6 +286,28 @@ class NativeFileStat
 
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns a string representation of the object.
+   */ 
+  public String
+  toString() 
+  {
+    return ("INode : " + pINodeNumber + "\n" + 
+            "LMode : " + Integer.toOctalString(pLMode) + "\n" + 
+            " Mode : " + Integer.toOctalString(pMode) + "\n" + 
+            " Size : " + pFileSize + "\n" + 
+            "ATime : " + TimeStamps.format(pLastAccess) + " (" + pLastAccess + ")\n" + 
+            "MTime : " + TimeStamps.format(pLastMod) + " (" + pLastMod + ")\n" + 
+            "CTime : " + TimeStamps.format(pLastChange) + " (" + pLastChange + ")");  
+  }
+
+  
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -291,9 +336,18 @@ class NativeFileStat
   private long pINodeNumber; 
 
   /**
-   * The access mode and file type bitmask.  <p> 
+   * The access mode and file type bitmask of literal path without resolving any symlinks.<P> 
    * 
-   * If unset (0), then the supplied file system path was not valid.
+   * This is stat.st_mode returned by the lstat(2) system call.  If unset (0), then the 
+   * supplied file system path was not valid.
+   */ 
+  private int pLMode; 
+
+  /**
+   * The access mode and file type bitmask of the target after resolving any symlinks.<P> 
+   * 
+   * This is stat.st_mode returned by the stat(2) system call.  If unset (0), then the 
+   * resolved file system path was not valid.
    */ 
   private int pMode; 
 

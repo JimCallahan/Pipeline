@@ -96,6 +96,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileStat_statNative
     env->ThrowNew(IOException, "unable to access: NativeFileStat.pMode");
     return;
   }
+
+  jfieldID pLMode = env->GetFieldID(NativeFileStatClass, "pLMode", "I");
+  if(pLMode == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeFileStat.pLMode");
+    return;
+  }
     
   jfieldID pFileSize = env->GetFieldID(NativeFileStatClass, "pFileSize", "J");
   if(pFileSize == 0) {
@@ -129,33 +135,43 @@ JNICALL Java_us_temerity_pipeline_NativeFileStat_statNative
   }
 
   /* get the file status */ 
-  struct stat buf;
-  switch(stat(path, &buf)) {
-  case 0:
-    {
-      env->SetLongField(obj, pINodeNumber, ((jlong) buf.st_ino));
-      env->SetIntField(obj,  pMode,        ((jint)  buf.st_mode));
-      env->SetLongField(obj, pFileSize,    ((jlong) buf.st_size));
-
-      jlong linkAccess = ((jlong) buf.st_atime) * 1000L;
-      jlong linkMod    = ((jlong) buf.st_mtime) * 1000L;
-      jlong linkChange = ((jlong) buf.st_ctime) * 1000L;
+  {
+    jlong atime = 0L; 
+    jlong mtime = 0L; 
+    jlong ctime = 0L; 
+    
+    struct stat buf;
+    switch(stat(path, &buf)) {
+    case 0:
       {
-        struct stat lbuf;
-        switch(lstat(path, &lbuf)) {
-        case 0:
-          /* if its a symlink, use its timestamps instead of the target file */ 
-          if((lbuf.st_mode & S_IFMT) == S_IFLNK) {
-            linkAccess = ((jlong) lbuf.st_atime) * 1000L;
-            linkMod    = ((jlong) lbuf.st_mtime) * 1000L;
-            linkChange = ((jlong) lbuf.st_ctime) * 1000L;
-          }
+        env->SetLongField(obj, pINodeNumber, ((jlong) buf.st_ino));
+        env->SetIntField(obj,  pMode,        ((jint)  buf.st_mode));
+        env->SetLongField(obj, pFileSize,    ((jlong) buf.st_size));
+        
+        atime = ((jlong) buf.st_atime) * 1000L;
+        mtime = ((jlong) buf.st_mtime) * 1000L;
+        ctime = ((jlong) buf.st_ctime) * 1000L;
+      }
+    }
+    
+    struct stat lbuf;
+    switch(lstat(path, &lbuf)) {
+    case 0:
+      {
+        env->SetIntField(obj, pLMode, ((jint) lbuf.st_mode));
+      
+        /* if its a symlink, use its timestamps instead of the target file */ 
+        if((lbuf.st_mode & S_IFMT) == S_IFLNK) {
+          atime = ((jlong) lbuf.st_atime) * 1000L;
+          mtime = ((jlong) lbuf.st_mtime) * 1000L;
+          ctime = ((jlong) lbuf.st_ctime) * 1000L;
         }
       }
-      env->SetLongField(obj, pLastAccess, linkAccess); 
-      env->SetLongField(obj, pLastMod,    linkMod);  
-      env->SetLongField(obj, pLastChange, linkChange); 
     }
+    
+    env->SetLongField(obj, pLastAccess, atime); 
+    env->SetLongField(obj, pLastMod,    mtime);  
+    env->SetLongField(obj, pLastChange, ctime); 
   }
 
   env->ReleaseStringUTFChars(jpath, path);
