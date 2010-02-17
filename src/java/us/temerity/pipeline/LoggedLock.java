@@ -37,9 +37,30 @@ class LoggedLock
     if(title == null)
       throw new IllegalArgumentException("The lock title cannot be (null)!");         
     pTitle = title;
+
+    if(title.equals(sReadHolderLockTitle)) {
+      pReadLockHolders = new TreeMap<String,StackTraceElement[]>();
+    }
   }
 
+
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N I T I A L I Z A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  static {
+    String title = null;
+    try {
+      title = System.getProperty("pipeline.loglock.held");
+    }
+    catch(Exception ex) {
+    }
+
+    sReadHolderLockTitle = title; 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   L O C K I N G                                                                        */
@@ -77,10 +98,13 @@ class LoggedLock
          thread.getName() + "[" + thread.getId() + "] " + getCallInfo(thread));
     }
 
-    if(success) 
+    if(success) { 
+      addReadLockHolder();
       logPostLock(true, true); 
-    else
+    }
+    else {
       logLockFail(true);
+    }
 
     return success; 
   }
@@ -95,6 +119,7 @@ class LoggedLock
   { 
     logPreLock(true); 
     readLock().lock();
+    addReadLockHolder();
     logPostLock(true, true); 
   }
   
@@ -107,6 +132,7 @@ class LoggedLock
   releaseReadLock() 
   {
     readLock().unlock();
+    removeReadLockHolder();
     logPostLock(true, false); 
   }
 
@@ -203,6 +229,17 @@ class LoggedLock
         (LogMgr.Kind.Lck, LogMgr.Level.Finer, 
          "Acquiring " + pTitle + " " + (isReadLock ? "Read" : "Write") + "-Lock in Thread " + 
          thread.getName() + "[" + thread.getId() + "]" + getCallInfo(thread)); 
+
+      if(pReadLockHolders != null) {
+        synchronized(pReadLockHolders) {
+          for(Map.Entry<String,StackTraceElement[]> entry : pReadLockHolders.entrySet()) {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Lck, LogMgr.Level.Finer, 
+               "Read-Lock Held in Thread " + entry.getKey() + 
+               getCallInfo(entry.getValue(), 3)); 
+          }
+        }
+      }
     }
   }
    
@@ -282,21 +319,35 @@ class LoggedLock
    Thread thread
   ) 
   {
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Lck, LogMgr.Level.Finest)) 
+      return getCallInfo(thread.getStackTrace(), 4); 
+    return "";
+  }
+  
+  /**
+   * Get a string containing information about the locking method call site.
+   */ 
+  protected String
+  getCallInfo
+  (
+   StackTraceElement stack[], 
+   int level 
+  ) 
+  {
     String callInfo = "";
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Lck, LogMgr.Level.Finest)) {
-      StackTraceElement stack[] = thread.getStackTrace(); 
-      if((stack != null) && (stack.length > 4)) {
+      if((stack != null) && (stack.length > level)) {
         if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Lck, LogMgr.Level.Detail)) {
           StringBuilder buf = new StringBuilder();
           
           int wk;
-          for(wk=4; wk<stack.length; wk++) 
+          for(wk=level; wk<stack.length; wk++) 
             buf.append("\n  at " + stack[wk].toString());
           
           callInfo = buf.toString();
         }
         else {
-          callInfo = ("\n  at " + stack[4].toString());
+          callInfo = ("\n  at " + stack[level].toString());
         }
       }
       else {
@@ -310,12 +361,50 @@ class LoggedLock
   
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Add the current thread and stack to those currently holding the read-lock.
+   */ 
+  private void 
+  addReadLockHolder()
+  {
+    if(pReadLockHolders != null) {
+      synchronized(pReadLockHolders) { 
+        Thread thread = Thread.currentThread(); 
+        pReadLockHolders.put(thread.getName() + "[" + thread.getId() + "]", 
+                             thread.getStackTrace());
+      }
+    }
+  }
+
+  /**
+   * Remove the current thread from those currently holding the read-lock.
+   */ 
+  private void 
+  removeReadLockHolder()
+  {
+    if(pReadLockHolders != null) {
+      synchronized(pReadLockHolders) {
+        Thread thread = Thread.currentThread(); 
+        pReadLockHolders.remove(thread.getName() + "[" + thread.getId() + "]"); 
+      }
+    }
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = 1622287682186312526L;
   
-  
+  /**
+   * The title of the lock for which read-lock holders should be logged.
+   */ 
+  private static final String  sReadHolderLockTitle; 
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -326,4 +415,10 @@ class LoggedLock
    */ 
   private String pTitle; 
 
+  /**
+   * The calling stack traces of all threads currently holding a read-lock indexed by
+   * the thread name[ID].
+   */ 
+  private TreeMap<String,StackTraceElement[]>  pReadLockHolders;
+  
 }
