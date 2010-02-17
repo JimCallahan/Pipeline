@@ -77,7 +77,7 @@ class NodeDetailsHeavy
    * @param fileStates
    *   The files states associated with each file sequence. 
    * 
-   * @param fileInfo
+   * @param fileInfos
    *   The per-file status information for each primary and secondary file associated with 
    *   the working version indexed by file sequence.
    * 
