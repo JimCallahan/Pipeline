@@ -62,7 +62,7 @@ class JManageToolsetPluginsDialog
       
       pTab = new JTabbedPanel();
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
-	pTab.add(panel);
+	pTab.addTab(panel.getTitle(), panel);
       
       String extra[][] = {
 	null,

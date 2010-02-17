@@ -148,7 +148,7 @@ class JManageSelectionKeysDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -200,7 +200,7 @@ class JManageSelectionKeysDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Keys", body);
       }
 
       /* selection groups panel */ 
@@ -210,7 +210,7 @@ class JManageSelectionKeysDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -266,7 +266,7 @@ class JManageSelectionKeysDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Groups", body);
       }
 
       /* selection schedule panel */ 
@@ -276,7 +276,7 @@ class JManageSelectionKeysDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -354,7 +354,7 @@ class JManageSelectionKeysDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Schedules", body);
       }
 
       String extra[][] = {

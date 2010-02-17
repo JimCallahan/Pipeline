@@ -763,6 +763,57 @@ class JManagerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the panel's title.
+   */ 
+  public String
+  getTitle() 
+  {
+    return pTitle; 
+  }
+
+  /**
+   * Set the panel's title.
+   */ 
+  public void 
+  setTitle
+  (
+   String title
+  ) 
+  {
+    if(title != null) 
+      pTitle = title;
+    else 
+      pTitle = "..."; 
+
+    Container parent = getParent();
+    if(parent instanceof JTabbedPanel) {
+      JTabbedPanel tabbed = (JTabbedPanel) parent; 
+      tabbed.setTitleAt(tabbed.indexOfComponent(this), pTitle); 
+    }
+  }
+
+  /**
+   * Set the panel's title to the default.
+   */ 
+  public void 
+  resetTitle() 
+  {
+    Component comp = getContents(); 
+    if(comp instanceof JTopLevelPanel) {
+      JTopLevelPanel panel = (JTopLevelPanel) comp;
+      setTitle(panel.getTypeName()); 
+    }
+    else {
+      setTitle(null); 
+    }
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Get body component of the panel.
    */ 
@@ -792,10 +843,13 @@ class JManagerPanel
 
     removeContents();
 
+    String title = null;
     if((child instanceof JHorzSplitPanel) || 
        (child instanceof JVertSplitPanel) || 
        (child instanceof JTabbedPanel)) {
       pTopLevelPanel = null;
+
+      setTitle(null); 
     }
     else if(child instanceof JTopLevelPanel) {
       pTopLevelPanel = (JTopLevelPanel) child;
@@ -803,6 +857,8 @@ class JManagerPanel
 
       updateTitlePanel();
       add(pTitlePanel);
+           
+      setTitle(pTopLevelPanel.getTypeName()); 
     }
     else {
       assert(false);
@@ -825,6 +881,7 @@ class JManagerPanel
   { 
     Component body = getContents();
     removeAll();
+    setTitle(null); 
     return body;
   }
 
@@ -1994,7 +2051,8 @@ class JManagerPanel
       }
       else if((prefs.getShowLicenseAgreement() != null) &&
               prefs.getShowLicenseAgreement().wasPressed(e)) {
-        BaseApp.showURL("file:///" + PackageInfo.sInstPath + "/share/docs/legal/license.html");
+        BaseApp.showURL
+          ("file:///" + PackageInfo.sInstPath + "/share/docs/legal/license.html");
         return true;
       }
     
@@ -2209,7 +2267,8 @@ class JManagerPanel
       else if(cmd.equals("site-configuration"))
         master.showConfigDialog(); 
       else if(cmd.equals("license-agreement"))
-        BaseApp.showURL("file:///" + PackageInfo.sInstPath + "/share/docs/legal/license.html");
+        BaseApp.showURL
+          ("file:///" + PackageInfo.sInstPath + "/share/docs/legal/license.html");
 
       else if(cmd.equals("show-logs"))
         master.showLogsDialog(); 
@@ -3849,6 +3908,9 @@ class JManagerPanel
   ) 
     throws GlueException
   {
+    if(pTitle != null) 
+      encoder.encode("Title", pTitle);
+
     encoder.encode("Contents", getContents());
   }
 
@@ -3863,6 +3925,9 @@ class JManagerPanel
     if(contents == null) 
       throw new GlueException("The \"Contents\" was missing or (null)!");
     setContents(contents);
+
+    String title = (String) decoder.decode("Title");
+    setTitle(title); 
   }
 
 
@@ -3932,6 +3997,14 @@ class JManagerPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The title of the panel.
+   */ 
+  private String  pTitle; 
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

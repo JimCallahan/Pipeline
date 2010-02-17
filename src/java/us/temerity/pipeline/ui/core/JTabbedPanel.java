@@ -3,11 +3,15 @@
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.ui.JNewNameDialog;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.*;
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   T A B B E D   P A N N E L                                                              */
@@ -19,7 +23,7 @@ import javax.swing.*;
 public 
 class JTabbedPanel
   extends JTabbedPane
-  implements Glueable
+  implements Glueable, MouseListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -29,7 +33,25 @@ class JTabbedPanel
   JTabbedPanel()
   {
     super();
+
+    pPopup = new JPopupMenu();  
+    {
+      JMenuItem item; 
+
+      item = new JMenuItem("Rename...");
+      item.setActionCommand("rename");
+      item.addActionListener(this);
+      pPopup.add(item);
+
+      item = new JMenuItem("Reset");
+      item.setActionCommand("reset");
+      item.addActionListener(this);
+      pPopup.add(item);
+    }
+      
+    addMouseListener(this); 
   }
+
 
   
   
@@ -46,20 +68,118 @@ class JTabbedPanel
    JManagerPanel mgr
   ) 
   {
-    addTab(null, sTabIcon, mgr);
+    addTab(mgr.getTitle(), null, mgr);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
+
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
+  public void 
+  mouseClicked(MouseEvent e) {}
+   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
+  public void 
+  mouseEntered
+  (
+   MouseEvent e
+  ) 
+  {
+    requestFocusInWindow();
+  }
+  
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
+  public void 
+  mouseExited
+  (
+   MouseEvent e
+  ) 
+  {
+    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
   }
 
   /**
-   * Add the given panel as a tab.
+   * Invoked when a mouse button has been pressed on a component. 
+   */
+  public void 
+  mousePressed
+  (
+   MouseEvent e
+  )
+  {
+    pRenameMgrPanel = null;
+
+    int mods = e.getModifiersEx();
+    switch(e.getButton()) {
+    case MouseEvent.BUTTON3:
+      {
+        int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+	
+        int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+                    MouseEvent.BUTTON2_DOWN_MASK | 
+                    MouseEvent.SHIFT_DOWN_MASK |
+                    MouseEvent.ALT_DOWN_MASK |
+                    MouseEvent.CTRL_DOWN_MASK);
+
+        if((mods & (on1 | off1)) == on1) {
+          int idx = indexAtLocation(e.getX(), e.getY());
+          if(idx != -1) {
+            Component comp = getComponentAt(idx); 
+            if(comp instanceof JManagerPanel) {
+              pRenameMgrPanel = (JManagerPanel) comp;
+              pPopup.show(e.getComponent(), e.getX(), e.getY());
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Invoked when a mouse button has been released on a component. 
    */ 
   public void 
-  addTab
+  mouseReleased(MouseEvent e) {}
+
+
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
   (
-   JPanel panel
+   ActionEvent e
   ) 
   {
-    addTab(null, sTabIcon, panel);
-  }
+    String cmd = e.getActionCommand();
+    if(cmd.equals("rename")) {
+      if(pRenameMgrPanel != null) {
+        JNewNameDialog diag = new JNewNameDialog(pRenameMgrPanel.getPanelFrame(), 
+                                                 "Rename Tab", "Tab Title", null, "Rename"); 
+        diag.setVisible(true);
+        if(diag.wasConfirmed()) 
+          pRenameMgrPanel.setTitle(diag.getName());
+      }
+    }
+    else if(cmd.equals("reset")) {
+      if(pRenameMgrPanel != null) 
+        pRenameMgrPanel.resetTitle(); 
+    }
+  } 
 
 
   
@@ -102,6 +222,7 @@ class JTabbedPanel
     setSelectedIndex(idx);    
   }
   
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -113,5 +234,21 @@ class JTabbedPanel
 
   private static final Icon sTabIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The tab naming popup menu.
+   */ 
+  private JPopupMenu  pPopup; 
+
+  /**
+   * The manager panel to rename.
+   */ 
+  private JManagerPanel pRenameMgrPanel; 
 
 }

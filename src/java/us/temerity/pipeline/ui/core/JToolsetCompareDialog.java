@@ -50,7 +50,7 @@ class JToolsetCompareDialog
       JTabbedPanel tab = new JTabbedPanel();
       for(OsType os : OsType.all()) {
         JToolsetComparePanel panel = new JToolsetComparePanel(os);
-        tab.add(panel);
+        tab.addTab(os.toTitle(), panel);
         pOsPanels.add(panel);
       }
 

@@ -7609,16 +7609,16 @@ class QueueMgr
              * Could be possible if the job ran, finished, and was cleaned-up before we 
              * got around to writing the changes to disk.
              */
-            if (info == null)
-              continue;
-            try {
-              writeJobInfo(info);
-            }
-            catch(PipelineException ex) {
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Wri, LogMgr.Level.Severe,
-                 "An error occurred when the writer thread tried to write job info " +
-                 "(" + jobInfoID + ") to disk.\n" + ex.getMessage()); 
+            if (info != null) {
+              try {
+                writeJobInfo(info);
+              }
+              catch(PipelineException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+                   "An error occurred when the writer thread tried to write job info " +
+                   "(" + jobInfoID + ") to disk.\n" + ex.getMessage()); 
+              }
             }
           }
           else {
@@ -7639,16 +7639,16 @@ class QueueMgr
                * Could be possible if the job ran, finished, and was cleaned-up before we got 
                * around to writing the changes to disk.
                */
-              if (job == null)
-                continue;
-              try {
-                writeJob(job);
-              }
-              catch(PipelineException ex) {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Wri, LogMgr.Level.Severe,
-                   "An error occurred when the writer thread tried to write job " +
-                   "(" + jobID + ") to disk.\n" + ex.getMessage()); 
+              if (job != null) {
+                try {
+                  writeJob(job);
+                }
+                catch(PipelineException ex) {
+                  LogMgr.getInstance().log
+                    (LogMgr.Kind.Wri, LogMgr.Level.Severe,
+                     "An error occurred when the writer thread tried to write job " +
+                     "(" + jobID + ") to disk.\n" + ex.getMessage()); 
+                }
               }
             }
           }

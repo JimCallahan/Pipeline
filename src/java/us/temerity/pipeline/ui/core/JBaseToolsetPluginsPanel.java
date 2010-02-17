@@ -47,6 +47,8 @@ class JBaseToolsetPluginsPanel
   {
     /* initialize fields */ 
     {
+      pTitle = title; 
+
       pMenuLayout     = new PluginMenuLayout();
       pPluginVersions = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
 
@@ -253,6 +255,15 @@ class JBaseToolsetPluginsPanel
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the title of the panel.
+   */ 
+  public String
+  getTitle()
+  {
+    return pTitle;
+  }
 
   /**
    * Get the menu layout tree node under the given mouse position.
@@ -1282,6 +1293,14 @@ class JBaseToolsetPluginsPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The title of the panel. 
+   */ 
+  private String  pTitle;
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
