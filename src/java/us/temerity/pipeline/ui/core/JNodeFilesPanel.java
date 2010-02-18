@@ -542,7 +542,7 @@ class JNodeFilesPanel
                           fseq, vids, pOffline, singles, fstates, finfos, qstates, 
                           enabled, novel); 
 
-      pFileSeqsTab.addTab(null, sTabIcon, panel); 
+      pFileSeqsTab.addTab(fseq.getFilePattern().toString(), sTabIcon, panel); 
       pFileSeqPanels.put(fseq, panel); 
     }
   }
