@@ -995,6 +995,10 @@ class GenUserPrefsApp
       styles.add("Scales with Nodes");
       styles.add("Fixed Size");
 
+      LinkedList<String> stats = new LinkedList();
+      stats.add("As Counts");
+      stats.add("As Percentages");
+
       LinkedList<String> looks = new LinkedList();
       looks.add("Rounded");
       looks.add("Square");
@@ -1074,6 +1078,14 @@ class GenUserPrefsApp
 	new BooleanPref
 	("Whether to show node status detail hints by default.",
 	 "ShowDetailHints", "Show Node Detail Hints:", true), 
+
+	new ChoicePref
+	("The method of showing per-file states statistics in the detail hint.",
+	 "FileHintMethod", "File Hint Method:", stats, "As Counts"), 
+
+	new BooleanPref
+	("Whether to show the file Summary as part of the node detail hints by default.",
+	 "ShowSummaryHints", "Show Summary Hints:", true), 
 
 	new BooleanPref
 	("Whether to show the Toolset property as part of the node detail hints by default.",
@@ -1239,6 +1251,15 @@ class GenUserPrefsApp
 	 "ShowHideDetailHints", "Show/Hide Node Detail Hints:", 
 	 false, false, false, 72),  /* H */
 
+	new HotKeyPref
+	("Toggle showing per-file statistics as counts or percentages.",
+	 "ToggleFileHintMethod", "Toggle File Hint Method:", 
+         false, false, false, 80),  /* P */
+	
+	new HotKeyPref
+	("Show/hide the file Summary part of the node detail hints.",
+	 "ShowHideSummaryHint", "Show/Hide Summary Hint:"), 
+	
 	new HotKeyPref
 	("Show/hide the Toolset property as part of the node detail hints.",
 	 "ShowHideToolsetHint", "Show/Hide Toolset Hint:"), 
@@ -2559,7 +2580,9 @@ class GenUserPrefsApp
 	group.add(update);
 	group.addAll(camera);
         group.add("FrameNetwork"); 
-	group.add("ShowHideDetailHints"); 
+	group.add("ShowHideDetailHints");
+        group.add("ToggleFileHintMethod"); 
+	group.add("ShowHideSummaryHint"); 
 	group.add("ShowHideToolsetHint"); 
 	group.add("NodeViewerShowHideEditorHint"); 
 	group.add("ShowHideActionHint"); 

@@ -86,6 +86,8 @@ class JNodeViewerPanel
 
       pViewerNodeHint = 
 	new ViewerNodeHint(this, 
+                           prefs.getFileHintMethod().equals("As Counts"), 
+                           prefs.getShowSummaryHints(), 
 			   prefs.getShowToolsetHints(), 
 			   prefs.getShowEditorHints(), 
 			   prefs.getShowActionHints(), 
@@ -245,6 +247,18 @@ class JNodeViewerPanel
       item.setActionCommand("show-hide-detail-hints");
       item.addActionListener(this);
       pPanelPopup.add(item);   
+
+      item = new JMenuItem();
+      pToggleFileHintMethodItem = item;
+      item.setActionCommand("toggle-file-hint-method");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      item = new JMenuItem();
+      pShowHideSummaryHintItem = item;
+      item.setActionCommand("show-hide-summary-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
 
       item = new JMenuItem();
       pShowHideToolsetHintItem = item;
@@ -1217,8 +1231,14 @@ class JNodeViewerPanel
       (pShowHideDetailHintsItem, prefs.getShowHideDetailHints(), 
        "Show/hide node status detail hints.");
     updateMenuToolTip
-      (pShowHideToolsetHintItem, prefs.getShowHideToolsetHint(), 
-       "Show/hide the Toolset property as part of the node detail hints."); 
+      (pShowHideSummaryHintItem, prefs.getShowHideSummaryHint(), 
+       "Show/hide the file Summary part of the node detail hints.");  
+    updateMenuToolTip
+      (pShowHideSummaryHintItem, prefs.getShowHideSummaryHint(), 
+       "Show/hide the file Summary part of the node detail hints."); 
+    updateMenuToolTip
+      (pToggleFileHintMethodItem, prefs.getToggleFileHintMethod(), 
+       "Toggle showing per-file statistics as counts or percentages."); 
     updateMenuToolTip
       (pShowHideEditorHintItem, prefs.getNodeViewerShowHideEditorHint(), 
        "Show/hide the Editor property as part of the node detail hints."); 
@@ -1383,6 +1403,14 @@ class JNodeViewerPanel
     pShowHideDetailHintsItem.setEnabled(true);
 
     if(pViewerNodeHint != null) {
+      pToggleFileHintMethodItem.setText
+	("States " + (pViewerNodeHint.asCounts() ? "as Percentages" : "as Counts"));
+      pToggleFileHintMethodItem.setEnabled(true);
+
+      pShowHideSummaryHintItem.setText
+	((pViewerNodeHint.showSummary() ? "Hide" : "Show") + " Summary Hint");
+      pShowHideSummaryHintItem.setEnabled(true);
+
       pShowHideToolsetHintItem.setText
 	((pViewerNodeHint.showToolset() ? "Hide" : "Show") + " Toolset Hint");
       pShowHideToolsetHintItem.setEnabled(true);
@@ -1400,6 +1428,12 @@ class JNodeViewerPanel
       pShowHideEditingHintItem.setEnabled(true);
     }
     else {
+      pToggleFileHintMethodItem.setText("States as Percentages");
+      pToggleFileHintMethodItem.setEnabled(true);
+
+      pShowHideSummaryHintItem.setText("Show Summary Hint");
+      pShowHideSummaryHintItem.setEnabled(false);
+
       pShowHideToolsetHintItem.setText("Show Toolset Hint");
       pShowHideToolsetHintItem.setEnabled(false);
 
@@ -3535,6 +3569,12 @@ class JNodeViewerPanel
       else if((prefs.getShowHideDetailHints() != null) &&
 	      prefs.getShowHideDetailHints().wasPressed(e))
 	doShowHideDetailHints();
+      else if((prefs.getToggleFileHintMethod() != null) &&
+	      prefs.getToggleFileHintMethod().wasPressed(e))
+	doToggleFileHintMethod();
+      else if((prefs.getShowHideSummaryHint() != null) &&
+	      prefs.getShowHideSummaryHint().wasPressed(e))
+	doShowHideSummaryHint();
       else if((prefs.getShowHideToolsetHint() != null) &&
 	      prefs.getShowHideToolsetHint().wasPressed(e))
 	doShowHideToolsetHint();
@@ -3742,26 +3782,35 @@ class JNodeViewerPanel
     /* panel menu events */ 
     else if(cmd.equals("update"))
       doUpdate();
+
     else if(cmd.equals("register"))
       doRegister();
+
     else if(cmd.equals("frame-selection"))
       doFrameSelection();
     else if(cmd.equals("frame-network"))
       doFrameNetwork();
     else if(cmd.equals("frame-all"))
       doFrameAll();
+
     else if(cmd.equals("automatic-expand"))
       doAutomaticExpand();
     else if(cmd.equals("expand-all"))
       doExpandAll();
     else if(cmd.equals("collapse-all"))
       doCollapseAll();
+
     else if(cmd.equals("toggle-orientation"))
       doToggleOrientation();
     else if(cmd.startsWith("downstream-mode:")) 
       doDownstreamMode(DownstreamMode.valueOf(DownstreamMode.class, cmd.substring(16)));
+
     else if(cmd.equals("show-hide-detail-hints"))
       doShowHideDetailHints();
+    else if(cmd.equals("toggle-file-hint-method"))
+      doToggleFileHintMethod();
+    else if(cmd.equals("show-hide-summary-hint"))
+      doShowHideSummaryHint();
     else if(cmd.equals("show-hide-toolset-hint"))
       doShowHideToolsetHint();
     else if(cmd.equals("show-hide-editor-hint"))
@@ -5561,6 +5610,30 @@ class JNodeViewerPanel
   }
   
   /**
+   * Toggle showing per-file statistics as counts or percentages.
+   */ 
+  private synchronized void
+  doToggleFileHintMethod()
+  {
+    clearSelection();
+    if(pViewerNodeHint != null) 
+      pViewerNodeHint.setAsCounts(!pViewerNodeHint.asCounts()); 
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide the Summary property as part of the node detail hints.
+   */ 
+  private synchronized void
+  doShowHideSummaryHint()
+  {
+    clearSelection();
+    if(pViewerNodeHint != null) 
+      pViewerNodeHint.setShowSummary(!pViewerNodeHint.showSummary());
+    updateUniverse();
+  }
+  
+  /**
    * Show/Hide the Toolset property as part of the node detail hints.
    */ 
   private synchronized void
@@ -5758,18 +5831,6 @@ class JNodeViewerPanel
 	encoder.encode("InitialCenter", bbox.getCenter());
     } 
 
-    /* node detail hints */
-    /* Commented out to implement 1825. */
-    /*
-    encoder.encode("ShowDetailHints", pShowDetailHints);
-    if(pViewerNodeHint != null) {
-      encoder.encode("ShowToolsetHints", pViewerNodeHint.showToolset());
-      encoder.encode("ShowEditorHints", pViewerNodeHint.showEditor());
-      encoder.encode("ShowActionHints", pViewerNodeHint.showAction());
-      encoder.encode("ShowEditingHints", pViewerNodeHint.showEditing());
-    }
-    */
-
     /* whether to show the downstram links */
     encoder.encode("DownstreamMode", pDownstreamMode);
 
@@ -5798,32 +5859,7 @@ class JNodeViewerPanel
 
     /* the initial center of the node layout */ 
     pInitialCenter = (Point2d) decoder.decode("InitialCenter");
-    
-    /* whether to show the node status detail hints */    
-    {
-      Boolean show = (Boolean) decoder.decode("ShowDetailHints");
-      if(show != null) 
-	pShowDetailHints = show; 
-
-      if(pViewerNodeHint != null) {
-	Boolean tset = (Boolean) decoder.decode("ShowToolsetHints");
-	if(tset != null) 
-	  pViewerNodeHint.setShowToolset(tset);
-	
-	Boolean edit = (Boolean) decoder.decode("ShowEditorHints");
-	if(edit != null) 
-	  pViewerNodeHint.setShowEditor(edit);
-
-	Boolean act = (Boolean) decoder.decode("ShowActionHints");
-	if(act != null) 
-	  pViewerNodeHint.setShowAction(act);
-
-	Boolean editing = (Boolean) decoder.decode("ShowEditingHints");
-	if(editing != null) 
-	  pViewerNodeHint.setShowEditing(editing);
-      }
-    }
-
+   
     /* whether to show the downstram links */    
     {
       DownstreamMode dmode = (DownstreamMode) decoder.decode("DownstreamMode");
@@ -8284,6 +8320,8 @@ class JNodeViewerPanel
   private JMenuItem  pShowAllRootsItem;
 
   private JMenuItem  pShowHideDetailHintsItem;
+  private JMenuItem  pToggleFileHintMethodItem;  
+  private JMenuItem  pShowHideSummaryHintItem;
   private JMenuItem  pShowHideToolsetHintItem;
   private JMenuItem  pShowHideEditorHintItem;
   private JMenuItem  pShowHideActionHintItem;
