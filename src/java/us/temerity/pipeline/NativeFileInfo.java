@@ -43,7 +43,7 @@ class NativeFileInfo
    *   The last critical modification timestamp as returned by
    *   {@link NativeFileStat#lastCriticalChange NativeFileStat.lastCriticalChange()}
    * 
-   * @parma isSymlink
+   * @param isSymlink
    *   Whether the file is actually a symbolic link (presumably to the repository) as 
    *   returned by {@link NativeFileStat#isUnresolvedSymlink 
    *   NativeFileStat.isUnresolvedSymlink()}.
@@ -64,7 +64,7 @@ class NativeFileInfo
   /**
    * Construct a new instance from a file status and node's last critical change time.
    * 
-   * @parma stat
+   * @param stat
    *   The native file status.
    * 
    * @param critical

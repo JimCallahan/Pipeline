@@ -44,6 +44,8 @@ class JBasePackagePluginsPanel
   {
     /* initialize fields */ 
     {
+      pTitle = title; 
+
       pIncludedVersions = new PluginSet();
       pAllVersions      = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
 
@@ -199,6 +201,18 @@ class JBasePackagePluginsPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the title of the panel.
+   */ 
+  public String
+  getTitle()
+  {
+    return pTitle;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -684,6 +698,14 @@ class JBasePackagePluginsPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The title of the panel. 
+   */ 
+  private String  pTitle;
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

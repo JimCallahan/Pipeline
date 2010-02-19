@@ -301,7 +301,46 @@ class BaseOpMap<K, V>
     }
   }
   
+  /**
+   * Apply value using the default operator to all existing stored values.<P> 
+   * 
+   * The default numeric operator set during instantiation will be used. 
+   * 
+   * @param value
+   *   Value to apply to values of the map. 
+   */
+  public void 
+  applyAll
+  (
+    V value
+  ) 
+  {
+    for(K key : keySet()) 
+      apply(key, value, pOperator); 
+  }
   
+  /**
+   * Apply value using the given operator to all existing stored values.<P> 
+   * 
+   * @param value
+   *   Value to apply to values of the map. 
+   *   
+   * @param op
+   *   The numeric opertor to apply when both existing and new values are not 
+   *   <code>null</code>: existing = existing (op) new-value
+   */
+  public void 
+  applyAll
+  (
+    V value, 
+    Op op
+  ) 
+  {
+    for(K key : keySet()) 
+      apply(key, value, op); 
+  }
+  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   O P E R A T O R S                                                                    */

@@ -102,7 +102,7 @@ class JManageHardwareKeysDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -154,7 +154,7 @@ class JManageHardwareKeysDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Keys", body);
       }
 
       /* hardware groups panel */ 
@@ -164,7 +164,7 @@ class JManageHardwareKeysDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -222,7 +222,7 @@ class JManageHardwareKeysDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Groups", body);
       }
 
       String extra[][] = {

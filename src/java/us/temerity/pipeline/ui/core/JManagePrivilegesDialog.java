@@ -91,7 +91,7 @@ class  JManagePrivilegesDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -143,7 +143,7 @@ class  JManagePrivilegesDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Privileges", body);
       }
 
       /* work groups panel */ 
@@ -153,7 +153,7 @@ class  JManagePrivilegesDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -205,7 +205,7 @@ class  JManagePrivilegesDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Work Groups", body);
       }
 
       String extra[][] = {

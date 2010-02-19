@@ -55,7 +55,7 @@ class JManagePackagePluginsDialog
       
       JTabbedPanel tab = new JTabbedPanel();
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
-	tab.add(panel);
+	tab.addTab(panel.getTitle(), panel);
       
       super.initUI("", tab, "Confirm", "Apply", null, "Close", null);
     }

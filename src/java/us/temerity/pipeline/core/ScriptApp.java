@@ -1240,14 +1240,8 @@ class ScriptApp
      
     {
       LogControls controls = client.getLogControls();
-      logLevelMessage(controls, LogMgr.Kind.Glu, buf);
-      logLevelMessage(controls, LogMgr.Kind.Sum, buf);
-      logLevelMessage(controls, LogMgr.Kind.Sub, buf);
-      logLevelMessage(controls, LogMgr.Kind.Ops, buf);
-      logLevelMessage(controls, LogMgr.Kind.Net, buf);
-      logLevelMessage(controls, LogMgr.Kind.Plg, buf);
-      logLevelMessage(controls, LogMgr.Kind.Mem, buf);
-      logLevelMessage(controls, LogMgr.Kind.Ext, buf);
+      for(LogMgr.Kind kind : LogMgr.Kind.all()) 
+        logLevelMessage(controls, kind, buf);
     }
 
     LogMgr.getInstance().logAndFlush
@@ -1294,19 +1288,8 @@ class ScriptApp
 
     {
       LogControls controls = client.getLogControls();
-      logLevelMessage(controls, LogMgr.Kind.Col, buf);
-      logLevelMessage(controls, LogMgr.Kind.Dsp, buf);
-      logLevelMessage(controls, LogMgr.Kind.Sch, buf);
-      logLevelMessage(controls, LogMgr.Kind.Job, buf);
-      logLevelMessage(controls, LogMgr.Kind.Glu, buf);
-      logLevelMessage(controls, LogMgr.Kind.Ops, buf);
-      logLevelMessage(controls, LogMgr.Kind.Net, buf);
-      logLevelMessage(controls, LogMgr.Kind.Plg, buf);
-      logLevelMessage(controls, LogMgr.Kind.Mem, buf);
-      logLevelMessage(controls, LogMgr.Kind.Ext, buf);
-      logLevelMessage(controls, LogMgr.Kind.Wri, buf);
-      logLevelMessage(controls, LogMgr.Kind.Sum, buf);
-      logLevelMessage(controls, LogMgr.Kind.Usr, buf);
+      for(LogMgr.Kind kind : LogMgr.Kind.all()) 
+        logLevelMessage(controls, kind, buf);
     }
 
     LogMgr.getInstance().logAndFlush

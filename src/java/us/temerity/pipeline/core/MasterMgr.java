@@ -25923,7 +25923,7 @@ class MasterMgr
    * The amount of time to attempt to acquire the database write-lock during a
    * Backup operation before giving up. 
    */ 
-  private static final long  sBackupTimeout = 1800000L;   /* 30-minutes */ 
+  private static final long  sBackupTimeout = 900000L;   /* 15-minutes */ 
 
 
 

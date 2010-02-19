@@ -32,6 +32,8 @@ class ViewerNodeHint
   ViewerNodeHint
   (
    JNodeViewerPanel parent, 
+   boolean asCounts,
+   boolean showSummary, 
    boolean showToolset, 
    boolean showEditor, 
    boolean showAction, 
@@ -42,10 +44,14 @@ class ViewerNodeHint
 
     pParent = parent; 
 
-    pFileStates  = new TreeMap<FileState,Integer>();
-    pQueueStates = new TreeMap<QueueState,Integer>();
+    pAsCounts = asCounts; 
+
+    pFileStates  = new IntegerOpMap<FileState>(); 
+    pQueueStates = new IntegerOpMap<QueueState>(); 
 
     pViewsEditing = new TreeMap<String,TreeSet<String>>();
+
+    pShowSummary = showSummary; 
 
     pShowToolset = showToolset; 
     pShowAction  = showAction; 
@@ -66,6 +72,24 @@ class ViewerNodeHint
   isVisible()
   {
     return pIsVisible;
+  }
+
+  /**
+   * Whether to display per-file states statistics as counts, otherwise as percentages.
+   */ 
+  public boolean
+  asCounts()
+  {
+    return pAsCounts; 
+  }
+
+  /**
+   * Whether to display the File Summary hint.
+   */ 
+  public boolean
+  showSummary()
+  {
+    return pShowSummary; 
   }
 
   /**
@@ -120,6 +144,30 @@ class ViewerNodeHint
   ) 
   {
     pIsVisible = tf;
+  }
+
+  /**
+   * Se whether to display per-file states statistics as counts, otherwise as percentages.
+   */ 
+  public void 
+  setAsCounts
+  ( 
+   boolean tf
+  ) 
+  {
+    pAsCounts = tf;
+  }
+
+  /**
+   * Set whether to display the File Summary hint.
+   */ 
+  public void 
+  setShowSummary
+  (
+   boolean tf
+  ) 
+  {
+    pShowSummary = tf;
   }
 
   /**
@@ -188,8 +236,13 @@ class ViewerNodeHint
       pVersionState  = null;
       pPropertyState = null;
       pLinkState     = null;
+
       pFileStates.clear();
       pQueueStates.clear();
+
+      pWorkFileSize = null;
+      pRepoFileSize = null;
+      pLastFileMod  = null;
       
       pToolset = null;
       pEditor  = null; 
@@ -212,27 +265,59 @@ class ViewerNodeHint
       
       if(pStatus.hasHeavyDetails()) {
         NodeDetailsHeavy details = pStatus.getHeavyDetails();
-        for(FileSeq fseq : details.getFileSequences()) {
-          FileState fs[] = details.getFileStates(fseq);
-          int wk;
-          for(wk=0; wk<fs.length; wk++) {
-            Integer fcnt = pFileStates.get(fs[wk]);
-            if(fcnt == null)
-              fcnt = new Integer(0);
-            pFileStates.put(fs[wk], fcnt+1);
+
+        {
+          int total = 0;
+          for(FileSeq fseq : details.getFileSequences()) {
+            FileState fs[] = details.getFileStates(fseq);
+            for(FileState state : fs) {
+              if(state != null) {
+                pFileStates.apply(state, 1); 
+                total++;
+              }
+            }
+          }
+          
+          if(!pAsCounts && (total > 0)) {
+            for(FileState fs : pFileStates.keySet()) {
+              Integer cnt = pFileStates.get(fs); 
+              if(cnt != null) 
+                pFileStates.put(fs, Math.round(((float) 100*cnt) / ((float) total)));
+            }
           }
         }
         
         {
           QueueState qs[] = details.getQueueStates();
-          int wk;
-          for(wk=0; wk<qs.length; wk++) {
-            Integer qcnt = pQueueStates.get(qs[wk]);
-            if(qcnt == null)
-              qcnt = new Integer(0);
-            pQueueStates.put(qs[wk], qcnt+1);
+          int total = 0;
+          for(QueueState state : qs) {
+            if(state != null) {
+              pQueueStates.apply(state, 1); 
+              total++;
+            }
+          }
+
+          if(!pAsCounts && (total > 0)) {
+            for(QueueState fs : pQueueStates.keySet()) {
+              Integer cnt = pQueueStates.get(fs); 
+              if(cnt != null) 
+                pQueueStates.put(fs, Math.round(((float) 100*cnt) / ((float) total)));
+            }
           }
         }
+
+        pWorkFileSize = 0L;
+        pRepoFileSize = 0L;
+
+        Long work = details.getTotalFileSize(false);
+        if(work != null) 
+          pWorkFileSize = work;
+
+        Long all = details.getTotalFileSize(true);
+        if(all != null) 
+          pRepoFileSize = all - pWorkFileSize;
+
+        pLastFileMod = details.getNewestFileTimeStamp();
       }
 
       pCountDLs = null;
@@ -251,6 +336,9 @@ class ViewerNodeHint
         }
       }
       
+      pFileSizeDL    = null;
+      pLastFileModDL = null;
+
       pToolsetDL = null; 
       pEditorDLs = null;
       pActionDLs = null;
@@ -418,20 +506,55 @@ class ViewerNodeHint
 
       /* count labels */ 
       if(pCountDLs == null) {
-	pCountDLs = new TreeMap<Integer,Integer>();
+        pCountDLs = new TreeMap<Integer,Integer>();
         pCountWidths = new TreeMap<Integer,Double>();
-	
-	TreeSet<Integer> counts = new TreeSet<Integer>();
-	counts.addAll(pFileStates.values());
-	counts.addAll(pQueueStates.values());
 
-	for(Integer cnt : counts) {
-	  int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, "(" + cnt + ")", 
-				 GeometryMgr.TextAlignment.Left, 0.05);
-	  pCountDLs.put(cnt, dl);
+        TreeSet<Integer> counts = new TreeSet<Integer>();
+        counts.addAll(pFileStates.values());
+        counts.addAll(pQueueStates.values());
+        
+        for(Integer cnt : counts) {
+          String str = ("(" + cnt + (pAsCounts ? "" : "%") + ")");
+          int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, str, 
+                                 GeometryMgr.TextAlignment.Left, 0.05);
+          pCountDLs.put(cnt, dl);
+          pCountWidths.put(cnt, mgr.getTextWidth(PackageInfo.sGLFont, str, 0.05));
+        }
+      }
 
-          pCountWidths.put(cnt, mgr.getTextWidth(PackageInfo.sGLFont, "(" + cnt + ")", 0.05));
-	}
+      /* file size totals */ 
+      if((pFileSizeDL == null) && (pWorkFileSize != null) && (pRepoFileSize != null)) {
+        if((pWorkFileSize > 0L) || (pRepoFileSize > 0L)) {
+          String label = "";
+          if(pWorkFileSize > 0L) {
+            label += ByteSize.longToFloatString(pWorkFileSize); 
+            if(pWorkFileSize < 1024)
+              label += " bytes";
+            if(pRepoFileSize > 0L) 
+              label += "  ";
+          }
+
+          if(pRepoFileSize > 0L) 
+            label += ("[" + ByteSize.longToFloatString(pRepoFileSize) + 
+                      ((pRepoFileSize < 1024) ? " bytes" : "") + "]"); 
+
+          pFileSizeDL = 
+            mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
+                          GeometryMgr.TextAlignment.Center, 0.05);
+          
+          pFileSizeWidth = mgr.getTextWidth(PackageInfo.sGLFont, label, 0.05);
+        }
+      }
+
+      /* last file modification */ 
+      if((pLastFileModDL == null) && (pLastFileMod != null)) {
+        String label = TimeStamps.formatHumanRelative(pLastFileMod);
+        
+        pLastFileModDL =
+	  mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
+			GeometryMgr.TextAlignment.Center, 0.05);
+
+        pLastFileModWidth = mgr.getTextWidth(PackageInfo.sGLFont, label, 0.05);
       }
       
       /* toolset title */ 
@@ -716,6 +839,16 @@ class ViewerNodeHint
 
 	  double orows    = 0.0;
 	  double oborders = 0.0;
+          if((pShowSummary) && ((pFileSizeDL != null) || (pLastFileModDL != null))) {
+            if(pFileSizeDL != null) 
+              orows += 1.0;
+
+            if(pLastFileModDL != null) 
+              orows += 1.0;
+
+	    oborders += 2.0;
+          }
+
 	  if(pShowToolset) {
 	    orows += 1.0;
 	    oborders += 2.0;
@@ -766,6 +899,20 @@ class ViewerNodeHint
 	    gl.glVertex2d(0.0, y2); 
 
 	    double y = y2 - (sTextHeight*srows + sBorder*sborders); 
+
+	    if((pShowSummary) && ((pFileSizeDL != null) || (pLastFileModDL != null))) {
+	      gl.glVertex2d(-x, y); 
+	      gl.glVertex2d( x, y); 
+
+              if(pFileSizeDL != null) 
+                y -= sTextHeight;
+
+              if(pLastFileModDL != null) 
+                y -= sTextHeight;
+
+              y -= sBorder*2.0;
+	    }
+
 	    if(pShowToolset) {
 	      gl.glVertex2d(-x, y); 
 	      gl.glVertex2d( x, y); 
@@ -892,7 +1039,7 @@ class ViewerNodeHint
                 boolean single = (pFileStates.size() == 1);
                 for(FileState state : pFileStates.keySet()) {
                   Integer cnt = pFileStates.get(state);
-                  
+
                   y -= sTextHeight; 
                   gl.glPushMatrix();
                   {
@@ -921,7 +1068,7 @@ class ViewerNodeHint
                 boolean single = (pQueueStates.size() == 1);
                 for(QueueState state : pQueueStates.keySet()) {
                   Integer cnt = pQueueStates.get(state);
-                  
+
                   y -= sTextHeight; 
                   gl.glPushMatrix();
                   {
@@ -949,6 +1096,36 @@ class ViewerNodeHint
           }
           gl.glPopMatrix();
         }
+
+	/* file summary */ 
+	if(pShowSummary) {
+	  if(pFileSizeDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.0, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+	      gl.glCallList(pFileSizeDL); 
+	    }
+	    gl.glPopMatrix();
+
+            y -= sTextHeight;
+	  }
+
+	  if(pLastFileModDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.0, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+	      gl.glCallList(pLastFileModDL); 
+	    }
+	    gl.glPopMatrix();
+
+            y -= sTextHeight;
+	  }
+
+          if((pLastFileModDL != null) || (pFileSizeDL != null))
+            y -= sBorder*2.0;
+	}
 
 	/* toolset */ 
 	if(pShowToolset) {
@@ -1193,6 +1370,7 @@ class ViewerNodeHint
   /**
    * Whether to display the optional hint components. 
    */ 
+  private boolean  pShowSummary; 
   private boolean  pShowToolset; 
   private boolean  pShowEditor; 
   private boolean  pShowAction; 
@@ -1209,11 +1387,19 @@ class ViewerNodeHint
   /**
    * The node states. 
    */ 
-  private VersionState                pVersionState; 
-  private PropertyState               pPropertyState; 
-  private LinkState                   pLinkState;      
-  private TreeMap<FileState,Integer>  pFileStates; 
-  private TreeMap<QueueState,Integer> pQueueStates; 
+  private VersionState             pVersionState; 
+  private PropertyState            pPropertyState; 
+  private LinkState                pLinkState;      
+  private IntegerOpMap<FileState>  pFileStates;  
+  private IntegerOpMap<QueueState> pQueueStates; 
+  private boolean                  pAsCounts; 
+
+  /**
+   * The file summary information.
+   */ 
+  private Long  pWorkFileSize; 
+  private Long  pRepoFileSize; 
+  private Long  pLastFileMod; 
 
   /**
    * Working area views editing/containig the target node.
@@ -1276,6 +1462,15 @@ class ViewerNodeHint
 
   private int[]    pActionDLs; 
   private double   pActionWidth;
+
+  /**
+   * The OpenGL display list handles for file summary section. 
+   */ 
+  private Integer  pFileSizeDL;
+  private double   pFileSizeWidth; 
+
+  private Integer  pLastFileModDL;
+  private double   pLastFileModWidth; 
 
   /**
    * The OpenGL display list handles for the working areas editing the node.

@@ -51,7 +51,7 @@ class JManageServerExtensionsDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -89,7 +89,7 @@ class JManageServerExtensionsDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Master", body);
       }
       
       /* queue extensions panel */ 
@@ -99,7 +99,7 @@ class JManageServerExtensionsDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  panel.setName("DialogHeader");	
+	  panel.setName("TabbedDialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	  
@@ -137,7 +137,7 @@ class JManageServerExtensionsDialog
 	  body.add(panel);
 	}
 
-	tab.addTab(body);
+	tab.addTab("Queue", body);
       }
 
       String extra[][] = {
