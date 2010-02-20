@@ -77,7 +77,7 @@ class JNodeHistoryPanel
 
       /* full node name */ 
       {
-        initNameField(this);
+        initNameField(this, null);
         pNodeNameField.setFocusable(true);     
         pNodeNameField.addKeyListener(this);   
         pNodeNameField.addMouseListener(this); 

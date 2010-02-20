@@ -68,6 +68,41 @@ class JTablePanel
    int vertScrollPolicy
   ) 
   {
+    this(model, horzScrollPolicy, vertScrollPolicy, null, null, null);
+  }
+
+  /**
+   * Construct a new table panel.
+   * 
+   * @param model
+   *   The table model being viewed.
+   * 
+   * @param horzScrollPolicy
+   *   The horizontal scrollbar policy.
+   * 
+   * @param vertScrollPolicy
+   *   The vertical scrollbar policy.
+   * 
+   * @param minSize
+   *   The minimum size scrollpane or <CODE>null</CODE> to ignore.
+   * 
+   * @param prefSize
+   *   The preferred size scrollpane or <CODE>null</CODE> to ignore.
+   * 
+   * @param maxSize
+   *   The maximum size scrollpane or <CODE>null</CODE> to ignore.
+   */ 
+  public 
+  JTablePanel
+  (
+   AbstractSortableTableModel model,
+   int horzScrollPolicy,
+   int vertScrollPolicy, 
+   Dimension minSize, 
+   Dimension prefSize, 
+   Dimension maxSize
+  ) 
+  {
     /* initialize fields */ 
     {
       pTableModel = model;
@@ -84,6 +119,8 @@ class JTablePanel
 	  total.add(model.getColumnWidthRange(col));
       }
 
+      Dimension psize = (prefSize == null) ? new Dimension(total.y(), 22*10+6) : prefSize; 
+
       {
 	Box tbox = new Box(BoxLayout.X_AXIS);
 
@@ -98,7 +135,7 @@ class JTablePanel
           panel.add(pHeaderViewport); 
 
           panel.setMinimumSize(new Dimension(29, 29));
-          panel.setPreferredSize(new Dimension(total.y(), 29));
+          panel.setPreferredSize(new Dimension((int) psize.getWidth(), 29));
           panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
 	
 	  tbox.add(panel);
@@ -116,7 +153,7 @@ class JTablePanel
         pTable = new JFancyTable(this, pTableModel);                                 
         pTableScroll = 
           UIFactory.createScrollPane(pTable, horzScrollPolicy, vertScrollPolicy,
-                                     null, new Dimension(total.y(), 22*10+6), null); 
+                                     minSize, psize, maxSize); 
         pTableScroll.getViewport().addChangeListener(this); 
         add(pTableScroll);
       }

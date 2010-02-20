@@ -72,6 +72,9 @@ class JFileSeqPanel
    * 
    * @param novel
    *   The per-version (newest to oldest) file novelty flags indexed by filename.
+   * 
+   * @param isListLayout
+   *   Whether to layout this panel in list format (true) or tabbed panel layout (false). 
    */ 
   public
   JFileSeqPanel
@@ -88,7 +91,8 @@ class JFileSeqPanel
    TreeMap<FileSeq,NativeFileInfo> finfos, 
    TreeMap<FileSeq,QueueState> qstates, 
    SortedSet<FileSeq> enabled, 
-   SortedMap<FileSeq,Boolean[]> novel
+   SortedMap<FileSeq,Boolean[]> novel,
+   boolean isListLayout
   )
   {
     super();
@@ -244,7 +248,10 @@ class JFileSeqPanel
     /* initialize panel components */ 
     {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));	
-    
+
+      if(isListLayout) 
+        add(UIFactory.createPanelBreak()); 
+
       add(Box.createRigidArea(new Dimension(0, 4)));
       
       /* file sequence header */ 
@@ -252,25 +259,25 @@ class JFileSeqPanel
         Box hbox = new Box(BoxLayout.X_AXIS);
         
         hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
+        
         {
           VersionID vid = null;
           if(!pHasWorking && !vids.isEmpty())
             vid = vids.get(0);
-
+          
           JFileSeqLabel label = new JFileSeqLabel(fseq, vid); 
           pHeaderLabel = label;
-
+          
           label.addMouseListener(this); 
           label.setFocusable(true);
           label.addKeyListener(this);
           label.addMouseListener(new KeyFocuser(label));
-
+          
           hbox.add(label);
         }
-      
+        
         hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
+        
         add(hbox); 
       }
     
@@ -288,10 +295,26 @@ class JFileSeqPanel
                                   vids, offline, singles, enabled, fstates, finfos,
                                   qstates, novel); 
 
+          int vpolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS; 
+          if(isListLayout) 
+            vpolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER; 
+
+          
+          Dimension minSize  = null;
+          Dimension prefSize = null;
+          Dimension maxSize  = null;
+          if(isListLayout) {
+            int h = 22*singles.size() + 22;
+            minSize  = new Dimension(0, h); 
+            prefSize = new Dimension(484, h); 
+            maxSize  = new Dimension(Integer.MAX_VALUE, h); 
+          }
+
           JTablePanel tpanel =
             new JTablePanel(pTableModel, 
-                            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS, 
-                            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS, vpolicy, 
+                            minSize, prefSize, maxSize); 
+                            
           pTablePanel = tpanel;
           
           {
@@ -1042,6 +1065,7 @@ class JFileSeqPanel
       
       Dimension size = new Dimension(164, 31);
       setMinimumSize(size);
+      setPreferredSize(size);
       setMaximumSize(new Dimension(Integer.MAX_VALUE, 31));
 
       pFileSeq   = fseq;

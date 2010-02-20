@@ -10,6 +10,7 @@ import java.util.*;
 import javax.swing.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.laf.*;
 import us.temerity.pipeline.ui.*;
 
@@ -80,7 +81,7 @@ class JNodeFilesPanel
     /* initialize the panel components */ 
     {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));  
-
+ 
       /* header */ 
       {
         pApplyToolTipText = 
@@ -95,7 +96,26 @@ class JNodeFilesPanel
 
       /* full node name */ 
       {
-        initNameField(this);
+        LinkedList<Component> extra = new LinkedList<Component>();
+        extra.add(Box.createRigidArea(new Dimension(4, 0))); 
+        {
+	  JButton btn = new JButton();		
+	  pSeqLayoutButton = btn;
+	  btn.setName(pIsListLayout ? "ListLayoutButton" : "TabbedLayoutButton");
+	    
+	  Dimension size = new Dimension(19, 19);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	    
+	  btn.setActionCommand("seq-layout-changed"); 
+	  btn.addActionListener(this);
+	    
+          extra.add(btn); 
+        }
+
+        initNameField(this, extra);
+
         pNodeNameField.setFocusable(true);     
         pNodeNameField.addKeyListener(this);   
         pNodeNameField.addMouseListener(this); 
@@ -106,7 +126,21 @@ class JNodeFilesPanel
       {
         JTabbedPane tab = new JTabbedPane(); 
         pFileSeqsTab = tab; 
+        tab.setVisible(!pIsListLayout);
         add(tab); 
+      }
+
+      {
+	Box vbox = new Box(BoxLayout.Y_AXIS);
+	pFileSeqsBox = vbox;
+
+	{
+	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
+	  pFileSeqsScroll = scroll;
+          scroll.setVisible(!pIsListLayout);
+	  
+	  add(scroll);
+	}
       }
 
       Dimension size = new Dimension(sSize+22, 120);
@@ -355,6 +389,7 @@ class JNodeFilesPanel
     /* files */ 
     {
       pFileSeqsTab.removeAll();
+      pFileSeqsBox.removeAll();
       pFileSeqPanels.clear(); 
 
       if((pNovelty != null) && (details != null)) {
@@ -402,10 +437,19 @@ class JNodeFilesPanel
 	addFileSeqPanel(primary);
         for(FileSeq fseq : secondary) 
           addFileSeqPanel(fseq);
+
+        if(pIsListLayout) 
+          pFileSeqsBox.add(UIFactory.createFiller(sSize));
       }
     }
       
-    pFileSeqsTab.revalidate();
+    pFileSeqsTab.setVisible(!pIsListLayout);
+    pFileSeqsScroll.setVisible(pIsListLayout);
+
+    if(pIsListLayout) 
+      pFileSeqsScroll.revalidate(); 
+    else 
+      pFileSeqsTab.revalidate();
   }
 
 
@@ -540,9 +584,13 @@ class JNodeFilesPanel
       JFileSeqPanel panel = 
         new JFileSeqPanel(this, pManagerPanel, pStatus, pPrivilegeDetails, 
                           fseq, vids, pOffline, singles, fstates, finfos, qstates, 
-                          enabled, novel); 
+                          enabled, novel, pIsListLayout); 
 
-      pFileSeqsTab.addTab(fseq.getFilePattern().toString(), sTabIcon, panel); 
+      if(pIsListLayout) 
+        pFileSeqsBox.add(panel);        
+      else 
+        pFileSeqsTab.addTab(fseq.getFilePattern().toString(), sTabIcon, panel); 
+
       pFileSeqPanels.put(fseq, panel); 
     }
   }
@@ -581,6 +629,32 @@ class JNodeFilesPanel
        "Apply the changes to the working version.");
   }
 
+ 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    super.actionPerformed(e); 
+
+    String cmd = e.getActionCommand();
+    if(cmd.equals("seq-layout-changed"))
+      doSeqLayoutChanged();
+  }
+
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -605,6 +679,47 @@ class JNodeFilesPanel
 
     RevertTask task = new RevertTask(files);
     task.start();
+  }
+  
+  /**
+   * Toggle the layout style for displaying file sequences.
+   */ 
+  public void 
+  doSeqLayoutChanged()
+  {
+    pIsListLayout = !pIsListLayout; 
+    pSeqLayoutButton.setName(pIsListLayout ? "ListLayoutButton" : "TabbedLayoutButton");
+    updateNodeStatus(pStatus, pNovelty, pOffline); 
+  }
+  
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder); 
+    encoder.encode("IsListLayout", pIsListLayout);
+  }
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder); 
+    
+    Boolean tf = (Boolean) decoder.decode("IsListLayout");
+    pIsListLayout = (tf != null) && tf; 
   }
   
 
@@ -688,14 +803,23 @@ class JNodeFilesPanel
    */ 
   private TreeSet<VersionID>  pOffline; 
 
+  /**
+   * Whether to use tabbed (as opposed to list) layout for the file sequence panels.
+   */ 
+  private boolean pIsListLayout; 
+  
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * An icon which indicates whether the working version is frozen.
    */
-  //private boolean  pIsFrozen; 
   private JLabel   pFrozenLabel;
+
+  /**
+   * The button used to toggle the tabbed/list display mode for file sequence panels.
+   */ 
+  private JButton pSeqLayoutButton; 
 
   /**
    * The button used to apply changes to the working version of the node.
@@ -706,6 +830,16 @@ class JNodeFilesPanel
    * The tabbed container of file sequence panels. 
    */ 
   private JTabbedPane  pFileSeqsTab;
+
+  /**
+   * The vertical box containing the file sequence panels when in list layout mode. 
+   */ 
+  private Box  pFileSeqsBox; 
+
+  /**
+   * The vertical scroll panel contiang the file sequelnce panels when in list layout mode. 
+   */ 
+  private JScrollPane  pFileSeqsScroll;
 
   /**
    * The panel for each file sequence.

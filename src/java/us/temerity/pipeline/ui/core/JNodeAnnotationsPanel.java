@@ -92,12 +92,12 @@ class JNodeAnnotationsPanel
 
       /* full node name */ 
       {
-        initNameField(this);
+        initNameField(this, null);
         pNodeNameField.setFocusable(true);     
         pNodeNameField.addKeyListener(this);   
         pNodeNameField.addMouseListener(this); 
       }
-
+      
       add(Box.createRigidArea(new Dimension(0, 4)));
       
       {
