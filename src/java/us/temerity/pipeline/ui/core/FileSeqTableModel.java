@@ -819,7 +819,7 @@ class FileSeqTableModel
           if(novel == null) 
             return false; 
 
-          if(novel || ((ck+1 < pNumCols+4) && pIsOffline[ck-1])) {
+          if(novel || ((ck+1 < pNumCols+4) && pIsOffline[ck-4+1])) {
             pSelectedVersionIDs[srow] = pVersionIDs[ck-4];
             return true; 
           }
