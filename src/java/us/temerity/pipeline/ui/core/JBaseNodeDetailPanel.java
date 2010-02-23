@@ -273,11 +273,16 @@ class JBaseNodeDetailPanel
    * 
    * @param panel
    *   The parent panel which will contain the name components.
+   * 
+   * @param extra
+   *   Extra components to add to the horizontal box containg the node name field or 
+   *   <CODE>null</CODE> to ignore.
    */ 
   protected void
   initNameField
   (
-   JPanel panel
+   JPanel panel, 
+   Collection<Component> extra
   )
   {
     Box hbox = new Box(BoxLayout.X_AXIS);
@@ -289,6 +294,11 @@ class JBaseNodeDetailPanel
       hbox.add(pNodeNameField);
     }
     
+    if(extra != null) {
+      for(Component comp : extra) 
+        hbox.add(comp);	
+    }
+
     hbox.add(Box.createRigidArea(new Dimension(4, 0)));
     
     panel.add(hbox);

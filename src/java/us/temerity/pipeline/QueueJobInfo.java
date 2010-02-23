@@ -273,6 +273,7 @@ class QueueJobInfo
     pOsType = os; 
 
     pStartedStamp = System.currentTimeMillis();
+    pCompletedStamp = null;
 
     JobState prev = pState;
     pState = JobState.Running;

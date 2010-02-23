@@ -169,6 +169,37 @@
   <bind style="ApplyHeaderButton" type="name" key="ApplyHeaderButton"/>
 
 
+  <!--  T A B B E D   L A Y O U T   B U T T O N  -->
+
+  <style id="TabbedLayoutButton"> 
+    <state>
+      <imagePainter path="TabbedLayoutButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="TabbedLayoutButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="TabbedLayoutButton" type="name" key="TabbedLayoutButton"/>
+
+
+
+  <!--  L I S T   L A Y O U T   B U T T O N  -->
+
+  <style id="ListLayoutButton"> 
+    <state>
+      <imagePainter path="ListLayoutButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ListLayoutButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="ListLayoutButton" type="name" key="ListLayoutButton"/>
+
+
 
   <!--  S I N G L E   V I E W   B U T T O N  -->
 
@@ -234,8 +265,9 @@
   </style>
   <bind style="DeleteCompletedButton" type="name" key="DeleteCompletedButton"/>
 
+  
 
-<!--  S T A L E   K E Y   C H O O S E R   B U T T O N  -->
+  <!--  S T A L E   K E Y   C H O O S E R   B U T T O N  -->
   
   <style id="StaleKeyChooserButton"> 
 	  <state>
@@ -252,6 +284,8 @@
 	  </state>
   </style>
   <bind style="StaleKeyChooserButton" type="name" key="StaleKeyChooserButton"/>
+
+
 
   <!--  B R O W S E   B U T T O N  -->
 
@@ -2349,7 +2383,7 @@
 
 
 
-  <!--  T A B B E D   P A N E  tlbr -->
+  <!--  T A B B E D   P A N E  -->
 
   <style id="TabbedPane">
     <property key="TabbedPane.tabRunOverlay" type="integer" value="3"/>

@@ -814,13 +814,13 @@ class FileSeqTableModel
     if(isSelected != null) {
       if(isSelected) {
         int ck = col;
-        while(ck < pNumCols+2) {
+        while(ck < pNumCols+4) {
           Boolean novel = getNoveltyUnsorted(srow, ck); 
           if(novel == null) 
             return false; 
 
-          if(novel || ((ck+1 < pNumCols+2) && pIsOffline[ck-1])) {
-            pSelectedVersionIDs[srow] = pVersionIDs[ck-2];
+          if(novel || ((ck+1 < pNumCols+4) && pIsOffline[ck-4+1])) {
+            pSelectedVersionIDs[srow] = pVersionIDs[ck-4];
             return true; 
           }
 

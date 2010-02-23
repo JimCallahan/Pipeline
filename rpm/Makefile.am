@@ -113,7 +113,7 @@ WIN_BUILD_DIR = \
   $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code/%,@RPM_ROOT@)
 
 
-API_JAR = DEST/pipeline/@ROOT_INST_DIR@/lib/api.jar
+API_JAR  = DEST/pipeline/@ROOT_INST_DIR@/lib/api.jar
 
 
 pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin: header
@@ -140,6 +140,12 @@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install $(RPMS)
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	mkdir pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	cp $(RPMS) $(API_JAR) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
+	@echo "Packing Docs..."
+	tar -zcf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@/docs.tgz \
+            -C DEST/pipeline/@ROOT_INST_DIR@/share docs
+	@echo "Packing Examples..."
+	tar -zcf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@/examples.tgz \
+            -C DEST/pipeline/@ROOT_INST_DIR@ examples 
 	tar -zcvf $@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 
