@@ -307,8 +307,8 @@ class JManageToolsetsDialog
 	    pActiveToolsetsList = lst;
 
 	    lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	    lst.setCellRenderer(new JListCellRenderer());
-	    
+	    lst.setCellRenderer(new JActiveToolsetListCellRenderer(this));
+
 	    lst.addListSelectionListener(this);
 	    lst.addMouseListener(this);
 	    lst.addMouseMotionListener(this);
