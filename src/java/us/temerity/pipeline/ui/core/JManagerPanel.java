@@ -3453,9 +3453,6 @@ class JManagerPanel
      MouseEvent e
     )
     {
-//      if (pTopLevelPanel.getGroupID() == 0)
-//        return;
-      
       int mods = e.getModifiersEx();
       
       int on1  = (MouseEvent.BUTTON1_DOWN_MASK);		  
