@@ -18,9 +18,10 @@ import us.temerity.pipeline.plugin.*;
  * 
  * In order to use this action, the name of the primary file sequence must be 
  * <i>renderLayer</i>_MasterBeauty. The node must also contain a secondary file sequence for
- * each addtional pass, which should be named the same thing as the render pass in Maya.  This
+ * each additional pass, which should be named the same thing as the render pass in Maya.  This
  * action will use which ever renderer is specified in the scene for the particular render 
- * layer.
+ * layer.  The passes do not need to be active in the Maya scene; the action will take care 
+ * of activating the appropriate passes based on the names of the secondary file sequences.
  *
  * This action defines the following single valued parameters: <BR>
  *
@@ -386,7 +387,7 @@ class MayaPassRenderAction
       args.add("-renderer");
       args.add("file");
 
-      args.add("-rp");
+      args.add("-rl");
       args.add(renderLayer);
       
       args.add("-s");
