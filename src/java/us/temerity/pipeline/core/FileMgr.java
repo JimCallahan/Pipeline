@@ -3078,12 +3078,11 @@ class FileMgr
           args.add(jarPath.toOsString());
           args.add(gluePath.getName());
           args.add(readmePath.getName());
-          args.addAll(fileNames);
           
           SubProcessLight proc = 
             new SubProcessLight(creator, 
-                                "ExtractSiteVersion", "jar", args, jenv, 
-                                scratchPath.toFile()); 
+                                "ExtractSiteVersion", "jar", args, 
+                                jenv, scratchPath.toFile()); 
           
           try {
             proc.start();
@@ -3096,6 +3095,36 @@ class FileMgr
           catch(InterruptedException ex) {
             throw new PipelineException
             ("Interrupted while the site version archive (" + jarPath + ")!");
+          }
+        }
+
+        {
+          ArrayList<String> preOpts = new ArrayList<String>();
+          preOpts.add("-uvMf");
+          preOpts.add(jarPath.toOsString());
+
+          ArrayList<String> args = new ArrayList<String>();
+          args.addAll(fileNames);
+
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+              (creator, 
+               "ExtractSiteVersion", "jar", preOpts, args, 
+               jenv, scratchPath.toFile());
+          
+          try {
+            for(SubProcessLight proc : procs) {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable to append files to the site version archive (" + jarPath + "):" +
+                   "\n\n  " + proc.getStdErr());	
+            }
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while appending files to site version archive (" + jarPath + ")!");
           }
         }
       }
@@ -3339,8 +3368,7 @@ class FileMgr
             if(!args.isEmpty()) {
               LinkedList<SubProcessLight> procs = 
                 SubProcessLight.createMultiSubProcess
-                 ("InsertSiteVersionFiles", "jar", preOpts, args, 
-                  jenv, rdir.toFile()); 
+                 ("InsertSiteVersionFiles", "jar", preOpts, args, jenv, rdir.toFile()); 
               
               try {
                 for(SubProcessLight proc : procs) {
