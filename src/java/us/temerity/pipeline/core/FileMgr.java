@@ -2937,6 +2937,7 @@ class FileMgr
     long stamp = req.getStamp();
     String creator = req.getCreator();
     Path jarPath = req.getJarPath();
+    boolean compress = req.getCompress();
 
     TaskTimer timer = 
       new TaskTimer("FileMgr.extractSiteVersion(): " + name + " v" + vid + 
@@ -3074,7 +3075,7 @@ class FileMgr
         
         {
           ArrayList<String> args = new ArrayList<String>();
-          args.add("-cvMf");
+          args.add(compress ? "-cMf" : "-c0Mf");
           args.add(jarPath.toOsString());
           args.add(gluePath.getName());
           args.add(readmePath.getName());
@@ -3100,7 +3101,7 @@ class FileMgr
 
         {
           ArrayList<String> preOpts = new ArrayList<String>();
-          preOpts.add("-uvMf");
+          preOpts.add(compress ? "-uMf" : "-u0Mf");
           preOpts.add(jarPath.toOsString());
 
           ArrayList<String> args = new ArrayList<String>();

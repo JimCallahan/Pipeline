@@ -896,6 +896,9 @@ class FileMgrNetClient
    * 
    * @param creator
    *   The name of the user who extracted the node.
+   *
+   * @param compress
+   *   Whether to compress the files in the generated JAR archive.
    * 
    * @param jarPath
    *   The name of the JAR archive to create.
@@ -911,7 +914,8 @@ class FileMgrNetClient
    NodeVersion vsn, 
    long stamp, 
    String creator, 
-   Path jarPath
+   Path jarPath, 
+   boolean compress
   )
     throws PipelineException
   {
@@ -920,7 +924,7 @@ class FileMgrNetClient
     FileExtractSiteVersionReq req = 
       new FileExtractSiteVersionReq(name, referenceNames, localSiteName, 
                                    replaceSeqs, replacements, 
-                                   vsn, stamp, creator, jarPath);
+                                    vsn, stamp, creator, jarPath, compress);
     
     Object obj = performLongTransaction(FileRequest.ExtractSiteVersion, req, 15000, 60000);
     handleSimpleResponse(obj);    

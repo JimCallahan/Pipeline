@@ -61,6 +61,9 @@ class FileExtractSiteVersionReq
    * 
    * @param jarPath
    *   The name of the JAR archive to create.
+   *
+   * @param compress
+   *   Whether to compress the files in the generated JAR archive.
    */
   public
   FileExtractSiteVersionReq
@@ -73,7 +76,8 @@ class FileExtractSiteVersionReq
    NodeVersion vsn, 
    long stamp, 
    String creator, 
-   Path jarPath
+   Path jarPath, 
+   boolean compress
   )
   { 
     super();
@@ -109,6 +113,8 @@ class FileExtractSiteVersionReq
       throw new IllegalArgumentException
 	("The path for the JAR archive cannot be (null)!");
     pJarPath = jarPath;
+
+    pCompress = compress;
   }
 
 
@@ -204,6 +210,15 @@ class FileExtractSiteVersionReq
     return pJarPath;
   }
 
+  /**
+   * Whether to compress the files in the generated JAR archive.
+   */ 
+  public boolean 
+  getCompress() 
+  {
+    return pCompress;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -268,6 +283,11 @@ class FileExtractSiteVersionReq
    * Gets the name of the JAR archive to create.
    */
   public Path  pJarPath;
+
+  /**
+   * Whether to compress the files in the generated JAR archive.
+   */ 
+  public boolean pCompress; 
 
 }
   

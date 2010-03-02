@@ -847,6 +847,9 @@ class FileMgrDirectClient
    * 
    * @param jarPath
    *   The name of the JAR archive to create.
+   *
+   * @param compress
+   *   Whether to compress the files in the generated JAR archive.
    */ 
   public void 
   extractSiteVersion
@@ -859,14 +862,15 @@ class FileMgrDirectClient
    NodeVersion vsn, 
    long stamp, 
    String creator, 
-   Path jarPath
+   Path jarPath, 
+   boolean compress
   )
     throws PipelineException
   {
     FileExtractSiteVersionReq req = 
       new FileExtractSiteVersionReq(name, referenceNames, localSiteName, 
-                                   replaceSeqs, replacements, 
-                                   vsn, stamp, creator, jarPath);
+                                    replaceSeqs, replacements, 
+                                    vsn, stamp, creator, jarPath, compress);
     
     Object obj = pFileMgr.extractSiteVersion(req); 
     handleSimpleResponse(obj);    

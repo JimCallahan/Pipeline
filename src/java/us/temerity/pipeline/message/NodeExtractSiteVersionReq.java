@@ -54,6 +54,9 @@ class NodeExtractSiteVersionReq
    * 
    * @parma dir
    *   The directory in which to place the JAR archive created.
+   *
+   * @param compress
+   *   Whether to compress the files in the generated JAR archive.
    */
   public
   NodeExtractSiteVersionReq
@@ -64,7 +67,8 @@ class NodeExtractSiteVersionReq
    String localSiteName, 
    TreeSet<FileSeq> replaceSeqs, 
    TreeMap<String,String> replacements,
-   Path dir
+   Path dir, 
+   boolean compress
   )
   { 
     super();
@@ -93,6 +97,8 @@ class NodeExtractSiteVersionReq
       throw new IllegalArgumentException
 	("The output directory cannot be (null)!");
     pDir = dir;
+
+    pCompress = compress;
   }
 
 
@@ -169,6 +175,14 @@ class NodeExtractSiteVersionReq
     return pDir;
   }
 
+  /**
+   * Whether to compress the files in the generated JAR archive.
+   */ 
+  public boolean 
+  getCompress() 
+  {
+    return pCompress;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -222,6 +236,11 @@ class NodeExtractSiteVersionReq
    * Gets the directory in which to place the JAR archive created.
    */
   public Path  pDir;
+
+  /**
+   * Whether to compress the files in the generated JAR archive.
+   */ 
+  public boolean pCompress; 
 
 }
   

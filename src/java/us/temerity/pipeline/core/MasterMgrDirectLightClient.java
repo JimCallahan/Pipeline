@@ -1691,6 +1691,9 @@ class MasterMgrDirectLightClient
    * @parma dir
    *   The directory in which to place the JAR archive created.
    *
+   * @param compress
+   *   Whether to compress the files in the generated JAR archive.
+   *
    * @returns
    *   The full file system path of the created JAR archive.
    */ 
@@ -1703,13 +1706,14 @@ class MasterMgrDirectLightClient
    String localSiteName, 
    TreeSet<FileSeq> replaceSeqs, 
    TreeMap<String,String> replacements,
-   Path dir
+   Path dir, 
+   boolean compress
   )
     throws PipelineException
   {       
     NodeExtractSiteVersionReq req = 
       new NodeExtractSiteVersionReq(name, vid, referenceNames, localSiteName, 
-                                    replaceSeqs, replacements, dir); 
+                                    replaceSeqs, replacements, dir, compress); 
     
     Object obj = pMasterMgr.extractSiteVersion(req); 
     if(obj instanceof NodeExtractSiteVersionRsp) {

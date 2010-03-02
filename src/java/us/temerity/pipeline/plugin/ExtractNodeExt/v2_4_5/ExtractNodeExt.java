@@ -47,6 +47,15 @@ class ExtractNodeExt
          new Path("/usr/tmp"));
       addParam(param);
     }
+
+    {
+      ExtensionParam param = 
+        new BooleanExtensionParam
+        (aCompress, 
+         "Whether to compress the files stored in the generated JAR archive.", 
+         false);
+      addParam(param);
+    }
   }
   
 
@@ -162,7 +171,7 @@ class ExtractNodeExt
       if(outputDir == null) {
         LogMgr.getInstance().log
           (LogMgr.Kind.Ext, LogMgr.Level.Severe, 
-         "The " + aOutputDir + " parameter for the ExtractNode extension was not " + 
+           "The " + aOutputDir + " parameter for the ExtractNode extension was not " + 
            "specified!\n" + abortMsg);
         return;
       }
@@ -180,6 +189,15 @@ class ExtractNodeExt
          "Unable to lookup the value for the " + aOutputDir + " parameter for the " + 
          "ExtractNode extension!\n" + abortMsg);
         return;
+    }
+
+    boolean compress = false;
+    try {
+      Boolean tf = (Boolean) getParamValue(aCompress);
+      if((tf != null) && tf)
+        compress = true;
+    }
+    catch(PipelineException ex) {
     }
 
     TreeMap<String, BaseAnnotation> annots = lookupAnnots(vsn.getName(), abortMsg); 
@@ -206,7 +224,7 @@ class ExtractNodeExt
           Path jarPath = 
             getMasterMgrClient().extractSiteVersion
               (vsn.getName(), vsn.getVersionID(), referenceNames, localSite, 
-               vsn.getSequences(), null, outputDir);
+               vsn.getSequences(), null, outputDir, compress);
           
           LogMgr.getInstance().log
             (LogMgr.Kind.Ext, LogMgr.Level.Info, 
@@ -254,5 +272,6 @@ class ExtractNodeExt
   
   public static final String aLocalSite = "LocalSite";
   public static final String aOutputDir = "OutputDir";
+  public static final String aCompress  = "Compress";
       
 }

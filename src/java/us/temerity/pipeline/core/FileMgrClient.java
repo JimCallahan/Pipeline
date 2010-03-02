@@ -629,6 +629,9 @@ interface FileMgrClient
    * 
    * @param jarPath
    *   The name of the JAR archive to create.
+   * 
+   * @param compress
+   *   Whether to compress the files in the generated JAR archive.
    */ 
   public void 
   extractSiteVersion
@@ -641,7 +644,8 @@ interface FileMgrClient
    NodeVersion vsn, 
    long stamp, 
    String creator, 
-   Path jarPath
+   Path jarPath, 
+   boolean compress
   )
     throws PipelineException;
 

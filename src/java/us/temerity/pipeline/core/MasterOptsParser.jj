@@ -364,12 +364,6 @@ CommandLine()
         }
       }
       
-      if(pInternalFileMgr && (!PackageInfo.sFileServer.equals(PackageInfo.sMasterServer)))
-        throw new PipelineException 
-          ("The --file-mgr option cannot be used if the file manager host " + 
-           "(" + PackageInfo.sFileServer + ") is not identical to the master manager " + 
-           "host (" + PackageInfo.sMasterServer + ")!");
-
       /* create the server */ 
       return new MasterMgrServer(pApp, pRebuild, pNodeReaderThreads, pNodeWriterThreads, 
                                  pPreserveOfflinedCache, pInternalFileMgr, pControls); 

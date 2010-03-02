@@ -13225,6 +13225,7 @@ class MasterMgr
     TreeMap<String,String> replacements = req.getReplacements();
     Path dir = req.getDir();
     String creator = req.getRequestor();
+    boolean compress = req.getCompress();
 
     TaskTimer timer = new TaskTimer(); 
 
@@ -13278,7 +13279,8 @@ class MasterMgr
         FileMgrClient fclient = acquireFileMgrClient();
         try {
           fclient.extractSiteVersion(name, referenceNames, localSiteName, 
-                                     replaceSeqs, repls, vsn, stamp, creator, jarPath);
+                                     replaceSeqs, repls, vsn, stamp, creator, jarPath, 
+                                     compress);
         }
         finally {
           releaseFileMgrClient(fclient);
