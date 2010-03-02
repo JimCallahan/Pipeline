@@ -25,9 +25,8 @@ class ShotNames
     throws PipelineException
   {
     super("ShotNamer", 
-        "The basic naming class for shots",
-        mclient,
-        qclient);
+          "The basic naming class for shots",
+          mclient, qclient, null);
     
     {
       UtilityParam param =

@@ -55,7 +55,7 @@ class StudioDefinitions
   {
     super("StudioDefinitions",
           "Provides basic information about where things are located in the Nathan Love Pipeline setup.",
-          mclient, qclient, context);
+          mclient, qclient, context, null);
   }
   
   

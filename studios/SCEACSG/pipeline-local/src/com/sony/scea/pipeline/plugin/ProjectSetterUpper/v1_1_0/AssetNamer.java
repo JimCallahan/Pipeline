@@ -33,10 +33,9 @@ extends BaseNames
 	throws PipelineException 
 	{
 		super("AssetNamer", 
-				"Define the names of nodes used to construct Asset networks in " +
-				"the Nathan Love Base Collection",
-				mclient,
-				qclient);
+                      "Define the names of nodes used to construct Asset networks in " +
+                      "the Nathan Love Base Collection",
+                      mclient, qclient, null);
 		{
 			UtilityParam param =
 				new StringUtilityParam

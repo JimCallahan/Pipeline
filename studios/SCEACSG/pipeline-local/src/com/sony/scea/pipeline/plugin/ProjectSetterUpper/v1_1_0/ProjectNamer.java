@@ -32,9 +32,8 @@ extends BaseNames
 	throws PipelineException
 	{
 		super("ProjectNamer", 
-				"The basic naming class for project specific files.",
-				mclient,
-				qclient);
+                      "The basic naming class for project specific files.",
+                      mclient, qclient, null);
 		{
 			UtilityParam param =
 				new StringUtilityParam
