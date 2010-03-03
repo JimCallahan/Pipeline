@@ -1325,7 +1325,8 @@ class PackageInfo
    * The copyright notice for Pipeline. 
    */
   public static final String sCopyright = 
-    ("Copyright (c) 2002-2009 Temerity Software, Inc.\n" + 
+    ("Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 " + 
+     "Temerity Software, Inc.\n" + 
      "All rights reserved.");
   
   
