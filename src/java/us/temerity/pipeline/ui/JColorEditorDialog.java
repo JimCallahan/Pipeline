@@ -783,12 +783,29 @@ class JColorEditorDialog
 	     "texture (" + path + ") does not match the expected size " + 
 	     "(" + size + "x" + size + ")!");
 	
-	if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
+	if(bi.getType() != BufferedImage.TYPE_4BYTE_ABGR) 
 	  throw new IOException
 	    ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
 	     "not supported!");	    
 	
 	byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+
+        /* swizzle in place: ABGR -> RGBA */ 
+        {
+          int i = 0;
+          for(i=0; (i+3)<data.length; i+=4) {
+            byte a = data[i];
+            byte b = data[i+1];
+            byte g = data[i+2];
+            byte r = data[i+3];
+            
+            data[i]   = r;
+            data[i+1] = g;
+            data[i+2] = b;
+            data[i+3] = a;
+          }
+        }
+
 	ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
 	buf.order(ByteOrder.nativeOrder());
 	buf.put(data, 0, data.length);

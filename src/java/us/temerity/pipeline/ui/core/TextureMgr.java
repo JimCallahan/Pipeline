@@ -9,6 +9,8 @@ import us.temerity.pipeline.laf.LookAndFeelLoader;
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
+import java.awt.color.*; 
+
 import java.io.*;
 import java.nio.*;
 import java.net.*;
@@ -216,6 +218,7 @@ class TextureMgr
       if(url == null) 
         throw new IOException("Unable to find: " + path);
       BufferedImage bi = ImageIO.read(url);
+      printBufferedImageInfo(bi, "Font Texture");
 
       if((bi.getWidth() != size) || (bi.getHeight() != size)) 
         throw new IOException
@@ -223,12 +226,29 @@ class TextureMgr
            "texture (" + path + ") does not match the expected size " + 
            "(" + size + "x" + size + ")!");
 
-      if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
+      if(bi.getType() != BufferedImage.TYPE_4BYTE_ABGR) 
         throw new IOException
           ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
            "not supported!");	    
 	    
       byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+      
+      /* swizzle in place: ABGR -> RGBA */ 
+      {
+        int i = 0;
+        for(i=0; (i+3)<data.length; i+=4) {
+          byte a = data[i];
+          byte b = data[i+1];
+          byte g = data[i+2];
+          byte r = data[i+3];
+          
+          data[i]   = r;
+          data[i+1] = g;
+          data[i+2] = b;
+          data[i+3] = a;
+        }
+      }
+
       ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
       buf.order(ByteOrder.nativeOrder());
       buf.put(data, 0, data.length);
@@ -398,6 +418,7 @@ class TextureMgr
 	if(url == null) 
 	  throw new IOException("Unable to find: " + path);
 	BufferedImage bi = ImageIO.read(url);
+        printBufferedImageInfo(bi, "Texture MipMap"); 
 	
 	if((bi.getWidth() != size) || (bi.getHeight() != size)) 
 	  throw new IOException
@@ -405,12 +426,25 @@ class TextureMgr
 	     "texture (" + path + ") does not match the expected size " + 
 	     "(" + size + "x" + size + ")!");
 	
-	if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
+	if(bi.getType() != BufferedImage.TYPE_4BYTE_ABGR) 
 	  throw new IOException
 	    ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
 	     "not supported!");	    
 	
-	byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+        /* swizzled copy: ABGR -> RGBA */ 
+        byte[] data = null;
+        {
+          byte[] odata = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+          data = new byte[odata.length];          
+          int i = 0;
+          for(i=0; (i+3)<data.length; i+=4) {
+            data[i]   = odata[i+3];
+            data[i+1] = odata[i+2];
+            data[i+2] = odata[i+1];
+            data[i+3] = odata[i];
+          }
+        }
+
 	ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
 	buf.order(ByteOrder.nativeOrder());
 	buf.put(data, 0, data.length);
@@ -429,7 +463,7 @@ class TextureMgr
                 images = new BufferedImage[sIconRes.length];
                 pIconImages.put(name, images);
               }
-
+              
               images[wk] = bi; 
             }
           }
@@ -551,7 +585,8 @@ class TextureMgr
     if(url == null) 
       throw new IOException("Unable to find: " + path);
     BufferedImage bi = ImageIO.read(url);
-      
+    printBufferedImageInfo(bi, "Icon"); 
+
     if(images == null) {
       images = new BufferedImage[sIconRes.length];
       pIconImages.put(name, images);
@@ -1139,51 +1174,74 @@ class TextureMgr
    Color3d symbolColor
   ) 
   {
-    Raster ringRaster = rescaleRaster(ring.getRaster(), ringColor);
-    Raster coreRaster = rescaleRaster(core.getRaster(), coreColor);
-
+    Raster ringRaster = ring.getRaster();
+    Raster coreRaster = core.getRaster();
+    
     Raster symbolRaster = null;
     if(symbol != null) 
-      symbolRaster = rescaleRaster(symbol.getRaster(), symbolColor); 
+      symbolRaster = symbol.getRaster(); 
+
+    WritableRaster outRaster = ringRaster.createCompatibleWritableRaster();
+
+    Color3d rc = new Color3d();
+    double ra; 
+
+    Color3d cc = new Color3d();
+    double ca; 
+
+    Color3d sc = new Color3d();
+    double sa; 
+
+    double[] raw = new double[4];
+
+    Color3d white = new Color3d(255.0, 255.0, 255.0);
+    Color3d black = new Color3d(0.0, 0.0, 0.0); 
+
+    int dx, dy;
+    for(dx=0; dx<ringRaster.getWidth(); dx++) {
+      int x = ringRaster.getMinX() + dx;
+      for(dy=0; dy<ringRaster.getHeight(); dy++) {
+        int y = ringRaster.getMinY() + dy;
+        
+        ringRaster.getPixel(x, y, raw);
+        rc.set(raw[0], raw[1], raw[2]);
+        ra = raw[3] / 255.0;
+        rc.multTuple(ringColor);
+
+        coreRaster.getPixel(x, y, raw);
+        cc.set(raw[0], raw[1], raw[2]);
+        ca = raw[3] / 255.0; 
+        cc.multTuple(coreColor);
+
+        rc.mult(1.0-ca); 
+        rc.addTuple(cc);
+        ra = ra*(1.0-ca) + ca;
+
+        if(symbolRaster != null) {
+          symbolRaster.getPixel(x, y, raw);
+          sc.set(raw[0], raw[1], raw[2]);
+          sa = raw[3] / 255.0; 
+          sc.multTuple(symbolColor);
+
+          rc.mult(1.0-sa); 
+          sc.mult(sa);
+          rc.addTuple(sc);
+          ra = ra*(1.0-sa) + sa;
+        }
+        
+        rc.clamp(black, white); 
+        raw[0] = rc.r();        
+        raw[1] = rc.g();        
+        raw[2] = rc.b();        
+        raw[3] = ExtraMath.clamp(ra*255.0, 0.0, 255.0);
+
+        outRaster.setPixel(x, y, raw); 
+      }
+    }
     
-    WritableRaster out = ringRaster.createCompatibleWritableRaster();
-
-    RenderingHints hints = new RenderingHints(RenderingHints.KEY_RENDERING, 
-                                              RenderingHints.VALUE_RENDER_QUALITY);
-    
-    AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
-    ColorModel colorModel = ring.getColorModel(); 
-    CompositeContext context = ac.createContext(colorModel, colorModel, hints);
-
-    context.compose(coreRaster, ringRaster, out);
-    if(symbolRaster != null) 
-      context.compose(symbolRaster, out, out); 
-
-    context.dispose(); 
-
-    return new BufferedImage(colorModel, out, true, null);
+    return new BufferedImage(ring.getColorModel(), outRaster, false, null);
   }
 
-  /**
-   * Create a new Raster by multiplying every pixel in the source Raster by a constant color.
-   */ 
-  private WritableRaster
-  rescaleRaster
-  (
-   Raster in, 
-   Color3d c
-  ) 
-  {
-    WritableRaster out = in.createCompatibleWritableRaster();
-
-    float offsets[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    float factors[] = { (float) c.r(), (float) c.g(), (float) c.b(), 1.0f };
-      
-    RescaleOp ringOp = new RescaleOp(factors, offsets, null); 
-    ringOp.filter(in, out);
-
-    return out; 
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1296,13 +1354,14 @@ class TextureMgr
   private void
   printBufferedImageInfo
   (
-   BufferedImage bi
+   BufferedImage bi, 
+   String title
   ) 
   {
     StringBuilder buf = new StringBuilder();
       
-    buf.append("Texture BufferedImage Info:\n" + 
-               "  Image Type = ");
+    buf.append("BufferedImage Info: " + title + "\n" + 
+               "  Image Type: ");
     switch(bi.getType()) {
     case BufferedImage.TYPE_INT_RGB:
       buf.append("INT_RGB");
@@ -1364,10 +1423,154 @@ class TextureMgr
       buf.append("(unknown)");
     }
 
-    buf.append("\n" + 
-               "  " + bi.getColorModel() + "\n");
+    ColorModel model = bi.getColorModel();
 
-    buf.append("  Properties:\n");
+    buf.append("\n  Color Model:"); 
+    if(model.hasAlpha()) {
+      buf.append(" Has Alpha"); 
+      if(model.isAlphaPremultiplied()) 
+        buf.append(" (premultiplied)");
+      else 
+        buf.append(" (not premultiplied)"); 
+    }
+
+    ColorSpace space = model.getColorSpace(); 
+
+    buf.append("\n  Color Space: "); 
+
+    switch(space.getType()) {
+    case ColorSpace.CS_CIEXYZ:
+      buf.append("CS_CIEXYZ"); 
+      break;
+
+    case ColorSpace.CS_GRAY:
+      buf.append("CS_GRAY"); 
+      break;
+
+    case ColorSpace.CS_LINEAR_RGB:
+      buf.append("CS_LINEAR_RGB"); 
+      break;
+
+    case ColorSpace.CS_PYCC:
+      buf.append("CS_PYCC"); 
+      break;
+
+    case ColorSpace.CS_sRGB:
+      buf.append("CS_sRGB"); 
+      break;
+
+    case ColorSpace.TYPE_2CLR:
+      buf.append("TYPE_2CLR"); 
+      break;
+
+    case ColorSpace.TYPE_3CLR:
+      buf.append("TYPE_3CLR"); 
+      break;
+
+    case ColorSpace.TYPE_4CLR:
+      buf.append("TYPE_4CLR"); 
+      break;
+
+    case ColorSpace.TYPE_5CLR:
+      buf.append("TYPE_5CLR"); 
+      break;
+
+    case ColorSpace.TYPE_6CLR:
+      buf.append("TYPE_6CLR"); 
+      break;
+
+    case ColorSpace.TYPE_7CLR:
+      buf.append("TYPE_7CLR"); 
+      break;
+
+    case ColorSpace.TYPE_8CLR:
+      buf.append("TYPE_8CLR"); 
+      break;
+
+    case ColorSpace.TYPE_9CLR:
+      buf.append("TYPE_9CLR"); 
+      break;
+
+    case ColorSpace.TYPE_ACLR:
+      buf.append("TYPE_ACLR"); 
+      break;
+
+    case ColorSpace.TYPE_BCLR:
+      buf.append("TYPE_BCLR"); 
+      break;
+
+    case ColorSpace.TYPE_CCLR:
+      buf.append("TYPE_CCLR"); 
+      break;
+
+    case ColorSpace.TYPE_CMY:
+      buf.append("TYPE_CMY"); 
+      break;
+
+    case ColorSpace.TYPE_CMYK:
+      buf.append("TYPE_CMYK"); 
+      break;
+
+    case ColorSpace.TYPE_DCLR:
+      buf.append("TYPE_DCLR"); 
+      break;
+
+    case ColorSpace.TYPE_ECLR:
+      buf.append("TYPE_ECLR"); 
+      break;
+
+    case ColorSpace.TYPE_FCLR:
+      buf.append("TYPE_FCLR"); 
+      break;
+
+    case ColorSpace.TYPE_GRAY:
+      buf.append("TYPE_GRAY"); 
+      break;
+
+    case ColorSpace.TYPE_HLS:
+      buf.append("TYPE_HLS"); 
+      break;
+
+    case ColorSpace.TYPE_HSV:
+      buf.append("TYPE_HSV"); 
+      break;
+
+    case ColorSpace.TYPE_Lab:
+      buf.append("TYPE_Lab"); 
+      break;
+
+    case ColorSpace.TYPE_Luv:
+      buf.append("TYPE_Luv"); 
+      break;
+
+    case ColorSpace.TYPE_RGB:
+      buf.append("TYPE_RGB"); 
+      break;
+
+    case ColorSpace.TYPE_XYZ:
+      buf.append("TYPE_XYZ"); 
+      break;
+
+    case ColorSpace.TYPE_YCbCr:
+      buf.append("TYPE_YCbCr"); 
+      break;
+
+    case ColorSpace.TYPE_Yxy:
+      buf.append("TYPE_Yxy"); 
+      break;
+
+    default:
+      buf.append("(unknown)");
+    }
+
+    {
+      buf.append(" --");
+      int wk;
+      for(wk=0; wk<space.getNumComponents(); wk++) 
+        buf.append(" " + wk + "=" + space.getName(wk));
+    }
+
+    buf.append("\n  Properties:\n");
     {
       String[] pnames = bi.getPropertyNames();
       if(pnames != null) {
@@ -1376,12 +1579,12 @@ class TextureMgr
           buf.append("    " + pnames[wk] + " = " + bi.getProperty(pnames[wk]) + "\n");
       }
       else {
-        buf.append("  (none)\n");
+        buf.append("    (none)\n");
       }
     }
 
     LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Tex, LogMgr.Level.Fine,
+      (LogMgr.Kind.Tex, LogMgr.Level.Finest,
        buf.toString()); 
   }
   
@@ -1391,15 +1594,16 @@ class TextureMgr
   private void 
   printRasterInfo
   (
-   Raster raster
+   Raster raster, 
+   String title
   ) 
   {
     SampleModel model = raster.getSampleModel(); 
 
     StringBuilder buf = new StringBuilder();
     
-    buf.append("Texture Raster Info:\n" + 
-               "  Image Type = ");
+    buf.append("Raster Info: " + title + "\n" + 
+               "  Image Type: ");
     switch(model.getDataType()) {
     case DataBuffer.TYPE_BYTE:
       buf.append("TYPE_BYTE");
@@ -1433,8 +1637,7 @@ class TextureMgr
       buf.append("(unknown)");
     }
 
-    buf.append("\n" + 
-               "  TransferType = ");      
+    buf.append("\n  TransferType: ");      
     switch(model.getTransferType()) {
     case DataBuffer.TYPE_BYTE:
       buf.append("TYPE_BYTE");
@@ -1469,12 +1672,12 @@ class TextureMgr
     }
 
     buf.append("\n" + 
-               "  Width = " + model.getWidth() + "\n" +
-               "  Height = " + model.getHeight() + "\n" +
-               "  Bands = " + model.getNumBands());
+               "  Width: " + model.getWidth() + "\n" +
+               "  Height: " + model.getHeight() + "\n" +
+               "  Bands: " + model.getNumBands());
                  
     LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Tex, LogMgr.Level.Fine,
+      (LogMgr.Kind.Tex, LogMgr.Level.Finest,
        buf.toString());
   }
 
