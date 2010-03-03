@@ -6,7 +6,7 @@
       <principalLanguage id="en" customLocalizationFile="" />
     </languages>
   </application>
-  <executable name="plui" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/debug/src/windows/launchers/debug" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" amd64="false">
+  <executable name="plui-j2dgl" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/debug/src/windows/launchers" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" amd64="false">
     <messageSet language="English" />
     <versionInfo include="true" fileVersion="" companyName="Temerity Software, Inc." fileDescription="Pipeline User Interface" legalCopyright="Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Temerity Software, Inc." productVersion="2.4.1.0" internalName="" />
   </executable>
@@ -16,7 +16,7 @@
       <versionLine x="35" y="278" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
     </text>
   </splashScreen>
-  <java mainClass="us.temerity.pipeline.bootstrap.Main" vmParameters="@JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug -Dsun.java2d.noddraw=true -Dsun.java2d.opengl=false" arguments="us.temerity.pipeline.core.GraphicalApp" allowVMPassthroughParameters="true" minVersion="1.6" maxVersion="1.6" preferredVM="server" allowBetaVM="true" jdkOnly="false">
+  <java mainClass="us.temerity.pipeline.bootstrap.Main" vmParameters="@JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Opt -Dsun.java2d.noddraw=true -Dsun.java2d.opengl=true" arguments="us.temerity.pipeline.core.GraphicalApp" allowVMPassthroughParameters="true" minVersion="1.6" maxVersion="1.6" preferredVM="server" allowBetaVM="true" jdkOnly="false">
     <searchSequence>
       <directory location="@WIN_JAVA_HOME@" />
     </searchSequence>
@@ -24,12 +24,3 @@
       <archive location="@PIPELINE_JAR@" failOnError="true" />
       <archive location="@JOGL_JAR@" failOnError="true" />
       <archive location="@GLUEGEN_JAR@" failOnError="true" />
-    </classPath>
-    <nativeLibraryDirectories>
-      <directory name="@JOGL_LIBRARY_PATH@" />
-    </nativeLibraryDirectories>
-  </java>
-  <includedFiles />
-  <unextractableFiles />
-</exe4j>
-

@@ -6,6 +6,6 @@ cd `pwd`
 exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLPLUGIN_GC_OPTS@ \
   @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Opt \
-  -cp @PIPELINE_JAR@ \
+  -cp @PIPELINE_JAR@@LOCAL_JAVA_LIBS@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.PluginApp "$@"
 

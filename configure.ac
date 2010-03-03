@@ -584,7 +584,6 @@ AC_MSG_RESULT([$ROOT_INST_DIR])
 
 
 
-
 AC_MSG_CHECKING([User Home Directory])
 
 AC_SUBST(HOMEDIR)
@@ -596,7 +595,6 @@ then
 fi 
 
 AC_MSG_RESULT([$HOMEDIR])
-
 
 
 
@@ -614,7 +612,6 @@ AC_MSG_RESULT([$TEMPDIR])
 
 
 
-
 AC_MSG_CHECKING([Unix Client Java Home Directory])
 
 AC_SUBST(UNIX_JAVA_HOME)
@@ -626,6 +623,34 @@ then
 fi 
 
 AC_MSG_RESULT([$UNIX_JAVA_HOME])
+
+
+
+AC_MSG_CHECKING([Unix Local Vendor Javadoc Directory])
+
+AC_SUBST(UNIX_LOCAL_VENDOR_JAVADOC)
+UNIX_LOCAL_VENDOR_JAVADOC=`crypto_lookup UnixLocalJavadocDirectory`
+
+if test "$UNIX_LOCAL_VENDOR_JAVADOC" == "null"
+then
+  UNIX_LOCAL_VENDOR_JAVADOC==""
+fi 
+
+AC_MSG_RESULT([$UNIX_LOCAL_VENDOR_JAVADOC])
+
+
+
+AC_MSG_CHECKING([Unix Local Vendor Java Libraries])
+
+AC_SUBST(UNIX_LOCAL_JAVA_LIBS)
+UNIX_LOCAL_JAVA_LIBS=`crypto_lookup UnixLocalJavaLibraries`
+
+if test "$UNIX_LOCAL_JAVA_LIBS" == "null"
+then
+  UNIX_LOCAL_JAVA_LIBS=""
+fi 
+
+AC_MSG_RESULT([$UNIX_LOCAL_JAVA_LIBS])
 
 
 
@@ -956,6 +981,12 @@ MAC_TEMPDIR=""
 AC_SUBST(MAC_SDK)
 MAC_SDK=""
 
+AC_SUBST(MAC_LOCAL_VENDOR_JAVADOC)
+MAC_LOCAL_VENDOR_JAVADOC=""
+
+AC_SUBST(MAC_LOCAL_JAVA_LIBS)
+MAC_LOCAL_JAVA_LIBS=""
+
 mac_support=`crypto_lookup MacSupport`
 mac_root_inst_dir=`crypto_lookup MacRootInstallDirectory`
 mac_prod_dir=`crypto_lookup MacProductionDirectory`
@@ -989,6 +1020,22 @@ then
   AC_MSG_CHECKING([MacOS SDK])
   MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
   AC_MSG_RESULT([$MAC_SDK])
+
+  AC_MSG_CHECKING([MacOS Local Vendor Javadoc Directory])         
+  mac_local_vendor_javadoc=`crypto_lookup MacLocalJavadocDirectory`
+  if test "$mac_local_vendor_javadoc" != "null"
+  then
+    MAC_LOCAL_VENDOR_JAVADOC=$mac_local_vendor_javadoc
+  fi 
+  AC_MSG_RESULT([$MAC_LOCAL_VENDOR_JAVADOC])
+
+  AC_MSG_CHECKING([MacOS Local Java Libraries])
+  mac_local_java_libs=`crypto_lookup MacLocalJavaLibraries`
+  if test "$mac_local_java_libs" != "null"
+  then
+    MAC_LOCAL_JAVA_LIBS=$mac_local_java_libs
+  fi 
+  AC_MSG_RESULT([$MAC_LOCAL_JAVA_LIBS])
 
   has_mac=true
 fi 
@@ -1030,6 +1077,12 @@ WIN_TEMPDIR=""
 
 AC_SUBST(WIN_JAVA_HOME)
 WIN_JAVA_HOME=""
+
+AC_SUBST(WIN_LOCAL_VENDOR_JAVADOC)
+WIN_LOCAL_VENDOR_JAVADOC=""
+
+AC_SUBST(WIN_LOCAL_JAVA_LIBS)
+WIN_LOCAL_JAVA_LIBS=""
 
 win_support=`crypto_lookup WinSupport`
 win_root_inst_dir=`crypto_lookup WinRootInstallDirectory`
@@ -1088,6 +1141,22 @@ then
   AC_MSG_CHECKING([Windows Java Home Directory])
   WIN_JAVA_HOME="$win_java_home"
   AC_MSG_RESULT([$WIN_JAVA_HOME])
+
+  AC_MSG_CHECKING([Windows Local Vendor Javadoc Directory])         
+  win_local_vendor_javadoc=`crypto_lookup WinLocalJavadocDirectory`
+  if test "$win_local_vendor_javadoc" != "null"
+  then
+    WIN_LOCAL_VENDOR_JAVADOC=$win_local_vendor_javadoc
+  fi 
+  AC_MSG_RESULT([$WIN_LOCAL_VENDOR_JAVADOC])
+
+  AC_MSG_CHECKING([Windows Local Java Libraries])
+  win_local_java_libs=`crypto_lookup WinLocalJavaLibraries`
+  if test "$win_local_java_libs" != "null"
+  then
+    WIN_LOCAL_JAVA_LIBS=$win_local_java_libs
+  fi 
+  AC_MSG_RESULT([$WIN_LOCAL_JAVA_LIBS])
 
   has_windows=true
 fi 
@@ -1315,6 +1384,13 @@ AC_SUBST(SPLASH_DIR)
 SPLASH_DIR=""
 
 
+AC_SUBST(LOCAL_VENDOR_JAVADOC)
+LOCAL_VENDOR_JAVADOC=""
+
+AC_SUBST(LOCAL_JAVA_LIBS)
+LOCAL_JAVA_LIBS=""
+
+
 case "$NATIVE_OSTYPE" in 
   (Unix)  
     JAVA_RUNTIME="$JAVA_HOME/bin/java";
@@ -1331,7 +1407,9 @@ case "$NATIVE_OSTYPE" in
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
     JYTHON_DIR="$ROOT_INST_DIR/jython";
-    JYTHON_JAR="$ROOT_INST_DIR/jython/jython.jar";;
+    JYTHON_JAR="$ROOT_INST_DIR/jython/jython.jar";
+    LOCAL_VENDOR_JAVADOC="$UNIX_LOCAL_VENDOR_JAVADOC";
+    LOCAL_JAVA_LIBS="$UNIX_LOCAL_JAVA_LIBS";;
 
   (MacOS) 
     JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Commands/java";
@@ -1348,7 +1426,9 @@ case "$NATIVE_OSTYPE" in
     GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
     JYTHON_DIR="$MAC_ROOT_INST_DIR/jython";
-    JYTHON_JAR="$MAC_ROOT_INST_DIR/jython/jython.jar";;
+    JYTHON_JAR="$MAC_ROOT_INST_DIR/jython/jython.jar";
+    LOCAL_VENDOR_JAVADOC="$MAC_LOCAL_VENDOR_JAVADOC";
+    LOCAL_JAVA_LIBS="$MAC_LOCAL_JAVA_LIBS";;
 
   (Windows) 
     JAVA_RUNTIME="$WIN_JAVA_HOME/bin/java";
@@ -1365,7 +1445,9 @@ case "$NATIVE_OSTYPE" in
     GLUEGEN_JAR="$WIN_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
     JYTHON_DIR="$WIN_ROOT_INST_DIR/jython";
-    JYTHON_JAR="$WIN_ROOT_INST_DIR/jython/jython.jar";;
+    JYTHON_JAR="$WIN_ROOT_INST_DIR/jython/jython.jar";
+    LOCAL_VENDOR_JAVADOC="$WIN_LOCAL_VENDOR_JAVADOC";
+    LOCAL_JAVA_LIBS="$WIN_LOCAL_JAVA_LIBS";;
 esac
 
 
@@ -1466,14 +1548,14 @@ AC_MSG_RESULT([$PLQUEUEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([pljobmgr])
 AC_SUBST(PLJOBMGR_GC_OPTS)
-PLJOBMGR_GC_OPTS="-Xms32M -Xmx384M"
+PLJOBMGR_GC_OPTS="-Xms32M -Xmx192M"
 AC_MSG_RESULT([$PLJOBMGR_GC_OPTS])
 
 AC_SUBST(PLJOBMGR_XMS)
 PLJOBMGR_XMS="-Xms32M"
 
 AC_SUBST(PLJOBMGR_XMX)
-PLJOBMGR_XMX="-Xmx384M"
+PLJOBMGR_XMX="-Xmx192M"
 
 AC_MSG_CHECKING([plplugin])
 AC_SUBST(PLPLUGIN_GC_OPTS)
@@ -1487,12 +1569,12 @@ AC_MSG_RESULT([$PLUI_GC_OPTS])
 
 AC_MSG_CHECKING([plscript])
 AC_SUBST(PLSCRIPT_GC_OPTS)
-PLSCRIPT_GC_OPTS="-Xms8M -Xmx384M"
+PLSCRIPT_GC_OPTS="-Xms8M -Xmx192M"
 AC_MSG_RESULT([$PLSCRIPT_GC_OPTS])
 
 AC_MSG_CHECKING([plbuilder])
 AC_SUBST(PLBUILDER_GC_OPTS)
-PLBUILDER_GC_OPTS="-Xms8M -Xmx384M"
+PLBUILDER_GC_OPTS="-Xms8M -Xmx192M"
 AC_MSG_RESULT([$PLBUILDER_GC_OPTS])
 
 AC_MSG_CHECKING([pltestnative])
@@ -1502,12 +1584,12 @@ AC_MSG_RESULT([$PLTESTNATIVE_GC_OPTS])
 
 AC_MSG_CHECKING([plversion])
 AC_SUBST(PLVERSION_GC_OPTS)
-PLVERSION_GC_OPTS="-Xms8M -Xmx384M"
+PLVERSION_GC_OPTS="-Xms8M -Xmx192M"
 AC_MSG_RESULT([$PLVERSION_GC_OPTS])
 
 AC_MSG_CHECKING([plbrowse])
 AC_SUBST(PLBROWSE_GC_OPTS)
-PLBROWSE_GC_OPTS="-Xms8M -Xmx384M"
+PLBROWSE_GC_OPTS="-Xms8M -Xmx192M"
 AC_MSG_RESULT([$PLBROWSE_GC_OPTS])
 
 AC_MSG_CHECKING([plmine])
@@ -1517,17 +1599,17 @@ AC_MSG_RESULT([$PLMINE_GC_OPTS])
 
 AC_MSG_CHECKING([plpython])
 AC_SUBST(PLPYTHON_GC_OPTS)
-PLPYTHON_GC_OPTS="-Xms8M -Xmx384M"
+PLPYTHON_GC_OPTS="-Xms8M -Xmx192M"
 AC_MSG_RESULT([$PLPYTHON_GC_OPTS])
 
 AC_MSG_CHECKING([pljava])
 AC_SUBST(PLJAVA_GC_OPTS)
-PLJAVA_GC_OPTS="-Xms8M -Xmx384M"
+PLJAVA_GC_OPTS="-Xms8M -Xmx192M"
 AC_MSG_RESULT([$PLJAVA_GC_OPTS])
 
 AC_MSG_CHECKING([plscala])
 AC_SUBST(PLSCALA_GC_OPTS)
-PLSCALA_GC_OPTS="-Xms8M -Xmx384M"
+PLSCALA_GC_OPTS="-Xms8M -Xmx192M"
 AC_MSG_RESULT([$PLSCALA_GC_OPTS])
 
 AC_MSG_RESULT([ ])
@@ -2181,11 +2263,15 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plversion.bat.src
 
   src/windows/launchers/Makefile
-  src/windows/launchers/plui.exe4j
-  src/windows/launchers/plui-j2dgl.exe4j
+  src/windows/launchers/plui.exe4j.A
+  src/windows/launchers/plui.exe4j.B
+  src/windows/launchers/plui-j2dgl.exe4j.A
+  src/windows/launchers/plui-j2dgl.exe4j.B
   src/windows/launchers/debug/Makefile
-  src/windows/launchers/debug/plui.exe4j
-  src/windows/launchers/debug/plui-j2dgl.exe4j
+  src/windows/launchers/debug/plui.exe4j.A
+  src/windows/launchers/debug/plui.exe4j.B
+  src/windows/launchers/debug/plui-j2dgl.exe4j.A
+  src/windows/launchers/debug/plui-j2dgl.exe4j.B
 
   src/windows/etc/Makefile
   src/windows/etc/python/Makefile  

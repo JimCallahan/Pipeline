@@ -60,5 +60,5 @@ exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLPLUGINMGR_GC_OPTS@ \
   @PLPLUGINMGR_PROFILE_OPTS@ \
   @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Profile \
-  -cp @PIPELINE_JAR@ \
+  -cp @PIPELINE_JAR@@LOCAL_JAVA_LIBS@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.PluginMgrApp "$@"

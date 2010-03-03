@@ -1,0 +1,9 @@
+    </classPath>
+    <nativeLibraryDirectories>
+      <directory name="@JOGL_LIBRARY_PATH@" />
+    </nativeLibraryDirectories>
+  </java>
+  <includedFiles />
+  <unextractableFiles />
+</exe4j>
+
