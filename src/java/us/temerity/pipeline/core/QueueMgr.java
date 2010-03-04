@@ -72,6 +72,7 @@ class QueueMgr
     {
       pCollectorBatchSize = new AtomicInteger();
       pDispatcherInterval = new AtomicLong();
+      pIsMaxLoadEnabled   = new AtomicBoolean(); 
       pNfsCacheInterval   = new AtomicLong();
       pBackupSyncInterval = new AtomicLong();
 
@@ -1068,7 +1069,8 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
 
     QueueControls controls = new QueueControls(pCollectorBatchSize.get(), 
-                                               pDispatcherInterval.get(), 
+                                               pDispatcherInterval.get(),
+                                               pIsMaxLoadEnabled.get(), 
                                                pNfsCacheInterval.get(), 
                                                pBackupSyncInterval.get(),
                                                pBalanceSampleInterval.get(),
@@ -1131,7 +1133,7 @@ class QueueMgr
       if(size != null) 
         pCollectorBatchSize.set(size); 
       size = pCollectorBatchSize.get();
-      buf.append("  Collector Batch Size : " + size + "\n"); 
+      buf.append("     Collector Batch Size : " + size + "\n"); 
     }
     
     {
@@ -1139,28 +1141,18 @@ class QueueMgr
       if(interval != null) 
         pDispatcherInterval.set(interval);
       interval = pDispatcherInterval.get(); 
-      buf.append("   Dispatcher Interval : " + interval + " " + 
+      buf.append("      Dispatcher Interval : " + interval + " " + 
                  "(" + TimeStamps.formatInterval(interval) + ")\n");
-      }
-    
-    {
-      Long interval = controls.getNfsCacheInterval();
-      if(interval != null) 
-        pNfsCacheInterval.set(interval);
-      interval = pNfsCacheInterval.get(); 
-      buf.append("    NFS Cache Interval : " + interval + " " + 
-                   "(" + TimeStamps.formatInterval(interval) + ")\n");
     }
 
     {
-      Long interval = controls.getBackupSyncInterval();
-      if(interval != null) 
-        pBackupSyncInterval.set(interval);
-      interval = pBackupSyncInterval.get(); 
-      buf.append("  Backup Sync Interval : " + interval + " " + 
-                 "(" + TimeStamps.formatInterval(interval) + ")\n");
+      Boolean tf = controls.getIsMaxLoadEnabled();
+      if(tf != null) 
+        pIsMaxLoadEnabled.set(tf);
+      tf = pIsMaxLoadEnabled.get(); 
+      buf.append("   Max Load Dispatch Test : " + (tf ? "Enabled" : "Disabled") + "\n"); 
     }
-    
+
     {
       Long interval = controls.getBalanceSampleInterval();
       if(interval != null) 
@@ -1175,7 +1167,25 @@ class QueueMgr
       if(samples != null) 
         pUserBalanceInfo.setSamplesToKeep(samples);
       samples = pUserBalanceInfo.getSamplesToKeep(); 
-      buf.append("  Balance Samples to Keep : (" + samples + ")\n");
+      buf.append("  Balance Samples to Keep : " + samples + "\n");
+    }
+    
+    {
+      Long interval = controls.getNfsCacheInterval();
+      if(interval != null) 
+        pNfsCacheInterval.set(interval);
+      interval = pNfsCacheInterval.get(); 
+      buf.append("       NFS Cache Interval : " + interval + " " + 
+                   "(" + TimeStamps.formatInterval(interval) + ")\n");
+    }
+
+    {
+      Long interval = controls.getBackupSyncInterval();
+      if(interval != null) 
+        pBackupSyncInterval.set(interval);
+      interval = pBackupSyncInterval.get(); 
+      buf.append("     Backup Sync Interval : " + interval + " " + 
+                 "(" + TimeStamps.formatInterval(interval) + ")\n");
     }
     
     buf.append
@@ -9116,6 +9126,9 @@ class QueueMgr
     /* a cache of the percent pending/engaged per job-group*/
     TreeMap<Long, Double> percentCache = new TreeMap<Long, Double>();
 
+    /* whether the job manager load should be tested in quailifying jobs */ 
+    boolean isMaxLoadEnabled = pIsMaxLoadEnabled.get();
+
     /* cache per-hosts information */ 
     ResourceSample sample = host.getLatestSample();
     OsType os = host.getOsType();
@@ -9186,8 +9199,8 @@ class QueueMgr
 
                   /* make sure the host provides the type of operating system, reservation and 
                      dynamic resources required by the job */                
-                  if(profile.isEligible(sample, os, reservation, 
-                                        pAdminPrivileges, usersOverMax)) {
+                  if(profile.isEligible(sample, os, reservation, pAdminPrivileges, 
+                                        usersOverMax, isMaxLoadEnabled)) {
                     
                     /* compute the percentage of jobs within the job group
                        which are engaged/pending according to the policy of 
@@ -14709,6 +14722,11 @@ class QueueMgr
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */ 
   private AtomicLong  pDispatcherInterval; 
+
+  /**
+   * Whether the job manager load should be tested in quailifying jobs.
+   */ 
+  private AtomicBoolean  pIsMaxLoadEnabled;
 
   /**
    * The IDs of jobs which should be preempted as soon as possible. 

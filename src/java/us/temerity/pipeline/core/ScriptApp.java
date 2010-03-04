@@ -172,6 +172,7 @@ class ScriptApp
        "        [--restore-cleanup-interval=...] [--backup-sync-interval=...]\n" +
        "      --set-queue [--remote-log=logger:level[,logger:level[...]]]\n" + 
        "        [--collector-batch-size=num] [--dispatcher-interval=msec]\n" +  
+       "        [--enabled-max-load] [--disable-maxload]\n" + 
        "        [--nfs-cache-interval=msec] [--backup-sync-interval]\n" + 
        "      --get-master\n" + 
        "      --get-queue\n" +
@@ -232,10 +233,10 @@ class ScriptApp
        "      --get-info-all\n" + 
        "      --add=host-name\n" + 
        "      --set=host-name\n" + 
-       "       [--shutdown | --disable | --enable] [--reserve=user-name | --open]\n" + 
-       "       [--order=integer] [--slots=integer] [--selection-schedule=schedule-name]\n " + 
-       "       [--no-selection-schedule] [--selection-group=group-name]\n " + 
-       "       [--no-selection-group]\n " + 
+       "        [--shutdown | --disable | --enable] [--reserve=user-name | --open]\n" + 
+       "        [--order=integer] [--slots=integer] [--selection-schedule=schedule-name]\n" + 
+       "        [--no-selection-schedule] [--selection-group=group-name]\n" + 
+       "        [--no-selection-group]\n" + 
        "      --remove=host-name\n" + 
        "\n" + 
        "  Plugins\n" + 
@@ -1266,8 +1267,9 @@ class ScriptApp
       QueueControls controls = client.getRuntimeControls();    
 
       Long disInterval = controls.getDispatcherInterval();
+      Boolean maxLoad  = controls.getIsMaxLoadEnabled(); 
       Long nfsInterval = controls.getNfsCacheInterval();
-      Long bsInterval = controls.getBackupSyncInterval();
+      Long bsInterval  = controls.getBackupSyncInterval();
       Long balInterval = controls.getBalanceSampleInterval();
 
       buf.append
@@ -1275,6 +1277,7 @@ class ScriptApp
 	 "  Collector Batch Size : " + controls.getCollectorBatchSize() + "\n" + 
 	 "   Dispatcher Interval : " + disInterval + " " + 
          "(" + TimeStamps.formatInterval(disInterval) + ")\n" +
+         "     Max Load Criteria : " + (maxLoad ? "Enabled" : "Disabled") + "\n" + 
 	 "    NFS Cache Interval : " + nfsInterval + " " + 
          "(" + TimeStamps.formatInterval(nfsInterval) + ")\n" +
 	 "  Backup Sync Interval : " + bsInterval + " " + 

@@ -25,7 +25,7 @@ class QueueControls
   public 
   QueueControls() 
   {
-    this(null, null, null, null, null, null); 
+    this(null, null, null, null, null, null, null); 
   }
 
   /** 
@@ -38,6 +38,9 @@ class QueueControls
    * 
    * @param dispatcherInterval
    *   The minimum time a cycle of the dispatcher loop should take (in milliseconds).
+   * 
+   * @param isMaxLoadEnabled 
+   *   Whether the job manager load should be tested in quailifying jobs.
    * 
    * @param nfsCacheInterval
    *   The minimum time to wait before attempting a NFS directory attribute lookup operation
@@ -61,6 +64,7 @@ class QueueControls
   (
    Integer collectorBatchSize,
    Long dispatcherInterval, 
+   Boolean isMaxLoadEnabled, 
    Long nfsCacheInterval,
    Long backupSyncInterval,
    Long balanceSampleInterval,
@@ -69,6 +73,7 @@ class QueueControls
   {    
     setCollectorBatchSize(collectorBatchSize); 
     setDispatcherInterval(dispatcherInterval); 
+    setIsMaxLoadEnabled(isMaxLoadEnabled); 
     setNfsCacheInterval(nfsCacheInterval); 
     setBackupSyncInterval(backupSyncInterval);
     setBalanceSampleInterval(balanceSampleInterval);
@@ -116,6 +121,7 @@ class QueueControls
     }
   }
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -152,6 +158,40 @@ class QueueControls
       pDispatcherInterval = 2000L;  /* 2-seconds */ 
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get whether the job manager load should be tested in quailifying jobs.
+   *
+   * @return 
+   *   Whether it is or <CODE>null</CODE> if unset.
+   */ 
+  public Boolean
+  getIsMaxLoadEnabled() 
+  {
+    return pIsMaxLoadEnabled;
+  }
+
+  /**
+   * Set whether the job manager load should be tested in quailifying jobs.
+   * 
+   * @param tf
+   *   Whether it is or <CODE>null</CODE> to unset.
+   */
+  public void 
+  setIsMaxLoadEnabled
+  (
+   Boolean tf
+  ) 
+  {
+    if(tf != null) 
+      pIsMaxLoadEnabled = tf; 
+    else 
+      pIsMaxLoadEnabled = true;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -335,6 +375,11 @@ class QueueControls
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */ 
   private Long  pDispatcherInterval; 
+
+  /**
+   * Whether the job manager load should be tested in quailifying jobs.
+   */ 
+  private Boolean  pIsMaxLoadEnabled; 
 
   /**
    * The minimum time to wait before attempting a NFS directory attribute lookup operation

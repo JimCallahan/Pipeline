@@ -128,6 +128,8 @@ TOKEN :
   /* performance tuning options */ 
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">     : INTEGER_SEP
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">      : INTEGER_SEP
+| <ENABLE_MAX_LOAD:          "--enable-max-load">         
+| <DISABLE_MAX_LOAD:         "--disable-max-load">         
 | <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">       : INTEGER_SEP
 | <BACKUP_SYNC_INTERVAL:     "--backup-sync-interval">     : INTEGER_SEP
 | <BALANCE_SAMPLE_INTERVAL:  "--balance-sample-interval">  : INTEGER_SEP
@@ -387,8 +389,9 @@ GlobalOpts()
 {}
 {
   (Rebuild() | Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
-   CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval() | BackupSyncInterval() |
-   BalanceSampleInterval() | BalanceSamplesToKeep() | JobReaderThreads())
+   CollectorBatchSize() | DispatcherInterval() | EnableMaxLoad() | DisableMaxLoad() |
+   NfsCacheInterval() | BackupSyncInterval() | BalanceSampleInterval() | 
+   BalanceSamplesToKeep() | JobReaderThreads())
   {}
 }
 
@@ -801,6 +804,26 @@ void DispatcherInterval()
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex);
     }
+  }
+}
+
+void EnableMaxLoad()
+  throws PipelineException : 
+{}
+{
+  <ENABLE_MAX_LOAD>
+  {
+    pControls.setIsMaxLoadEnabled(true); 
+  }
+}
+
+void DisableMaxLoad()
+  throws PipelineException : 
+{}
+{
+  <DISABLE_MAX_LOAD>
+  {
+    pControls.setIsMaxLoadEnabled(false); 
   }
 }
 

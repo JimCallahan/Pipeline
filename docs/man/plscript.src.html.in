@@ -7,8 +7,7 @@
 
   <TITLE>plscript</TITLE>
   <META content="text/html; charset=us-ascii" http-equiv=
-  "content-type">
-  <STYLE type="text/css">
+  "content-type"><STYLE type="text/css">
 ul.c24 {margin-left: 40px;}
   table.c23 {text-align: left; width: 250px; margin-left: 80px;}
   td.c22 {vertical-align: top;}
@@ -33,11 +32,9 @@ ul.c24 {margin-left: 40px;}
   a.c3 {font-weight: bold;}
   span.c2 {font-style: italic;}
   span.c1 {font-weight: bold;}
-  </STYLE>
-  <STYLE type="text/css">
+  </STYLE><STYLE type="text/css">
 li.c1 {list-style: none}
-  </STYLE>
-  <STYLE type="text/css">
+  </STYLE><STYLE type="text/css">
 a.c1 {font-style: italic}
   </STYLE>
 </HEAD>
@@ -344,9 +341,15 @@ a.c1 {font-style: italic}
                 [</SPAN><SPAN class=
                 "c1">--collector-batch-size</SPAN>=<SPAN class=
                 "c7">num</SPAN><SPAN class="c5">]
-                [</SPAN><SPAN class=
-                "c1">--dispatcher-interval</SPAN>=<SPAN class=
-                "c7">msec</SPAN><SPAN class="c5">] [<SPAN class=
+
+                [</SPAN><SPAN class="c1">--dispatcher-interval</SPAN>=<SPAN class=
+                "c7">msec</SPAN><SPAN class="c5">] 
+
+                [</SPAN><SPAN class="c1">--enable-max-load</SPAN><SPAN class="c5">] 
+                [</SPAN><SPAN class="c1">--disable-max-load</SPAN><SPAN class="c5">] 
+
+
+                [<SPAN class=
                 "c1">--nfs-cache-interval</SPAN>=<SPAN class=
                 "c2">msec</SPAN>] [<SPAN class=
                 "c1">--backup-sync-interval</SPAN>=<SPAN class=
@@ -3181,7 +3184,11 @@ a.c1 {font-style: italic}
     "c7">num</SPAN><SPAN class="c5">] [</SPAN><A href=
     "plqueuemgr.html#--dispatcher-interval"><SPAN class=
     "c1">--dispatcher-interval</SPAN></A>=<SPAN class=
-    "c7">msec</SPAN><SPAN class="c5">]</SPAN> <SPAN class=
+    "c7">msec</SPAN><SPAN class="c5">]</SPAN> [<A href=
+    "plqueuemgr.html#--enable-max-load"><SPAN class=
+    "c1">--enable-max-load</SPAN></A>] [<A href=
+    "plqueuemgr.html#--disabled-max-load"><SPAN class=
+    "c1">--disable-max-load</SPAN></A>] <SPAN class=
     "c5">[<A href=
     "plqueuemgr.html#--nfs-cache-interval"><SPAN class=
     "c1">--nfs-cache-interval</SPAN></A>=<SPAN class=

@@ -397,9 +397,12 @@ a.c1 {font-style: italic}
       <BR>
       The default value is (50) servers per sub-thread.<BR>
       <BR>
-    </DIV><SPAN class="c2"><A name=
-    "--dispatcher-interval"></A>--dispatcher-interval</SPAN>=<SPAN class="c4">msec</SPAN><BR>
+    </DIV>
+  </DIV>
 
+  <DIV class="c3">
+   <SPAN class="c2"><A name=
+    "--dispatcher-interval"></A>--dispatcher-interval</SPAN>=<SPAN class="c4">msec</SPAN><BR>
 
     <DIV class="c3">
       <BR>
@@ -411,6 +414,22 @@ a.c1 {font-style: italic}
       <BR>
       The default value is (2000) msec.&nbsp; Which is (2)
       seconds.<BR>
+      <BR>
+    </DIV>
+  </DIV>
+
+  <DIV class="c3">
+   <SPAN class="c2"><A name="--enable-max-load"></A>--enable-max-load</SPAN><BR>
+   <SPAN class="c2"><A name="--disable-max-load"></A>--disable-max-load</SPAN><BR>
+
+    <DIV class="c3">
+      <BR>
+      Overrides whether the dispatcher should consider the Maximum System Load job
+      requirement when qualifying jobs for a particular Job Manager.  If enabled, the 
+      Job Manager must have a system load less than the maximum specified for the job.
+      If disabled, this criteria is ignored.<BR>
+      <BR>
+      The default is enabled.<BR>
       <BR>
     </DIV>
   </DIV>

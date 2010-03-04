@@ -126,6 +126,7 @@ class QueueMgrApp
        "\n" + 
        "PERFORMANCE TUNING OPTIONS:\n" +
        "  [--collector-batch-size=...] [--dispatcher-interval=...]\n" + 
+       "  [--enabled-max-load] [--disable-maxload]\n" + 
        "  [--nfs-cache-interval=...] [--backup-sync-interval=...]\n" +
        "  [--balance-sample-interval=...] [--balance-samples-to-keep=...]\n" +
        "\n" +  

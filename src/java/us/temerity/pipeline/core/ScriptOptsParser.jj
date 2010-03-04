@@ -178,6 +178,7 @@ ScriptOptsParser
 
   private Integer pCollectorBatchSize;
   private Long    pDispatcherInterval;
+  private Boolean pIsMaxLoadEnabled;
   private Long    pNfsCacheInterval;
   private Long    pQueueBackupSyncInterval;
   private Long    pBalanceSampleInterval;
@@ -419,6 +420,8 @@ TOKEN :
 
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">      : INTEGER_SEP
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">       : INTEGER_SEP
+| <ENABLE_MAX_LOAD:          "--enable-max-load">         
+| <DISABLE_MAX_LOAD:         "--disable-max-load">         
 | <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">        : INTEGER_SEP
 | <BACKUP_SYNC_INTERVAL:     "--backup-sync-interval">      : INTEGER_SEP
 | <BALANCE_SAMPLE_INTERVAL:  "--balance-sample-interval">   : INTEGER_SEP
@@ -3715,6 +3718,7 @@ SetRuntimeQueue()
   pLogControls = null;
   pCollectorBatchSize = null;
   pDispatcherInterval = null;
+  pIsMaxLoadEnabled = null;
   pNfsCacheInterval = null;
   pQueueBackupSyncInterval = null;
   pBalanceSampleInterval = null;
@@ -3731,6 +3735,7 @@ SetRuntimeQueue()
     
     if((pCollectorBatchSize != null) || 
        (pDispatcherInterval != null) || 
+       (pIsMaxLoadEnabled != null) ||
        (pNfsCacheInterval != null) || 
        (pQueueBackupSyncInterval != null) ||
        (pBalanceSamplesToKeep != null) ||
@@ -3743,6 +3748,9 @@ SetRuntimeQueue()
 
       if(pDispatcherInterval != null) 
         controls.setDispatcherInterval(pDispatcherInterval);
+
+      if(pIsMaxLoadEnabled != null) 
+        controls.setIsMaxLoadEnabled(pIsMaxLoadEnabled);
 
       if(pNfsCacheInterval != null) 
         controls.setNfsCacheInterval(pNfsCacheInterval);
@@ -3782,7 +3790,8 @@ RuntimeQueueOpts()
   throws PipelineException : 
 {}
 {
-  (RemoteLog() | CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval() | 
+  (RemoteLog() | CollectorBatchSize() | DispatcherInterval() | 
+   EnableMaxLoad() | DisableMaxLoad() | NfsCacheInterval() | 
    QueueBackupSyncInterval() | BalanceSampleInterval() | BalanceSamplesToKeep()) 
   {}
 }
@@ -3816,6 +3825,26 @@ void DispatcherInterval()
       throw new PipelineException
         ("The dispatcher interval (" + msec + ") must be positive!");
     pDispatcherInterval = msec; 
+  }
+}
+
+void EnableMaxLoad()
+  throws PipelineException : 
+{}
+{
+  <ENABLE_MAX_LOAD> AE()
+  {
+    pIsMaxLoadEnabled = true; 
+  }
+}
+
+void DisableMaxLoad()
+  throws PipelineException : 
+{}
+{
+  <DISABLE_MAX_LOAD> AE()
+  {
+    pIsMaxLoadEnabled = false; 
   }
 }
 

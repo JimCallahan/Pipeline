@@ -114,7 +114,8 @@ JobProfile
    OsType os, 
    String reservation,
    AdminPrivileges privs,
-   TreeSet<String> usersOverMax
+   TreeSet<String> usersOverMax, 
+   boolean maxLoadEnabled
   )
   {
     switch(os) {
@@ -133,7 +134,7 @@ JobProfile
         return false;
     }      
 
-    if((sample.getLoad() > pMaxLoad) ||
+    if((maxLoadEnabled && (sample.getLoad() > pMaxLoad)) ||
        (sample.getMemory() < pMinMemory) || 
        (sample.getDisk() < pMinDisk))
       return false;
@@ -142,7 +143,7 @@ JobProfile
        !(pAuthor.equals(reservation) || privs.isWorkGroupMember(pAuthor, reservation)))
       return false;
     
-    if (usersOverMax != null && usersOverMax.contains(pAuthor))
+    if((usersOverMax != null) && usersOverMax.contains(pAuthor))
       return false;
 
     return true;
