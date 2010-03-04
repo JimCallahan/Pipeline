@@ -221,16 +221,12 @@ class JNodeDetailsPanel
 	    
 	    /* property state */ 
 	    {
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("Property State:", sTSize, JLabel.RIGHT, 
-		     "The relationship between the values of the node properties " + 
-		     "associated with the working and checked-in versions of a node.");
-		  hbox.add(label);
-		}
-		tpanel.add(hbox);
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("Property State:", sTSize, JLabel.RIGHT, 
+                   "The relationship between the values of the node properties " + 
+                   "associated with the working and checked-in versions of a node.");
+                tpanel.add(label);
 	      }
 
 	      {
@@ -250,17 +246,13 @@ class JNodeDetailsPanel
 	    /* intermediate files */ 
 	    { 
 	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("Intermediate Files:", sTSize, JLabel.RIGHT, 
-		     "Whether the file sequences managed by this node are intermediate " + 
-                     "(temporary) in nature and therefore should never be saved/restored " + 
-                     "along with repository versions.");
-		  pIntermediateTitle = label;
-		  hbox.add(label);
-		}
-		tpanel.add(hbox);
+                JLabel label = UIFactory.createFixedLabel
+                  ("Intermediate Files:", sTSize, JLabel.RIGHT, 
+                   "Whether the file sequences managed by this node are intermediate " + 
+                   "(temporary) in nature and therefore should never be saved/restored " + 
+                   "along with repository versions.");
+                pIntermediateTitle = label;
+                tpanel.add(label);
 	      }
 	      
 	      {
@@ -314,18 +306,15 @@ class JNodeDetailsPanel
 
 	    /* toolset */ 
 	    { 
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("Toolset:", sTSize, JLabel.RIGHT, 
-		     "The name of the shell environment used to run Editors and Actions " + 
-		     "associated with the node.");
-		  pToolsetTitle = label;
-		  hbox.add(label);
-		}
-		tpanel.add(hbox);
-	      }
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("Toolset:", sTSize, JLabel.RIGHT, 
+                   "The name of the shell environment used to run Editors and Actions " + 
+                   "associated with the node.");
+                pToolsetTitle = label;
+                
+                tpanel.add(label);
+              }
 	      
 	      {
 		Box hbox = new Box(BoxLayout.X_AXIS);
@@ -380,53 +369,36 @@ class JNodeDetailsPanel
 	    { 
 	      {
 		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  {
-		    JButton btn = new JButton();
-		    pEditorHelpButton = btn;
-		    btn.setName("HelpButton");
-
-		    Dimension size = new Dimension(19, 19);
-		    btn.setMinimumSize(size);
-		    btn.setMaximumSize(size);
-		    btn.setPreferredSize(size);
-
-		    btn.setActionCommand("show-editor-help");
-		    btn.addActionListener(this);
-
-		    hbox.add(btn);
-		  }
-
-		  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-		  hbox.add(Box.createHorizontalGlue());
-
-		  String text        = "Editor:";
-		  String tooltipText = "The name of the Editor plugin used to " + 
-				       "edit/view the files associated " +
-		                       "with the node.";
-
-		  JLabel label = new JLabel(text);
-		  {
-		    Font font = label.getFont();
-		    FontMetrics fontmetrics = label.getFontMetrics(font);
-		    Graphics graphics = label.getGraphics();
-
-		    Rectangle2D rect = fontmetrics.getStringBounds(text, graphics);
-
-		    int width = (int)rect.getWidth();
-
-		    Dimension size = new Dimension(width, 19);
-		    label.setMinimumSize(size);
-		    label.setMaximumSize(size);
-		    label.setPreferredSize(size);
-
-		    label.setHorizontalAlignment(JLabel.RIGHT);
-		    label.setToolTipText(UIFactory.formatToolTip(tooltipText));
-		  }
-
-		  pEditorTitle = label;
-		  hbox.add(label);
-		}
+                hbox.setAlignmentX(Box.LEFT_ALIGNMENT); 
+                
+                {
+                  JButton btn = new JButton();
+                  pEditorHelpButton = btn;
+                  btn.setName("HelpButton");
+                  
+                  Dimension size = new Dimension(19, 19);
+                  btn.setMinimumSize(size);
+                  btn.setMaximumSize(size);
+                  btn.setPreferredSize(size);
+                  
+                  btn.setActionCommand("show-editor-help");
+                  btn.addActionListener(this);
+                    
+                  hbox.add(btn);
+                }
+                
+                hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+                
+                {
+                  JLabel label = 
+                    UIFactory.createFixedLabel
+                    ("Editor:", sTSize-23, JLabel.RIGHT, 
+                     "The name of the Editor plugin used to edit/view the files " + 
+                     "associated with the node."); 
+                  pEditorTitle = label;
+                  
+                  hbox.add(label);
+                }
 
 		tpanel.add(hbox);
 	      }
@@ -480,16 +452,13 @@ class JNodeDetailsPanel
 	    
 	    /* editor version */ 
 	    { 
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("Version:", sTSize, JLabel.RIGHT, 
-		     "The revision number of the Editor plugin.");
-		  pEditorVersionTitle = label;
-		  hbox.add(label);
-		}
-		tpanel.add(hbox);
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("Version:", sTSize, JLabel.RIGHT, 
+                   "The revision number of the Editor plugin.");
+                pEditorVersionTitle = label;
+
+                tpanel.add(label);
 	      }
 	      
 	      {
@@ -519,19 +488,16 @@ class JNodeDetailsPanel
 	    
 	    /* editor vendor */ 
 	    { 
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("Vendor:", sTSize, JLabel.RIGHT, 
-		     "The name of the vendor of the Editor plugin.");
-		  pEditorVendorTitle = label;
-		  hbox.add(label);
-		}
-		tpanel.add(hbox);
-	      }
-	      
-	      {
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("Vendor:", sTSize, JLabel.RIGHT, 
+                   "The name of the vendor of the Editor plugin.");
+                pEditorVendorTitle = label;
+
+                tpanel.add(label);
+              }
+
+              {
 		Box hbox = new Box(BoxLayout.X_AXIS);
 		
 		{
@@ -558,17 +524,14 @@ class JNodeDetailsPanel
 	    
  	    /* editor operating system sypport */ 
  	    { 
- 	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("OS Support:", sTSize, JLabel.RIGHT, 
- 		     "The operating system types supported by the Editor plugin.");
-		  pEditorOsSupportTitle = label;
-		  hbox.add(label);
-		}
- 		tpanel.add(hbox);
- 	      }
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("OS Support:", sTSize, JLabel.RIGHT, 
+                   "The operating system types supported by the Editor plugin.");
+                pEditorOsSupportTitle = label;
+
+                tpanel.add(label);
+              }
 	      
  	      {
  		Box hbox = new Box(BoxLayout.X_AXIS);
@@ -617,51 +580,35 @@ class JNodeDetailsPanel
 	    { 
 	      {
 		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  {
-		    JButton btn = new JButton();
-		    pActionHelpButton = btn;
-		    btn.setName("HelpButton");
+                hbox.setAlignmentX(Box.LEFT_ALIGNMENT); 
 
-		    Dimension size = new Dimension(19, 19);
-		    btn.setMinimumSize(size);
-		    btn.setMaximumSize(size);
-		    btn.setPreferredSize(size);
+                {
+                  JButton btn = new JButton();
+                  pActionHelpButton = btn;
+                  btn.setName("HelpButton");
 
-		    btn.setActionCommand("show-action-help");
-		    btn.addActionListener(this);
+                  Dimension size = new Dimension(19, 19);
+                  btn.setMinimumSize(size);
+                  btn.setMaximumSize(size);
+                  btn.setPreferredSize(size);
 
-		    hbox.add(btn);
-		  }
+                  btn.setActionCommand("show-action-help");
+                  btn.addActionListener(this);
 
-		  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-		  hbox.add(Box.createHorizontalGlue());
+                  hbox.add(btn);
+                }
 
-		  String text        = "Action:";
-		  String tooltipText = "The name of the Action plugin used to " + 
-		                       "regenerate the files associated with the node.";
+                hbox.add(Box.createRigidArea(new Dimension(4, 0)));
 
-		  JLabel label = new JLabel(text);
-		  {
-		    Font font = label.getFont();
-		    FontMetrics fontmetrics = label.getFontMetrics(font);
-		    Graphics graphics = label.getGraphics();
+                {
+                  JLabel label = 
+                    UIFactory.createFixedLabel
+                    ("Action:", sTSize-23, JLabel.RIGHT, 
+                     "The name of the Action plugin used to regenerate the files " + 
+                     "associated with the node.");
+                  pActionTitle = label;
 
-		    Rectangle2D rect = fontmetrics.getStringBounds(text, graphics);
-
-		    int width = (int)rect.getWidth();
-
-		    Dimension size = new Dimension(width, 19);
-		    label.setMinimumSize(size);
-		    label.setMaximumSize(size);
-		    label.setPreferredSize(size);
-
-		    label.setHorizontalAlignment(JLabel.RIGHT);
-		    label.setToolTipText(UIFactory.formatToolTip(tooltipText));
-		  }
-
-		  pActionTitle = label;
-		  hbox.add(label);
+                  hbox.add(label);
 		}
 
 		tpanel.add(hbox);
@@ -716,17 +663,14 @@ class JNodeDetailsPanel
 
 	    /* action version */ 
 	    {
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("Version:", sTSize, JLabel.RIGHT, 
-		     "The revision number of the Action plugin.");
-		  pActionVersionTitle = label;
-		  hbox.add(label);
-		}
-		tpanel.add(hbox);
-	      }
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("Version:", sTSize, JLabel.RIGHT, 
+                   "The revision number of the Action plugin.");
+                pActionVersionTitle = label;
+
+                tpanel.add(label);
+              }
 	      
 	      {
 		Box hbox = new Box(BoxLayout.X_AXIS);
@@ -755,18 +699,14 @@ class JNodeDetailsPanel
 	    
 	    /* action vendor */ 
 	    { 
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("Vendor:", sTSize, JLabel.RIGHT, 
-		     "The name of the vendor of the Action plugin.");
-		  pActionVendorTitle = label;
-		  hbox.add(label);
-		}
-
-		tpanel.add(hbox);
-	      }
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("Vendor:", sTSize, JLabel.RIGHT, 
+                   "The name of the vendor of the Action plugin.");
+                pActionVendorTitle = label;
+              
+                tpanel.add(label);
+              }
 	      
 	      {
 		Box hbox = new Box(BoxLayout.X_AXIS);
@@ -795,18 +735,14 @@ class JNodeDetailsPanel
 	    
  	    /* action operating system sypport */ 
  	    { 
- 	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("OS Support:", sTSize, JLabel.RIGHT, 
- 		     "The operating system types supported by the Action plugin.");
-		  pActionOsSupportTitle = label;
-		  hbox.add(label);
-		}
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("OS Support:", sTSize, JLabel.RIGHT, 
+                   "The operating system types supported by the Action plugin.");
+                pActionOsSupportTitle = label;
 
-		tpanel.add(hbox);
- 	      }
+                tpanel.add(label);
+              }
 	      
  	      {
  		Box hbox = new Box(BoxLayout.X_AXIS);
@@ -835,18 +771,14 @@ class JNodeDetailsPanel
 
 	    /* action enabled */ 
 	    { 
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		{
-		  JLabel label = UIFactory.createFixedLabel
-		    ("Enabled:", sTSize, JLabel.RIGHT, 
-		     "Whether the Action plugin is currently enabled.");
-		  pActionEnabledTitle = label;
-		  hbox.add(label);
-		}
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  ("Enabled:", sTSize, JLabel.RIGHT, 
+                   "Whether the Action plugin is currently enabled.");
+                pActionEnabledTitle = label;
 
-		tpanel.add(hbox);
-	      }
+                tpanel.add(label);
+              }
 	      
 	      {
 		Box hbox = new Box(BoxLayout.X_AXIS);
@@ -2192,19 +2124,15 @@ class JNodeDetailsPanel
       pEditorHelpButton.setEnabled(false);
       pActionHelpButton.setEnabled(false);
 
-      NodeCommon node = getWorkingVersion();
+      NodeCommon com = getWorkingVersion();
+      if(com == null)
+	com = getCheckedInVersion();
 
-      if(node == null)
-	node = getCheckedInVersion();
-
-      if(node != null) {
-	BaseEditor editor = node.getEditor();
-	BaseAction action = node.getAction();
-
-	if(editor != null && hasHelp(editor))
+      if(com != null) {
+	if(UIMaster.getInstance().hasPluginHelp(com.getEditor()))
 	  pEditorHelpButton.setEnabled(true);
-
-	if(action != null && hasHelp(action))
+        
+	if(UIMaster.getInstance().hasPluginHelp(com.getAction()))
 	  pActionHelpButton.setEnabled(true);
       }
     }
@@ -2398,16 +2326,14 @@ class JNodeDetailsPanel
 	pEditorHelpButton.setEnabled(false);
 	pActionHelpButton.setEnabled(false);
 
-	NodeCommon node = getCheckedInVersion();
-
-	BaseEditor editor = node.getEditor();
-	BaseAction action = node.getAction();
-
-	if(editor != null && hasHelp(editor))
-	  pEditorHelpButton.setEnabled(true);
-
-	if(action != null && hasHelp(action))
-	  pActionHelpButton.setEnabled(true);
+	NodeCommon com = getCheckedInVersion();
+        if(com != null) {
+          if(UIMaster.getInstance().hasPluginHelp(com.getEditor()))
+            pEditorHelpButton.setEnabled(true);
+          
+          if(UIMaster.getInstance().hasPluginHelp(com.getAction()))
+            pActionHelpButton.setEnabled(true);
+        }
       }
     }
   }
@@ -4352,6 +4278,8 @@ class JNodeDetailsPanel
       doSetAnnotationParam(cmd.substring(16));
     else if(cmd.startsWith("annot-param-changed:")) 
       doAnnotationParamChanged(cmd.substring(20));
+    else if(cmd.startsWith("show-annotation-help:")) 
+      doShowAnnotationHelp(cmd.substring(21));
 
     else if(cmd.equals("show-editor-help"))
       doShowEditorHelp();
@@ -4823,14 +4751,7 @@ class JNodeDetailsPanel
     }
 
     /* update help button */
-    {
-      pEditorHelpButton.setEnabled(false);
-
-      BaseEditor editor = getWorkingEditor();
-
-      if(editor != null && hasHelp(editor))
-	pEditorHelpButton.setEnabled(true);
-    }
+    pEditorHelpButton.setEnabled(UIMaster.getInstance().hasPluginHelp(getWorkingEditor()));
   }
   
 
@@ -4948,14 +4869,7 @@ class JNodeDetailsPanel
     updateJobRequirements((oaction == null) && (getWorkingAction() != null), false);
 
     /* update the help button */
-    {
-      pActionHelpButton.setEnabled(false);
-      
-      BaseAction action = getWorkingAction();
-
-      if(action != null && hasHelp(action))
-	pActionHelpButton.setEnabled(true);
-    }
+    pActionHelpButton.setEnabled(UIMaster.getInstance().hasPluginHelp(getWorkingAction()));
   }
   
 
@@ -5912,100 +5826,61 @@ class JNodeDetailsPanel
       panel.doAnnotationParamChanged(doc); 
   }
 
+  /**
+   * Show the docs for the annotation plugin.
+   */ 
+  private void 
+  doShowAnnotationHelp
+  (
+   String aname
+  )  
+  {
+    pAnnotationsPanels.get(aname).doShowAnnotationHelp(); 
+  }
+
+  
+
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Show the HTML docs for the editor plugin.
+   */ 
   private void
   doShowEditorHelp()
   {
-    if(!pEditorHelpButton.isEnabled())
-      return;
-
     BaseEditor editor = null;
-    {
-      if(hasWorking()) {
-	editor = getWorkingEditor();
-      }
-      else {
-	NodeVersion vsn = getCheckedInVersion();
-
-	if(vsn != null)
-	  editor = vsn.getEditor();
-      }
+    if(hasWorking()) {
+      editor = getWorkingEditor();
+    }
+    else {
+      NodeVersion vsn = getCheckedInVersion();
+      if(vsn != null)
+        editor = vsn.getEditor();
     }
 
-    if(editor != null)
-      showPluginHelp(editor);
+    UIMaster.getInstance().showPluginHelp(editor);
   }
 
+  /**
+   * Show the HTML docs for the action plugin.
+   */ 
   private void
   doShowActionHelp()
   {
-    if(!pActionHelpButton.isEnabled())
-      return;
-
     BaseAction action = null;
-    {
-      if(hasWorking()) {
-	action = getWorkingAction();
-      }
-      else {
-	NodeVersion vsn = getCheckedInVersion();
-
-	if(vsn != null)
-	  action = vsn.getAction();
-      }
+    if(hasWorking()) {
+      action = getWorkingAction();
+    }
+    else {
+      NodeVersion vsn = getCheckedInVersion();
+      if(vsn != null)
+        action = vsn.getAction();
     }
 
-    if(action != null)
-      showPluginHelp(action);
+    UIMaster.getInstance().showPluginHelp(action);
   }
 
-  private void
-  showPluginHelp
-  (
-   BasePlugin plugin
-  )
-  {
-    String cname = plugin.getClass().getName();
-    Path path = new Path(PackageInfo.sInstPath, 
-                         "share/docs/javadoc/" + 
-			 cname.replace(".", "/") + 
-			 ".html");
-
-    File file = path.toFile();
-
-    try {
-      if(!file.exists())
-	throw new PipelineException
-	  ("Path (" + path + ") does not exist!");
-
-      {
-	URI uri = file.toURI();
-	Desktop.getDesktop().browse(uri);
-	return;
-      }
-    }
-    catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
-    }
-  }
-
-  private boolean
-  hasHelp
-  (
-   BasePlugin plugin
-  )
-  {
-    if(plugin != null) {
-      String cname = plugin.getClass().getName();
-      Path path = new Path(PackageInfo.sInstPath, 
-                           "share/docs/javadoc/" + cname.replace(".", "/") + ".html");
-      return path.toFile().exists();
-    }
-
-    return false;
-  }
 
 
 
@@ -6220,11 +6095,37 @@ class JNodeDetailsPanel
         /* annotation */ 
         {
           {
-            JLabel label = UIFactory.createFixedLabel
-              ("Annotation:", sTSize-7, JLabel.RIGHT, 
-               "The name of the Annotation plugin.");
-            pAnnotationTitle = label;
-            tpanel.add(label);
+            Box hbox = new Box(BoxLayout.X_AXIS);
+            hbox.setAlignmentX(Box.LEFT_ALIGNMENT); 
+
+            {
+              JButton btn = new JButton();
+              pAnnotationHelpButton = btn;
+              btn.setName("HelpButton");
+              
+              Dimension size = new Dimension(19, 19);
+              btn.setMinimumSize(size);
+              btn.setMaximumSize(size);
+              btn.setPreferredSize(size);
+              
+              btn.setActionCommand("show-annotation-help:" + pAnnotName);
+              btn.addActionListener(pParent);
+              
+              hbox.add(btn);
+            }
+            
+            hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+            
+            {
+              JLabel label = UIFactory.createFixedLabel
+                ("Annotation:", sTSize-30, JLabel.RIGHT, 
+                 "The name of the Annotation plugin.");
+              pAnnotationTitle = label;
+              
+              hbox.add(label); 
+            }
+              
+            tpanel.add(hbox);
           }
 
           {
@@ -7300,6 +7201,16 @@ class JNodeDetailsPanel
           }
         }
       }
+
+      {
+        pAnnotationHelpButton.setEnabled(false);
+        if(pWorkingAnnotation != null) 
+          pAnnotationHelpButton.setEnabled
+            (UIMaster.getInstance().hasPluginHelp(pWorkingAnnotation)); 
+        else if(pCheckedInAnnotation != null) 
+          pAnnotationHelpButton.setEnabled
+            (UIMaster.getInstance().hasPluginHelp(pCheckedInAnnotation)); 
+      }
       
       updateAnnotationFields();
       updateAnnotationParams();
@@ -7467,8 +7378,23 @@ class JNodeDetailsPanel
       updateAnnotParamColor(pname, null);
     }
 
-    
 
+    /*--------------------------------------------------------------------------------------*/
+
+    /**
+     * Show the docs for the annotation plugin.
+     */ 
+    private void 
+    doShowAnnotationHelp() 
+    {
+      BaseAnnotation annot = pWorkingAnnotation;
+      if(annot == null) 
+        annot = pCheckedInAnnotation;
+
+      UIMaster.getInstance().showPluginHelp(annot); 
+    }
+
+    
 
     /*--------------------------------------------------------------------------------------*/
     /*   I N T E R N A L S                                                                  */
@@ -7488,7 +7414,8 @@ class JNodeDetailsPanel
     private JButton pRemoveButton;
      
     private JLabel                 pAnnotationTitle;     
-    private JPluginSelectionField  pWorkingAnnotationField;                         
+    private JPluginSelectionField  pWorkingAnnotationField;   
+    private JButton                pAnnotationHelpButton;                      
     private JButton                pSetAnnotationButton; 
     private JTextField             pCheckedInAnnotationField;
 

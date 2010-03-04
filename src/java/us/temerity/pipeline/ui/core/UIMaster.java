@@ -5,6 +5,7 @@ package us.temerity.pipeline.ui.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URI;
 import java.text.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
@@ -4028,7 +4029,55 @@ class UIMaster
     pResourceUsageHistoryDialog.updateSamples(channel, hosts);
   } 
 
+  
  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P L U G I N   H E L P                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Show the HTML docs for the given plugin.
+   */ 
+  public void 
+  showPluginHelp
+  (
+   BasePlugin plugin
+  )
+  {
+    if(plugin == null) 
+      return; 
+
+    try {
+      File file = PackageInfo.getPluginDocs(plugin).toFile();
+      if(!file.exists())
+	throw new PipelineException
+          ("The documentation (" + file + ") for plugin " + 
+           "(" + plugin.getName() + " v" + plugin.getVersionID() + ") from Vendor " + 
+           "(" + plugin.getVendor() + ") does not exist!");
+
+      URI uri = file.toURI();
+      Desktop.getDesktop().browse(uri);
+    }
+    catch(Exception ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+    }
+  }
+
+  /**
+   * Whether HTML exists for the given plugin.
+   */ 
+  public boolean
+  hasPluginHelp
+  (
+   BasePlugin plugin
+  )
+  {
+    if(plugin == null) 
+      return false;
+    return PackageInfo.getPluginDocs(plugin).toFile().exists();
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */

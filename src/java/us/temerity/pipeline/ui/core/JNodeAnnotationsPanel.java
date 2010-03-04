@@ -371,6 +371,9 @@ class JNodeAnnotationsPanel
     else if(cmd.startsWith("rename-annotation:"))
       doRenameAnnotation(cmd.substring(18));
 
+    else if(cmd.startsWith("show-annotation-help:"))
+      doShowAnnotationHelp(cmd.substring(21));
+
     else if(cmd.startsWith("param-changed:"))
       doAnnotationParamChanged(cmd.substring(14));
   }
@@ -536,6 +539,23 @@ class JNodeAnnotationsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Show the docs for the annotation plugin.
+   */ 
+  public void 
+  doShowAnnotationHelp
+  (
+   String aname
+  ) 
+  {
+    JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+    if(panel != null) 
+      panel.doShowAnnotationHelp();
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Notify the panel that an annotation parameter has changed value.
    */ 
   public void 
@@ -675,12 +695,39 @@ class JNodeAnnotationsPanel
           }
 	
           {
-            JLabel label = 
-              UIFactory.createFixedLabel
-              ("Annotation:", sTSize, JLabel.RIGHT, 
-               "The name of the Annotation plugin.");
-            
-            tpanel.add(label);
+            {
+              Box hbox = new Box(BoxLayout.X_AXIS);
+              hbox.setAlignmentX(Box.LEFT_ALIGNMENT); 
+           
+              {
+                JButton btn = new JButton();
+                pAnnotationHelpButton = btn;
+                btn.setName("HelpButton");
+                  
+                Dimension size = new Dimension(19, 19);
+                btn.setMinimumSize(size);
+                btn.setMaximumSize(size);
+                btn.setPreferredSize(size);
+                  
+                btn.setActionCommand("show-annotation-help:" + pName);
+                btn.addActionListener(pParent);
+                  
+                hbox.add(btn);
+              }
+                
+              hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+                
+              {
+                JLabel label = 
+                  UIFactory.createFixedLabel
+                  ("Annotation:", sTSize-23, JLabel.RIGHT, 
+                   "The name of the Annotation plugin.");
+                  
+                hbox.add(label); 
+              }
+
+              tpanel.add(hbox);
+            }
 
             JPluginSelectionField field =  
               UIMaster.getInstance().createAnnotationSelectionField(pGroupID, sVSize);
@@ -1249,14 +1296,25 @@ class JNodeAnnotationsPanel
           }
         }
       }
-      
+
+      pAnnotationHelpButton.setEnabled(UIMaster.getInstance().hasPluginHelp(pAnnotation)); 
+
       updateAnnotationFields();
       updateAnnotationParams();
 
       pIsModified = true;
     }
 
-    
+    /**
+     * Show the docs for the annotation plugin.
+     */ 
+    private void 
+    doShowAnnotationHelp() 
+    {
+      UIMaster.getInstance().showPluginHelp(pAnnotation); 
+    }
+
+
 
     private static final long serialVersionUID = -391904734639424578L;
 
@@ -1267,7 +1325,8 @@ class JNodeAnnotationsPanel
     private JNodeAnnotationsPanel  pParent; 
     private JDrawer                pTopDrawer;
  
-    private JPluginSelectionField  pAnnotationField;
+    private JPluginSelectionField  pAnnotationField; 
+    private JButton                pAnnotationHelpButton;     
     private JTextField             pVersionField; 
     private JTextField             pVendorField; 
 

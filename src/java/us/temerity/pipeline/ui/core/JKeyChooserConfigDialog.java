@@ -5,6 +5,8 @@ package us.temerity.pipeline.ui.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.io.*;
+import java.net.URI;
 
 import javax.swing.*;
 
@@ -62,16 +64,44 @@ class JKeyChooserConfigDialog
         JPanel vpanel = (JPanel) comps[1];
       
         {
-          JLabel label = 
-            UIFactory.createFixedLabel
-            (title + " Key Chooser:", sTSize, SwingConstants.RIGHT, 
-             "The name of the " + title + " Key Chooser plugin.");
+          {
+            Box hbox = new Box(BoxLayout.X_AXIS);
+            hbox.setAlignmentX(Box.LEFT_ALIGNMENT); 
 
-          tpanel.add(label);
+            {
+              JButton btn = new JButton();
+              pHelpButton = btn;
+              btn.setName("HelpButton");
+              
+              Dimension size = new Dimension(19, 19);
+              btn.setMinimumSize(size);
+              btn.setMaximumSize(size);
+              btn.setPreferredSize(size);
+              
+              btn.setActionCommand("show-help");
+              btn.addActionListener(this);
+              
+              hbox.add(btn);
+            }
+            
+            hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+            
+            {
+              JLabel label = 
+                UIFactory.createFixedLabel
+                (title + " Key Chooser:", sTSize-23, SwingConstants.RIGHT, 
+                 "The name of the " + title + " Key Chooser plugin.");
+
+              hbox.add(label); 
+            }
+            
+            tpanel.add(hbox);
+          }
 
           UIMaster master = UIMaster.getInstance();
           master.clearKeyChooserPluginCaches();
-          JPluginSelectionField field = master.createKeyChooserSelectionField(getChannel(), sVSize);
+          JPluginSelectionField field = 
+            master.createKeyChooserSelectionField(getChannel(), sVSize);
           pKeyChooserField = field;
           
           field.setActionCommand("chooser-changed");
@@ -582,6 +612,8 @@ class JKeyChooserConfigDialog
       doKeyChooserChanged();
     else if (cmd.equals("value-changed"))
       updateButton();
+    else if(cmd.equals("show-help")) 
+      doShowHelp(); 
     else
       super.actionPerformed(e);
   }
@@ -649,10 +681,21 @@ class JKeyChooserConfigDialog
       }
     }
     
+    pHelpButton.setEnabled(UIMaster.getInstance().hasPluginHelp(pKeyChooser));
+
     updateKeyChooserFields();
     updateKeyChooserParams();
 
     updateButton();
+  }
+
+  /**
+   * Show the HTML docs for the extension plugin.
+   */ 
+  private void
+  doShowHelp()
+  {
+    UIMaster.getInstance().showPluginHelp(pKeyChooser); 
   }
 
 
@@ -726,6 +769,11 @@ class JKeyChooserConfigDialog
    * The name of the extension plugin. 
    */ 
   private JPluginSelectionField  pKeyChooserField; 
+
+  /**
+   * The plugin help button.
+   */ 
+  private JButton  pHelpButton; 
 
   /**
    * The revision number of the key chooser plugin.

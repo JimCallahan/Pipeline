@@ -723,6 +723,43 @@ class PackageInfo
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the path of the the HTML docs for the given plugin on the current system.
+   */ 
+  public static Path
+  getPluginDocs
+  (
+   BasePlugin plugin
+  ) 
+  {
+    return getPluginDocs(sOsType, plugin); 
+  }
+
+  /**
+   * Get the OS specific path of the the HTML docs for the given plugin. 
+   */ 
+  public static Path
+  getPluginDocs
+  (
+   OsType os, 
+   BasePlugin plugin
+  ) 
+  {
+    String cpath = (plugin.getClass().getName().replace(".", "/") + ".html");
+
+    Path path = null;
+    String vendor = plugin.getVendor(); 
+    if(vendor.equals("Temerity")) 
+      path = new Path(sOsInstPaths[os.ordinal()], "share/docs/javadoc/" + cpath); 
+    else 
+      path = new Path(sOsLocalVendorJavadocsPaths[os.ordinal()], vendor + "/" + cpath); 
+
+    return path;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P U B L I C   F I E L D S                                                            */
@@ -1484,6 +1521,16 @@ class PackageInfo
     new File("@MAC_TEMPDIR@")
   };
 
+
+  /**
+   * The directory for non-Temerity plugin javadocs indexed by operating system type [OsType.ordinal()].
+   */ 
+  private static final Path sOsLocalVendorJavadocsPaths[] = {
+    new Path("@UNIX_LOCAL_VENDOR_JAVADOC@"), 
+    new Path("@WIN_LOCAL_VENDOR_JAVADOC@"), 
+    new Path("@MAC_LOCAL_VENDOR_JAVADOC@")
+  };
+     
 }
 
 

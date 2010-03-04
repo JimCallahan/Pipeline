@@ -7,6 +7,8 @@ import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
+import java.net.URI;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -85,12 +87,39 @@ class JBaseExtensionConfigDialog
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
 	{
-	  JLabel label = 
-	    UIFactory.createFixedLabel
-	    (title + " Extension:", sTSize, JLabel.RIGHT, 
-	     "The name of the " + title + " Extension plugin.");
+          {
+            Box lbox = new Box(BoxLayout.X_AXIS);
+            lbox.setAlignmentX(Box.LEFT_ALIGNMENT); 
 
-	  tpanel.add(label);
+            {
+              JButton btn = new JButton();
+              pHelpButton = btn;
+              btn.setName("HelpButton");
+              
+              Dimension size = new Dimension(19, 19);
+              btn.setMinimumSize(size);
+              btn.setMaximumSize(size);
+              btn.setPreferredSize(size);
+              
+              btn.setActionCommand("show-help");
+              btn.addActionListener(this);
+              
+              lbox.add(btn);
+            }
+            
+            lbox.add(Box.createRigidArea(new Dimension(4, 0)));
+            
+            {
+              JLabel label = 
+                UIFactory.createFixedLabel
+                (title + " Extension:", sTSize-23, JLabel.RIGHT, 
+                 "The name of the " + title + " Extension plugin.");
+              
+              lbox.add(label); 
+            }
+            
+            tpanel.add(lbox);
+          }
 
 	  JPluginSelectionField field = createExtPluginField(); 
 	  pExtensionField = field;
@@ -636,6 +665,8 @@ class JBaseExtensionConfigDialog
       doExtensionChanged();
     else if(cmd.equals("toolset-changed")) 
       doToolsetChanged();
+    else if(cmd.equals("show-help")) 
+      doShowHelp(); 
     else
       super.actionPerformed(e);
   }
@@ -700,6 +731,8 @@ class JBaseExtensionConfigDialog
       }
     }
     
+    pHelpButton.setEnabled(UIMaster.getInstance().hasPluginHelp(pExtension));
+
     updateExtensionFields();
     updateExtensionParams();
 
@@ -723,7 +756,17 @@ class JBaseExtensionConfigDialog
     updateButton();
   }
 
+  /**
+   * Show the HTML docs for the extension plugin.
+   */ 
+  private void
+  doShowHelp()
+  {
+    UIMaster.getInstance().showPluginHelp(pExtension);     
+  }
 
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -818,6 +861,11 @@ class JBaseExtensionConfigDialog
    * The name of the extension plugin. 
    */ 
   protected JPluginSelectionField  pExtensionField; 
+
+  /**
+   * The plugin help button.
+   */ 
+  private JButton  pHelpButton; 
 
   /**
    * The revision number of the extension plugin.
