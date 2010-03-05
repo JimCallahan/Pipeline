@@ -783,27 +783,35 @@ class JColorEditorDialog
 	     "texture (" + path + ") does not match the expected size " + 
 	     "(" + size + "x" + size + ")!");
 	
-	if(bi.getType() != BufferedImage.TYPE_4BYTE_ABGR) 
-	  throw new IOException
-	    ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
-	     "not supported!");	    
-	
-	byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+        byte[] data = null;
+        switch(bi.getType()) {
+        case BufferedImage.TYPE_CUSTOM:
+          /* leave as-is: RGBA */ 
+          data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+          break;
 
-        /* swizzle in place: ABGR -> RGBA */ 
-        {
-          int i = 0;
-          for(i=0; (i+3)<data.length; i+=4) {
-            byte a = data[i];
-            byte b = data[i+1];
-            byte g = data[i+2];
-            byte r = data[i+3];
-            
-            data[i]   = r;
-            data[i+1] = g;
-            data[i+2] = b;
-            data[i+3] = a;
+        case BufferedImage.TYPE_4BYTE_ABGR:
+          { /* swizzle in place: ABGR -> RGBA */ 
+            data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+            int i = 0;
+            for(i=0; (i+3)<data.length; i+=4) {
+              byte a = data[i];
+              byte b = data[i+1];
+              byte g = data[i+2];
+              byte r = data[i+3];
+              
+              data[i]   = r;
+              data[i+1] = g;
+              data[i+2] = b;
+              data[i+3] = a;
+            }
           }
+          break;
+
+        default:
+          throw new IOException
+            ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
+             "not supported!");	    
         }
 
 	ByteBuffer buf = ByteBuffer.allocateDirect(data.length);

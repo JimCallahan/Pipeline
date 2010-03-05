@@ -225,28 +225,36 @@ class TextureMgr
           ("The image size (" + bi.getWidth() + "x" + bi.getHeight() + ") of " + 
            "texture (" + path + ") does not match the expected size " + 
            "(" + size + "x" + size + ")!");
+	    
+      byte[] data = null;      
+      switch(bi.getType()) {
+      case BufferedImage.TYPE_CUSTOM:
+        /* leave as-is: RGBA */ 
+        data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+        break;
 
-      if(bi.getType() != BufferedImage.TYPE_4BYTE_ABGR) 
+      case BufferedImage.TYPE_4BYTE_ABGR:
+        { /* swizzle in place: ABGR -> RGBA */ 
+          data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+          int i = 0;
+          for(i=0; (i+3)<data.length; i+=4) {
+            byte a = data[i];
+            byte b = data[i+1];
+            byte g = data[i+2];
+            byte r = data[i+3];
+            
+            data[i]   = r;
+            data[i+1] = g;
+            data[i+2] = b;
+            data[i+3] = a;
+          }
+        }
+        break;
+
+      default:
         throw new IOException
           ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
            "not supported!");	    
-	    
-      byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-      
-      /* swizzle in place: ABGR -> RGBA */ 
-      {
-        int i = 0;
-        for(i=0; (i+3)<data.length; i+=4) {
-          byte a = data[i];
-          byte b = data[i+1];
-          byte g = data[i+2];
-          byte r = data[i+3];
-          
-          data[i]   = r;
-          data[i+1] = g;
-          data[i+2] = b;
-          data[i+3] = a;
-        }
       }
 
       ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
@@ -426,23 +434,31 @@ class TextureMgr
 	     "texture (" + path + ") does not match the expected size " + 
 	     "(" + size + "x" + size + ")!");
 	
-	if(bi.getType() != BufferedImage.TYPE_4BYTE_ABGR) 
-	  throw new IOException
-	    ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
-	     "not supported!");	    
-	
-        /* swizzled copy: ABGR -> RGBA */ 
         byte[] data = null;
-        {
-          byte[] odata = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-          data = new byte[odata.length];          
-          int i = 0;
-          for(i=0; (i+3)<data.length; i+=4) {
-            data[i]   = odata[i+3];
-            data[i+1] = odata[i+2];
-            data[i+2] = odata[i+1];
-            data[i+3] = odata[i];
+        switch(bi.getType()) {
+        case BufferedImage.TYPE_CUSTOM:
+          /* leave as-is: RGBA */ 
+          data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+          break;
+            
+        case BufferedImage.TYPE_4BYTE_ABGR:
+          { /* swizzled copy: ABGR -> RGBA */ 
+            byte[] odata = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+            data = new byte[odata.length];          
+            int i = 0;
+            for(i=0; (i+3)<data.length; i+=4) {
+              data[i]   = odata[i+3];
+              data[i+1] = odata[i+2];
+              data[i+2] = odata[i+1];
+              data[i+3] = odata[i];
+            }
           }
+          break;
+
+        default:
+          throw new IOException
+            ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
+             "not supported!");	    
         }
 
 	ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
