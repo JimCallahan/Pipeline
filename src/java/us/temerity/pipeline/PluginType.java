@@ -63,7 +63,12 @@ enum PluginType
    * Plugins used to dynamically determine if jobs meet certain criteria necessary to run them
    * on certain machines.
    */
-  KeyChooser; 
+  KeyChooser, 
+
+  /**
+   * Plugins used to generate thumbnail images of nodes.
+   */
+  Thumbnail; 
 
 
 
