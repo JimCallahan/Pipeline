@@ -111,7 +111,7 @@ class JBuilderParamPanel
           //makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize + 50, 600));
         topBox.add(scroll);
         
-        this.addTab(null, sTabIcon, topBox, columnName);
+        this.addTab(columnName, sTabIcon, topBox, columnName);
         
         if (paramCount > 0 )
          pViewedPanels.put(col, false);
