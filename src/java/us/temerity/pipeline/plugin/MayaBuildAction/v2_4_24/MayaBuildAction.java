@@ -316,6 +316,12 @@ class MayaBuildAction
 
       /* the initial MEL script */ 
       writeInitialMEL(agenda, out);
+      
+      for (MayaBuildData mdata : getModelDataInDefaultNamespace()) {
+        out.write("{\n");
+        mdata.writeBuildMEL(out, false);
+        out.write("}\n");
+      }
 
       for (Entry<String, MayaBuildData> entry : modelScenes.entrySet()) {
         String prefixName = entry.getKey();

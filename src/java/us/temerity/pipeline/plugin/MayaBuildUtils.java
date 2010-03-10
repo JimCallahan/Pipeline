@@ -392,7 +392,13 @@ public class MayaBuildUtils
 
   /**
    * Scan all the sources that contain source parameters and populate the shared data 
-   * structures.
+   * structures. <p>
+   *
+   * Once this method has been called, the data can be accessed using the 
+   * {@link #getAnimDataByActualPrefix()}, {@link #getModelDataByActualPrefix()}, and 
+   * {@link #getProxyDataByActualPrefix()} methods.  If there are any model files in the 
+   * default namespace, they can be accessed with the 
+   * {@link #getModelDataInDefaultNamespace()} method.
    * 
    * @param agenda
    *   The agenda to be accomplished by the action.
@@ -410,6 +416,7 @@ public class MayaBuildUtils
     pAnimDataByActualPrefix = new TreeMap<String, MayaBuildData>();
     pModelDataByActualPrefix = new TreeMap<String, MayaBuildData>();
     pProxyDataByActualPrefix = new MappedLinkedList<String, MayaBuildData>();
+    pModelDataInDefaultNamespace = new LinkedList<MayaBuildData>();
     
     for (String sname : agenda.getSourceNames()) {
       if (hasSourceParams(sname)) {
@@ -417,6 +424,17 @@ public class MayaBuildUtils
           String actualPrefix = data.getActualPrefix();
           SceneType sceneType = data.getSceneType();
           BuildType buildType = data.getBuildType();
+          
+          if (actualPrefix == null) {
+            if (sceneType != SceneType.Model)
+              throw new PipelineException
+                ("A null namespace can only be used with a SceneType of Model.");
+            if (buildType == BuildType.Proxy)
+              throw new PipelineException
+                ("The default namespace cannot be used with a proxy.");
+            pModelDataInDefaultNamespace.add(data);
+            continue;
+          }
 
           if (sceneType == SceneType.Model) {
             if (buildType != BuildType.Proxy) {
@@ -836,6 +854,15 @@ public class MayaBuildUtils
     return pProxyDataByActualPrefix;
   }
   
+  /**
+   * Get the model data that is in the default namespace.
+   */
+  public LinkedList<MayaBuildData> 
+  getModelDataInDefaultNamespace()
+  {
+    return pModelDataInDefaultNamespace;
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -867,9 +894,47 @@ public class MayaBuildUtils
   /*   I N T E R N A L   C L A S S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Contains information about a single import, reference, or proxy that is going to be added
+   * to the built maya scene.
+   */
   protected
   class MayaBuildData
   {
+    /**
+     * Construct new data.
+     * 
+     * @param nodeName
+     *   The name of the source node being added.
+     * 
+     * @param scenePath
+     *   The working area relative path to the actual file the data represents.  This may have
+     *   a different prefix from the nodeName if this data represents a secondary sequence.
+     *   
+     * @param prefixName
+     *   The prefix name that was specified as a source parameter or <code>null</code> if no 
+     *   name was specified.
+     * 
+     * @param proxyName
+     *   The proxy name that was specifed as a source parameter or <code>null</code> if no 
+     *   proxy name was specified.
+     * 
+     * @param nameSpace
+     *   Whether this data should use maya's namespace setting.
+     * 
+     * @param sceneType
+     *   What sort of scene does this data represent.
+     * 
+     * @param buildType
+     *   What is the build type for this data.
+     *   
+     * @param instanceNumber
+     *   The instance number for this data or <code>-1</code> if this is not an instance.  If 
+     *   this is an instance, then the number must be between 0 and 9999.
+     *   
+     * @throws PipelineException
+     *   If any of the data passed in is not valid.
+     */
     public
     MayaBuildData
     (
@@ -1072,12 +1137,47 @@ public class MayaBuildUtils
       return pSceneType;
     }
     
+    /**
+     * Get the node name.
+     */
+    public String 
+    getNodeName()
+    {
+      return pNodeName;
+    }
+    
+    /**
+     * Get the scene path, relative to the working area.
+     */
+    public Path 
+    getScenePath()
+    {
+      return pScenePath;
+    }
+    
+    /**
+     * Get whether this data should use a namespace.
+     */
+    public boolean
+    getNamespace()
+    {
+      return pNamespace;
+    }
+    
+    /**
+     * Get the actual prefix that will be used when referencing or importing scenes.
+     * 
+     * @return
+     *   The computed prefix or <code>null</code> if this node is not using a prefix (which 
+     *   means it is either a reference in the default namespace or an import without any
+     *   prefix).
+     */
     public final String
     getActualPrefix()
       throws PipelineException
     {
       /* Get the default namespace out of the way. */
-      if (!pNamespace && pBuildType == BuildType.Reference)
+      if (!pNamespace)
         return null;
       StringBuffer toReturn = new StringBuffer();
       if (pPrefixName == null)
@@ -1179,4 +1279,5 @@ public class MayaBuildUtils
   protected TreeMap<String, MayaBuildData> pModelDataByActualPrefix;
   protected TreeMap<String, MayaBuildData> pAnimDataByActualPrefix;
   protected MappedLinkedList<String, MayaBuildData> pProxyDataByActualPrefix;
+  protected LinkedList<MayaBuildData> pModelDataInDefaultNamespace;
 }
