@@ -1150,25 +1150,6 @@ class PackageInfo
   public static final File sPluginMgrDir = new File("@PL_PLUGIN_DIRECTORY@"); 
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The hostname which runs the Pipeline thumbnail server <I>plthumbmgr(1)</I>. <P> 
-   *
-   * Set by the ThumbnailHostname customer profile entry.
-   */
-  //public static final String sThumbnailServer = "@PL_THUMBNAIL_SERVER@";
-  public static final String sThumbnailServer = "trex";
-  
-  /**
-   * The port number listened to by the Pipeline thumbnail manager daemon 
-   * <I>plthumbnailmgr(1)</I>. <P> 
-   *
-   * Set by the ThumbnailPort customer profile entry.
-   */
-  //public static final int sThumbnailPort = @PL_THUMBNAIL_PORT@;
-  public static final int sThumbnailPort = 12345;
-
 
   /*----------------------------------------------------------------------------------------*/
 
