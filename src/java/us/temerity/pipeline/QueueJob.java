@@ -428,8 +428,8 @@ class QueueJob
   /**
    * The id of the job group that this job belongs to.
    * <p> 
-   * This may be -1 for jobs which were submitted before job submission was changed to include 
-   * the job group. 
+   * This may be -1 for jobs which were submitted before job submission was changed to 
+   * include the job group. 
    */
   private long pJobGroupID;
 }
