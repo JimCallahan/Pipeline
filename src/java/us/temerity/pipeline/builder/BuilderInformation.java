@@ -49,10 +49,10 @@ class BuilderInformation
    *   the plui instance that is running the builder to log to its own Logging Panel? 
    * 
    * @param commandLineParams
-   *   A MultiMap of parameter values to assign to the Builders, in which the first keys is the
-   *   full {@link PrefixedName} of the the Builder or Namer the value is for and the remaining
-   *   keys are the parameter names, while the leaf values are the actual values to be 
-   *   assigned. In command line execution, this data structure is built automatically from 
+   *   A MultiMap of parameter values to assign to the Builders, in which the first keys is 
+   *   the full {@link PrefixedName} of the the Builder or Namer the value is for and the 
+   *   remaining keys are the parameter names, while the leaf values are the actual values to 
+   *   be assigned. In command line execution, this data structure is built automatically from 
    *   the command line flags.  When Builders are being invoked in other contexts, preset
    *   values can be passed into the Builder using this parameter.
    */

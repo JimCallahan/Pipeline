@@ -98,7 +98,37 @@ import us.temerity.pipeline.plugin.*;
  *   Name Space<BR>
  *   <DIV style="margin-left: 40px;">
  *     Whether Maya should create a namespace for the imported/referenced scene.
- *     This option is highly recomended to avoid name clashes.
+ *     This option is highly recommended to avoid name clashes.  There are four different 
+ *     ways that Name Space and Build Type interact.
+ *     <ul>
+ *     <li> Reference / True: Reference the scene with a namespace
+ *     <li> Reference / False: Reference the scene using the default namespace (essentially
+ *          not using any namespace at all).  This option can be dangerous if the scenes 
+ *          being referenced have name collisions in them.  This mode is primarily intended 
+ *          for referencing in a single procedurally generated scene into a scene where an
+ *          artist will be doing work.  For example, a preLight scene is constructed that 
+ *          contains namespaces for each character.  That scene is then referenced into a 
+ *          lighting scene using the default namespace.  So even though there are two 
+ *          levels of referencing and the preLight scene can be procedurally rebuilt at any
+ *          time, the lighting scene does not have an extra level of namespaces.
+ *      <li> Import / True: Import the scene with a namespace.
+ *      <li> Import / False: Import the scene and prepend the Prefix Name string to each 
+ *           node.  No namespace is created.
+ *   </DIV> <BR>
+ *   
+ *   Num Instances<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The number of instances of a model that should be created.  If this is set
+ *     to zero, then one instance will still be created, but it will not have
+ *     any numbering in the namespace.  For example, if the Prefix Name is 'rock',
+ *     setting Num Instances to '0' will result in a namespace of 'rock'.  Setting
+ *     it to '1' will result in rock-0001
+ *   </DIV> <BR>
+ *   
+ *   Instance Start<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The number for the first instance of a reference.  This allows numbered 
+ *     instances to start somewhere besides zero.
  *   </DIV> <BR>
  * 
  *   Prefix Name <BR>
@@ -108,6 +138,13 @@ import us.temerity.pipeline.plugin.*;
  *     generated Maya scene.  If unset, the namespace is based on the filename.  If this is
  *     an Animation scene, it is the namespace that the animation will be applied to.  In this
  *     case, the Animation will be given a namespace in the form PrefixName_a.
+ *   </DIV> <BR>
+ *   
+ *   Proxy Name <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The proxy name to be used for the referenced Maya scene.  If Build Type is set
+ *     to Reference, this will be the proxy tag for the reference.  If Build Type is set
+ *     to Import than this field will be ignored.
  *   </DIV> <BR>
  * </DIV> <P> 
  **/
@@ -184,6 +221,7 @@ class MayaAnimBuildAction
   /**
    * Does this action support per-source parameters?  
    */ 
+  @Override
   public boolean 
   supportsSourceParams()
   {
@@ -193,6 +231,7 @@ class MayaAnimBuildAction
   /**
    * Get an initial set of action parameters associated with an upstream node. 
    */ 
+  @Override
   public TreeMap<String,ActionParam>
   getInitialSourceParams()
   {
@@ -218,6 +257,8 @@ class MayaAnimBuildAction
     return params;
   }
   
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -242,6 +283,7 @@ class MayaAnimBuildAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
+  @Override
   public SubProcessHeavy
   prep
   (
