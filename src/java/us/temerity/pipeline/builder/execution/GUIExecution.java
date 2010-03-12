@@ -967,6 +967,7 @@ class GUIExecution
             JBooleanField field = 
               UIFactory.createTitledBooleanField(tpanel, firstKey, sTSize, vpanel, sVSize);
             UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+            field.setValue(true);
             fieldsMap.putValue(firstKey, field);
           }
           else {
@@ -978,6 +979,7 @@ class GUIExecution
               LinkedList<String> keys = new LinkedList<String>();
               keys.add(firstKey);
               keys.add(secondKey);
+              field.setValue(true);
               fieldsMap.putValue(keys, field);
             }
           }
