@@ -953,6 +953,20 @@ class BaseBuilder
   }
   
   /**
+   * Get the list of setup pass names in the order that they will be run in.
+   */
+  public final ArrayList<String>
+  getSetupPassNames()
+  {
+    ArrayList<String> toReturn = new ArrayList<String>();
+    
+    for (SetupPass pass : pSetupPasses)
+      toReturn.add(pass.getName());
+    
+    return toReturn;
+  }
+  
+  /**
    * Get all the Lock Bundles for the Builder.
    * 
    * @return
@@ -2599,6 +2613,12 @@ class BaseBuilder
     return set.add(value);
   }
   
+  /**
+   * Get all the param values in this builder and from all its sub-builders.
+   *  
+   * @throws PipelineException
+   *   If there is an error getting param values.
+   */
   public final MultiMap<String, String>
   getAllParamValues()
     throws PipelineException
@@ -2618,13 +2638,66 @@ class BaseBuilder
   {
     builder.getParamValues(toReturn);
     
-    for (BaseBuilder child : pSubBuilders.values()) {
+    for (BaseBuilder child : builder.pSubBuilders.values()) {
       child.getAllParamValuesHelper(child, toReturn);
     }
-    for (BaseNames names : pSubNames.values()) {
+    for (BaseNames names : builder.pSubNames.values()) {
       names.getParamValues(toReturn);
     }
   }
+  
+  /**
+   * Get the names of all the parameters in layouts in this builder and its child builders.
+   * <p>
+   * The value is a set of the parameter names.  These values may be mapped either one or two
+   * levels deep, depending on what sort of data they represent.  If the parameter are for a 
+   * builder, then they will be two levels deep, with the two levels of keys being the 
+   * fully-resolved builder name and the SetupPass name.  If they are namer parameters, then 
+   * it will only be a single level deep.
+   * 
+   * The returned structures are MultiMaps, which means they will retain their ordering.  The
+   * first SetupPass name in the map is the first SetupPass that the builder will run. 
+   * 
+   * @throws PipelineException
+   *   If there is an error getting param values.
+   */
+  public final MultiMap<String, TreeSet<String>>
+  getAllParamNames()
+    throws PipelineException
+  {
+    MultiMap<String, TreeSet<String>> toReturn = new MultiMap<String, TreeSet<String>>(); 
+    getAllParamNamesHelper(this, toReturn);
+    return toReturn;
+  }
+
+  private void
+  getAllParamNamesHelper
+  (
+    BaseBuilder builder,
+    MultiMap<String, TreeSet<String>> toReturn
+  )
+  {
+    String builderName = builder.getPrefixedName().toString();
+
+    int i = 1;
+    for (String setupPass : builder.getSetupPassNames()) {
+      LinkedList<String> keys = new LinkedList<String>();
+      Collections.addAll(keys, builderName, setupPass);
+      TreeSet<String> paramNames = builder.getPassParamNames(i);
+      toReturn.putValue(keys, paramNames);
+      i++;
+    }
+    for (BaseNames namer : builder.pSubNames.values()) {
+      String namerName = namer.getPrefixedName().toString();
+      TreeSet<String> paramNames = namer.getPassParamNames(1);
+      toReturn.putValue(namerName, paramNames);
+    }
+    for (BaseBuilder child : builder.pSubBuilders.values()) {
+      child.getAllParamNamesHelper(child, toReturn);
+    }
+  }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  E N U M E R A T I O N S                                                               */

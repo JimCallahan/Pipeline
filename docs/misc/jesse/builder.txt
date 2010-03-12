@@ -29,4 +29,7 @@ So each time a setup pass is run, the currentPass is bumped.  We do the check af
 
 
 
-Builder GUI Execution Path
+How to relaunch builders:
+
+So we want to ask the user about all the SetupPasses and namers and only use the params from certain ones.
+So, how do we do this?

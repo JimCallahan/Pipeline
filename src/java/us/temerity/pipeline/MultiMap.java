@@ -199,6 +199,15 @@ class MultiMap<K, V>
   
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the leaf value defined by the given keys.
+   * 
+   * @param keys
+   *   The list of keys to get the leaf value from.
+   *    
+   * @return
+   *   The value or <code>null</code> if there is not value.
+   */
   public V
   getValue
   (
@@ -208,6 +217,15 @@ class MultiMap<K, V>
     return getMap(keys).getLeafValue();
   }
   
+  /**
+   * Get the leaf value defined by the given key.
+   * 
+   * @param key
+   *   The key to get the leaf value from.
+   *    
+   * @return
+   *   The value or <code>null</code> if there is not value.
+   */
   public V 
   getValue
   (
@@ -248,6 +266,9 @@ class MultiMap<K, V>
   
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Remove the value that is defined by the list of keys.
+   */
   @SuppressWarnings("null")
   public V
   removeValue
@@ -276,7 +297,53 @@ class MultiMap<K, V>
     K key
   )
   {
-    return removeValue(listFromObject(key));  
+    return removeValue(listFromObject(key));
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Remove the entire branch that is described by the keys.
+   * 
+   * @param keys
+   *   The list of keys that represents the branch.
+   */
+  public void
+  removeBranch
+  (
+    List<K> keys  
+  )
+  {
+    validateKeys(keys);
+    
+    LinkedList<K> search = new LinkedList<K>(keys);
+    K removeValue = search.removeLast();
+    
+    MultiMap<K, V> old = this;
+    MultiMap<K, V> current = null;
+    for (K key : search) {
+      current = old.get(key);
+      if (current == null)
+        return;
+      old = current;
+    }
+    
+    old.remove(removeValue);
+  }
+  
+  /**
+   * Remove the entire branch that is described by the key.
+   * 
+   * @param key
+   *   The key that represents the branch.
+   */
+  public void
+  removeBranch
+  (
+    K key  
+  )
+  {
+    removeBranch(listFromObject(key));
   }
   
   /*----------------------------------------------------------------------------------------*/

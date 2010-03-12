@@ -195,7 +195,8 @@ class PassLayoutGroup
   /**
    * @return a map of all the entries in all the passes
    */
-  public SortedMap<Integer, String> getAllPassNames()
+  public SortedMap<Integer, String> 
+  getAllPassNames()
   {
     return Collections.unmodifiableSortedMap(pPassNames);
   }
@@ -208,7 +209,8 @@ class PassLayoutGroup
    * @return
    * 	The layout group
    */
-  public AdvancedLayoutGroup getPassLayout
+  public AdvancedLayoutGroup 
+  getPassLayout
   (
     Integer pass
   )
@@ -225,7 +227,8 @@ class PassLayoutGroup
    * @return
    * 	The layout group
    */
-  public String getPassName
+  public String 
+  getPassName
   (
     Integer pass
   )
@@ -243,7 +246,8 @@ class PassLayoutGroup
    * 	The layout group
    */
 
-  public void setPassLayout
+  public void 
+  setPassLayout
   (
     Integer pass,
     AdvancedLayoutGroup layout
@@ -267,7 +271,8 @@ class PassLayoutGroup
    * @param pass
    * 	The number of the pass.
    */
-  public int getNumberOfColumns
+  public int 
+  getNumberOfColumns
   (
     int pass
   )
@@ -290,12 +295,13 @@ class PassLayoutGroup
    * @return
    * 	
    */
-  private void validatePass(Integer pass)
+  private void 
+  validatePass(Integer pass)
   {
     if (pEntries.get(pass) == null)
       throw new IllegalArgumentException
-        ("There is no Layout associated with pass ("+pass+")" +
-         " in the AdvancedLayoutGroup ("+getName()+")");
+        ("There is no Layout associated with pass (" + pass + ")" +
+         " in the AdvancedLayoutGroup (" + getName() + ")");
   }
   
   
@@ -304,6 +310,7 @@ class PassLayoutGroup
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  @Override
   public void 
   toGlue
   ( 
@@ -320,6 +327,7 @@ class PassLayoutGroup
       encoder.encode("PassNames", pPassNames);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public void 
   fromGlue

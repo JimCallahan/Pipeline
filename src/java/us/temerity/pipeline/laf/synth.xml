@@ -13,6 +13,60 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="DefaultFont" type="name" key=".*"/>
+  
+  <!--  C M D L I N E   B U T T O N  -->
+
+  <style id="CMDLineButton"> 
+    <state>
+      <imagePainter path="CMDLineButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="CMDLineButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="CMDLineButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="CMDLineButton" type="name" key="CMDLineButton"/>
+  
+  <!--  R E L A U N C H   B U T T O N  -->
+
+  <style id="RelaunchButton"> 
+    <state>
+      <imagePainter path="RelaunchButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="RelaunchButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="RelaunchButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="RelaunchButton" type="name" key="RelaunchButton"/>
+  
+  <!--  R E L A U N C H   O P T I O N S   B U T T O N  -->
+
+  <style id="RelaunchOptionsButton"> 
+    <state>
+      <imagePainter path="RelaunchOptionsButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="RelaunchOptionsButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="RelaunchOptionsButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="RelaunchOptionsButton" type="name" key="RelaunchOptionsButton"/>
 
 
 

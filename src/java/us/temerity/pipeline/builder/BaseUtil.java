@@ -1467,7 +1467,8 @@ class BaseUtil
    * would be need to be feed to a BuilderInformation file if a builder was going to be rerun 
    * with the current parameters.
    * <p> 
-   * This map will not contain the values of constant parameters.
+   * This map will not contain the values of constant parameters or parameters which are 
+   * mapped by a parent builder.
    */
   protected final MultiMap<String, String>
   getParamValues
@@ -1487,11 +1488,17 @@ class BaseUtil
       pKeys.add(param.getName());
       if (param instanceof SimpleParam) {
         if (!(param instanceof ConstantStringUtilityParam)) {
-          Comparable value = ((SimpleParam) param).getValue();
-          String stringValue = null;
-          if (value != null)
-            stringValue = value.toString();
-          toReturn.putValue(pKeys, stringValue, true);
+          LinkedList<String> mapping = new LinkedList<String>(pKeys);
+          mapping.removeFirst();
+          ParamMapping pmapping = new ParamMapping(mapping.removeFirst(), mapping);
+          
+          if (!pParamMapping.keySet().contains(pmapping)) {
+            Comparable value = ((SimpleParam) param).getValue();
+            String stringValue = null;
+            if (value != null)
+              stringValue = value.toString();
+            toReturn.putValue(pKeys, stringValue, true);
+          }
         }
       }
       else if (param instanceof ComplexParam) {
@@ -1505,6 +1512,7 @@ class BaseUtil
     return toReturn;
   }
   
+  @SuppressWarnings("unchecked")
   private void 
   getParamValuesHelper
   (
@@ -1518,12 +1526,19 @@ class BaseUtil
       LinkedList<String> pKeys = new LinkedList<String>(keys);
       if (child instanceof SimpleParam) {
         if (!(child instanceof ConstantStringUtilityParam)) {
-          pKeys.add(((SimpleParam) child).getName());
-          Comparable value = ((SimpleParam) child).getValue();
-          String stringValue = null;
-          if (value != null)
-            stringValue = value.toString();
-          toReturn.putValue(pKeys, stringValue, true);
+          LinkedList<String> mapping = new LinkedList<String>(pKeys);
+          mapping.removeFirst();
+          ParamMapping pmapping = new ParamMapping(mapping.removeFirst(), mapping);
+
+          if (!pParamMapping.keySet().contains(pmapping)) {
+
+            pKeys.add(((SimpleParam) child).getName());
+            Comparable value = ((SimpleParam) child).getValue();
+            String stringValue = null;
+            if (value != null)
+              stringValue = value.toString();
+            toReturn.putValue(pKeys, stringValue, true);
+          }
         }
       }
       else if (child instanceof ComplexParam) {

@@ -2,6 +2,7 @@
 
 package us.temerity.pipeline.builder.execution;
 
+import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.*;
 import java.util.*;
@@ -11,6 +12,7 @@ import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
+import us.temerity.pipeline.MultiMap.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BaseBuilder.*;
 import us.temerity.pipeline.builder.ui.*;
@@ -125,6 +127,18 @@ class GUIExecution
       SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
     }
   }
+  
+  private void
+  handleRelaunchException
+  (
+    Throwable ex  
+  )
+  {
+    String header =
+      "An error occurred when trying to relaunch the builder.";
+    String message = Exceptions.getFullMessage(header, ex);
+    pLog.logAndFlush(Kind.Ops, Level.Severe, message);
+  }
 
   @Override
   public void 
@@ -162,7 +176,8 @@ class GUIExecution
     DisableQuit,
     EnableQuit,
     SetupPhaseEnable,
-    ConstructPhaseEnable
+    ConstructPhaseEnable,
+    EnableRelaunchButton
   }
   
   /**
@@ -191,26 +206,20 @@ class GUIExecution
     {
       String header = "Node Builder:  " + getBuilder().getNameUI();
       String cancel = "Abort";
-      String[][] extras = new String[4][2];
+      String[][] extras = new String[3][2];
       extras[0][0] = "Next";
       extras[0][1] = "next-pass";
       extras[1][0] = "Run Next";
       extras[1][1] = "run-next-pass";
       extras[2][0] = "Run All";
       extras[2][1] = "run-all-passes";
-      extras[3][0] = "Relaunch";
-      extras[3][1] = "relaunch";
-
 
       pTopPanel = new JBuilderTopPanel(getBuilder(), this);
-      JButton buttons[] = super.initUI(header, pTopPanel, null, null, extras, cancel, null);
+      JButton buttons[] = initUIHelper(header, pTopPanel, null, null, extras, cancel);
       pNextButton = buttons[0];
       pNextActionButton = buttons[1];
       pRunAllButton = buttons[2];
-      pRelaunchButton = buttons[3];
       
-      pRelaunchButton.setEnabled(false);
-
       pTopPanel.setupListeners();
 
       if (pTopPanel.allParamsReady())
@@ -220,6 +229,222 @@ class GUIExecution
 
       this.validate();
       this.pack();
+    }
+    
+    /**
+     * Initialize the common user interface components. <P> 
+     * 
+     * The button title arguments <CODE>confirm</CODE>, <CODE>apply</CODE> and 
+     * <CODE>cancel</CODE> may be <CODE>null</CODE> to omit the button(s) from the dialog. 
+     * 
+     * @param header
+     *   The text displayed in the dialog header. 
+     * 
+     * @param body
+     *   The component containing the body of the dialog.
+     * 
+     * @param confirm
+     *   The title of the confirm button.
+     * 
+     * @param apply
+     *   The title of the apply button.
+     * 
+     * @param extra
+     *   An array of title/action-command strings pairs used to create extra buttons.
+     * 
+     * @param cancel
+     *   The title of the cancel button.
+     * 
+     * @param extraHeader
+     *   Optional text which will be displayed right justified in the dialog header.  Can only 
+     *   be used if the header is not set to null.
+     * 
+     * @return 
+     *   The array of created extra buttons or <CODE>null</CODE> if extra was <CODE>null</CODE>.
+     */ 
+    @SuppressWarnings("incomplete-switch")
+    private JButton[]
+    initUIHelper
+    (
+     String header, 
+     JComponent body, 
+     String confirm, 
+     String apply, 
+     String[][] extra,
+     String cancel
+    ) 
+    {
+      setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+      addWindowListener(this);
+
+      JPanel root = new JPanel();
+      root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));  
+
+      if(header != null) {
+        JPanel panel = new JPanel();
+        panel.setName("DialogHeader");    
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        
+        {
+          JLabel label = new JLabel(header);
+
+          label.setName("DialogHeaderLabel");     
+
+          panel.add(label);         
+        }
+        
+        panel.add(Box.createHorizontalGlue());
+        
+        {
+          JButton btn = new JButton();          
+          pRelaunchButton = btn;
+          btn.setName("RelaunchButton");
+            
+          btn.setSelected(true);
+            
+          Dimension size = new Dimension(19, 19);
+          btn.setMinimumSize(size);
+          btn.setMaximumSize(size);
+          btn.setPreferredSize(size);
+            
+          btn.setActionCommand("relaunch");
+          btn.addActionListener(this);
+          
+          btn.setEnabled(false);
+            
+          panel.add(btn);
+        } 
+          
+        panel.add(Box.createRigidArea(new Dimension(10, 0)));
+        
+        {
+          JButton btn = new JButton();          
+          pRelaunchOptionsButton = btn;
+          btn.setName("RelaunchOptionsButton");
+            
+          btn.setSelected(true);
+            
+          Dimension size = new Dimension(19, 19);
+          btn.setMinimumSize(size);
+          btn.setMaximumSize(size);
+          btn.setPreferredSize(size);
+            
+          btn.setActionCommand("relaunch-options");
+          btn.addActionListener(this);
+          
+          btn.setEnabled(false);
+            
+          panel.add(btn);
+        }
+        
+        panel.add(Box.createRigidArea(new Dimension(10, 0)));
+        
+        {
+          JButton btn = new JButton();          
+          btn.setName("CMDLineButton");
+            
+          btn.setSelected(true);
+            
+          Dimension size = new Dimension(19, 19);
+          btn.setMinimumSize(size);
+          btn.setMaximumSize(size);
+          btn.setPreferredSize(size);
+            
+          btn.setActionCommand("print-cmdline");
+          btn.addActionListener(this);
+          
+          btn.setEnabled(true);
+            
+          panel.add(btn);
+        }
+        
+        root.add(panel);
+      }     
+      
+      if(body != null) 
+        root.add(body);
+
+      JButton[] extraBtns = null;
+      {
+        JPanel panel = new JPanel();
+        
+        String mac = "";
+        switch(PackageInfo.sOsType) {
+        case MacOS:
+          mac = "Mac";
+        }
+        panel.setName(mac + ((body != null) ? "DialogButtonPanel" : "DialogButtonPanel2"));
+
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        
+        panel.add(Box.createHorizontalGlue());
+        panel.add(Box.createRigidArea(new Dimension(20, 0)));
+
+        if(confirm != null) {
+          JButton btn = UIFactory.createConfirmButton(confirm, "confirm", this, null); 
+          pConfirmButton = btn;
+
+          panel.add(btn);   
+        }
+          
+        if((confirm != null) && (apply != null))
+          panel.add(Box.createRigidArea(new Dimension(20, 0)));
+       
+        if(apply != null) {
+          JButton btn = UIFactory.createDialogButton(apply, "apply", this, null); 
+          pApplyButton = btn;
+
+          panel.add(btn);   
+        }
+
+        if(((confirm != null) || (apply != null)) && (extra != null)) 
+          panel.add(Box.createRigidArea(new Dimension(20, 0)));
+
+        if(extra != null) {
+          extraBtns = new JButton[extra.length];
+
+          int wk;
+          for(wk=0; wk<extra.length; wk++) {
+            if(extra[wk] != null) {
+              JButton btn = 
+                UIFactory.createDialogButton(extra[wk][0], extra[wk][1], this, null); 
+              extraBtns[wk] = btn;
+
+              panel.add(btn);       
+            }
+
+            if(wk<(extra.length-1)) 
+              panel.add(Box.createRigidArea(new Dimension(20, 0)));            
+          }
+        }
+
+        if(((confirm != null) || (apply != null) || (extra != null)) && (cancel != null))
+          panel.add(Box.createRigidArea(new Dimension(40, 0)));
+       
+        if(cancel != null) {
+          JButton btn = UIFactory.createCancelButton(cancel, "cancel", this, null); 
+          pCancelButton = btn;
+
+          panel.add(btn);   
+        }
+        
+        panel.add(Box.createRigidArea(new Dimension(20, 0)));
+        panel.add(Box.createHorizontalGlue());
+        
+        root.add(panel);
+      }
+
+      setContentPane(root);
+
+      pack();
+
+      {
+        Rectangle bounds = getGraphicsConfiguration().getBounds();
+        setLocation(bounds.x + bounds.width/2 - getWidth()/2, 
+                    bounds.y + bounds.height/2 - getHeight()/2);              
+      }
+
+      return extraBtns;
     }
 
 
@@ -237,7 +462,6 @@ class GUIExecution
       pNextButton.setEnabled(false);
       pNextActionButton.setEnabled(false);
       pRunAllButton.setEnabled(false);
-      pRelaunchButton.setEnabled(false);
     }
 
     /**
@@ -262,9 +486,10 @@ class GUIExecution
     }
     
     private void
-    enableRelaunchButton()
+    enableRelaunchButtons()
     {
       pRelaunchButton.setEnabled(true);
+      pRelaunchOptionsButton.setEnabled(true);
     }
 
     private void
@@ -326,7 +551,11 @@ class GUIExecution
       else if(cmd.equals("cancel")) 
         doCancel();
       else if (cmd.equals("relaunch"))
-        relaunch();
+        doRelaunch();
+      else if (cmd.equals("relaunch-options"))
+        doRelaunchOptions();
+      else if (cmd.equals("print-cmdline"))
+        doCmdLineOptions();
     }
 
     /*-- TREE SELECTION LISTENER METHODS ---------------------------------------------------*/
@@ -428,9 +657,21 @@ class GUIExecution
     }
     
     private void
-    relaunch()
+    doRelaunch()
     {
       new RelaunchBuilderTask().start();
+    }
+    
+    private void
+    doRelaunchOptions()
+    {
+     new RelaunchBuilderOptionsTask().start(); 
+    }
+    
+    private void
+    doCmdLineOptions()
+    {
+      new DoCmdLineTask().start();
     }
 
     private
@@ -465,6 +706,9 @@ class GUIExecution
           break;
         case SetupPhaseEnable:
           setupPhaseEnableButtons();
+          break;
+        case EnableRelaunchButton:
+          enableRelaunchButtons();
           break;
         }
       }
@@ -597,7 +841,6 @@ class GUIExecution
         else
           setPhase(ExecutionPhase.Error);
         disableAllButtons();
-        enableRelaunchButton();
         makeQuitButton();
         enableCancelButton();
         pLog.logAndFlush(Kind.Ops, Level.Info, "Execution is now complete");
@@ -695,10 +938,88 @@ class GUIExecution
     }
 
     private
-    class ShowErrorTask
-    extends Thread
+    class RelaunchGUITask
+      extends Thread
     {
-      private ShowErrorTask
+      private 
+      RelaunchGUITask
+      (
+        MultiMap<String, TreeSet<String>> paramNames  
+      )
+      {
+        pParamNames = paramNames;
+      }
+      
+      @Override
+      public void 
+      run()
+      {
+        Box vbox = Box.createVerticalBox();
+        Component comps[] = UIFactory.createTitledPanels();
+        JPanel tpanel = (JPanel) comps[0];
+        JPanel vpanel = (JPanel) comps[1];
+        
+        MultiMap<String, JBooleanField> fieldsMap = new MultiMap<String, JBooleanField>();
+        
+        for (String firstKey : pParamNames.keySet()) {
+          MultiMap<String, TreeSet<String>> mmap = pParamNames.get(firstKey);
+          if (mmap.hasLeafValue()) {
+            JBooleanField field = 
+              UIFactory.createTitledBooleanField(tpanel, firstKey, sTSize, vpanel, sVSize);
+            UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+            fieldsMap.putValue(firstKey, field);
+          }
+          else {
+            for (String secondKey : mmap.keySet()) {
+              String title = firstKey + " - " + secondKey;
+              JBooleanField field = 
+                UIFactory.createTitledBooleanField(tpanel, title, sTSize, vpanel, sVSize);
+              UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+              LinkedList<String> keys = new LinkedList<String>();
+              keys.add(firstKey);
+              keys.add(secondKey);
+              fieldsMap.putValue(keys, field);
+            }
+          }
+        }
+        
+        vbox.add(comps[2]);
+        
+        vbox.add(UIFactory.createFiller(sTSize + sVSize));
+        
+        JScrollPane scroll;
+        {
+          scroll = new JScrollPane(vbox);
+
+          scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+          scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+          scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+
+          Dimension size = new Dimension(sTSize + sVSize, 500);
+          scroll.setMinimumSize(size);
+        }
+        JToolDialog dialog = 
+          new JToolDialog("Relaunch Options", scroll, "Relaunch");
+        dialog.setVisible(true);
+        if (dialog.wasConfirmed()) {
+          new RelaunchBuilderFinalTask(pParamNames, fieldsMap).start();
+        }
+        
+      }
+      
+      private static final int sVSize = 80;
+      private static final int sTSize = 500;
+      
+      private MultiMap<String, TreeSet<String>> pParamNames;
+    }
+    
+    private
+    class ShowErrorTask
+      extends Thread
+    {
+      private 
+      ShowErrorTask
       (
         String message  
       )
@@ -745,7 +1066,12 @@ class GUIExecution
     private JButton pNextButton;
     private JButton pNextActionButton;
     private JButton pRunAllButton;
+
+    /**
+     * Top panel button
+     */
     private JButton pRelaunchButton;
+    private JButton pRelaunchOptionsButton;
 
     private JBuilderTopPanel pTopPanel;
   }
@@ -817,6 +1143,8 @@ class GUIExecution
           SwingUtilities.invokeLater(pDialog.new NextParameterPassTask());
         else {
           SwingUtilities.invokeAndWait(pDialog.new AdjustButtonsTask(ButtonState.DisableAll));
+          SwingUtilities.invokeAndWait(
+            pDialog.new AdjustButtonsTask(ButtonState.EnableRelaunchButton));
           checkActions();
           buildSecondLoopExecutionOrder();
           SwingUtilities.invokeLater(pDialog.new PrepareConstructPassesTask());
@@ -1006,6 +1334,154 @@ class GUIExecution
   }
   
   private
+  class DoCmdLineTask
+    extends Thread
+  {
+   
+    @Override
+    public void 
+    run()
+    {
+      try {
+        BaseBuilder top = getBuilder();
+        MultiMap<String, String> allParams = top.getAllParamValues();
+        StringBuilder build = new StringBuilder();
+        
+        build.append("\n\n**************************\n");
+        for (String builderName : allParams.keySet()) {
+          build.append("--builder=");
+          build.append(builderName.replaceAll(" ", ""));
+          build.append(" ");
+          MultiMap<String, String> params = allParams.get(builderName); 
+          for (MultiMapEntry<String, String> entry : params.entries()) {
+            build.append("-");
+            for (String key : entry.getKeys()) {
+              build.append("-");
+              build.append(key);
+            }
+            build.append("=");
+            build.append(entry.getValue());
+            build.append(" ");
+          }
+        }
+        build.append("\n**************************\n\n");
+        top.getBuilderInformation().getLogMgr().logAndFlush
+          (Kind.Ops, Level.Info, 
+           build.toString());
+      }
+      catch (Exception ex) {
+        handleException(ex);
+      }
+      catch (LinkageError er ) {
+        handleException(er);
+      }
+    }
+  }
+  
+  private 
+  class RelaunchBuilderFinalTask
+    extends Thread
+  {
+
+    public 
+    RelaunchBuilderFinalTask
+    (
+      MultiMap<String, TreeSet<String>> paramNames,
+      MultiMap<String, JBooleanField> fieldsMap
+    )
+    {
+      pParamNames = paramNames;
+      pFieldsMap = fieldsMap;
+    }
+    
+    @Override
+    public void 
+    run()
+    {
+      BaseBuilder top = getBuilder();
+      Class<? extends BaseBuilder> builderClass = top.getClass();
+      Class args[] = {MasterMgrClient.class, QueueMgrClient.class, BuilderInformation.class};
+      BaseBuilder newBuilder = null;
+      try {
+        Constructor<? extends BaseBuilder> construct = builderClass.getConstructor(args);
+        MultiMap<String, String> params = top.getAllParamValues();
+        
+        for (String firstKey : pFieldsMap.keySet()) {
+          MultiMap<String, JBooleanField> fmap = pFieldsMap.get(firstKey);
+          if (fmap.hasLeafValue()) {
+            boolean use = fmap.getLeafValue().getValue();
+            if (!use) {
+              TreeSet<String> paramNames = pParamNames.getValue(firstKey);
+              for (String pName : paramNames) {
+                LinkedList<String> keys = new LinkedList<String>();
+                Collections.addAll(keys, firstKey, pName);
+                params.removeBranch(keys);
+              }
+            }
+          }
+          else {
+           for (String secondKey : fmap.keySet()) {
+             boolean use = fmap.getValue(secondKey).getValue();
+             if (!use) {
+               TreeSet<String> paramNames = pParamNames.get(firstKey).getValue(secondKey);
+               for (String pName : paramNames) {
+                 LinkedList<String> keys = new LinkedList<String>();
+                 Collections.addAll(keys, firstKey, pName);
+                 params.removeBranch(keys);
+               }
+             }
+           }
+          }
+        }
+        
+        
+        BuilderInformation info = top.getBuilderInformation();
+        BuilderInformation newInfo = 
+          new BuilderInformation(info.getLoggerName(), info.usingGui(), 
+                                 info.terminateAppOnQuit(), info.abortOnBadParam(), 
+                                 info.useBuilderLogging(), params);
+
+        MasterMgrClient mclient = new MasterMgrClient();
+        QueueMgrClient qclient = new QueueMgrClient();
+        newBuilder = construct.newInstance(mclient, qclient, newInfo);
+      }
+      catch (Exception ex) {
+        handleRelaunchException(ex);
+      }
+      catch (LinkageError er ) {
+        handleRelaunchException(er);
+      }
+      if (newBuilder != null)
+        new GUIExecution(newBuilder).run();
+    }
+    
+    private MultiMap<String, TreeSet<String>> pParamNames;
+    private MultiMap<String, JBooleanField> pFieldsMap;
+  }
+  
+  private 
+  class RelaunchBuilderOptionsTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      try {
+        BaseBuilder top = getBuilder();
+        MultiMap<String, TreeSet<String>> paramNames = top.getAllParamNames();
+        SwingUtilities.invokeLater(pDialog.new RelaunchGUITask(paramNames));
+      }
+      catch (Exception ex) {
+        handleRelaunchException(ex);
+      }
+      catch (LinkageError er ) {
+        handleRelaunchException(er);
+      }
+    }
+  }
+  
+  private
   class RelaunchBuilderTask
     extends Thread
   {
@@ -1030,10 +1506,10 @@ class GUIExecution
         newBuilder = construct.newInstance(mclient, qclient, newInfo);
       }
       catch (Exception ex) {
-        handleException(ex);
+        handleRelaunchException(ex);
       }
       catch (LinkageError er ) {
-        handleException(er);
+        handleRelaunchException(er);
       }
       if (newBuilder != null)
         new GUIExecution(newBuilder).run();
