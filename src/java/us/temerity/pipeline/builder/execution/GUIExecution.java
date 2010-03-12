@@ -306,6 +306,8 @@ class GUIExecution
           btn.setMinimumSize(size);
           btn.setMaximumSize(size);
           btn.setPreferredSize(size);
+          
+          btn.setToolTipText("Relaunch the builder with all the same parameter settings");
             
           btn.setActionCommand("relaunch");
           btn.addActionListener(this);
@@ -328,6 +330,10 @@ class GUIExecution
           btn.setMinimumSize(size);
           btn.setMaximumSize(size);
           btn.setPreferredSize(size);
+          
+          btn.setToolTipText
+            ("Relaunch the builder, but all the specification of which Parameters should be " +
+             "used in the relaunch.");
             
           btn.setActionCommand("relaunch-options");
           btn.addActionListener(this);
@@ -349,6 +355,9 @@ class GUIExecution
           btn.setMinimumSize(size);
           btn.setMaximumSize(size);
           btn.setPreferredSize(size);
+          
+          btn.setToolTipText
+            ("Print the command-line arguments for all the builder params to the log.");
             
           btn.setActionCommand("print-cmdline");
           btn.addActionListener(this);
