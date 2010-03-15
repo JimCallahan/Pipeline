@@ -43,7 +43,7 @@ class TemplateBuilder
     
     pInvokedCorrectly = false;
     
-    init(null, null, null, null, null, null);
+    init(null, null, null, null, null, null, null);
   }
   
   /**
@@ -88,6 +88,10 @@ class TemplateBuilder
    *   The list of optional branches with a boolean value which represents whether the branch 
    *   should be built.
    *   
+   * @param offsets
+   *   The list of frame offsets with the integer value that should be assigned to each 
+   *   offset.
+   *   
    * @throws PipelineException
    */
   public
@@ -102,7 +106,8 @@ class TemplateBuilder
     TreeMap<String, FrameRange> frameRanges,
     TreeMap<String, ActionOnExistence> aoeModes,
     TreeMap<String, TemplateExternalData> externals,
-    TreeMap<String, Boolean> optionalBranches
+    TreeMap<String, Boolean> optionalBranches,
+    TreeMap<String, Integer> offsets
   ) 
     throws PipelineException
   {
@@ -115,7 +120,8 @@ class TemplateBuilder
     
     pStartNode = startNode;
     pTemplateType = TemplateType.TaskSingle;
-    init(stringReplacements, contexts, frameRanges, aoeModes, externals, optionalBranches);
+    init(stringReplacements, contexts, frameRanges, aoeModes, externals, 
+         optionalBranches, offsets);
   }
   
   /**
@@ -160,6 +166,10 @@ class TemplateBuilder
    *   The list of optional branches with a boolean value which represents whether the branch 
    *   should be built.
    *   
+   * @param offsets
+   *   The list of frame offsets with the integer value that should be assigned to each 
+   *   offset.
+   *   
    * @throws PipelineException
    */
   public
@@ -174,7 +184,8 @@ class TemplateBuilder
     TreeMap<String, FrameRange> frameRanges,
     TreeMap<String, ActionOnExistence> aoeModes,
     TreeMap<String, TemplateExternalData> externals,
-    TreeMap<String, Boolean> optionalBranches
+    TreeMap<String, Boolean> optionalBranches,
+    TreeMap<String, Integer> offsets
   ) 
     throws PipelineException
   {
@@ -187,7 +198,8 @@ class TemplateBuilder
     
     pRootNodes = rootNodes;
     pTemplateType = TemplateType.TaskList;
-    init(stringReplacements, contexts, frameRanges, aoeModes, externals, optionalBranches);
+    init(stringReplacements, contexts, frameRanges, aoeModes, externals, 
+         optionalBranches, offsets);
   }
   
   /**
@@ -236,6 +248,10 @@ class TemplateBuilder
    *   The list of optional branches with a boolean value which represents whether the branch 
    *   should be built.
    *   
+   * @param offsets
+   *   The list of frame offsets with the integer value that should be assigned to each 
+   *   offset.
+   *   
    * @throws PipelineException
    */
   public
@@ -251,7 +267,8 @@ class TemplateBuilder
     TreeMap<String, FrameRange> frameRanges,
     TreeMap<String, ActionOnExistence> aoeModes,
     TreeMap<String, TemplateExternalData> externals,
-    TreeMap<String, Boolean> optionalBranches
+    TreeMap<String, Boolean> optionalBranches,
+    TreeMap<String, Integer> offsets
   ) 
     throws PipelineException
   {
@@ -266,7 +283,8 @@ class TemplateBuilder
     pRootNodes = rootNodes;
     pAllNodes = allNodes;
     
-    init(stringReplacements, contexts, frameRanges, aoeModes, externals, optionalBranches);
+    init(stringReplacements, contexts, frameRanges, aoeModes, externals, 
+         optionalBranches, offsets);
   }
   
   private void
@@ -277,7 +295,8 @@ class TemplateBuilder
     TreeMap<String, FrameRange> frameRanges,
     TreeMap<String, ActionOnExistence> aoeModes,
     TreeMap<String, TemplateExternalData> externals,
-    TreeMap<String, Boolean> optionalBranches
+    TreeMap<String, Boolean> optionalBranches,
+    TreeMap<String, Integer> offsets
   )
     throws PipelineException
   {
@@ -334,6 +353,12 @@ class TemplateBuilder
     }
     pLog.log(Kind.Ops, Level.Finest, 
       "The list of optional branches to apply to this template: " + pOptionalBranches);
+    
+    pOffsets = new TreeMap<String, Integer>();
+    if (offsets != null)
+      pOffsets.putAll(offsets);
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The list of offsets available to this template: " + pOffsets);
     
     {
       UtilityParam param = 
@@ -775,6 +800,8 @@ class TemplateBuilder
           TemplateLink link = entry.getValue();
           TemplateNode childNode = getTemplateNode(childName);
           boolean inTemplate = childNode.isInTemplate();
+          String offset = link.getOffset();
+          
           if (inTemplate && link.hasContexts())
             throw new PipelineException
               ("The node (" + nodeName + ") has context links pointing to (" + childName +"), " +
@@ -785,12 +812,34 @@ class TemplateBuilder
               ("The node (" + nodeName + ") has an ignore product annotation pointing to " +
                "(" + childName +"), but the upstream node is part of the template.  Only " +
                "nodes not in the current template can be ignored.");
+          
+          if (offset != null) {
+            LinkedList<TreeMap<String, String>> secReplacments;
+            if (inTemplate) {
+              secReplacments = allContextReplacements(childNode.getContexts());
+            }
+            else {
+              secReplacments = allContextReplacements(link.getContexts());
+            }
+            
+            for (TreeMap<String, String> replace : secReplacments ) {
+             String newOffset = stringReplace(offset, replace);
+             if (!pOffsets.containsKey(newOffset))
+               throw new PipelineException
+                 ("The node (" + nodeName +") has a frame offset pointing to link " +
+                  "(" + childName + ") whose name is (" + newOffset + ") after all context " +
+                  "replacements have been applied to it, yet no offset with that name was " +
+                  "passed into the template builder.");
+            }
+          }
+          
           if (!inTemplate) {
             pFoundContexts.addAll(link.getContexts());
             pFoundContexts.addAll(childNode.getSecondaryContexts());
           }
-          else
+          else {
             checkUpstreamNodes(childNode, checkOutBranchName, optionalCheckoutRoot);
+          }
         }
       } //if (node.isInTemplate())
       else {
@@ -1067,7 +1116,7 @@ class TemplateBuilder
         TemplateStage.getTemplateStage
           (node, getStageInformation(), pContext, pClient, 
            replace, contexts, range,
-           pInhibitCopyFiles, exD, pNodeDatabase);
+           pInhibitCopyFiles, exD, pOffsets, pNodeDatabase);
 
       allNodes.add(nodeName);
       
@@ -1424,6 +1473,7 @@ class TemplateBuilder
   private TreeMap<String, FrameRange> pFrameRanges;
   private TreeMap<String, TemplateExternalData> pExternals;
   private TreeMap<String, Boolean> pOptionalBranches;
+  private TreeMap<String, Integer> pOffsets;
   
   private us.temerity.pipeline.VersionID.Level pCheckInLevel;
   private String pCheckInMessage;

@@ -43,7 +43,8 @@ class TemplateStage
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     FrameRange templateRange,
-    TemplateExternalData external, 
+    TemplateExternalData external,
+    TreeMap<String, Integer> offsets,
     TreeMap<String, TemplateNode> nodeDatabase
   ) 
     throws PipelineException
@@ -62,6 +63,7 @@ class TemplateStage
     pActualRange = (templateRange != null) ? templateRange : range;
     pInhibitCopyFiles = inhibitCopy;
     pExternal = external;
+    pOffsets = offsets;
     
     init();
   }
@@ -82,6 +84,7 @@ class TemplateStage
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     FrameRange templateRange,
     TemplateExternalData external,
+    TreeMap<String, Integer> offsets,
     TreeMap<String, TemplateNode> nodeDatabase
   ) 
     throws PipelineException
@@ -100,6 +103,7 @@ class TemplateStage
     pActualRange = null;
     pInhibitCopyFiles = inhibitCopy;
     pExternal = external;
+    pOffsets = offsets;
     
     init();
   }
@@ -287,6 +291,9 @@ class TemplateStage
    *   The external file sequence to link this node to or <code>null</code> if there is no
    *   external sequence for this node.
    *   
+   * @param offsets
+   *   The frame offset values indexed by the name of the frame offset.
+   *   
    * @param nodeDirectory
    *   The directory of all the template nodes in the project.
    * 
@@ -308,6 +315,7 @@ class TemplateStage
     FrameRange range,
     boolean inhibitCopy,
     TemplateExternalData external,
+    TreeMap<String, Integer> offsets,
     TreeMap<String, TemplateNode> nodeDirectory
   ) 
     throws PipelineException
@@ -346,13 +354,13 @@ class TemplateStage
       FrameRange oldRange = priSeq.getFrameRange();
       return new TemplateStage
         (sourceNode, stageInfo, newContext, client, nodeName, oldRange, padding, suffix, 
-         editor, action, inhibitCopy, stringReplacements, contexts, range, external, 
+         editor, action, inhibitCopy, stringReplacements, contexts, range, external, offsets, 
          nodeDirectory);
     }
     else 
       return new TemplateStage
         (sourceNode, stageInfo, newContext, client, nodeName, suffix, editor, action, 
-         inhibitCopy, stringReplacements, contexts, range, external, nodeDirectory);
+         inhibitCopy, stringReplacements, contexts, range, external, offsets, nodeDirectory);
   }
   
 
@@ -523,9 +531,24 @@ class TemplateStage
       return null;
     }
     
+    TemplateLink tlink = pTemplateNode.getSource(oldSrc);
+    
+    Integer offset = null;
+    if (link.getRelationship() == LinkRelationship.OneToOne) {
+      offset = link.getFrameOffset();
+      String oName = tlink.getOffset();
+      if (oName != null ) {
+        oName = stringReplace(oName, replacements);
+        Integer newOffset = pOffsets.get(oName);
+        if (newOffset != null)
+          offset = newOffset;
+      }
+    }
+    
+    
     LinkMod newLink = 
       new LinkMod(newSrc, link.getPolicy(), 
-                  link.getRelationship(), link.getFrameOffset());
+                  link.getRelationship(), offset);
     pLog.log(Kind.Bld, Level.Fine, 
       "Linking source node (" + newSrc + ").");
     addLink(newLink);
@@ -1176,6 +1199,7 @@ class TemplateStage
   
   private TreeMap<String, String> pReplacements;
   private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
+  private TreeMap<String, Integer> pOffsets;
   
   private boolean pInhibitCopyFiles;
   

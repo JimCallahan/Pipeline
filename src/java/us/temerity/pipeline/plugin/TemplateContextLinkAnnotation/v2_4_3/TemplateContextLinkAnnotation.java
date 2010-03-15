@@ -45,7 +45,7 @@ class TemplateContextLinkAnnotation
       AnnotationParam param =
         new StringAnnotationParam
         (aLinkName,
-         "The name of the linked mode to apply the map to.",
+         "The name of the linked mode to apply the context to.",
          null);
       addParam(param);
     }

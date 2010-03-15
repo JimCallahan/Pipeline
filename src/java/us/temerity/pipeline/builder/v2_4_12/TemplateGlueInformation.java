@@ -42,6 +42,9 @@ class TemplateGlueInformation
     pFrameRanges = new MappedSet<String, String>();
     pFrameRangeDefaults = new TreeMap<String, FrameRange>();
     
+    pOffsets = new MappedSet<String, String>();
+    pOffsetDefaults = new TreeMap<String, Integer>();
+    
     pAOEModes = new TreeMap<String, ActionOnExistence>();
     
     pExternals = new MappedSet<String, String>();
@@ -66,6 +69,9 @@ class TemplateGlueInformation
     pContextParamNames = new DoubleMap<String, String, String>();
     
     pNodesInTemplate = new TreeSet<String>();
+    
+    pOffsets = new MappedSet<String, String>();
+    pOffsetDefaults = new TreeMap<String, Integer>();
     
     pFrameRanges = new MappedSet<String, String>();
     pFrameRangeDefaults = new TreeMap<String, FrameRange>();
@@ -114,6 +120,7 @@ class TemplateGlueInformation
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  
   /**
    * Return a list of the String replacements for the template. 
    */
@@ -122,6 +129,7 @@ class TemplateGlueInformation
   {
     return new ListSet<String>(pReplacements);
   }
+  
   
   /**
    * Set the list of of the String replacements for the template.
@@ -137,6 +145,7 @@ class TemplateGlueInformation
     else
       pReplacements = new ListSet<String>(replacements);
   }
+  
 
   /**
    *  Get the list of default values for the String replacements. 
@@ -173,8 +182,9 @@ class TemplateGlueInformation
     }
   }
   
+  
   /**
-   *  Get the list of alternate param names for the replacements. 
+   *  Get the map of alternate param names for the replacements. 
    */
   public final TreeMap<String, String> 
   getReplacementParamNames()
@@ -213,6 +223,9 @@ class TemplateGlueInformation
     }
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  
   /**
    * Return a list of the contexts and the string replacements for each context. 
    */
@@ -221,6 +234,7 @@ class TemplateGlueInformation
   {
     return new MappedListSet<String, String>(pContexts);
   }
+  
   
   /**
    * Set the list of the contexts and the string replacements for each context. 
@@ -238,6 +252,7 @@ class TemplateGlueInformation
     }
   }
   
+  
   /**
    * Get the default values for the String replacements in the template's contexts.
    */
@@ -246,6 +261,7 @@ class TemplateGlueInformation
   {
     return new MappedArrayList<String, TreeMap<String, String>>(pContextDefaults);
   }
+  
 
   /**
    * Set the list of default values for the String replacements for each context.
@@ -283,6 +299,9 @@ class TemplateGlueInformation
     }
   }
   
+  /**
+   *  Get the map of alternate param names for replacements in each context. 
+   */
   public final DoubleMap<String, String, String>
   getContextParamNames()
   {
@@ -290,7 +309,8 @@ class TemplateGlueInformation
   }
   
   /**
-   * Set the list of default values for the String replacements for each context.
+
+   * Set the map of alternate param names for replacements in each context.
    * <p>
    * All contexts and their values in the keyset must already exist in the list of
    * replacements for each context in this template.
@@ -329,6 +349,8 @@ class TemplateGlueInformation
     }
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
   
   /**
    * Get a list of nodes in the template.
@@ -338,6 +360,7 @@ class TemplateGlueInformation
   {
     return new TreeSet<String>(pNodesInTemplate);
   }
+  
   
   /**
    * Set the list of nodes to be built in the template.
@@ -354,6 +377,9 @@ class TemplateGlueInformation
       pNodesInTemplate = new TreeSet<String>(nodesInTemplate);
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  
   /**
    * Get a list of frame ranges in the template and the contexts associated with them.
    */
@@ -362,6 +388,7 @@ class TemplateGlueInformation
   {
     return new MappedSet<String, String>(pFrameRanges); 
   }
+  
   
   /**
    * Set the list of frame ranges in the template.
@@ -381,8 +408,9 @@ class TemplateGlueInformation
     }
   }
   
+  
   /**
-   * Set the list of frame ranges in the template.
+   * Set the list of frame ranges in the template and the contexts that affect them.
    */
   public final void
   setFrameRanges
@@ -395,6 +423,7 @@ class TemplateGlueInformation
     else
       pFrameRanges = new MappedSet<String, String>(frameRanges);
   }
+  
   
   /**
    *  Get the list of default values for the frame ranges. 
@@ -415,21 +444,84 @@ class TemplateGlueInformation
   public final void 
   setFrameRangeDefaults
   (
-    TreeMap<String, FrameRange> replacementDefaults
+    TreeMap<String, FrameRange> frameRangeDefaults
   )
   {
-    if (replacementDefaults == null)
+    if (frameRangeDefaults == null)
       pFrameRangeDefaults = new TreeMap<String, FrameRange>();
     else {
-      for (String key : replacementDefaults.keySet()) {
+      for (String key : frameRangeDefaults.keySet()) {
         if (!pFrameRanges.keySet().contains(key))
           throw new IllegalArgumentException
             ("The key (" + key + ") specified while setting the default " +
              "frame range values is not specified as valid key for this template"); 
       }
-      pFrameRangeDefaults = new TreeMap<String, FrameRange>(replacementDefaults);
+      pFrameRangeDefaults = new TreeMap<String, FrameRange>(frameRangeDefaults);
     }
   }
+  
+ /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get a list of offsets in the template and the contexts associated with them.
+   */
+  public final MappedSet<String, String>
+  getOffsets()
+  {
+    return new MappedSet<String, String>(pOffsets); 
+  }
+  
+  /**
+   * Set the list of offsets in the template and the contexts that affect them.
+   */
+  public final void
+  setOffsets
+  (
+    MappedSet<String, String> offsets  
+  )
+  {
+    if (offsets == null)
+      pOffsets = new MappedSet<String, String>();
+    else
+      pOffsets = new MappedSet<String, String>(offsets);
+  }
+  
+  /**
+   *  Get the list of default values for the offsets. 
+   */
+  public final TreeMap<String, Integer> 
+  getOffsetDefaults()
+  {
+    return new TreeMap<String, Integer>(pOffsetDefaults);
+  }
+  
+  /**
+   * Set the list of default values for the offsets.
+   * <p>
+   * All values in the keyset must already exist in the list of offsets for
+   * this template.
+   */
+  public final void 
+  setOffsetDefaults
+  (
+    TreeMap<String, Integer> offsetDefaults
+  )
+  {
+    if (offsetDefaults == null)
+      pOffsetDefaults = new TreeMap<String, Integer>();
+    else {
+      for (String key : offsetDefaults.keySet()) {
+        if (!pOffsets.containsKey(key))
+          throw new IllegalArgumentException
+            ("The key (" + key + ") specified while setting the default " +
+             "offset values is not specified as valid key for this template"); 
+      }
+      pOffsetDefaults = new TreeMap<String, Integer>(offsetDefaults);
+    }
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
   
   /**
    * Get the list of AOEModes and the default value for each one.
@@ -439,6 +531,7 @@ class TemplateGlueInformation
   {
     return new TreeMap<String, ActionOnExistence>(pAOEModes);
   }
+  
 
   /**
    * Set the AOE modes in the template.
@@ -454,6 +547,9 @@ class TemplateGlueInformation
     else
       pAOEModes = new TreeMap<String, ActionOnExistence>(aoes);
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
 
   /**
    * Get the list of optional branches and the default value for each one.
@@ -478,6 +574,8 @@ class TemplateGlueInformation
     else
       pOptionalBranches = new ListMap<String, Boolean>(ob);
   }  
+  
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Set the list of the externals for the template.
@@ -602,6 +700,19 @@ class TemplateGlueInformation
       if (o != null)
         pFrameRangeDefaults = (TreeMap<String, FrameRange>) o;
     }
+    
+    {
+      Object o = decoder.decode(aOffsets);
+      if (o != null)
+        pOffsets = (MappedSet<String, String>) o;
+    }
+    
+    {
+      Object o = decoder.decode(aOffsetDefaults);
+      if (o != null)
+        pOffsetDefaults = (TreeMap<String, Integer>) o;
+    }
+    
     {
       Object o = decoder.decode(aAOEModes);
       if (o != null)
@@ -647,6 +758,10 @@ class TemplateGlueInformation
       encoder.encode(aFrameRanges, pFrameRanges);
     if (!pFrameRangeDefaults.isEmpty())
       encoder.encode(aFrameRangeDefaults, pFrameRangeDefaults);
+    if (!pOffsets.isEmpty())
+      encoder.encode(aOffsets, pOffsets);
+    if (!pOffsetDefaults.isEmpty())
+      encoder.encode(aOffsetDefaults, pOffsetDefaults);
     if (!pContextParamNames.isEmpty())
       encoder.encode(aContextParamNames, pContextParamNames);
     if (!pAOEModes.isEmpty())
@@ -677,6 +792,8 @@ class TemplateGlueInformation
   public static final String aAOEModes = "AOEModes";
   public static final String aExternals = "Externals";
   public static final String aOptionalBranches = "OptionalBranches";
+  public static final String aOffsets = "Offsets";
+  public static final String aOffsetDefaults = "OffsetDefaults";
   
   
   
@@ -693,6 +810,9 @@ class TemplateGlueInformation
   
   private MappedSet<String, String> pFrameRanges;
   private TreeMap<String, FrameRange> pFrameRangeDefaults;
+  
+  private MappedSet<String, String> pOffsets;
+  private TreeMap<String, Integer> pOffsetDefaults;
   
   private TreeMap<String, ActionOnExistence> pAOEModes;
   

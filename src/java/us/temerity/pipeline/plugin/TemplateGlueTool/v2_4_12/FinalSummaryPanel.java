@@ -48,6 +48,11 @@ class FinalSummaryPanel
     createFrameRangeTable(vbox);
     
     vbox.add(Box.createVerticalStrut(12));
+    vbox.add(UIFactory.createPanelLabel("The following offsets were found"));
+    vbox.add(Box.createVerticalStrut(8));
+    createOffsetTable(vbox);
+    
+    vbox.add(Box.createVerticalStrut(12));
     vbox.add(UIFactory.createPanelLabel("The following AoE modes were found"));
     vbox.add(Box.createVerticalStrut(8));
     createAoEModeTable(vbox);
@@ -144,6 +149,25 @@ class FinalSummaryPanel
     all.addAll(newG);
     
     makeTable(vbox, inTemplate, old, newG, all, "Range Name");
+  }
+  
+  private void 
+  createOffsetTable
+  (
+    JPanel vbox
+  )
+  {
+    Set<String> inTemplate = pScan.getOffsets().keySet();
+    TreeSet<String> old = new TreeSet<String>();
+    if (pOldSettings != null)
+      old.addAll(pOldSettings.getOffsets().keySet());
+    Set<String> newG = pNewSettings.getOffsets().keySet();
+    
+    TreeSet<String> all = new TreeSet<String>(inTemplate);
+    all.addAll(old);
+    all.addAll(newG);
+    
+    makeTable(vbox, inTemplate, old, newG, all, "Offset Name");
   }
   
   private void 

@@ -14,19 +14,37 @@ import java.util.*;
 public 
 class TemplateLink
 {
+  /**
+   * Constructor.
+   * 
+   * @param targetName
+   *   The name of source node in the link.
+   *   
+   * @param contexts
+   *   The set of contexts that apply to this links.
+   *   
+   * @param ignorable
+   *   Whether the link is ignorable.
+   *   
+   * @param offset
+   *   The name of the offset assigned to this link or <code>null</code> if there is no 
+   *   offset.
+   */
   public 
   TemplateLink
   (
     String targetName,
     Set<String> contexts,
-    boolean ignorable
+    boolean ignorable,
+    String offset
   )
   {
-    pTargetName = targetName;
+    pSourceName = targetName;
     pContexts = new TreeSet<String>();
     if (contexts != null)
       pContexts.addAll(contexts);
     pIgnorable = ignorable;
+    pOffset = offset;
   }
 
 
@@ -36,12 +54,12 @@ class TemplateLink
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the target node.
+   * Get the source node.
    */
   public final String
-  getTargetName()
+  getSourceName()
   {
-    return pTargetName;
+    return pSourceName;
   }
   
   /**
@@ -70,16 +88,27 @@ class TemplateLink
   {
     return pIgnorable;
   }
-
   
+  /**
+   * Get the name of the offset associated with this link.
+   */
+  public final String
+  getOffset()
+  {
+    return pOffset;
+  }
+  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  private String pTargetName;
+  private String pSourceName;
 
   private TreeSet<String> pContexts;
   
   private boolean pIgnorable;
+  
+  private String pOffset;
 }

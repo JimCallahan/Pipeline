@@ -294,6 +294,28 @@ class JTemplateGluePanel
           pParentDialog.enableButtons();
           return;
         }
+        
+        JPanel panel = new OffsetsPanel(pParentDialog, pScan, pOldSettings, pContexts.keySet());
+        pPanels.put(nextStage, panel);
+        pSettingsPanel.add(panel, nextStage.toString());
+        pSettingsLayouts.show(pSettingsPanel, nextStage.toString());
+        break;
+      }
+    case Offsets:
+      {
+        try {
+          OffsetsPanel panel = (OffsetsPanel) pPanels.get(pCurrentStage);
+          pOffsets = panel.getOffsets();
+          pOffsetsDefaults = panel.getOffsetDefaults();
+        }
+        catch(PipelineException ex) {
+          JErrorDialog edialog = new JErrorDialog(pParentDialog);
+          edialog.setMessage("Problem detected", ex.getMessage());
+          edialog.setVisible(true);
+          pParentDialog.enableButtons();
+          return;
+        }
+        
         JPanel panel = new ExternalsPanel(pParentDialog, pScan, pOldSettings, pContexts.keySet());
         pPanels.put(nextStage, panel);
         pSettingsPanel.add(panel, nextStage.toString());
@@ -322,6 +344,8 @@ class JTemplateGluePanel
         info.setAOEModes(pAOEModes);
         info.setExternals(pExternals);
         info.setOptionalBranches(pOptionalBranches);
+        info.setOffsets(pOffsets);
+        info.setOffsetDefaults(pOffsetsDefaults);
         
         pNewSettings = info;
         
@@ -441,6 +465,9 @@ class JTemplateGluePanel
   
   private MappedSet<String, String> pFrameRanges;
   private TreeMap<String, FrameRange> pFrameRangeDefaults;
+  
+  private MappedSet<String, String> pOffsets;
+  private TreeMap<String, Integer> pOffsetsDefaults;
   
   private TreeMap<String, ActionOnExistence> pAOEModes;
   

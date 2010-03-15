@@ -50,6 +50,7 @@ class TemplateNetworkScan
     pContexts             = new MappedSet<String, String>();
     pAoEModes             = new DoubleMappedSet<String, ActionOnExistence, String>();
     pFrameRanges          = new MappedSet<String, String>();
+    pOffsets              = new MappedSet<String, String>();
     pExternals            = new MappedSet<String, String>();
     pConditionalBuilds    = new TreeMap<String, String>();
     pCheckpoints          = new TreeSet<String>();
@@ -153,6 +154,12 @@ class TemplateNetworkScan
   getFrameRanges()
   {
     return pFrameRanges;
+  }
+  
+  public final MappedSet<String, String>
+  getOffsets()
+  {
+    return pOffsets;
   }
   
   /**
@@ -282,6 +289,10 @@ class TemplateNetworkScan
         else if (aname.equals("TemplateExternal")) {
           String eName = (String) annot.getParamValue(aExternalName);
           pExternals.put(eName, nodeName);
+        }
+        else if (aname.startsWith("TemplateOffset")) {
+          String offsetName = (String) annot.getParamValue(aOffsetName);
+          pOffsets.put(offsetName, nodeName);
         }
         else if (aname.equals("TemplateOptionalBranch")) {
           String oname = (String) annot.getParamValue(aOptionName);
@@ -603,6 +614,7 @@ class TemplateNetworkScan
   private static final String aOptionName        = "OptionName";
   private static final String aOrder             = "Order";
   private static final String aRangeName         = "RangeName";
+  private static final String aOffsetName        = "OffsetName";
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -667,6 +679,11 @@ class TemplateNetworkScan
    * <FrameRangeName,ListOfTemplateNodes>
    */
   private MappedSet<String, String> pFrameRanges;
+  
+  /**
+   * <OffestName,ListOfTemplateNodes>
+   */
+  private MappedSet<String, String> pOffsets;
   
   /**
    * <ExternalName,ListOfTemplateNodes>

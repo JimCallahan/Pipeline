@@ -17,6 +17,7 @@ enum TemplateGlueStage
   Contexts,
   ContextDefaults,
   FrameRanges,
+  Offsets,
   Externals,
   FinalSummary;
 
@@ -31,6 +32,8 @@ enum TemplateGlueStage
       return "String Replacements";
     case FrameRanges:
       return "Frame Ranges";
+    case Offsets:
+      return "Offsets";
     case AoEModes:
       return "AoE Modes";
     case OptionalBranches:

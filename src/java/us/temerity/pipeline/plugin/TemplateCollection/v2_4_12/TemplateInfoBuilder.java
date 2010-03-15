@@ -474,6 +474,12 @@ class TemplateInfoBuilder
           new FrameRangeInfoBuilder(pClient, pQueue, getBuilderInformation());
         addSubBuilder(builder);
       }
+      
+      {
+        BaseBuilder builder = 
+          new OffsetInfoBuilder(pClient, pQueue, getBuilderInformation());
+        addSubBuilder(builder);
+      }
     }
     private static final long serialVersionUID = -9032784839771765219L;
   }
@@ -510,6 +516,13 @@ class TemplateInfoBuilder
         FrameRangeUtilityParam param = pFrameRangeParams.get(frameRange);
         pFrameRanges.put(frameRange, param.getFrameRangeValue());
       }
+      
+      pOffsets = new TreeMap<String, Integer>();
+      for (String offset : pOffsetParams.keySet()) {
+        IntegerUtilityParam param = pOffsetParams.get(offset);
+        pOffsets.put(offset, param.getIntegerValue());
+      }
+      
     }
     
     @Override
@@ -522,7 +535,7 @@ class TemplateInfoBuilder
         TemplateBuilder builder = 
           new TemplateBuilder(pClient, pQueue, getBuilderInformation(),
             pTemplateStartNode, pReplacements, pContexts, pFrameRanges, pAOEModes,
-            pExternals, pOptionalBranch);
+            pExternals, pOptionalBranch, pOffsets);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
@@ -534,7 +547,7 @@ class TemplateInfoBuilder
         TemplateBuilder builder = 
           new TemplateBuilder(pClient, pQueue, getBuilderInformation(),
             pTemplateInfoMod.getSourceNames(), nodes, pReplacements, pContexts, pFrameRanges, 
-            pAOEModes, pExternals, pOptionalBranch);
+            pAOEModes, pExternals, pOptionalBranch, pOffsets);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
@@ -875,6 +888,12 @@ class TemplateInfoBuilder
               "The pass which gets the information about the frame ranges");
       }
 
+      
+      
+      /*------------------------------------------------------------------------------------*/
+      /*   S T A T I C   I N T E R N A L S                                                  */
+      /*------------------------------------------------------------------------------------*/
+
       private static final long serialVersionUID = 5780601413019410311L;
     }
 
@@ -893,6 +912,102 @@ class TemplateInfoBuilder
     /*--------------------------------------------------------------------------------------*/
 
     private TreeSet<String> pAllFrameRanges;
+  }
+  
+  private
+  class OffsetInfoBuilder
+    extends BaseBuilder
+  {
+    private
+    OffsetInfoBuilder
+    (
+      MasterMgrClient mclient,
+      QueueMgrClient qclient,
+      BuilderInformation builderInformation
+    ) 
+      throws PipelineException
+    {
+      super("OffsetInfo", 
+            "Builder to get information about all the offsets being used.",
+            mclient, qclient, builderInformation);
+      
+      pOffsetParams = new TreeMap<String, IntegerUtilityParam>();
+      
+      pAllOffsets = new TreeSet<String>();
+      for (Entry<String, TreeSet<String>> entry : 
+           pTemplateGlueInfo.getOffsets().entrySet()) {
+        TreeSet<String> contexts = entry.getValue();
+        if (contexts != null)
+          applyContexts(entry.getKey(), contexts, new TreeMap<String, String>(), 
+                        pContexts, pAllOffsets);
+        else 
+          pAllOffsets.add(entry.getKey());
+      }
+
+      AdvancedLayoutGroup layout = new AdvancedLayoutGroup
+        ("Offset Information", "Offsets", "Offset Information", true);
+      
+      LayoutGroup group = new LayoutGroup("Offsets", "The offsets", true);
+      for (String key : pAllOffsets) {
+        IntegerUtilityParam param =
+          new IntegerUtilityParam
+          (key,
+           "The offset",
+           pTemplateGlueInfo.getOffsetDefaults().get(key)
+          );
+        addParam(param);
+        pOffsetParams.put(key, param);
+        
+        group.addEntry(key);
+      }
+      layout.addEntry(1, aUtilContext);
+      layout.addEntry(1, null);
+      layout.addEntry(1, aActionOnExistence);
+      layout.addEntry(1, aReleaseOnError);
+      
+      layout.addSubGroup(1, group);
+      
+      noDefaultConstructPasses();
+      
+      addSetupPass(new OffsetInformationPass());
+      
+      PassLayoutGroup pLayout = new PassLayoutGroup(layout.getName(), layout);
+      setLayout(pLayout);
+    }
+    
+    private
+    class OffsetInformationPass
+      extends SetupPass
+    {
+      private 
+      OffsetInformationPass()
+      {
+        super("OffsetInformation", 
+              "The pass which gets the information about the offsets");
+      }
+      
+      /*------------------------------------------------------------------------------------*/
+      /*   S T A T I C   I N T E R N A L S                                                  */
+      /*------------------------------------------------------------------------------------*/
+      
+      private static final long serialVersionUID = 260763496064551166L;
+    }
+
+
+    
+    /*--------------------------------------------------------------------------------------*/
+    /*   S T A T I C   I N T E R N A L S                                                    */
+    /*--------------------------------------------------------------------------------------*/
+
+    private static final long serialVersionUID = 1522070749977033835L;
+    
+    
+    
+    /*--------------------------------------------------------------------------------------*/
+    /*  I N T E R N A L S                                                                   */
+    /*--------------------------------------------------------------------------------------*/
+
+    private TreeSet<String> pAllOffsets;
   }
   
   
@@ -934,7 +1049,11 @@ class TemplateInfoBuilder
   
   private TreeMap<String, FrameRange> pFrameRanges;
   
+  private TreeMap<String, Integer> pOffsets;
+  
   private TreeMap<String, FrameRangeUtilityParam> pFrameRangeParams;
+  
+  private TreeMap<String, IntegerUtilityParam> pOffsetParams;
   
   private TreeMap<String, ActionOnExistence> pAOEModes;
   

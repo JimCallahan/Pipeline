@@ -66,6 +66,8 @@ class TemplateNode
     MappedSet<String, String> contextLinkValues = new MappedSet<String, String>();
     TreeSet<String> ignorableProductValues = new TreeSet<String>();
     
+    TreeMap<String, String> offsets = new TreeMap<String, String>();
+    
     Set<String> sourceNames = mod.getSourceNames();
     
     log.log(Kind.Bld, Level.Finest, 
@@ -143,6 +145,15 @@ class TemplateNode
           pNodesToUnlink.add(unlink);
           log.log(Kind.Bld, Level.Finest, 
                   "Node has an Unlink annotation pointing to (" + unlink +").");
+        }
+        else if (aName.startsWith("TemplateOffset")) {
+          String offset = (String) annot.getParamValue(aOffsetName);
+          String linkName = (String) annot.getParamValue(aLinkName);
+          checkLink(linkName, sourceNames, "TemplateOffset");
+          offsets.put(linkName, offset);
+          log.log(Kind.Bld, Level.Finest, 
+            "Node has an Offset annotation named (" + offset +") pointing to " +
+            "(" + linkName+").");
         }
         else if (aName.equals("TemplateOptionalBranch")) {
           pOptionalBranch = (String) annot.getParamValue(aOptionName); 
@@ -242,7 +253,8 @@ class TemplateNode
       for (String linkName : sourceNames) {
         boolean ignorable = ignorableProductValues.contains(linkName);
         TreeSet<String> contextLinks = contextLinkValues.get(linkName);
-        TemplateLink link = new TemplateLink(linkName, contextLinks, ignorable);
+        String offset = offsets.get(linkName);
+        TemplateLink link = new TemplateLink(linkName, contextLinks, ignorable, offset);
         pUpstreamLinks.put(linkName, link);
       }
     }
@@ -953,6 +965,7 @@ class TemplateNode
   public static final String aIntermediate      = "Intermediate";
   public static final String aModifyFiles       = "ModifyFile";
   public static final String aSeqName           = "SeqName";
+  public static final String aOffsetName        = "OffsetName";
   
   
   
