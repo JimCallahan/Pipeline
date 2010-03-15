@@ -119,7 +119,7 @@ class TemplateStage
    * <li>  Copy and modify the annotations.
    * </ul>
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "deprecation" })
   private void 
   init() 
     throws PipelineException
@@ -252,6 +252,13 @@ class TemplateStage
         }
         addVersionAnnotation(annotName, annot);
       }
+    }
+    
+    {
+      JobReqs reqs = pSourceMod.getJobRequirements();
+      addSelectionKeys(new TreeSet<String>(reqs.getSelectionKeys()));
+      addLicenseKeys(new TreeSet<String>(reqs.getLicenseKeys()));
+      addHardwareKeys(new TreeSet<String>(reqs.getHardwareKeys()));
     }
   }
   
