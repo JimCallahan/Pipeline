@@ -12,6 +12,7 @@ import javax.swing.event.*;
 import javax.swing.tree.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BaseBuilder.*;
 import us.temerity.pipeline.builder.execution.GUIExecution.*;
@@ -25,7 +26,7 @@ import us.temerity.pipeline.ui.*;
 public 
 class JBuilderTopPanel
   extends JPanel
-  implements ComponentListener, TreeSelectionListener, ChangeListener
+  implements ComponentListener, TreeSelectionListener, ChangeListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -143,14 +144,68 @@ class JBuilderTopPanel
     }
 
     {
+      LogMgr logMgr = pBuilder.getBuilderInformation().getLogMgr();
+      
+      Box hbox = Box.createHorizontalBox();
+      
+      Box vbox = Box.createVerticalBox();
+      {
+        Box controlBox = Box.createHorizontalBox();
+        
+        controlBox.add(Box.createHorizontalGlue());
+        controlBox.add(Box.createRigidArea(new Dimension(15, 0)));
+
+        Kind kinds[] = {Kind.Bld, Kind.Ops, Kind.Net, Kind.Sub};
+        
+        ArrayList<String> values = new ArrayList<String>();
+        for(LogMgr.Level level : LogMgr.Level.all())
+          values.add(level.toString());
+        
+        boolean first = true;
+        for(LogMgr.Kind kind : kinds) {
+          if(!first) 
+            controlBox.add(Box.createRigidArea(new Dimension(15, 0)));
+          first = false;
+        
+          {
+            JLabel label = 
+              UIFactory.createFixedLabel
+              (kind.toString().toUpperCase() + ":", 30, JLabel.RIGHT); 
+            
+            controlBox.add(label);
+          }
+          
+          controlBox.add(Box.createRigidArea(new Dimension(10, 0)));
+          
+          {
+            JCollectionField field = 
+              UIFactory.createCollectionField(values, 120);
+
+            field.setSelected(logMgr.getLevel(kind).toString());
+            
+            field.setMaximumSize(new Dimension(120, 19));
+            field.addActionListener(this);
+            field.setActionCommand("level-changed:" + kind);
+            
+            controlBox.add(field);
+          }
+        }
+        controlBox.add(Box.createRigidArea(new Dimension(15, 0)));
+        controlBox.add(Box.createHorizontalGlue());
+        
+        vbox.add(controlBox);
+      }
+      
+      
       /* Creates the text area for logging. */
       {
 	pLogArea = new JTextArea(0, 0);
 	pLogArea.setWrapStyleWord(true);
 	pLogArea.setEditable(false);
 	pLogArea.setLineWrap(true);
-	if (pBuilder.useBuilderLogging())
-	  pBuilder.getBuilderInformation().getLogMgr().logToTextArea(pLogArea);
+	if (pBuilder.useBuilderLogging()) {
+	  logMgr.logToTextArea(pLogArea);
+	}
       }
       
       if (pBuilder.useBuilderLogging()) {
@@ -162,10 +217,14 @@ class JBuilderTopPanel
            new Dimension(300, 100), 
            new Dimension(600, 250), 
            null);
-
+        
+        vbox.add(Box.createVerticalStrut(8));
+        vbox.add(scroll);
+        hbox.add(vbox);
+        
         //scroll.addComponentListener(this);
         rightPanel.add(Box.createVerticalStrut(14));
-        rightPanel.add(scroll);
+        rightPanel.add(hbox);
       }
     }
     {
@@ -564,6 +623,47 @@ class JBuilderTopPanel
     }
   }
   
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    String cmd = e.getActionCommand();
+    if(cmd.startsWith("level-changed:")) 
+      doLevelChanged((JCollectionField) e.getSource(), cmd.substring(14));
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+
+  /**
+   * Logging level changed.
+   */ 
+  private void 
+  doLevelChanged
+  (
+   JCollectionField field, 
+   String kindStr
+  ) 
+  {
+    String selected = field.getSelected();
+    if(selected != null) {
+      LogMgr.Kind kind = LogMgr.Kind.valueOf(LogMgr.Kind.class, kindStr);
+      LogMgr.Level level = LogMgr.Level.valueOf(LogMgr.Level.class, selected);
+      pBuilder.getBuilderInformation().getLogMgr().setLevel(kind, level);
+    }
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -571,6 +671,12 @@ class JBuilderTopPanel
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = 634240817965602649L;
+
+  
+  /**
+   * The name of the empty Card placed in the Card Layout upon initialization.
+   */
+  private static final String aEmpty = "Empty";
   
   
   
@@ -657,12 +763,4 @@ class JBuilderTopPanel
    * The parent dialog this is running in.
    */
   private JBuilderDialog pParent;
-  
-  /**
-   * The name of the empty Card placed in the Card Layout upon initialization.
-   */
-  private static final String aEmpty = "Empty";
-  
-  private static final Icon sTabIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
 }
