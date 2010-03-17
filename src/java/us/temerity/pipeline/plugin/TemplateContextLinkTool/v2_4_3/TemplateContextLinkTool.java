@@ -26,10 +26,10 @@ public
 class TemplateContextLinkTool
   extends TaskToolUtils
 {
-
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
+
   public 
   TemplateContextLinkTool()
   {
