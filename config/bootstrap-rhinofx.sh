@@ -1,4 +1,4 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap-suse10.1-32bit.sh \
-  rhinofx 080919 43000 43100
+../../src/pipeline/config/bootstrap-centos4.8-32bit.sh \
+  rhinofx 100312 43000 43100
