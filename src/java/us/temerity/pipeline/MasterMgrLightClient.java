@@ -1154,9 +1154,6 @@ interface MasterMgrLightClient
    * @param dir
    *   The directory in which to place the JAR archive created.
    *
-   * @param compress
-   *   Whether to compress the files in the generated JAR archive.
-   *
    * @return
    *   The full file system path of the created JAR archive.
    */ 
@@ -1169,8 +1166,7 @@ interface MasterMgrLightClient
    String localSiteName, 
    TreeSet<FileSeq> replaceSeqs, 
    TreeMap<String,String> replacements,
-   Path dir, 
-   boolean compress
+   Path dir
   )
     throws PipelineException;
 

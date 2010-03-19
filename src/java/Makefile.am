@@ -10,7 +10,7 @@ else !IS_WINDOWS
 if IS_UNIX
 
 if FOUNDATION 
-  SUBDIRS = jogl jython scripts share us misc
+  SUBDIRS = apache jogl jython scripts share us misc
 else 
   SUBDIRS = jogl scripts
 endif

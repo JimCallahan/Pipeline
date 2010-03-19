@@ -28,21 +28,21 @@ class NodeSiteVersionReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param jarPath
-   *   The full path to the JAR archive containing the node version to insert.
+   * @param tarPath
+   *   The full path to the TAR archive containing the node version to insert.
    */
   public
   NodeSiteVersionReq
   (
-   Path jarPath
+   Path tarPath
   )
   { 
     super();
 
-    if(jarPath == null) 
+    if(tarPath == null) 
       throw new IllegalArgumentException
-	("The output jarPathectory cannot be (null)!");
-    pJarPath = jarPath;
+	("The output tarPathectory cannot be (null)!");
+    pTarPath = tarPath;
   }
 
 
@@ -52,12 +52,12 @@ class NodeSiteVersionReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets full path to the JAR archive containing the node version to insert.
+   * Gets full path to the TAR archive containing the node version to insert.
    */
   public Path
-  getJarPath() 
+  getTarPath() 
   {
-    return pJarPath;
+    return pTarPath;
   }
 
 
@@ -75,9 +75,9 @@ class NodeSiteVersionReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the full path to the JAR archive containing the node version to insert.
+   * Gets the full path to the TAR archive containing the node version to insert.
    */
-  public Path  pJarPath;
+  public Path  pTarPath;
 
 }
   

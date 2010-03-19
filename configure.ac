@@ -1358,6 +1358,9 @@ AC_SUBST(JYTHON_JAR)
 JYTHON_JAR=""
 
 
+AC_SUBST(COM_COMP_JAR)
+COM_COMP_JAR=""
+
 AC_SUBST(PIPELINE_LATEST_JAR)
 PIPELINE_LATEST_JAR=""
 
@@ -1408,6 +1411,7 @@ case "$NATIVE_OSTYPE" in
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
     JYTHON_DIR="$ROOT_INST_DIR/jython";
     JYTHON_JAR="$ROOT_INST_DIR/jython/jython.jar";
+    COM_COMP_JAR="$ROOT_INST_DIR/apache/commons-compress/lib/commons-compress.jar";
     LOCAL_VENDOR_JAVADOC="$UNIX_LOCAL_VENDOR_JAVADOC";
     LOCAL_JAVA_LIBS="$UNIX_LOCAL_JAVA_LIBS";;
 
@@ -2088,6 +2092,10 @@ AC_CONFIG_FILES([
 
   src/Makefile
   src/java/Makefile
+  
+  src/java/apache/Makefile
+  src/java/apache/commons-compress/Makefile
+  
   src/java/us/Makefile
   src/java/us/temerity/Makefile
   src/java/us/temerity/pipeline/Makefile

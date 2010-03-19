@@ -59,11 +59,8 @@ class FileExtractSiteVersionReq
    * @param creator
    *   The name of the user who extracted the node.
    * 
-   * @param jarPath
-   *   The name of the JAR archive to create.
-   *
-   * @param compress
-   *   Whether to compress the files in the generated JAR archive.
+   * @param tarPath
+   *   The name of the TAR archive to create.
    */
   public
   FileExtractSiteVersionReq
@@ -76,8 +73,7 @@ class FileExtractSiteVersionReq
    NodeVersion vsn, 
    long stamp, 
    String creator, 
-   Path jarPath, 
-   boolean compress
+   Path tarPath
   )
   { 
     super();
@@ -109,12 +105,10 @@ class FileExtractSiteVersionReq
 	("The user extracting the node cannot be (null)!");
     pCreator = creator;
 
-    if(jarPath == null) 
+    if(tarPath == null) 
       throw new IllegalArgumentException
-	("The path for the JAR archive cannot be (null)!");
-    pJarPath = jarPath;
-
-    pCompress = compress;
+	("The path for the TAR archive cannot be (null)!");
+    pTarPath = tarPath;
   }
 
 
@@ -175,7 +169,7 @@ class FileExtractSiteVersionReq
 
   /**
    * Gets the extracted node version with all modifications applied to include in the 
-   * JAR archive.
+   * TAR archive.
    */
   public NodeVersion
   getNodeVersion() 
@@ -202,21 +196,12 @@ class FileExtractSiteVersionReq
   }
 
   /**
-   * Gets the name of the JAR archive to create.
+   * Gets the name of the TAR archive to create.
    */
   public Path
-  getJarPath() 
+  getTarPath() 
   {
-    return pJarPath;
-  }
-
-  /**
-   * Whether to compress the files in the generated JAR archive.
-   */ 
-  public boolean 
-  getCompress() 
-  {
-    return pCompress;
+    return pTarPath;
   }
 
 
@@ -265,7 +250,7 @@ class FileExtractSiteVersionReq
 
   /**
    * Gets the extracted node version with all modifications applied to include in the 
-   * JAR archive.
+   * TAR archive.
    */
   public NodeVersion pNodeVersion;
 
@@ -280,14 +265,9 @@ class FileExtractSiteVersionReq
   public String pCreator;
 
   /**
-   * Gets the name of the JAR archive to create.
+   * Gets the name of the TAR archive to create.
    */
-  public Path  pJarPath;
-
-  /**
-   * Whether to compress the files in the generated JAR archive.
-   */ 
-  public boolean pCompress; 
+  public Path  pTarPath;
 
 }
   

@@ -13201,7 +13201,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Creates a JAR archive containing both files and metadata associated with a checked-in
+   * Creates a TAR archive containing both files and metadata associated with a checked-in
    * version of a node suitable for transfer to a remote site.<P> 
    * 
    * @param req 
@@ -13225,7 +13225,6 @@ class MasterMgr
     TreeMap<String,String> replacements = req.getReplacements();
     Path dir = req.getDir();
     String creator = req.getRequestor();
-    boolean compress = req.getCompress();
 
     TaskTimer timer = new TaskTimer(); 
 
@@ -13262,9 +13261,9 @@ class MasterMgr
       /* localize the version */ 
       Path npath = new Path(name);
       long stamp = System.currentTimeMillis(); 
-      String jarName = (stamp + "-" + npath.getName() + ".jar"); 
-      Path jarPath = new Path(dir, jarName); 
-      vsn.makeSiteLocal(referenceNames, localSiteName, stamp, creator, jarName);
+      String tarName = (stamp + "-" + npath.getName() + ".tar"); 
+      Path tarPath = new Path(dir, tarName); 
+      vsn.makeSiteLocal(referenceNames, localSiteName, stamp, creator, tarName);
 
       /* combine automatic replacements for references with the supplied replacements */ 
       TreeMap<String,String> repls = new TreeMap<String,String>();
@@ -13274,20 +13273,19 @@ class MasterMgr
       if(replacements != null) 
         repls.putAll(replacements);
 
-      /* fix the files and create the JAR archive */ 
+      /* fix the files and create the TAR archive */ 
       {
         FileMgrClient fclient = acquireFileMgrClient();
         try {
           fclient.extractSiteVersion(name, referenceNames, localSiteName, 
-                                     replaceSeqs, repls, vsn, stamp, creator, jarPath, 
-                                     compress);
+                                     replaceSeqs, repls, vsn, stamp, creator, tarPath); 
         }
         finally {
           releaseFileMgrClient(fclient);
         }
       }
 
-      return new NodeExtractSiteVersionRsp(timer, name, vid, jarPath); 
+      return new NodeExtractSiteVersionRsp(timer, name, vid, tarPath); 
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -13315,7 +13313,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * Lookup the NodeVersion contained within the extracted site version TAR archive.
    * 
    * @param req 
    *   The request.
@@ -13330,7 +13328,7 @@ class MasterMgr
    NodeSiteVersionReq req 
   ) 
   {
-    Path jarPath = req.getJarPath();
+    Path tarPath = req.getTarPath();
 
     TaskTimer timer = new TaskTimer(); 
 
@@ -13339,12 +13337,12 @@ class MasterMgr
     try {
       timer.resume();	
 
-      /* get the node version from the JAR archive */ 
+      /* get the node version from the TAR archive */ 
       NodeVersion vsn = null;
       {
         FileMgrClient fclient = acquireFileMgrClient();
         try {
-          vsn = fclient.lookupSiteVersion(jarPath); 
+          vsn = fclient.lookupSiteVersion(tarPath); 
         }
         finally {
           releaseFileMgrClient(fclient);
@@ -13365,7 +13363,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether the extracted node contained in the given JAR archive has already been inserted
+   * Whether the extracted node contained in the given TAR archive has already been inserted
    * into the node database.
    * 
    * @param req 
@@ -13381,7 +13379,7 @@ class MasterMgr
    NodeSiteVersionReq req 
   ) 
   {
-    Path jarPath = req.getJarPath();
+    Path tarPath = req.getTarPath();
 
     TaskTimer timer = new TaskTimer(); 
 
@@ -13390,12 +13388,12 @@ class MasterMgr
     try {
       timer.resume();	
 
-      /* get the node version from the JAR archive */ 
+      /* get the node version from the TAR archive */ 
       NodeVersion vsn = null;
       {
         FileMgrClient fclient = acquireFileMgrClient();
         try {
-          vsn = fclient.lookupSiteVersion(jarPath); 
+          vsn = fclient.lookupSiteVersion(tarPath); 
         }
         finally {
           releaseFileMgrClient(fclient);
@@ -13443,7 +13441,7 @@ class MasterMgr
 
   /**
    * Checks each of the source nodes referenced by the extracted node contained in the 
-   * given JAR archive and returns the names and versions of any of them that are not
+   * given TAR archive and returns the names and versions of any of them that are not
    * already in the node database.<P> 
    * 
    * @param req 
@@ -13459,7 +13457,7 @@ class MasterMgr
    NodeSiteVersionReq req 
   ) 
   {
-    Path jarPath = req.getJarPath();
+    Path tarPath = req.getTarPath();
 
     TaskTimer timer = new TaskTimer(); 
 
@@ -13468,12 +13466,12 @@ class MasterMgr
     try {
       timer.resume();	
 
-      /* get the node version from the JAR archive */ 
+      /* get the node version from the TAR archive */ 
       NodeVersion vsn = null;
       {
         FileMgrClient fclient = acquireFileMgrClient();
         try {
-          vsn = fclient.lookupSiteVersion(jarPath); 
+          vsn = fclient.lookupSiteVersion(tarPath); 
         }
         finally {
           releaseFileMgrClient(fclient);
@@ -13537,7 +13535,7 @@ class MasterMgr
    NodeSiteVersionReq req 
   ) 
   {
-    Path jarPath = req.getJarPath();
+    Path tarPath = req.getTarPath();
 
     TaskTimer timer = new TaskTimer(); 
 
@@ -13550,14 +13548,14 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only a user with Master Admin privileges may insert site versions!"); 
 
-      /* get the node version from the JAR archive */ 
+      /* get the node version from the TAR archive */ 
       NodeVersion vsn = null;
       String name = null; 
       VersionID vid = null; 
       {
         FileMgrClient fclient = acquireFileMgrClient();
         try {
-          vsn  = fclient.lookupSiteVersion(jarPath); 
+          vsn  = fclient.lookupSiteVersion(tarPath); 
           name = vsn.getName();
           vid  = vsn.getVersionID();
         }
@@ -13649,7 +13647,7 @@ class MasterMgr
           {
             FileMgrClient fclient = acquireFileMgrClient();
             try {
-              fclient.insertSiteVersion(jarPath); 
+              fclient.insertSiteVersion(tarPath); 
             }
             finally {
               releaseFileMgrClient(fclient);

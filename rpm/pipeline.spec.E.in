@@ -68,3 +68,10 @@
 @ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl_cg.so
 @ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl.so
 
+%defattr(-,root,root)
+@ROOT_INST_DIR@/apache/commons-compress/docs
+
+%defattr(444,root,root)
+@ROOT_INST_DIR@/apache/commons-compress/LICENSE.txt
+@ROOT_INST_DIR@/apache/commons-compress/NOTICE.txt
+@ROOT_INST_DIR@/apache/commons-compress/lib/commons-compress.jar

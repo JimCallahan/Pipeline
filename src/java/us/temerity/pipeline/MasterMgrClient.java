@@ -6947,10 +6947,10 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Creates a JAR archive containing both files and metadata associated with a checked-in
+   * Creates a TAR archive containing both files and metadata associated with a checked-in
    * version of a node suitable for transfer to a remote site.<P> 
    * 
-   * The JAR archive will contain a copy of the original NodeVersion which has been altered 
+   * The TAR archive will contain a copy of the original NodeVersion which has been altered 
    * from its original form in several ways:<P>
    * 
    * <DIV style="margin-left: 40px;">
@@ -6968,10 +6968,10 @@ class MasterMgrClient
    *   A RemoteVersion per-version annotation will be added to the NodeVersion who's 
    *   annotation parameters included detailed information about the original node version
    *   being extracted.  This includes the original node name, local site name as well as
-   *   information about when the JAR archive was created and by whom. 
+   *   information about when the TAR archive was created and by whom. 
    * </DIV><P> 
    *   
-   * Each file associated with the target node will also be copied and included in the JAR 
+   * Each file associated with the target node will also be copied and included in the TAR 
    * archive generated.  These files will also be altered from their original in the 
    * following ways:<P> 
    * 
@@ -6989,12 +6989,12 @@ class MasterMgrClient
    * </DIV><P> 
    * 
    * In addition to a GLUE format file containing the altered NodeVersion copy and associated
-   * node files, a "README" text file will also be added to the JAR archive which details 
+   * node files, a "README" text file will also be added to the TAR archive which details 
    * the contents and all changes made to the node version being extracted.<P> 
    * 
-   * If successfull, the JAR archive file will be written to the directory named by "dir" 
+   * If successfull, the TAR archive file will be written to the directory named by "dir" 
    * and given a unique name based on the timestamp of when the archive was created.  The
-   * full filesystem path of this uniquely named JAR file will be returned by this method.<P>
+   * full filesystem path of this uniquely named TAR file will be returned by this method.<P>
    * 
    * This method will go away when true multi-site support is added to Pipeline.<P>  
    * 
@@ -7022,13 +7022,10 @@ class MasterMgrClient
    *   additional replacements. 
    * 
    * @param dir
-   *   The directory in which to place the JAR archive created.
-   *
-   * @param compress
-   *   Whether to compress the files in the generated JAR archive.
-   *
+   *   The directory in which to place the TAR archive created.
+   * 
    * @return
-   *   The full file system path of the created JAR archive.
+   *   The full file system path of the created TAR archive.
    */ 
   public synchronized Path
   extractSiteVersion
@@ -7039,8 +7036,7 @@ class MasterMgrClient
    String localSiteName, 
    TreeSet<FileSeq> replaceSeqs, 
    TreeMap<String,String> replacements,
-   Path dir, 
-   boolean compress
+   Path dir
   )
     throws PipelineException
   {   
@@ -7048,7 +7044,7 @@ class MasterMgrClient
     
     NodeExtractSiteVersionReq req = 
       new NodeExtractSiteVersionReq(name, vid, referenceNames, localSiteName, 
-                                    replaceSeqs, replacements, dir, compress); 
+                                    replaceSeqs, replacements, dir); 
     
     Object obj = performLongTransaction(MasterRequest.ExtractSiteVersion, req, 15000, 60000);
     if(obj instanceof NodeExtractSiteVersionRsp) {
@@ -7062,21 +7058,21 @@ class MasterMgrClient
   }
 
   /**
-   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * Lookup the NodeVersion contained within the extracted site version TAR archive.
    * 
-   * @param jarPath
-   *   The full file system path to the JAR archive containing the node version.
+   * @param tarPath
+   *   The full file system path to the TAR archive containing the node version.
    */ 
   public synchronized NodeVersion
   lookupSiteVersion
   (
-   Path jarPath
+   Path tarPath
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    NodeSiteVersionReq req = new NodeSiteVersionReq(jarPath);
+    NodeSiteVersionReq req = new NodeSiteVersionReq(tarPath);
 
     Object obj = performTransaction(MasterRequest.LookupSiteVersion, req); 
     if(obj instanceof NodeLookupSiteVersionRsp) {
@@ -7090,22 +7086,22 @@ class MasterMgrClient
   }
 
   /**
-   * Whether the extracted node contained in the given JAR archive has already been inserted
+   * Whether the extracted node contained in the given TAR archive has already been inserted
    * into the node database.
    * 
-   * @param jarPath
-   *   The full file system path to the JAR archive containing the node version to insert.
+   * @param tarPath
+   *   The full file system path to the TAR archive containing the node version to insert.
    */ 
   public synchronized boolean
   isSiteVersionInserted
   (
-   Path jarPath
+   Path tarPath
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    NodeSiteVersionReq req = new NodeSiteVersionReq(jarPath); 
+    NodeSiteVersionReq req = new NodeSiteVersionReq(tarPath); 
     
     Object obj = performTransaction(MasterRequest.IsSiteVersionInserted, req); 
     if(obj instanceof BooleanRsp) {
@@ -7120,11 +7116,11 @@ class MasterMgrClient
 
   /**
    * Checks each of the source nodes referenced by the extracted node contained in the 
-   * given JAR archive and returns the names and versions of any of them that are not
+   * given TAR archive and returns the names and versions of any of them that are not
    * already in the node database.<P> 
    * 
-   * @param jarPath
-   *   The full file system path to the JAR archive containing the node version to insert.
+   * @param tarPath
+   *   The full file system path to the TAR archive containing the node version to insert.
    * 
    * @return
    *   The names and versions of the missing nodes.
@@ -7132,13 +7128,13 @@ class MasterMgrClient
   public synchronized TreeMap<String,VersionID> 
   getMissingSiteVersionRefs
   (
-   Path jarPath
+   Path tarPath
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    NodeSiteVersionReq req = new NodeSiteVersionReq(jarPath); 
+    NodeSiteVersionReq req = new NodeSiteVersionReq(tarPath); 
     
     Object obj = performTransaction(MasterRequest.GetMissingSiteVersionRefs, req); 
     if(obj instanceof NodeGetMissingSiteVersionRefsRsp) {
@@ -7173,19 +7169,19 @@ class MasterMgrClient
    * If the node version being inserted is the first version to be created for a node, then 
    * a per-node RemoteNode annotation will also be added to the node.
    * 
-   * @param jarPath
-   *   The full file system path to the JAR archive containing the node version to insert.
+   * @param tarPath
+   *   The full file system path to the TAR archive containing the node version to insert.
    */ 
   public synchronized void
   insertSiteVersion
   (
-   Path jarPath
+   Path tarPath
   ) 
     throws PipelineException
   {
     verifyConnection();
     
-    NodeSiteVersionReq req = new NodeSiteVersionReq(jarPath); 
+    NodeSiteVersionReq req = new NodeSiteVersionReq(tarPath); 
     
     Object obj = performLongTransaction(MasterRequest.InsertSiteVersion, req, 15000, 60000); 
     handleSimpleResponse(obj);

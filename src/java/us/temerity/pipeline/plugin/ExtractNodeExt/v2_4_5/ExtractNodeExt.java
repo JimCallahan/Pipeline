@@ -42,18 +42,9 @@ class ExtractNodeExt
       ExtensionParam param = 
         new PathExtensionParam
         (aOutputDir, 
-         "The temporary directory where all JAR archives created will be written.  This " + 
+         "The temporary directory where all TAR archives created will be written.  This " + 
          "directory needs to be writable by all users.", 
          new Path("/usr/tmp"));
-      addParam(param);
-    }
-
-    {
-      ExtensionParam param = 
-        new BooleanExtensionParam
-        (aCompress, 
-         "Whether to compress the files stored in the generated JAR archive.", 
-         false);
       addParam(param);
     }
   }
@@ -191,15 +182,6 @@ class ExtractNodeExt
         return;
     }
 
-    boolean compress = false;
-    try {
-      Boolean tf = (Boolean) getParamValue(aCompress);
-      if((tf != null) && tf)
-        compress = true;
-    }
-    catch(PipelineException ex) {
-    }
-
     TreeMap<String, BaseAnnotation> annots = lookupAnnots(vsn.getName(), abortMsg); 
     if(annots == null) 
       return; 
@@ -221,15 +203,15 @@ class ExtractNodeExt
         }
         
         try { 
-          Path jarPath = 
+          Path tarPath = 
             getMasterMgrClient().extractSiteVersion
               (vsn.getName(), vsn.getVersionID(), referenceNames, localSite, 
-               vsn.getSequences(), null, outputDir, compress);
+               vsn.getSequences(), null, outputDir);
           
           LogMgr.getInstance().log
             (LogMgr.Kind.Ext, LogMgr.Level.Info, 
              "Extracted version (" + vsn.getVersionID() + ") of node " + 
-             "(" + vsn.getName() + ") to a JAR archive (" + jarPath + ").");
+             "(" + vsn.getName() + ") to a TAR archive (" + tarPath + ").");
         }
         catch(PipelineException ex) {
           LogMgr.getInstance().log
@@ -272,6 +254,5 @@ class ExtractNodeExt
   
   public static final String aLocalSite = "LocalSite";
   public static final String aOutputDir = "OutputDir";
-  public static final String aCompress  = "Compress";
       
 }

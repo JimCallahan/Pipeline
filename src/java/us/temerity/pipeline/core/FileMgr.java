@@ -14,6 +14,9 @@ import java.util.concurrent.atomic.*;
 import java.text.*;
 import java.util.regex.*;
 
+import org.apache.commons.compress.archivers.tar.*; 
+
+
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   M G R                                                                        */
 /*------------------------------------------------------------------------------------------*/
@@ -2911,7 +2914,7 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Creates a JAR archive containing both files and metadata associated with a checked-in
+   * Creates a TAR archive containing both files and metadata associated with a checked-in
    * version of a node suitable for transfer to a remote site.<P>
    * 
    * @param req 
@@ -2936,14 +2939,13 @@ class FileMgr
     VersionID vid = vsn.getVersionID();
     long stamp = req.getStamp();
     String creator = req.getCreator();
-    Path jarPath = req.getJarPath();
-    boolean compress = req.getCompress();
+    Path tarPath = req.getTarPath();
 
     TaskTimer timer = 
       new TaskTimer("FileMgr.extractSiteVersion(): " + name + " v" + vid + 
-                    " (" + jarPath + "):");
+                    " (" + tarPath + "):");
 
-    /* create a temporary directory for the JAR contents */ 
+    /* create a temporary directory for the TAR contents */ 
     Path scratchPath = 
       new Path(pScratchPath, "/site-versions/" + name + "/" + vid + "/" + stamp);
     try {
@@ -2974,7 +2976,7 @@ class FileMgr
         catch(GlueException ex) {
           throw new PipelineException
             ("Unable to node version metadata file (" + gluePath + ") to be included in " + 
-             "the extraced version JAR archive (" + jarPath + ")!\n" +
+             "the extraced version TAR archive (" + tarPath + ")!\n" +
              ex.getMessage());
         }
       }
@@ -2989,13 +2991,13 @@ class FileMgr
            "ExtractedAt : " + localSiteName + "\n" + 
            "ExtractedOn : " + TimeStamps.format(stamp) + "\n" + 
            "ExtractedBy : " + creator + "\n\n" + 
-           "JarName     : " + jarPath.getName() + "\n");
+           "TarName     : " + tarPath.getName() + "\n");
         out.close();
       }
       catch(IOException ex) {
         throw new PipelineException
           ("Unable to write temporary file (" + readmePath + ") to be included in the " + 
-           "extraced version JAR archive (" + jarPath + ")!\n" +
+           "extraced version TAR archive (" + tarPath + ")!\n" +
            ex.getMessage());
       }
 
@@ -3043,14 +3045,14 @@ class FileMgr
                 throw new PipelineException
                   ("Unable perform string replacements on original node file " + 
                    "(" + path + ") needed to produce the version of the file " + 
-                   "(" + spath + ") to be included in the extraced version JAR archive " + 
-                   "(" + jarPath + ")!\n" +
+                   "(" + spath + ") to be included in the extraced version TAR archive " + 
+                   "(" + tarPath + ")!\n" +
                    ex.getMessage());
               }
             }              
 
             /* just make a symlink to the original version, 
-                 the JAR archive will contain a copy not a link */ 
+                 the TAR archive will contain a copy not a link */ 
             else {
               try {
                 NativeFileSys.symlink(path.toFile(), spath.toFile());
@@ -3058,8 +3060,8 @@ class FileMgr
               catch(IOException ex) {
                 throw new PipelineException
                   ("Unable create the symbolic link from (" + spath + ") to " + 
-                   "(" + path + ") to be included in the extraced version JAR archive " + 
-                   "(" + jarPath + ")!\n" +
+                   "(" + path + ") to be included in the extraced version TAR archive " + 
+                   "(" + tarPath + ")!\n" +
                    ex.getMessage());
               }
             }
@@ -3069,64 +3071,30 @@ class FileMgr
         }
       }
 
-      /* the node JAR archive file */ 
+      /* the node TAR archive file */ 
       {    
-        Map<String,String> jenv = PackageInfo.getJavaEnvironment(); 
+        Map<String,String> env = System.getenv();
         
-        {
-          ArrayList<String> args = new ArrayList<String>();
-          args.add(compress ? "-cMf" : "-c0Mf");
-          args.add(jarPath.toOsString());
-          args.add(gluePath.getName());
-          args.add(readmePath.getName());
-          
-          SubProcessLight proc = 
-            new SubProcessLight(creator, 
-                                "ExtractSiteVersion", "jar", args, 
-                                jenv, scratchPath.toFile()); 
-          
-          try {
-            proc.start();
-            proc.join();
-            if(!proc.wasSuccessful()) 
-              throw new PipelineException
-                ("Unable to create the site version archive (" + jarPath + "):\n\n" + 
-                 "  " + proc.getStdErr());	
-          }
-          catch(InterruptedException ex) {
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("-cvhf");
+        args.add(tarPath.toOsString());
+        args.add("./"); 
+        
+        SubProcessLight proc = 
+          new SubProcessLight
+           (creator, "ExtractSiteVersion", "tar", args, env, scratchPath.toFile()); 
+        
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
             throw new PipelineException
-            ("Interrupted while the site version archive (" + jarPath + ")!");
-          }
+              ("Unable to create the site version archive (" + tarPath + "):\n\n" + 
+               "  " + proc.getStdErr());	
         }
-
-        {
-          ArrayList<String> preOpts = new ArrayList<String>();
-          preOpts.add(compress ? "-uMf" : "-u0Mf");
-          preOpts.add(jarPath.toOsString());
-
-          ArrayList<String> args = new ArrayList<String>();
-          args.addAll(fileNames);
-
-          LinkedList<SubProcessLight> procs = 
-            SubProcessLight.createMultiSubProcess
-              (creator, 
-               "ExtractSiteVersion", "jar", preOpts, args, 
-               jenv, scratchPath.toFile());
-          
-          try {
-            for(SubProcessLight proc : procs) {
-              proc.start();
-              proc.join();
-              if(!proc.wasSuccessful()) 
-                throw new PipelineException
-                  ("Unable to append files to the site version archive (" + jarPath + "):" +
-                   "\n\n  " + proc.getStdErr());	
-            }
-          }
-          catch(InterruptedException ex) {
-            throw new PipelineException
-              ("Interrupted while appending files to site version archive (" + jarPath + ")!");
-          }
+        catch(InterruptedException ex) {
+          throw new PipelineException
+            ("Interrupted while the site version archive (" + tarPath + ")!");
         }
       }
 
@@ -3149,7 +3117,7 @@ class FileMgr
         
         SubProcessLight proc = 
           new SubProcessLight
-          ("DeleteSiteVersionScratch", "rm", args, env, pScratchPath.toFile()); 
+           ("DeleteSiteVersionScratch", "rm", args, env, pScratchPath.toFile()); 
         
         try {
           proc.start();
@@ -3175,7 +3143,7 @@ class FileMgr
   }
   
   /**
-   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * Lookup the NodeVersion contained within the extracted site version TAR archive.
    * 
    * @param req 
    *   The request.
@@ -3190,15 +3158,15 @@ class FileMgr
     FileSiteVersionReq req
   ) 
   {
-    Path jarPath = req.getJarPath();
+    Path tarPath = req.getTarPath();
     
-    TaskTimer timer = new TaskTimer("FileMgr.lookupSiteVersion(): " + jarPath);
+    TaskTimer timer = new TaskTimer("FileMgr.lookupSiteVersion(): " + tarPath);
     try {
-      NodeVersion vsn = lookupSiteVersionHelper(jarPath); 
+      NodeVersion vsn = lookupSiteVersionHelper(tarPath); 
       if(vsn == null)  
         throw new PipelineException
           ("Unable to read the contents of the node version GLUE file in the site version " + 
-           "JAR archive (" + jarPath + ")!");
+           "TAR archive (" + tarPath + ")!");
 
       return new FileLookupSiteVersionRsp(timer, vsn); 
     }
@@ -3211,10 +3179,10 @@ class FileMgr
   }
 
   /**
-   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * Lookup the NodeVersion contained within the extracted site version TAR archive.
    * 
-   * @param jarPath 
-   *   The name of the JAR archive to read.
+   * @param tarPath 
+   *   The name of the TAR archive to read.
    * 
    * @returns 
    *   The node version.
@@ -3222,22 +3190,23 @@ class FileMgr
   public NodeVersion
   lookupSiteVersionHelper
   (
-   Path jarPath
+   Path tarPath
   ) 
     throws PipelineException 
   {
     /* extract the raw bytes of the GLUE file */ 
     byte glueBytes[] = null;
     try {
-      JarInputStream in = new JarInputStream(new FileInputStream(jarPath.toFile())); 
+      TarArchiveInputStream in = 
+        new TarArchiveInputStream(new FileInputStream(tarPath.toFile())); 
       
       while(true) {
-        JarEntry entry = in.getNextJarEntry();
+        TarArchiveEntry entry = in.getNextTarEntry();
         if(entry == null) 
           break;
         
         if(!entry.isDirectory()) {
-          if(entry.getName().equals("NodeVersion.glue")) {
+          if(entry.getName().equals("./NodeVersion.glue")) {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
             
             byte buf[] = new byte[4096];
@@ -3258,14 +3227,14 @@ class FileMgr
     }
     catch(IOException ex) {
       throw new PipelineException
-        ("Unable to extract the node version GLUE file from the site version JAR archive " +
-         "(" + jarPath + "): \n" + ex.getMessage());
+        ("Unable to extract the node version GLUE file from the site version TAR archive " +
+         "(" + tarPath + "): \n" + ex.getMessage());
     }
     
     if(glueBytes == null) 
       throw new PipelineException
-        ("Unable to find node version GLUE file in the site version JAR archive " +
-         "(" + jarPath + ")!");
+        ("Unable to find node version GLUE file in the site version TAR archive " +
+         "(" + tarPath + ")!");
     
     {
       PluginMgrClient.getInstance().update();
@@ -3279,7 +3248,7 @@ class FileMgr
   }
 
   /**
-   * Extract the node files in a extracted site version JAR archive and insert them into the 
+   * Extract the node files in a extracted site version TAR archive and insert them into the 
    * repository.
    * 
    * @param req 
@@ -3295,15 +3264,15 @@ class FileMgr
     FileSiteVersionReq req
   ) 
   {
-    Path jarPath = req.getJarPath();
+    Path tarPath = req.getTarPath();
 
-    TaskTimer timer = new TaskTimer("FileMgr.insertSiteVersion(): " + jarPath);  
+    TaskTimer timer = new TaskTimer("FileMgr.insertSiteVersion(): " + tarPath);  
     try {
-      NodeVersion vsn = lookupSiteVersionHelper(jarPath); 
+      NodeVersion vsn = lookupSiteVersionHelper(tarPath); 
       if(vsn == null)  
         throw new PipelineException
           ("Unable to read the contents of the node version GLUE file in the site version " + 
-           "JAR archive (" + jarPath + ")!");
+           "TAR archive (" + tarPath + ")!");
 
       String name = vsn.getName();
       VersionID vid = vsn.getVersionID();
@@ -3350,65 +3319,55 @@ class FileMgr
 
 	boolean success = false;
 	try {
-	  Map<String,String> env = System.getenv();
-          Map<String,String> jenv = PackageInfo.getJavaEnvironment(); 
-
           /* insert the files into the repository */ 
           {
-            ArrayList<String> preOpts = new ArrayList<String>();
-            preOpts.add("-xvf");
-            preOpts.add(jarPath.toOsString());
-            
-            ArrayList<String> args = new ArrayList<String>();
-            for(FileSeq fseq : vsn.getSequences()) {
-              for(Path path : fseq.getPaths()) {
-                args.add(path.toOsString());
-              }
-            }
-            
-            if(!args.isEmpty()) {
-              LinkedList<SubProcessLight> procs = 
-                SubProcessLight.createMultiSubProcess
-                 ("InsertSiteVersionFiles", "jar", preOpts, args, jenv, rdir.toFile()); 
-              
-              try {
-                for(SubProcessLight proc : procs) {
-                  proc.start();
-                  proc.join();
-                  if(!proc.wasSuccessful()) 
-                    throw new PipelineException
-                      ("Unable to insert files from the site version JAR archive "  + 
-                       "(" + jarPath + "):\n\n" + 
-                       "  " + proc.getStdErr());	
-                }
-              }
-              catch(InterruptedException ex) {
-                throw new PipelineException
-                  ("Interrupted while inserting files from the site version JAR archive " + 
-                   "(" + jarPath + ")!");
-              }
-            }
+            Map<String,String> env = System.getenv();
 
-            for(FileSeq fseq : vsn.getSequences()) {
-              for(Path path : fseq.getPaths()) {
-                Path p = new Path(rdir, path);
-                File repo = p.toFile();
-                
-                if(!repo.isFile()) 
-                  throw new PipelineException
-                    ("The newly created repository file (" + repo + ") was missing!\n\n" + 
-                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
-                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
-                
-                repo.setReadOnly();
-              }
+            ArrayList<String> args = new ArrayList<String>();
+            args.add("--exclude=./NodeVersion.glue"); 
+            args.add("--exclude=./README"); 
+            args.add("-xvf");
+            args.add(tarPath.toOsString());
+            
+            SubProcessLight proc = 
+              new SubProcessLight("ExtractSiteVersion", "tar", args, env, rdir.toFile()); 
+            
+            try {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable to insert files from the site version TAR archive "  + 
+                   "(" + tarPath + "):\n\n" + 
+                   "  " + proc.getStdErr());	
+            }
+            catch(InterruptedException ex) {
+              throw new PipelineException
+                ("Interrupted while inserting files from the site version TAR archive " + 
+                 "(" + tarPath + ")!");
+            }
+          }
+          
+	  /* make the repository files read-only */ 
+          for(FileSeq fseq : vsn.getSequences()) {
+            for(Path path : fseq.getPaths()) {
+              Path p = new Path(rdir, path);
+              File repo = p.toFile();
+              
+              if(!repo.isFile()) 
+                throw new PipelineException
+                  ("The newly created repository file (" + repo + ") was missing!\n\n" + 
+                   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+              
+              repo.setReadOnly();
             }
           }
 
 	  success = true;
 	}
 	finally {
-	  /* make the repository directories read-only */ 
+	  /* make the repository directory read-only */ 
 	  if(success) 
 	    rdir.toFile().setReadOnly();
 

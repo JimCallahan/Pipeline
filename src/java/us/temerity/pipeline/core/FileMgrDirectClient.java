@@ -766,10 +766,10 @@ class FileMgrDirectClient
   /*----------------------------------------------------------------------------------------*/
    
   /**
-   * Creates a JAR archive containing both files and metadata associated with a checked-in
+   * Creates a TAR archive containing both files and metadata associated with a checked-in
    * version of a node suitable for transfer to a remote site.<P> 
    * 
-   * The JAR archive will contain a copy of the original NodeVersion which has been altered 
+   * The TAR archive will contain a copy of the original NodeVersion which has been altered 
    * from its original form in several ways:<P>
    * 
    * <DIV style="margin-left: 40px;">
@@ -787,10 +787,10 @@ class FileMgrDirectClient
    *   A RemoteVersion per-version annotation will be added to the NodeVersion who's 
    *   annotation parameters included detailed information about the original node version
    *   being extracted.  This includes the original node name, local site name as well as
-   *   information about when the JAR archive was created and by whom. 
+   *   information about when the TAR archive was created and by whom. 
    * </DIV><P> 
    *   
-   * Each file associated with the target node will also be copied and included in the JAR 
+   * Each file associated with the target node will also be copied and included in the TAR 
    * archive generated.  These files will also be altered from their original in the 
    * following ways:<P> 
    * 
@@ -808,10 +808,10 @@ class FileMgrDirectClient
    * </DIV><P> 
    * 
    * In addition to a GLUE format file containing the altered NodeVersion copy and associated
-   * node files, a "README" text file will also be added to the JAR archive which details 
+   * node files, a "README" text file will also be added to the TAR archive which details 
    * the contents and all changes made to the node version being extracted.<P> 
    * 
-   * If successfull, the JAR archive file will be written to "jarPath".<P>
+   * If successfull, the TAR archive file will be written to "tarPath".<P>
    * 
    * This method will go away when true multi-site support is added to Pipeline.<P>  
    * 
@@ -837,7 +837,7 @@ class FileMgrDirectClient
    * 
    * @param vsn
    *   The extracted node version with all modifications applied to include in the 
-   *   JAR archive.
+   *   TAR archive.
    * 
    * @param stamp
    *   The timestamp of when this node was extracted.
@@ -845,11 +845,8 @@ class FileMgrDirectClient
    * @param creator
    *   The name of the user who extracted the node.
    * 
-   * @param jarPath
-   *   The name of the JAR archive to create.
-   *
-   * @param compress
-   *   Whether to compress the files in the generated JAR archive.
+   * @param tarPath
+   *   The name of the TAR archive to create.
    */ 
   public void 
   extractSiteVersion
@@ -862,34 +859,33 @@ class FileMgrDirectClient
    NodeVersion vsn, 
    long stamp, 
    String creator, 
-   Path jarPath, 
-   boolean compress
+   Path tarPath
   )
     throws PipelineException
   {
     FileExtractSiteVersionReq req = 
       new FileExtractSiteVersionReq(name, referenceNames, localSiteName, 
                                     replaceSeqs, replacements, 
-                                    vsn, stamp, creator, jarPath, compress);
+                                    vsn, stamp, creator, tarPath);
     
     Object obj = pFileMgr.extractSiteVersion(req); 
     handleSimpleResponse(obj);    
   }
 
   /**
-   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * Lookup the NodeVersion contained within the extracted site version TAR archive.
    * 
-   * @param jarPath
-   *   The name of the JAR archive to read.
+   * @param tarPath
+   *   The name of the TAR archive to read.
    */ 
   public NodeVersion
   lookupSiteVersion
   ( 
-   Path jarPath
+   Path tarPath
   ) 
     throws PipelineException
   {
-    FileSiteVersionReq req = new FileSiteVersionReq(jarPath);
+    FileSiteVersionReq req = new FileSiteVersionReq(tarPath);
     
     Object obj = pFileMgr.lookupSiteVersion(req); 
     if(obj instanceof FileLookupSiteVersionRsp) {
@@ -903,20 +899,20 @@ class FileMgrDirectClient
   }
 
   /**
-   * Extract the node files in a extracted site version JAR archive and insert them into the 
+   * Extract the node files in a extracted site version TAR archive and insert them into the 
    * repository.
    * 
-   * @param jarPath
-   *   The name of the JAR archive to read.
+   * @param tarPath
+   *   The name of the TAR archive to read.
    */ 
   public void
   insertSiteVersion
   ( 
-   Path jarPath
+   Path tarPath
   ) 
     throws PipelineException
   {
-    FileSiteVersionReq req = new FileSiteVersionReq(jarPath);
+    FileSiteVersionReq req = new FileSiteVersionReq(tarPath);
     
     Object obj = pFileMgr.insertSiteVersion(req); 
     handleSimpleResponse(obj);    

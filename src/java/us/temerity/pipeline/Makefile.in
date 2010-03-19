@@ -354,7 +354,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 
       JAVA_PATHS = -d ../../.. \
-                   -classpath "../../..:$(srcdir)/../../..:$(srcdir)/../../../jogl/jogl.jar:$(srcdir)/../../../jython/jython.jar"
+                   -classpath "../../..:$(srcdir)/../../..:$(srcdir)/../../../jogl/jogl.jar:$(srcdir)/../../../jython/jython.jar:$(srcdir)/../../../apache/commons-compress/commons-compress.jar"
 
 
            ENUMS = CheckOutMode \
