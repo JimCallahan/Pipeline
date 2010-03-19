@@ -2078,7 +2078,7 @@ class MasterMgr
     try {
       synchronized(pDefaultToolsetLock) {
 	timer.resume();	
-	
+        
 	if(pDefaultToolset != null) 
 	  return new MiscGetDefaultToolsetNameRsp(timer, pDefaultToolset);
 	else 
@@ -15917,7 +15917,7 @@ class MasterMgr
 
     SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss");
     String dateStr = format.format(new Date());
-    Path target = new Path(targetDir, "plmaster-db." + dateStr + ".tar");
+    Path target = new Path(targetDir, "plmaster-db." + dateStr + ".tar"); 
 
     /* pre-op tests */
     BackupDatabaseExtFactory factory = new BackupDatabaseExtFactory(target.toFile());
@@ -21595,43 +21595,47 @@ class MasterMgr
       if(success == null) 
         return;
 
-      if(success) {
-        /* make a tarball out of the newly synced backup directory */ 
-        try {
-          TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
-          
-          ArrayList<String> args = new ArrayList<String>();
-          args.add("-cf");
-          args.add(backupTarget.toOsString());
-          args.add("pipeline");
-          
-          SubProcessLight proc = 
-            new SubProcessLight("DatabaseBackupArchive", "tar", args, System.getenv(), 
-                                PackageInfo.sMasterBackupPath.toFile());
-          try {
-            proc.start();
-            proc.join();
-            if(!proc.wasSuccessful()) 
-              throw new PipelineException
-                ("Unable to create the Database Backup Archive: " + backupTarget + "\n\n" + 
-                 "  " + proc.getStdErr());	
-          }
-          catch(InterruptedException ex) {
-            proc.kill();
+      if(!success) {
+        String bname = backupTarget.getName();
+        backupTarget = new Path(backupTarget.getParentPath(), 
+                                bname.substring(0, bname.length()-4) + ".UNLOCKED.tar");
+      }
 
-            LogMgr.getInstance().logAndFlush
-              (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
-               "Interrupted while performing Database Backup Archive!"); 
-            return;
-          }
+      /* make a tarball out of the newly synced backup directory */ 
+      try {
+        TaskTimer tm = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
+        
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("-cf");
+        args.add(backupTarget.toOsString());
+        args.add("pipeline");
+        
+        SubProcessLight proc = 
+          new SubProcessLight("DatabaseBackupArchive", "tar", args, System.getenv(), 
+                              PackageInfo.sMasterBackupPath.toFile());
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to create the Database Backup Archive: " + backupTarget + "\n\n" + 
+               "  " + proc.getStdErr());	
+        }
+        catch(InterruptedException ex) {
+          proc.kill();
           
-          LogMgr.getInstance().logStage(LogMgr.Kind.Bak, LogMgr.Level.Info, tm); 
-        }
-        catch(PipelineException ex) {
           LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Bak, LogMgr.Level.Severe, 
-             ex.getMessage());
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+             "Interrupted while performing Database Backup Archive!"); 
+          return;
         }
+        
+        LogMgr.getInstance().logStage(LogMgr.Kind.Bak, LogMgr.Level.Info, tm); 
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Bak, LogMgr.Level.Severe, 
+           ex.getMessage());
       }
     }
     
