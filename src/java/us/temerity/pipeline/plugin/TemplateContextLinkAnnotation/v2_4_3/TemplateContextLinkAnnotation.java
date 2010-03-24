@@ -3,6 +3,7 @@
 package us.temerity.pipeline.plugin.TemplateContextLinkAnnotation.v2_4_3;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.TemplateContextAnnotation.v2_4_3.*;
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -14,7 +15,7 @@ import us.temerity.pipeline.*;
  * when the template is instantiated.
  * <p>
  * This only needs to be used when the node being linked is outside the current template. If
- * the linked node is in the current template, then the {@link TemplateContextLinkAnnotation}
+ * the linked node is in the current template, then the {@link TemplateContextAnnotation}
  * should be used.
  */
 public 

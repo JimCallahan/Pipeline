@@ -12,8 +12,8 @@ import us.temerity.pipeline.*;
  * Annotation specifying the name of a context that is going to be applied to this node while
  * it is being built.
  * <p>
- * The node that this is on will be constructed from the template once for each list in the
- * context.
+ * The node that this is on will be constructed from the template once for each set of 
+ * replacements in the context.
  */
 public 
 class TemplateContextAnnotation
