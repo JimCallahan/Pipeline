@@ -389,7 +389,7 @@ class MayaCurvesExportAction
         if (bakeMEL == null) {
           out.write("select -cl;\n");
           for (String set : pToExport.keySet())
-            out.write("select -r " + set +";\n");
+            out.write("select -add " + set +";\n");
           if (selectedTime)
             out.write
             ("//Baking over selected frame range\n" +
@@ -407,7 +407,7 @@ class MayaCurvesExportAction
            "{\n" +
            "  select -cl;\n");
           for (String set : pToExport.keySet())
-            out.write("  select -r " + set +";\n");
+            out.write("  select -add " + set +";\n");
           out.write
           ("  if (size(`ls -sl`) > 0)\n" +
            "    bakeResults -t ($first + \":\" + $last) -simulation true `ls -sl`;\n" +
@@ -441,6 +441,10 @@ class MayaCurvesExportAction
          ex.getMessage());
       }
         
+      
+      out.write("string $badFiles[];\n");
+      out.write("string $badFileTypes[];\n");
+      
       for (Entry<String, String> entry : pToExportSceneType.entrySet()) {
         String exportSet = entry.getKey();
         String sceneType = entry.getValue();
@@ -460,21 +464,33 @@ class MayaCurvesExportAction
       
         Path actualTarget = newScene;
       
+        
         out.write
           ("if (catch(`file -f " +
             "-type \"" + sceneType + "\" " +
             "-eas \"" + actualTarget + "\"`))\n" +
             "{\n" + 
-            "  file -new;\n" + 
-            "  file -rename \"" + actualTarget + "\";\n" + 
-            "  file -type \"" + sceneType + "\";\n" + 
-            "  file -save;\n" +
+            "  $badFiles[size($badFiles)] = \"" + actualTarget + "\";\n" +
+            "  $badFileTypes[size($badFileTypes)] = \"" + sceneType + "\";\n" +
           "}\n"); 
 
       
-        writeFinalMEL(agenda, out);
         out.write("}\n");
       }
+      
+      out.write
+        ("int $size = size($badFiles);\n" +
+         "if ($size > 0) {\n" +
+         "  int $i;\n" +
+         "  for ($i = 0; $i < $size; $i++) {\n" +
+         "    file -new;\n" + 
+         "    file -rename $badFiles[$i];\n" + 
+         "    file -type $badFileTypes[$i];\n" + 
+         "    file -save;\n" +
+         "  }\n" + 
+         "}\n");
+      
+      writeFinalMEL(agenda, out);      
       
       for (Entry<String, Path> entry : pToExport.entrySet()) {
         String exportSet = entry.getKey();
