@@ -344,12 +344,14 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
-all: GraphUsageStats.jar
+all: GraphUsageStats.jar GraphCombinedUsage.jar
 
 
 GraphUsageStats.jar: java-all
 	$(JAR) -cvf $@ GraphUsageStats*.class
 
+GraphCombinedUsage.jar: java-all
+	$(JAR) -cvf $@ GraphCombinedUsage*.class
 
 .PHONY: java-all
 java-all: $(JAVA_SOURCES) 

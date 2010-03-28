@@ -102,35 +102,43 @@ class GraphUsageStats
       TripleMap<Integer,Integer,Integer,Double> quarterlyUsers = 
         rollingAverage(dailyUsers, 90); 
 
-      FileWriter out = new FileWriter("./daily-users.raw"); 
-
-      boolean first = true;
-      for(Integer year : dailyUsers.keySet()) {
-        for(Integer month : dailyUsers.keySet(year)) {
-          for(Integer day : dailyUsers.keySet(year, month)) {
-            Integer numUsers = dailyUsers.get(year, month, day); 
-            Double wavg = weeklyUsers.get(year, month, day); 
-            Double mavg = monthlyUsers.get(year, month, day); 
-            Double qavg = quarterlyUsers.get(year, month, day); 
-
-            cal.set(year, month, day); 
-            Long stamp = cal.getTimeInMillis(); 
-
-            out.write(stamp + "\t" + numUsers + "\t" + wavg + "\t" + mavg + "\t" + qavg); 
-
-            if(first || 
-               (day == 1) || 
-               (lastYear.equals(year) && lastMonth.equals(month) && lastDay.equals(day))) {
-              out.write("\t\"" + (month+1) + "-" + day + "-" + year + "\"");
-              first = false;
+      {
+        FileWriter out = new FileWriter("./daily-users.raw"); 
+        
+        boolean first = true;
+        for(Integer year : dailyUsers.keySet()) {
+          for(Integer month : dailyUsers.keySet(year)) {
+            for(Integer day : dailyUsers.keySet(year, month)) {
+              Integer numUsers = dailyUsers.get(year, month, day); 
+              Double wavg = weeklyUsers.get(year, month, day); 
+              Double mavg = monthlyUsers.get(year, month, day); 
+              Double qavg = quarterlyUsers.get(year, month, day); 
+              
+              cal.set(year, month, day); 
+              Long stamp = cal.getTimeInMillis(); 
+              
+              out.write(stamp + "\t" + numUsers + "\t" + wavg + "\t" + mavg + "\t" + qavg); 
+              
+              if(first || 
+                 (day == 1) || 
+                 (lastYear.equals(year) && lastMonth.equals(month) && lastDay.equals(day))) {
+                out.write("\t\"" + (month+1) + "-" + day + "-" + year + "\"");
+                first = false;
+              }
+              
+              out.write("\n"); 
             }
-
-            out.write("\n"); 
           }
         }
+        
+        out.close(); 
       }
+      
+      GlueEncoderImpl.encodeFile
+        ("Daily", dailyUsers, new File("./users-baked.glue")); 
 
-      out.close(); 
+      GlueEncoderImpl.encodeFile
+        ("Average", quarterlyUsers, new File("./users-avg.glue")); 
     }
 
     {

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+function usage
+{
+  echo "usage: plot-combined-usage [--git] profileA profileB ..."
+  exit 1
+}
+
+if [ $# -lt 2 ]
+then
+  usage
+fi
+
+git=0
+if [ $# -gt 2 -a $1 == "--git" ] 
+then 
+  git=1
+  shift 1
+fi
+
+inputs=""
+for p in $*
+do
+  inputs="$inputs $p-users-baked.glue $p-users-avg.glue"
+done
+
+echo "Generating Raw Data for Plots..."
+java -cp ../../../../../build/pipeline/debug/src/java/us/temerity/pipeline/api.jar:../../../../../build/pipeline/debug/src/java/misc/GraphCombinedUsage.jar GraphCombinedUsage $inputs
+  
+echo "Plotting Users..."
+gnuplot ../../combined.gnuplot
+
+
+
+
+echo "ALL DONE."

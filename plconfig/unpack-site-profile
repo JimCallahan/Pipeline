@@ -2,7 +2,7 @@
 
 function usage
 {
-  echo "usage: unpack-site-profile --git site-profile"
+  echo "usage: unpack-site-profile [--git] site-profile"
   exit 1
 }
 
@@ -31,6 +31,9 @@ then
   mv daily-users.glue $profile-users.glue
   mv user-days.glue $profile-days.glue
 
+  mv users-baked.glue $profile-users-baked.glue
+  mv users-avg.glue $profile-users-avg.glue
+
   echo "Plotting Users..."
   gnuplot ../../users.gnuplot
   mv usage.jpg $profile-users.jpg
@@ -49,18 +52,32 @@ if [ $git -eq 1 ]
 then 
   echo "Adding to GIT..."
   git add $profile $profile.txt 
+
   if [ -f $profile-users.glue ]
   then
     git add $profile-users.glue
   fi
+
+  if [ -f $profile-users-baked.glue ]
+  then
+    git add $profile-users-baked.glue
+  fi
+
+  if [ -f $profile-users-avg.glue ]
+  then
+    git add $profile-users-avg.glue
+  fi
+
   if [ -f $profile-users.jpg ]
   then
     git add $profile-users.jpg
   fi
+
   if [ -f $profile-days.glue ]
   then
     git add $profile-days.glue
   fi
+
   if [ -f $profile-days.jpg ]
   then
     git add $profile-days.jpg
