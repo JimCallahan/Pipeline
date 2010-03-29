@@ -44,7 +44,6 @@ class MayaPyToMELAction
           "Create a MEL wrapper for Maya python scripts.");
     
     
-    underDevelopment();
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
   }
@@ -135,7 +134,8 @@ class MayaPyToMELAction
             String suffix = seq.getFilePattern().getSuffix();
             if (suffix == null || !suffix.equals("py"))
               throw new PipelineException("All used sources must have the py suffix.");
-            String sname = new Path(sourceName).getParentPath() + seq.getPath(0).toString();
+            String sname = new Path(new Path(sourceName).getParentPath(), 
+                                    seq.getPath(0)).toString();
             pythonScripts.put(order, sname);
           }
         }
@@ -151,7 +151,8 @@ class MayaPyToMELAction
           String suffix = seq.getFilePattern().getSuffix();
           if (suffix == null || !suffix.equals("py"))
             throw new PipelineException("All used sources must have the py suffix.");
-          String sname = new Path(sourceName).getParentPath() + seq.getPath(0).toString();
+          String sname = new Path(new Path(sourceName).getParentPath(), 
+                                   seq.getPath(0)).toString();
           pythonScripts.put(order, sname);
         }
       }
@@ -161,13 +162,15 @@ class MayaPyToMELAction
     try {      
       FileWriter out = new FileWriter(melScript);
       
-      out.write("string $WORKING = getenv(\"WORKING\");\n");
+      out.write("string $WORKING = getenv(\"WORKING\");\n" +
+      		"print ($WORKING + \"\\n\");\n");
       
       for (Integer order : pythonScripts.keySet()) {
         for (String fileName : pythonScripts.get(order)) {
           out.write
           ("{\n" + 
-           "  string $fileName = $WORKING + \"\"; \n" + 
+           "  string $fileName = $WORKING + \"" + fileName +"\"; \n" + 
+           "  print ($fileName + \"\\n\");\n" +
            "  python(\"source = open('\" + $fileName + \"', 'rU')\");\n" + 
            "  python(\"exec source\");\n" + 
            "  python(\"source.close()\");\n" + 
