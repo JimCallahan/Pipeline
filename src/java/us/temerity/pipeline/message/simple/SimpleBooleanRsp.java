@@ -1,9 +1,10 @@
 // $Id: BooleanRsp.java,v 1.1 2009/12/14 03:20:56 jim Exp $
 
-package us.temerity.pipeline.message;
+package us.temerity.pipeline.message.simple;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.message.*;
 
 import java.io.*;
 import java.util.*;
@@ -16,7 +17,7 @@ import java.util.*;
  * A response containing only a simple boolean value. 
  */
 public
-class BooleanRsp
+class SimpleBooleanRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -33,7 +34,7 @@ class BooleanRsp
    *   The boolean value. 
    */
   public
-  BooleanRsp
+  SimpleBooleanRsp
   (
    TaskTimer timer, 
    boolean isTrue

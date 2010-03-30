@@ -14,6 +14,7 @@ import us.temerity.pipeline.builder.ActionOnExistence;
 import us.temerity.pipeline.event.BaseNodeEvent;
 import us.temerity.pipeline.glue.Glueable;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.simple.*;
 import us.temerity.pipeline.toolset.*;
 
 
@@ -7104,8 +7105,8 @@ class MasterMgrClient
     NodeSiteVersionReq req = new NodeSiteVersionReq(tarPath); 
     
     Object obj = performTransaction(MasterRequest.IsSiteVersionInserted, req); 
-    if(obj instanceof BooleanRsp) {
-      BooleanRsp rsp = (BooleanRsp) obj;
+    if(obj instanceof SimpleBooleanRsp) {
+      SimpleBooleanRsp rsp = (SimpleBooleanRsp) obj;
       return rsp.isTrue();
     }
     else {
@@ -7893,8 +7894,8 @@ class MasterMgrClient
     NodeWorkingAreaPatternReq req = new NodeWorkingAreaPatternReq(author, view, pattern);
 
     Object obj = performTransaction(MasterRequest.HasUnfinishedJobs, req);  
-    if(obj instanceof BooleanRsp) {
-      BooleanRsp rsp = (BooleanRsp) obj;
+    if(obj instanceof SimpleBooleanRsp) {
+      SimpleBooleanRsp rsp = (SimpleBooleanRsp) obj;
       return rsp.isTrue();
     }
     else {
