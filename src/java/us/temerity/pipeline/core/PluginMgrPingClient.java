@@ -4,6 +4,7 @@ package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.plugin.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M G R   P I N G   C L I E N T                                            */

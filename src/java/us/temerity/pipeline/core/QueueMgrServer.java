@@ -9,6 +9,9 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.misc.*;
+import us.temerity.pipeline.message.queue.*;
+import us.temerity.pipeline.message.simple.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R   S E R V E R                                                        */

@@ -16,6 +16,9 @@ import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.misc.*;
+import us.temerity.pipeline.message.plugin.*;
+import us.temerity.pipeline.message.simple.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M G R                                                                    */
