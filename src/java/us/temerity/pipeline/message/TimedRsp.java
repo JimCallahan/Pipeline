@@ -2,16 +2,18 @@
 
 package us.temerity.pipeline.message;
 
-import java.io.*;
+import us.temerity.pipeline.*; 
+import us.temerity.pipeline.core.*; 
 
-import us.temerity.pipeline.*;
+import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T I M E D   R S P                                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The base class for all server responses which include timing statistics.
+ * The base class for all server responses which include timining statistics.
  */
 public
 class TimedRsp

@@ -7,7 +7,6 @@ import java.util.TreeSet;
 
 import us.temerity.pipeline.builder.BaseBuilderCollection;
 import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.message.plugin.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   P L U G I N   M G R   C L I E N T                                            */

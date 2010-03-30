@@ -7,8 +7,6 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.message.misc.*;
-import us.temerity.pipeline.message.queue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R   C O N T R O L   C L I E N T                                        */
@@ -362,8 +360,8 @@ class QueueMgrControlClient
       new QueueGetUnfinishedJobsForNodesReq(author, view, fseqs); 
     
     Object obj = performTransaction(QueueRequest.GetUnfinishedJobsForNodes, req);
-    if(obj instanceof QueueGetUnfinishedJobsForNodesRsp) {
-      QueueGetUnfinishedJobsForNodesRsp rsp = (QueueGetUnfinishedJobsForNodesRsp) obj;
+    if(obj instanceof GetUnfinishedJobsForNodesRsp) {
+      GetUnfinishedJobsForNodesRsp rsp = (GetUnfinishedJobsForNodesRsp) obj;
       return rsp.getJobIDs();
     }
     else {
@@ -399,8 +397,8 @@ class QueueMgrControlClient
       new QueueGetUnfinishedJobsForNodeFilesReq(nodeID, files);
     
     Object obj = performTransaction(QueueRequest.GetUnfinishedJobsForNodeFiles, req);
-    if(obj instanceof QueueGetUnfinishedJobsForNodeFilesRsp) {
-      QueueGetUnfinishedJobsForNodeFilesRsp rsp = (QueueGetUnfinishedJobsForNodeFilesRsp) obj;
+    if(obj instanceof GetUnfinishedJobsForNodeFilesRsp) {
+      GetUnfinishedJobsForNodeFilesRsp rsp = (GetUnfinishedJobsForNodeFilesRsp) obj;
       return rsp.getJobIDs();
     }
     else {
