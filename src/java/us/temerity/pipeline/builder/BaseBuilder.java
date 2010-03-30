@@ -1537,6 +1537,21 @@ class BaseBuilder
     ArrayList<String> toQueue = new ArrayList<String>();
     
     TreeSet<String> roots = new TreeSet<String>(nodes);
+    
+    TreeSet<String> badNodes = new TreeSet<String>();
+    for (String node : roots) {
+      if (!workingVersionExists(node)) 
+        badNodes.add(node);
+    }
+    if (badNodes.size() > 0) {
+      for (String badNode : badNodes) 
+        pLog.logAndFlush
+          (Kind.Ops, Level.Warning, 
+           "The node (" + badNode + ") was specified as a node to queue, but no working " +
+           "version of the node exists");
+      roots.remove(badNodes);
+    }
+    
     TreeMap<String, NodeStatus> stati =
       pClient.status(getAuthor(), getView(), roots, roots, DownstreamMode.None);
 
@@ -1544,7 +1559,7 @@ class BaseBuilder
     MappedSet<String, String> nodesIDependOn = new MappedSet<String, String>();
     MappedSet<String, String> nodesDependingOnMe = new MappedSet<String, String>();
     
-    for (String node : nodes) {
+    for (String node : roots) {
       NodeStatus stat = stati.get(node);
       searchForDubious(stat, dubiousNodes, nodesIDependOn, nodesDependingOnMe, null);
         pClient.status(getAuthor(), getView(), node, false, DownstreamMode.None);
