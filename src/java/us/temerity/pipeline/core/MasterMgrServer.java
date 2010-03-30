@@ -10,7 +10,10 @@ import java.util.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.event.EditedNodeEvent;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.env.*;
+import us.temerity.pipeline.message.misc.*;
 import us.temerity.pipeline.message.node.*;
+import us.temerity.pipeline.message.simple.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R   M G R   S E R V E R                                                      */

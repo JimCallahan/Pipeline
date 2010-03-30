@@ -3,7 +3,9 @@
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.misc.*;
 import us.temerity.pipeline.message.queue.*;
+import us.temerity.pipeline.message.simple.*;
 
 import java.io.*;
 import java.net.*;
@@ -2343,8 +2345,8 @@ class QueueMgrClient
     verifyConnection();
     
     Object obj = performTransaction(QueueRequest.GetChooserUpdateTime, null);
-    if(obj instanceof MiscGetLongRsp) {
-      MiscGetLongRsp rsp = (MiscGetLongRsp) obj;
+    if(obj instanceof SimpleLongRsp) {
+      SimpleLongRsp rsp = (SimpleLongRsp) obj;
       return rsp.getLongValue();
     }
     else {
