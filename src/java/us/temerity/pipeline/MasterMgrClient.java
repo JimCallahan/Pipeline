@@ -14,6 +14,7 @@ import us.temerity.pipeline.builder.ActionOnExistence;
 import us.temerity.pipeline.event.BaseNodeEvent;
 import us.temerity.pipeline.glue.Glueable;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.node.*;
 import us.temerity.pipeline.message.simple.*;
 import us.temerity.pipeline.toolset.*;
 

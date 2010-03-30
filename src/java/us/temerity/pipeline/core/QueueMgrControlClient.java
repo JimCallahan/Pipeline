@@ -7,6 +7,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.queue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R   C O N T R O L   C L I E N T                                        */

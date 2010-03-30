@@ -16,6 +16,7 @@ import us.temerity.pipeline.core.QueueHost.*;
 import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.queue.*;
 import us.temerity.pipeline.toolset.*;
 
 /*------------------------------------------------------------------------------------------*/

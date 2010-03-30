@@ -18,6 +18,7 @@ import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.node.*;
 import us.temerity.pipeline.message.simple.*;
 import us.temerity.pipeline.toolset.*;
 
