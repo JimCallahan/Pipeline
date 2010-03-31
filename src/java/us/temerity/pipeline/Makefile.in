@@ -401,7 +401,15 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
     MATH_SOURCES = $(shell ls $(srcdir)/math/*.java) 
 
-     MSG_SOURCES = $(shell ls $(srcdir)/message/*.java)
+     MSG_SOURCES = $(shell ls $(srcdir)/message/*.java) \
+                   $(shell ls $(srcdir)/message/env/*.java) \
+                   $(shell ls $(srcdir)/message/file/*.java) \
+                   $(shell ls $(srcdir)/message/job/*.java) \
+                   $(shell ls $(srcdir)/message/misc/*.java) \
+                   $(shell ls $(srcdir)/message/node/*.java) \
+                   $(shell ls $(srcdir)/message/plugin/*.java) \
+                   $(shell ls $(srcdir)/message/queue/*.java) \
+                   $(shell ls $(srcdir)/message/simple/*.java)
 
    PARAM_SOURCES = $(shell ls $(srcdir)/param/key/*.java)
 
@@ -525,6 +533,15 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/utils/*.class \
                     us/temerity/pipeline/utils/v2_0_14/*.class; \
          $(JAR) uvf us/temerity/pipeline/$(ALL_JAR) \
+                    us/temerity/pipeline/message/env/*.class \
+                    us/temerity/pipeline/message/file/*.class \
+                    us/temerity/pipeline/message/job/*.class \
+                    us/temerity/pipeline/message/misc/*.class \
+                    us/temerity/pipeline/message/node/*.class \
+                    us/temerity/pipeline/message/plugin/*.class \
+                    us/temerity/pipeline/message/queue/*.class \
+                    us/temerity/pipeline/message/simple/*.class; \
+         $(JAR) uvf us/temerity/pipeline/$(ALL_JAR) \
                     `find us/temerity/pipeline/plugin -type f -name "*.class"` )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
@@ -557,7 +574,16 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/ui/*.class \
                     us/temerity/pipeline/utils/*.class \
-                    us/temerity/pipeline/utils/v2_0_14/*.class; )
+                    us/temerity/pipeline/utils/v2_0_14/*.class; \
+         $(JAR) uvf us/temerity/pipeline/$(API_JAR) \
+                    us/temerity/pipeline/message/env/*.class \
+                    us/temerity/pipeline/message/file/*.class \
+                    us/temerity/pipeline/message/job/*.class \
+                    us/temerity/pipeline/message/misc/*.class \
+                    us/temerity/pipeline/message/node/*.class \
+                    us/temerity/pipeline/message/plugin/*.class \
+                    us/temerity/pipeline/message/queue/*.class \
+                    us/temerity/pipeline/message/simple/*.class; )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
@@ -792,6 +818,14 @@ clean-class:
 	rm -f glue/io/*.class
 	rm -f laf/*.class
 	rm -f message/*.class
+	rm -f message/env/*.class
+	rm -f message/file/*.class
+	rm -f message/job/*.class
+	rm -f message/misc/*.class
+	rm -f message/node/*.class
+	rm -f message/plugin/*.class
+	rm -f message/queue/*.class
+	rm -f message/simple/*.class
 	rm -f param/key/*.class
 	rm -f plugin/*/*/*.jar
 	find plugin -type f -name "*.class" -exec rm {} \; 

@@ -1544,12 +1544,13 @@ class BaseBuilder
         badNodes.add(node);
     }
     if (badNodes.size() > 0) {
-      for (String badNode : badNodes) 
+      for (String badNode : badNodes) { 
         pLog.logAndFlush
           (Kind.Ops, Level.Warning, 
            "The node (" + badNode + ") was specified as a node to queue, but no working " +
            "version of the node exists");
-      roots.remove(badNodes);
+        roots.remove(badNode);
+      }
     }
     
     TreeMap<String, NodeStatus> stati =
@@ -3166,7 +3167,25 @@ class BaseBuilder
       if (performCheckIn()) {
         pLog.log(Kind.Ops, Level.Fine, 
           "Beginning check-in for builder ("+ getPrefixedName() + ").");
-        checkInNodes(getNodesToCheckIn(), getCheckinLevel(), getCheckInMessage());
+        
+        LinkedList<String> roots = getNodesToCheckIn();
+        
+        TreeSet<String> badNodes = new TreeSet<String>();
+        for (String node : roots) {
+          if (!workingVersionExists(node)) 
+            badNodes.add(node);
+        }
+        if (badNodes.size() > 0) {
+          for (String badNode : badNodes) { 
+            pLog.logAndFlush
+              (Kind.Ops, Level.Warning, 
+               "The node (" + badNode + ") was specified as a node to check-in, but no " +
+               	"working version of the node exists");
+            roots.remove(badNode);
+          }
+        }
+        
+        checkInNodes(roots, getCheckinLevel(), getCheckInMessage());
         if (getLockBundles().size() > 0) {
           pLog.log(Kind.Ops, Level.Fine, 
             "Locking appropriate nodes for builder ("+ getPrefixedName() + ").");
