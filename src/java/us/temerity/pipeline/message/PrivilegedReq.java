@@ -2,11 +2,9 @@
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
-
 import java.io.*;
-import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P R I V I L E G E D   R E Q                                                            */

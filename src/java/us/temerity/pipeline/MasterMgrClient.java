@@ -14,6 +14,11 @@ import us.temerity.pipeline.builder.ActionOnExistence;
 import us.temerity.pipeline.event.BaseNodeEvent;
 import us.temerity.pipeline.glue.Glueable;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.env.*;
+import us.temerity.pipeline.message.misc.*;
+import us.temerity.pipeline.message.node.*;
+import us.temerity.pipeline.message.queue.*;
+import us.temerity.pipeline.message.simple.*;
 import us.temerity.pipeline.toolset.*;
 
 
@@ -5140,8 +5145,8 @@ class MasterMgrClient
     NodeRenumberReq req = new NodeRenumberReq(nodeID, range, removeFiles);
 
     Object obj = performTransaction(MasterRequest.Renumber, req); 
-    if(obj instanceof GetUnfinishedJobsForNodeFilesRsp) {
-      GetUnfinishedJobsForNodeFilesRsp rsp = (GetUnfinishedJobsForNodeFilesRsp) obj;
+    if(obj instanceof QueueGetUnfinishedJobsForNodeFilesRsp) {
+      QueueGetUnfinishedJobsForNodeFilesRsp rsp = (QueueGetUnfinishedJobsForNodeFilesRsp) obj;
       return rsp.getJobIDs();
     }
     else if(obj instanceof SuccessRsp) {
@@ -6176,8 +6181,8 @@ class MasterMgrClient
     NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, mode, method);
 
     Object obj = performLongTransaction(MasterRequest.CheckOut, req, 15000, 60000); 
-    if(obj instanceof GetUnfinishedJobsForNodesRsp) {
-      GetUnfinishedJobsForNodesRsp rsp = (GetUnfinishedJobsForNodesRsp) obj;
+    if(obj instanceof QueueGetUnfinishedJobsForNodesRsp) {
+      QueueGetUnfinishedJobsForNodesRsp rsp = (QueueGetUnfinishedJobsForNodesRsp) obj;
       return rsp.getJobIDs();
     }
     else if(obj instanceof SuccessRsp) {
@@ -7104,8 +7109,8 @@ class MasterMgrClient
     NodeSiteVersionReq req = new NodeSiteVersionReq(tarPath); 
     
     Object obj = performTransaction(MasterRequest.IsSiteVersionInserted, req); 
-    if(obj instanceof BooleanRsp) {
-      BooleanRsp rsp = (BooleanRsp) obj;
+    if(obj instanceof SimpleBooleanRsp) {
+      SimpleBooleanRsp rsp = (SimpleBooleanRsp) obj;
       return rsp.isTrue();
     }
     else {
@@ -7893,8 +7898,8 @@ class MasterMgrClient
     NodeWorkingAreaPatternReq req = new NodeWorkingAreaPatternReq(author, view, pattern);
 
     Object obj = performTransaction(MasterRequest.HasUnfinishedJobs, req);  
-    if(obj instanceof BooleanRsp) {
-      BooleanRsp rsp = (BooleanRsp) obj;
+    if(obj instanceof SimpleBooleanRsp) {
+      SimpleBooleanRsp rsp = (SimpleBooleanRsp) obj;
       return rsp.isTrue();
     }
     else {
@@ -7971,8 +7976,8 @@ class MasterMgrClient
     NodeWorkingAreaPatternReq req = new NodeWorkingAreaPatternReq(author, view, pattern);
 
     Object obj = performTransaction(MasterRequest.GetUnfinishedJobs, req);  
-    if(obj instanceof GetUnfinishedJobsForNodesRsp) {
-      GetUnfinishedJobsForNodesRsp rsp = (GetUnfinishedJobsForNodesRsp) obj;
+    if(obj instanceof QueueGetUnfinishedJobsForNodesRsp) {
+      QueueGetUnfinishedJobsForNodesRsp rsp = (QueueGetUnfinishedJobsForNodesRsp) obj;
       return rsp.getJobIDs();
     }
     else {

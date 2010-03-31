@@ -18,6 +18,11 @@ import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.env.*;
+import us.temerity.pipeline.message.misc.*;
+import us.temerity.pipeline.message.node.*;
+import us.temerity.pipeline.message.queue.*;
+import us.temerity.pipeline.message.simple.*;
 import us.temerity.pipeline.toolset.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -9246,7 +9251,7 @@ class MasterMgr
         try {
 	  TreeSet<Long> jobIDs = qclient.getUnfinishedJobsForNodeFiles(nodeID, obsolete);
           if(!jobIDs.isEmpty()) 
-            return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
+            return new QueueGetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
         }
         finally {
           releaseQueueMgrClient(qclient);
@@ -10930,7 +10935,7 @@ class MasterMgr
             MappedSet<String,Long> jobIDs = 
               qclient.getUnfinishedJobsForNodes(nodeID.getAuthor(), nodeID.getView(), fseqs);
             if(!jobIDs.isEmpty()) 
-              return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+              return new QueueGetUnfinishedJobsForNodesRsp(timer, jobIDs);
           }
           finally {
             releaseQueueMgrClient(qclient);
@@ -13426,7 +13431,7 @@ class MasterMgr
         }  
       }
 
-      return new BooleanRsp(timer, isInserted);    
+      return new SimpleBooleanRsp(timer, isInserted);    
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -15768,7 +15773,7 @@ class MasterMgr
              first match of a unfinished job instead of building up the jobIDs... */ 
           if(!fseqs.isEmpty() && 
              !qclient.getUnfinishedJobsForNodes(author, view, fseqs).isEmpty())
-            return new BooleanRsp(timer, true); 
+            return new SimpleBooleanRsp(timer, true); 
         }
       }
       catch(PatternSyntaxException ex) {
@@ -15779,7 +15784,7 @@ class MasterMgr
         releaseQueueMgrClient(qclient);
       }
 
-      return new BooleanRsp(timer, false); 
+      return new SimpleBooleanRsp(timer, false); 
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -15860,7 +15865,7 @@ class MasterMgr
         releaseQueueMgrClient(qclient);
       }
 
-      return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+      return new QueueGetUnfinishedJobsForNodesRsp(timer, jobIDs);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());

@@ -16,6 +16,9 @@ import us.temerity.pipeline.core.QueueHost.*;
 import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.misc.*;
+import us.temerity.pipeline.message.queue.*;
+import us.temerity.pipeline.message.simple.*;
 import us.temerity.pipeline.toolset.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -5249,7 +5252,7 @@ class QueueMgr
         }
       }
       
-      return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+      return new QueueGetUnfinishedJobsForNodesRsp(timer, jobIDs);
     }
     finally {
       pDatabaseLock.releaseReadLock();
@@ -5310,7 +5313,7 @@ class QueueMgr
         }
       }
       
-      return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
+      return new QueueGetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
     }
     finally {
       pDatabaseLock.releaseReadLock();
@@ -6512,7 +6515,7 @@ class QueueMgr
     try {
       long time = pChooserUpdateTime.get();
       
-      return new MiscGetLongRsp(timer, time, "QueueMgr.getChooserUpdateTime()");
+      return new SimpleLongRsp(timer, time, "QueueMgr.getChooserUpdateTime()");
     }
     finally {
       pDatabaseLock.releaseReadLock();

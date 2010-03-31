@@ -648,44 +648,6 @@ class TemplateStage
     throws PipelineException
   {
     NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
-    if(PackageInfo.sOsType == OsType.Windows) { 
-      try {
-        File script = File.createTempFile("BuilderTouchFiles", ".bat");
-        FileWriter out = new FileWriter(script);
-        
-        Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent());
-        
-        wpath.toFile().mkdirs();
-        
-        for(Path target : pRegisteredNodeMod.getPrimarySequence().getPaths()) {
-          Path path = new Path(wpath, target);
-          out.write("@echo off > " + path.toOsString() + "\n"); 
-        }
-        
-        for(FileSeq fseq : pRegisteredNodeMod.getSecondarySequences()) {
-          for(Path target : fseq.getPaths()) {
-            Path path = new Path(wpath, target);
-            out.write("@echo off > " + path.toOsString() + "\n"); 
-          }
-        }
-        
-        out.close();
-        
-        TreeMap<String, String> toolset = 
-          pClient.getToolsetEnvironment
-            (getAuthor(), getView(), getToolset(), PackageInfo.sOsType);
-        SubProcessLight light = 
-          new SubProcessLight("BuilderTouch", script.getPath(), new ArrayList<String>(), 
-                              toolset, PackageInfo.sTempPath.toFile());
-        return light;
-      }
-      catch(IOException ex) {
-        throw new PipelineException
-          ("Unable to write temporary BAT file to touch the files for node " +
-           "(" + pRegisteredNodeName + ")\n" + ex.getMessage());
-      }
-    }
-    else {
       ArrayList<String> args = new ArrayList<String>();
       for(File file : pRegisteredNodeMod.getPrimarySequence().getFiles()) 
         args.add(file.toString());
@@ -704,7 +666,6 @@ class TemplateStage
       SubProcessLight light = 
         new SubProcessLight("BuilderTouch", "touch", args, toolset, wpath.toFile());
       return light;
-    }
   }
   
   private SubProcessLight
@@ -952,21 +913,48 @@ class TemplateStage
         pLog.log(Kind.Bld, Level.Finer, 
           "Touching the files on (" + pRegisteredNodeName + ") to remove staleness as part of " +
           "finalization.");
-        SubProcessLight process = touchFilesProcess();
-        process.run();
-        try {
-          process.join();
+        if (PackageInfo.sOsType != OsType.Windows) {
+          SubProcessLight process = touchFilesProcess();
+          process.run();
+          try {
+            process.join();
+          }
+          catch (InterruptedException ex) {
+            String message = "The touch subprocess for node () failed.\n";
+            throw new PipelineException(Exceptions.getFullMessage(message, ex));
+          }
+          Integer exit = process.getExitCode();
+          if (exit == null || exit != 0)
+            throw new PipelineException
+            ("The touch subprocess did not finish correctly\n" +
+              process.getStdOut() + "\n" + process.getStdErr());
         }
-        catch (InterruptedException ex) 
-        {
-          String message = "The touch subprocess for node () failed.\n";
-          throw new PipelineException(Exceptions.getFullMessage(message, ex));
+        else {
+          NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+          long currentTime = System.currentTimeMillis();
+          Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent());
+          
+          wpath.toFile().mkdirs();
+          
+          for(Path target : pRegisteredNodeMod.getPrimarySequence().getPaths()) {
+            Path path = new Path(wpath, target);
+            File file = path.toFile();
+            file.setWritable(true, true);
+            file.setLastModified(currentTime);
+            file.setWritable(false);
+          }
+
+          for(FileSeq fseq : pRegisteredNodeMod.getSecondarySequences()) {
+            for(Path target : fseq.getPaths()) {
+              Path path = new Path(wpath, target);
+              File file = path.toFile();
+              file.setWritable(true, true);
+              file.setLastModified(currentTime);
+              file.setWritable(false);
+
+            }
+          }
         }
-        Integer exit = process.getExitCode();
-        if (exit == null || exit != 0)
-          throw new PipelineException
-          ("The touch subprocess did not finish correctly\n" +
-            process.getStdOut() + "\n" + process.getStdErr());
       }
       else {
         pLog.log(Kind.Bld, Level.Finer, 

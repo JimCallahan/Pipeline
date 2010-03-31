@@ -3,6 +3,7 @@
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.simple.*;
 
 import java.io.*;
 import java.net.*;

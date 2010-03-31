@@ -15,3 +15,4 @@ NodeBundleConform.java
 PathTest.java
 StatusTest.java
 TemplateGlueTest.java
+BuilderParamMapTest.java

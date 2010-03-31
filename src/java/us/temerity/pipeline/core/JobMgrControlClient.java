@@ -4,6 +4,7 @@ package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.job.*;
 
 import java.io.*;
 import java.net.*;

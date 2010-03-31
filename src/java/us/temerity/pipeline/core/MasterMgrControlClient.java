@@ -7,6 +7,7 @@ import java.util.Map.*;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.message.*; 
+import us.temerity.pipeline.message.node.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R    M G R   C O N T R O L   C L I E N T                                     */

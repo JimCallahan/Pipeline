@@ -4,6 +4,10 @@ package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.env.*;
+import us.temerity.pipeline.message.misc.*;
+import us.temerity.pipeline.message.node.*;
+import us.temerity.pipeline.message.simple.*;
 import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.event.*;
