@@ -3,7 +3,7 @@
 if [ -f /etc/SuSE-release ]
 then 
   suse_release=`head -1 /etc/SuSE-release`
-  if [ "$suse_release" != "openSUSE 11.2 (x86-64)" ]
+  if [ "$suse_release" != "openSUSE 11.2 (x86_64)" ]
   then
     echo "This configuration should only be run from a openSUSE-11.2 (64-bit) machine!"
     echo "  Found: $suse_release"
