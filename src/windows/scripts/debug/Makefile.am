@@ -35,6 +35,8 @@ WIN_SPLASH_DIR = $(shell echo '@SPLASH_DIR@' | sed -e 's|/|\\\\\\\\|g')
 WIN_LOCAL_JAVA_LIBS = $(shell echo '@LOCAL_JAVA_LIBS@' | sed -e 's|/|\\\\\\\\|g')
 
 
+if HAS_WIN_LOCAL_JAVA_LIBS
+
 %.bat: %.bat.src
 	(cat $< \
          | sed -e "s|@JAVA_RUNTIME@|$(WIN_JAVA_RUNTIME)|g" \
@@ -46,3 +48,18 @@ WIN_LOCAL_JAVA_LIBS = $(shell echo '@LOCAL_JAVA_LIBS@' | sed -e 's|/|\\\\\\\\|g'
          | sed -e "s|@PIPELINE_PYARCHDIR@|$(WIN_PIPELINE_PYARCHDIR)|g" \
          | sed -e "s|@SPLASH_DIR@|$(WIN_SPLASH_DIR)|g" \
          | sed -e "s|@LOCAL_JAVA_LIBS@|$(WIN_LOCAL_JAVA_LIBS)|g" > $@) 
+
+else
+
+%.bat: %.bat.src
+	(cat $< \
+         | sed -e "s|@JAVA_RUNTIME@|$(WIN_JAVA_RUNTIME)|g" \
+         | sed -e "s|@PIPELINE_JAR@|$(WIN_PIPELINE_JAR)|g"  \
+         | sed -e "s|@JOGL_JAR@|$(WIN_JOGL_JAR)|g" \
+         | sed -e "s|@JYTHON_JAR@|$(WIN_JYTHON_JAR)|g" \
+         | sed -e "s|@GLUEGEN_JAR@|$(WIN_GLUEGEN_JAR)|g" \
+         | sed -e "s|@JOGL_LIBRARY_PATH@|$(WIN_JOGL_LIBRARY_PATH)|g" \
+         | sed -e "s|@PIPELINE_PYARCHDIR@|$(WIN_PIPELINE_PYARCHDIR)|g" \
+         | sed -e "s|@SPLASH_DIR@|$(WIN_SPLASH_DIR)|g" > $@) 
+
+endif

@@ -652,6 +652,7 @@ fi
 
 AC_MSG_RESULT([$UNIX_LOCAL_JAVA_LIBS])
 
+AM_CONDITIONAL(HAS_UNIX_LOCAL_JAVA_LIBS, test x$UNIX_LOCAL_JAVA_LIBS != "x")
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -1045,6 +1046,8 @@ AM_CONDITIONAL(HAS_MAC, test x$has_mac = xtrue)
 AC_SUBST(SUPPORTS_MAC)
 SUPPORTS_MAC="$mac_support"
 
+AM_CONDITIONAL(HAS_MAC_LOCAL_JAVA_LIBS, test x$MAC_LOCAL_JAVA_LIBS != "x")
+
 
 dnl ------------------------------------------------------------------------------------------
 
@@ -1184,6 +1187,8 @@ then
   WIN_PIPELINE_USERNAME="L\""$win_domain"\\\\"$PIPELINE_USER"\""
   WIN_PIPELINE_PASSWORD="L\""$win_password"\""
 fi
+
+AM_CONDITIONAL(HAS_WIN_LOCAL_JAVA_LIBS, test x$WIN_LOCAL_JAVA_LIBS != "x")
 
 
 dnl ------------------------------------------------------------------------------------------
