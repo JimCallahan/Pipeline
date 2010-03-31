@@ -256,9 +256,11 @@ class TemplateStage
     
     {
       JobReqs reqs = pSourceMod.getJobRequirements();
-      addSelectionKeys(new TreeSet<String>(reqs.getSelectionKeys()));
-      addLicenseKeys(new TreeSet<String>(reqs.getLicenseKeys()));
-      addHardwareKeys(new TreeSet<String>(reqs.getHardwareKeys()));
+      if (reqs != null) {
+        addSelectionKeys(new TreeSet<String>(reqs.getSelectionKeys()));
+        addLicenseKeys(new TreeSet<String>(reqs.getLicenseKeys()));
+        addHardwareKeys(new TreeSet<String>(reqs.getHardwareKeys()));
+      }
     }
   }
   
