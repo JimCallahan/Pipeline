@@ -456,11 +456,14 @@ class OffsetsPanel
         return pContext.getSelected();
       }
       
+      static final long serialVersionUID = 4152235116045509382L;
       
       private JCollectionField pContext;
     }
 
-    
+
+    static final long serialVersionUID = -7871348827246497842L;
+
     private JParamNameField pOffset;
     private JIntegerField pValue;
     
