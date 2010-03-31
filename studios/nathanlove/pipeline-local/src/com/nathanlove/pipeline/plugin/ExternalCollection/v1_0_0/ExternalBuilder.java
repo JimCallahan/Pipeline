@@ -43,6 +43,7 @@ class ExternalBuilder
     addCheckinWhenDoneParam();
     
     addSetupPass(new InfoPass());
+    addConstructPass(new BuildPass());
     
     AdvancedLayoutGroup layout = 
       new AdvancedLayoutGroup
@@ -87,6 +88,27 @@ class ExternalBuilder
     }
 
     private static final long serialVersionUID = 321191179261260073L;
+  }
+  
+  private 
+  class BuildPass
+    extends ConstructPass
+  {
+    private
+    BuildPass()
+    {
+      super("BuildPass", "Makes stuff.");
+    }
+    
+    @Override
+    public void buildPhase()
+      throws PipelineException
+    {
+      String nodeName = "/tests/files/doesnotExist";
+      
+      addToQueueList(nodeName);
+      addToCheckInList(nodeName);
+    }
   }
 
   private static final long serialVersionUID = -6656333311497442069L;
