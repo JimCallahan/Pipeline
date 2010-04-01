@@ -3079,6 +3079,7 @@ class FileMgr
         Map<String,String> env = System.getenv();
         
         ArrayList<String> args = new ArrayList<String>();
+        args.add("-format=posix");
         args.add("-cvhf");
         args.add(tarPath.toOsString());
         args.add("./"); 

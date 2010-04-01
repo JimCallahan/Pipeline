@@ -28,6 +28,12 @@ InsertSiteVersion
 
       PluginMgrClient.init(true);
       MasterMgrClient client = new MasterMgrClient();
+      
+      boolean isInserted = client.isSiteVersionInserted(tarPath); 
+      LogMgr.getInstance().logAndFlush
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+         "IsInserted: " + isInserted); 
+
       client.insertSiteVersion(tarPath); 
 
       success = true;
