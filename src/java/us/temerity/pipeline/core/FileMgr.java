@@ -3080,8 +3080,10 @@ class FileMgr
         
         ArrayList<String> args = new ArrayList<String>();
         args.add("--format=posix");
-        args.add("-cvhf");
-        args.add(tarPath.toOsString());
+        args.add("--create");
+        args.add("--verbose");
+        args.add("--dereference");
+        args.add("--file=" + tarPath.toOsString());
         args.add("./"); 
         
         SubProcessLight proc = 
@@ -3329,12 +3331,13 @@ class FileMgr
 
             ArrayList<String> args = new ArrayList<String>();
             args.add("--exclude=./NodeVersion.glue"); 
-            args.add("--exclude=./README"); 
-            args.add("-xvf");
-            args.add(tarPath.toOsString());
+            args.add("--exclude=./README");             
+            args.add("--extract");
+            args.add("--verbose");
+            args.add("--file=" + tarPath.toOsString());
             
             SubProcessLight proc = 
-              new SubProcessLight("ExtractSiteVersion", "tar", args, env, rdir.toFile()); 
+              new SubProcessLight("InsertSiteVersion", "tar", args, env, rdir.toFile()); 
             
             try {
               proc.start();

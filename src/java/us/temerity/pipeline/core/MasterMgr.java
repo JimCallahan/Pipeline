@@ -13243,7 +13243,7 @@ class MasterMgr
 	  ("Only a user with Master Admin privileges may extract site versions!"); 
 
       /* lookup the node version */ 
-      NodeVersion vsn = null;
+      NodeVersion ovsn = null;
       {
         timer.aquire();
         LoggedLock lock = getCheckedInLock(name);
@@ -13256,7 +13256,7 @@ class MasterMgr
             throw new PipelineException 
               ("No checked-in version (" + vid + ") of node (" + name + ") exists!"); 
           
-          vsn = new NodeVersion(bundle.getVersion());
+          ovsn = new NodeVersion(bundle.getVersion());
         }
         finally {
           lock.releaseReadLock();
@@ -13268,7 +13268,8 @@ class MasterMgr
       long stamp = System.currentTimeMillis(); 
       String tarName = (stamp + "-" + npath.getName() + ".tar"); 
       Path tarPath = new Path(dir, tarName); 
-      vsn.makeSiteLocal(referenceNames, localSiteName, stamp, creator, tarName);
+      NodeVersion vsn = 
+        new NodeVersion(ovsn, referenceNames, localSiteName, stamp, creator, tarName);
 
       /* combine automatic replacements for references with the supplied replacements */ 
       TreeMap<String,String> repls = new TreeMap<String,String>();
