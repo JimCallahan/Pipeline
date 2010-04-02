@@ -3,6 +3,8 @@
 if [ -f ~/.rpmrc ]
 then
   mv -f ~/.rpmrc ~/.rpmrc-SAVED
+elif [ -h ~/.rpmrc ]
+  rm -f ~/.rpmrc
 fi
 
 ln -s @RPM_ROOT@/rpmrc ~/.rpmrc
@@ -11,6 +13,8 @@ ln -s @RPM_ROOT@/rpmrc ~/.rpmrc
 if [ -f ~/.rpmmacros ]
 then
   mv -f ~/.rpmmacros ~/.rpmmacros-SAVED
+elif [ -h ~/.rpmmacros ]
+  rm -f ~/.rpmmacros
 fi
 
 ln -s @RPM_ROOT@/rpmmacros ~/.rpmmacros
@@ -21,11 +25,13 @@ rpmbuild $*
 
 if [ -f ~/.rpmrc-SAVED ]
 then
+  rm -f ~/.rpmrc
   mv -f ~/.rpmrc-SAVED ~/.rpmrc
 fi
 
 
 if [ -f ~/.rpmmacros-SAVED ]
 then
+  rm -f ~/.rpmmacros
   mv -f ~/.rpmmacros-SAVED ~/.rpmmacros
 fi
