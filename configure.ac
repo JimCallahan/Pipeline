@@ -2541,6 +2541,7 @@ AC_CONFIG_FILES([
   rpm/plmac.spec
   rpm/plwin.spec
   rpm/headerB
+  rpm/rpmbuild-helper
   rpm/rpmrc
   rpm/rpmmacros
 

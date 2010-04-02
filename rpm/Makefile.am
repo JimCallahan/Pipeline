@@ -100,6 +100,9 @@ else
 endif
 
 
+RPMBUILD = /bin/bash @RPM_ROOT@/rpmbuild-helper
+
+
 MAC_SRC_DIR = \
   $(patsubst @BUILD_USER_HOME@/%,/Users/@BUILD_USER@/%,@top_srcdir@)
 
@@ -113,7 +116,7 @@ WIN_BUILD_DIR = \
   $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code/%,@RPM_ROOT@)
 
 
-API_JAR  = DEST/pipeline/@ROOT_INST_DIR@/lib/api.jar
+API_JAR = DEST/pipeline/@ROOT_INST_DIR@/lib/api.jar
 
 
 pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin: header
@@ -137,20 +140,13 @@ header: pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz \
           sed -e "s/@HEADER_LENGTH@/$$hlen/g" >> header)
 
 pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install $(RPMS) 
-	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
-	mkdir pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
-	cp $(RPMS) $(API_JAR) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
-	@echo "Packing Docs..."
-	tar -zcf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@/docs.tgz \
-            -C DEST/pipeline/@ROOT_INST_DIR@/share docs
-	@echo "Packing Examples..."
-	tar -zcf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@/examples.tgz \
-            -C DEST/pipeline/@ROOT_INST_DIR@ examples 
+	cp $(RPMS) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	tar -zcvf $@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 
 pipeline-install: clean-rpms rpm-mkdirs
 	rm -rf DEST/pipeline DEST/plmaster DEST/plpluginmgr DEST/plqueuemgr DEST/pllocal
+	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
 	mkdir -p DEST/plmaster/@NODEDIR@
 	mv DEST/pipeline/@NODEDIR@/* DEST/plmaster/@NODEDIR@
@@ -181,6 +177,15 @@ pipeline-install: clean-rpms rpm-mkdirs
               DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local/build/make/$$studio/src;\
           done; \
         fi
+	mkdir pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
+	cp $(API_JAR) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
+	@echo "Packing Docs..."
+	tar -zcf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@/docs.tgz \
+            -C DEST/pipeline/@ROOT_INST_DIR@/share docs
+	@echo "Packing Examples..."
+	tar -zcf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@/examples.tgz \
+            -C DEST/pipeline/@ROOT_INST_DIR@ examples
+
 
 if PL_LOCAL
 
@@ -204,7 +209,7 @@ endif !PL_LOCAL
 
 RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
-	rpmbuild --rcfile rpmrc -bb SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plmaster -bb SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
 	cp -f plmaster.spec $@
@@ -212,7 +217,7 @@ SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
 
 RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   native-only SPECS/pipeline-@CUSTOMER@-@VERSION@.spec 
-	rpmbuild --rcfile rpmrc -bb SPECS/pipeline-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/pipeline -bb SPECS/pipeline-@CUSTOMER@-@VERSION@.spec
 
 if HAS_X86_SUBPASS
 
@@ -248,7 +253,7 @@ endif !HAS_X86_SUBPASS
 
 RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec
-	rpmbuild --rcfile rpmrc -bb SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plqueuemgr -bb SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 	cp -f plqueuemgr.spec $@
@@ -256,7 +261,7 @@ SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 
 RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
-	rpmbuild --rcfile rpmrc -bb SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plpluginmgr -bb SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec: plpluginmgr.spec
 	cp -f plpluginmgr.spec $@
@@ -265,7 +270,7 @@ if PL_LOCAL
 
 RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
-	rpmbuild --rcfile rpmrc -bb SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/pllocal -bb SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
 
 SPECS/pllocal-@CUSTOMER@-@VERSION@.spec: pllocal.spec
 	cp -f pllocal.spec $@
@@ -292,7 +297,7 @@ RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	@echo "-----------------------------------------------------------------------------"
 	ssh bullfrog "source .bash_profile; $(MAKE) -C $(MAC_BUILD_DIR) all"
 	rsync -av bullfrog:$(MAC_BUILD_DIR)/DEST/plmac DEST
-	rpmbuild --rcfile rpmrc -bb SPECS/plmac-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plmac -bb SPECS/plmac-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plmac-@CUSTOMER@-@VERSION@.spec: plmac.spec
 	cp -f plmac.spec $@
@@ -319,7 +324,7 @@ RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	rsync -av lizard:$(WIN_BUILD_DIR)/DEST/plwin DEST
 	mv DEST/plwin/PipelineJobManager.msi \
            PipelineJobManager-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi
-	rpmbuild --rcfile rpmrc -bb SPECS/plwin-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plwin -bb SPECS/plwin-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plwin-@CUSTOMER@-@VERSION@.spec: plwin.spec
 	cp -f plwin.spec $@

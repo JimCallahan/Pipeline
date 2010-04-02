@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [ -f ~/.rpmrc ]
+then
+  mv -f ~/.rpmrc ~/.rpmrc-SAVED
+fi
+
+ln -s @RPM_ROOT@/rpmrc ~/.rpmrc
+
+
+if [ -f ~/.rpmmacros ]
+then
+  mv -f ~/.rpmmacros ~/.rpmmacros-SAVED
+fi
+
+ln -s @RPM_ROOT@/rpmmacros ~/.rpmmacros
+
+
+rpmbuild $*
+
+
+if [ -f ~/.rpmrc-SAVED ]
+then
+  mv -f ~/.rpmrc-SAVED ~/.rpmrc
+fi
+
+
+if [ -f ~/.rpmmacros-SAVED ]
+then
+  mv -f ~/.rpmmacros-SAVED ~/.rpmmacros
+fi
