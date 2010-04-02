@@ -4,6 +4,7 @@ if [ -f ~/.rpmrc ]
 then
   mv -f ~/.rpmrc ~/.rpmrc-SAVED
 elif [ -h ~/.rpmrc ]
+then
   rm -f ~/.rpmrc
 fi
 
@@ -14,6 +15,7 @@ if [ -f ~/.rpmmacros ]
 then
   mv -f ~/.rpmmacros ~/.rpmmacros-SAVED
 elif [ -h ~/.rpmmacros ]
+then
   rm -f ~/.rpmmacros
 fi
 
