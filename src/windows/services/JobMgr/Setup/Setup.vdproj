@@ -15,18 +15,6 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_0B3DD8C816BF4E5D8EC5EB9225929A5F"
-        "OwnerKey" = "8:_6CDA59FFC39B412B93D43C32C46A4E25"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_0E821B53AC504370994ACAEF47FCCA5A"
-        "OwnerKey" = "8:_0B3DD8C816BF4E5D8EC5EB9225929A5F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_56347F4F69AF4047A31FFD183FB3D119"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -35,6 +23,12 @@
         {
         "MsmKey" = "8:_6CDA59FFC39B412B93D43C32C46A4E25"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_8CFD5B1FD9FA41E086EE575FCCB8E4DC"
+        "OwnerKey" = "8:_6CDA59FFC39B412B93D43C32C46A4E25"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -51,8 +45,8 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_DA7E0F5499A04EB9907629152CFD76AC"
-        "OwnerKey" = "8:_UNDEFINED"
+        "MsmKey" = "8:_CB7635165AC54E729E5D2AF90720EC8E"
+        "OwnerKey" = "8:_8CFD5B1FD9FA41E086EE575FCCB8E4DC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -223,26 +217,6 @@
             {
             "SourcePath" = "8:..\\license.rtf"
             "TargetName" = "8:license.rtf"
-            "Tag" = "8:"
-            "Folder" = "8:_388568AA31564A059B11FBDA95270017"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DA7E0F5499A04EB9907629152CFD76AC"
-            {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\debug\\src\\windows\\services\\JobMgr\\DummyService.class"
-            "TargetName" = "8:DummyService.class"
             "Tag" = "8:"
             "Folder" = "8:_388568AA31564A059B11FBDA95270017"
             "Condition" = "8:"
@@ -936,7 +910,7 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_0B3DD8C816BF4E5D8EC5EB9225929A5F"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_8CFD5B1FD9FA41E086EE575FCCB8E4DC"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -950,7 +924,7 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_0E821B53AC504370994ACAEF47FCCA5A"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_CB7635165AC54E729E5D2AF90720EC8E"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
