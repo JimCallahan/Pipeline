@@ -33,7 +33,7 @@ endif
 $(WIN_SERVICE_H).src: $(WIN_SERVICE_H).src.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
-JobMgr.msi: FORCE $(WIN_SERVICE_H) JobMgr/DummyService.class
+JobMgr.msi: FORCE $(WIN_SERVICE_H)
 	devenv.com "C:\cygwin$(WIN_SRCDIR)\Setup.vdproj" /build debug /project Setup
 
 
