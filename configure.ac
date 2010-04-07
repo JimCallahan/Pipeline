@@ -2241,8 +2241,6 @@ AC_CONFIG_FILES([
   src/windows/native/Makefile
 
   src/windows/services/Makefile
-  src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h.src
-  src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h
   src/windows/services/JobMgr/JobMgr/JobMgrWinService.h.src
   src/windows/services/JobMgr/JobMgr/ProjectInstaller.h
 
