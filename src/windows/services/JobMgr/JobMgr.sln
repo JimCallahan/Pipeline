@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JobMgr", "JobMgr\JobMgr.vcproj", "{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{710F368B-E5B8-4F76-9A9E-64A0C59F3524}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}.Debug|Win32.Build.0 = Debug|Win32
+		{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}.Release|Win32.ActiveCfg = Release|Win32
+		{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}.Release|Win32.Build.0 = Release|Win32
+		{710F368B-E5B8-4F76-9A9E-64A0C59F3524}.Debug|Win32.ActiveCfg = Debug
+		{710F368B-E5B8-4F76-9A9E-64A0C59F3524}.Release|Win32.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

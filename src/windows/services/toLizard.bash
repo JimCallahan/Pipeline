@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ `hostname` != "dimetrodon" ]
+if [ `hostname` != "trex" ]
 then 
-  echo "This should only be run on (dimetrodon)!"
+  echo "This should only be run on (trex)!"
   exit 1; 
 fi 
 

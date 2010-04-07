@@ -1170,7 +1170,7 @@ AC_SUBST(SUPPORTS_WIN)
 SUPPORTS_WIN="$win_support"
 
 AC_SUBST(WIN_SERVICE_VERSION)
-WIN_SERVICE_VERSION=1.1.0
+WIN_SERVICE_VERSION=2.0.0
 
 AC_SUBST(WIN_PIPELINE_USERNAME)
 WIN_PIPELINE_USERNAME="nullptr"
@@ -2243,6 +2243,8 @@ AC_CONFIG_FILES([
   src/windows/services/Makefile
   src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h.src
   src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h
+  src/windows/services/JobMgr/JobMgr/JobMgrWinService.h.src
+  src/windows/services/JobMgr/JobMgr/ProjectInstaller.h
 
   src/windows/scripts/Makefile
   src/windows/scripts/plbrowse.bat.src

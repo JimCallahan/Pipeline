@@ -1,0 +1,99 @@
+#pragma once
+
+using namespace System;
+using namespace System::Collections;
+using namespace System::ServiceProcess;
+using namespace System::ComponentModel;
+
+
+namespace JobMgr {
+
+	/// <summary>
+	/// Summary for JobMgrWinService
+	/// </summary>
+	///
+	/// WARNING: If you change the name of this class, you will need to change the
+	///          'Resource File Name' property for the managed resource compiler tool
+	///          associated with all .resx files this class depends on.  Otherwise,
+	///          the designers will not be able to interact properly with localized
+	///          resources associated with this form.
+	public ref class JobMgrWinService : public System::ServiceProcess::ServiceBase
+	{
+	public:
+		JobMgrWinService()
+		{
+			InitializeComponent();
+			//
+			//TODO: Add the constructor code here
+			//
+		}
+	protected:
+		/// <summary>
+		/// Clean up any resources being used.
+		/// </summary>
+		~JobMgrWinService()
+		{
+			if (components)
+			{
+				delete components;
+			}
+		}
+
+		/// <summary>
+		/// Set things in motion so your service can do its work.
+		/// </summary>
+		virtual void OnStart(array<String^>^ args) override
+		{
+			this->process1->Start();
+		}
+
+		/// <summary>
+		/// Stop this service.
+		/// </summary>
+		virtual void OnStop() override
+		{
+			this->process1->Kill();
+			this->process1->WaitForExit(30000);  // gives up after 30-seconds.
+		}
+	private: System::Diagnostics::Process^  process1;
+	protected: 
+
+	private:
+		/// <summary>
+		/// Required designer variable.
+		/// </summary>
+		System::ComponentModel::Container ^components;
+
+#pragma region Windows Form Designer generated code
+		/// <summary>
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
+		/// </summary>
+		void InitializeComponent(void)
+		{
+			this->process1 = (gcnew System::Diagnostics::Process());
+			// 
+			// process1
+			// 
+                        //this->process1->StartInfo->Arguments = L"DummyService dummy-output.txt";
+			this->process1->StartInfo->Arguments = 
+                          L"@PLJOBMGR_XMS@ @PLJOBMGR_XMX@ -Xrs -Xdebug -Dpipeline.ostype=@NATIVE_OSTYPE@ -Dpipeline.archtype=@NATIVE_ARCHTYPE@ -Dpipeline.buildtype=Debug -cp @PIPELINE_LATEST_JAR@@LOCAL_JAVA_LIBS@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.JobMgrApp";
+			//this->process1->StartInfo->Domain = L"";
+			this->process1->StartInfo->FileName = L"@JAVA_RUNTIME@";
+			this->process1->StartInfo->LoadUserProfile = false;
+			this->process1->StartInfo->Password = nullptr;
+			this->process1->StartInfo->StandardErrorEncoding = nullptr;
+			this->process1->StartInfo->StandardOutputEncoding = nullptr;
+			this->process1->StartInfo->UserName = nullptr;
+			this->process1->StartInfo->UseShellExecute = false;
+			this->process1->StartInfo->WorkingDirectory = L"C:\\Program Files\\Temerity Software\\JobMgr";
+			// 
+			// JobMgrWinService
+			// 
+			this->CanPauseAndContinue = true;
+			this->ServiceName = L"JobMgrWinService";
+
+		}
+#pragma endregion
+	};
+}

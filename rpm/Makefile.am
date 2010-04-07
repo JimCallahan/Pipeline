@@ -324,6 +324,8 @@ RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	rsync -av lizard:$(WIN_BUILD_DIR)/DEST/plwin DEST
 	mv DEST/plwin/PipelineJobManager.msi \
            PipelineJobManager-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi
+	mv DEST/plwin/JobMgr.msi \
+           JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi
 	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plwin -bb SPECS/plwin-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plwin-@CUSTOMER@-@VERSION@.spec: plwin.spec
@@ -332,6 +334,9 @@ SPECS/plwin-@CUSTOMER@-@VERSION@.spec: plwin.spec
 install-win-service:
 	$(INSTALL_DATA) \
           @RPM_ROOT@/PipelineJobManager-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi \
+          ../../../../releases/pipeline
+	$(INSTALL_DATA) \
+          @RPM_ROOT@/JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi \
           ../../../../releases/pipeline
 
 else !HAS_WINDOWS
