@@ -75,10 +75,8 @@ namespace JobMgr {
 			// 
 			// process1
 			// 
-                        //this->process1->StartInfo->Arguments = L"DummyService dummy-output.txt";
 			this->process1->StartInfo->Arguments = 
                           L"@PLJOBMGR_XMS@ @PLJOBMGR_XMX@ -Xrs -Xdebug -Dpipeline.ostype=@NATIVE_OSTYPE@ -Dpipeline.archtype=@NATIVE_ARCHTYPE@ -Dpipeline.buildtype=Debug -cp @PIPELINE_LATEST_JAR@@LOCAL_JAVA_LIBS@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.JobMgrApp";
-			//this->process1->StartInfo->Domain = L"";
 			this->process1->StartInfo->FileName = L"@JAVA_RUNTIME@";
 			this->process1->StartInfo->LoadUserProfile = false;
 			this->process1->StartInfo->Password = nullptr;

@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.26)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.27b1)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -2241,8 +2241,6 @@ AC_CONFIG_FILES([
   src/windows/native/Makefile
 
   src/windows/services/Makefile
-  src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h.src
-  src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h
   src/windows/services/JobMgr/JobMgr/JobMgrWinService.h.src
   src/windows/services/JobMgr/JobMgr/ProjectInstaller.h
 
