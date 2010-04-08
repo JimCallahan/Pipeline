@@ -71,7 +71,7 @@ class PackageInfo
       case Windows: 
         if(!osName.equals("Windows XP") && !osName.equals("Windows 2000") &&
            !osName.equals("Windows 2003") && !osName.equals("Windows NT") && 
-           !osName.equals("Windows Vista")) 
+           !osName.equals("Windows Vista") && !osName.equals("Windows 7")) 
           throw new HostConfigException
             ("Attempting to run the (Windows) version on a the (" + osName + ") " + 
              "operating system!");
