@@ -1153,7 +1153,8 @@ class BaseBuilder
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Runs the builder, based on the settings that BuilderApp passes in.
+   * Runs the builder, based on the settings that were passed in as part of the Builder
+   * Information.
    */
   public final void 
   run()
@@ -1468,6 +1469,15 @@ class BaseBuilder
     }
   }
   
+  /**
+   * Verify that a node exists and then locks the latest version.
+   * 
+   * @param nodeName
+   *   The name of the node.
+   *   
+   * @throws PipelineException
+   *   If the node does not exist.
+   */
   private final void
   verifyAndLock
   (
@@ -1680,44 +1690,6 @@ class BaseBuilder
     return null;
   }
   
-  private void
-  queueAndVouchHlp
-  (
-    String start,
-    NodeStatus stat  
-  ) 
-    throws PipelineException
-  {
-    NodeStatus myStat = stat;
-    String nodeName = myStat.getName();
-    boolean children = false;
-    for (NodeStatus child : myStat.getSources()) {
-      queueAndVouchHlp(start, child);
-      children = true;
-    }
-    
-    if (children)
-      myStat = pClient.status(getAuthor(), getView(), nodeName, false, DownstreamMode.None);
-    OverallQueueState qstate = myStat.getHeavyDetails().getOverallQueueState();
-    switch(qstate) {
-      case Dubious:
-        {
-          if (pVouchableNodes.contains(nodeName)) {
-            queueSomeStuff(myStat);
-            pClient.vouch(getAuthor(), getView(), nodeName);
-          }
-          else
-            throw new PipelineException
-              ("The node (" + nodeName + ") is in a dubious state, but is not in the " +
-               "vouchable list.  The queue process cannot continue.");
-        }
-        break;
-      default:
-        pLog.log(Kind.Ops, Level.Finest, "Final State (" + qstate + ") on node (" + nodeName + ")");
-    }
-  }
-
-
   /**
    * Queue a bunch of nodes, wait for them to finish, and then check to make sure the node tree
    * is in a finished state.
@@ -1754,22 +1726,6 @@ class BaseBuilder
          "Finished state.\n  The following nodes reported failure: " + badNodes.toString() + 
          "\n All remaining jobs have been terminated.");
     }
-  }
-
-  /**
-   * @param myStat
-   * @throws PipelineException
-   */
-  private void 
-  queueSomeStuff
-  (
-    NodeStatus myStat
-  )
-    throws PipelineException
-  {
-    ArrayList<String> toQueue = 
-      new ArrayList<String>(myStat.getSourceNames());
-    queueSomeStuff(toQueue);
   }
 
   /**
@@ -1946,6 +1902,9 @@ class BaseBuilder
    * Returns a boolean that indicates whether all the node trees that were queued are in
    * the Finished state.
    * 
+   * @param queuedNodes
+   *   The list of root nodes whose trees will be checked for non-Finished nodes.
+   * 
    * @return 
    *   <code>true</code> if all the node trees are in the Finished state.
    *   Otherwise <code>false</code> is returned.
@@ -1980,6 +1939,9 @@ class BaseBuilder
     return toReturn;
   }
   
+  /**
+   * Kill the jobs for all nodes in the Queue nodes list.
+   */
   public final void
   killJobs()
     throws PipelineException
@@ -2065,8 +2027,8 @@ class BaseBuilder
   }
 
   /**
-   * Removes a node from the queue list.
-   * <p>
+   * Removes a node from the queue list. <p>
+   * 
    * This is a Builder specific list, so adding and removing nodes will not effect
    * other Builders.
    * 
@@ -2116,7 +2078,7 @@ class BaseBuilder
   }
 
   /**
-   * Removes a node from the Builder's disable list.
+   * Removes a node from the Builder's disable list. <p>
    * 
    * This is a Builder specific list, so adding and removing nodes will not effect
    * other Builders.
@@ -2169,7 +2131,7 @@ class BaseBuilder
   }
 
   /**
-   * Removes a node from the Builder's check-in list.
+   * Removes a node from the Builder's check-in list. <p>
    * 
    * This is a Builder specific list, so adding and removing nodes will not effect
    * other Builders.
@@ -2219,7 +2181,7 @@ class BaseBuilder
   }
   
   /**
-   * Remove a node from the Builder's vouchable list.
+   * Remove a node from the Builder's vouchable list. <p>
    * 
    * This is a Builder specific list, so adding and removing nodes will not effect
    * other Builders.
@@ -3118,6 +3080,10 @@ class BaseBuilder
     private static final long serialVersionUID = 2397375949761850587L;
   }
   
+  /**
+   * Construct Pass that queues all the nodes in the queueList, waits for them to finish, 
+   * and then checks that all the nodes in the networks are in a finished state.
+   */
   private 
   class QueueConstructPass
     extends BaseConstructPass
@@ -3147,7 +3113,10 @@ class BaseBuilder
 
     private static final long serialVersionUID = -5972737857562423668L;
   }
-  
+
+  /**
+   * Construct pass that checks-in all the nodes in the check-in list.
+   */
   private 
   class CheckInConstructPass
     extends BaseConstructPass
@@ -3270,11 +3239,20 @@ class BaseBuilder
    * The list of all associated subBuilders
    */
   private TreeMap<String, BaseBuilder> pSubBuilders;
-  
+
+  /**
+   * A list of all the sub-builders with their order as the key.
+   */
   private TreeMap<Integer, BaseBuilder> pOrderedSubBuilders;
   
+  /**
+   * A mapping of sub-builder name to order.
+   */
   private TreeMap<String, Integer> pSubBuilderOrder;
   
+  /**
+   * The names of sub-builders indexed by the SetupPass they were added during.
+   */
   private MappedArrayList<Integer, String> pSubBuildersByPass;
   
   private TreeMap<String, BaseNames> pSubNames;
