@@ -55,7 +55,8 @@ class BootStrapLoader
 	    opsys.equals("Windows 2000") ||
 	    opsys.equals("Windows 2003") ||
 	    opsys.equals("Windows NT") ||
-	    opsys.equals("Windows Vista"))
+	    opsys.equals("Windows Vista") ||
+	    opsys.equals("Windows 7"))
       rootDir = new File("@WIN_ROOT_INST_DIR@");
     else 
       throw new LicenseException
