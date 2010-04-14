@@ -33,11 +33,15 @@ endif
 $(WIN_SERVICE_H).src: $(WIN_SERVICE_H).src.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
-JobMgr.msi: FORCE $(WIN_SERVICE_H)
-	devenv.com "C:\cygwin$(WIN_SRCDIR)\Setup.vdproj" /build debug /project Setup
-
+JobMgr.msi: FORCE $(WIN_SERVICE_H) VisualStudioCompile.class
+	java VisualStudioCompile \
+          "C:\cygwin$(WIN_SRCDIR)\Setup.vdproj" /build debug /project Setup
 
 FORCE:
+
+VisualStudioCompile.class: \
+  ../../../../../../src/pipeline/src/windows/misc/VisualStudioCompile.java
+	javac -d . $<
 
 install-am: 
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am

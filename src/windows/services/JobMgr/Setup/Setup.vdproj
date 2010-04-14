@@ -21,14 +21,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_6CDA59FFC39B412B93D43C32C46A4E25"
-        "OwnerKey" = "8:_UNDEFINED"
+        "MsmKey" = "8:_6122E953F243444BAFBEF0CDD1677E30"
+        "OwnerKey" = "8:_6CDA59FFC39B412B93D43C32C46A4E25"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_8CFD5B1FD9FA41E086EE575FCCB8E4DC"
-        "OwnerKey" = "8:_6CDA59FFC39B412B93D43C32C46A4E25"
+        "MsmKey" = "8:_6CDA59FFC39B412B93D43C32C46A4E25"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -41,12 +41,6 @@
         {
         "MsmKey" = "8:_BEC2FEC309B8463A927ECE2DC0B99CD8"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_CB7635165AC54E729E5D2AF90720EC8E"
-        "OwnerKey" = "8:_8CFD5B1FD9FA41E086EE575FCCB8E4DC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -165,7 +159,7 @@
                 {
                 "Name" = "8:.NET Framework"
                 "Message" = "8:[VSDNETMSG]"
-                "Version" = "8:2.0.50727"
+                "FrameworkVersion" = "8:2.0.50727"
                 "AllowLaterVersions" = "11:FALSE"
                 "InstallUrl" = "8:http://go.microsoft.com/fwlink/?LinkId=9832"
                 }
@@ -241,7 +235,7 @@
         {
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_388568AA31564A059B11FBDA95270017"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\[ProductName]"
+            "DefaultLocation" = "8:[ProgramFiles64Folder][Manufacturer]\\[ProductName]"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -283,19 +277,21 @@
         "MsiBootstrapper"
         {
         "LangId" = "3:1033"
+        "RequiresElevation" = "11:FALSE"
         }
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:JobMgr"
-        "ProductCode" = "8:{D94A1CDC-CFC7-4C02-8C86-35F2D227776E}"
-        "PackageCode" = "8:{C45B000D-041B-4632-AED7-9336BAE470B9}"
+        "ProductCode" = "8:{2382DCB5-9C4F-45CC-944E-C2F1844EC672}"
+        "PackageCode" = "8:{31013B87-D83C-43FF-959C-3C60193532C3}"
         "UpgradeCode" = "8:{2EE19698-72A4-4B1E-B685-0FF84E288015}"
+        "AspNetVersion" = "8:4.0.30128.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:2.0.3"
         "Manufacturer" = "8:Temerity Software"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://www.temerity.us/community/forums"
@@ -309,7 +305,7 @@
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
-        "TargetPlatform" = "3:0"
+        "TargetPlatform" = "3:1"
         "PreBuildEvent" = "8:"
         "PostBuildEvent" = "8:"
         "RunPostBuildEvent" = "3:0"
@@ -910,25 +906,11 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_8CFD5B1FD9FA41E086EE575FCCB8E4DC"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_6122E953F243444BAFBEF0CDD1677E30"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
-                "Properties"
-                {
-                }
-            "LanguageId" = "3:0"
-            "Exclude" = "11:FALSE"
-            "Folder" = "8:"
-            "Feature" = "8:"
-            "IsolateTo" = "8:"
-            }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_CB7635165AC54E729E5D2AF90720EC8E"
-            {
-            "UseDynamicProperties" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:policy_8_0_microsoft_vc80_debugcrt_x86.msm"
+            "SourcePath" = "8:Microsoft_VC100_DebugCRT_x86.msm"
                 "Properties"
                 {
                 }
@@ -997,9 +979,6 @@
                 {
                 }
             }
-        }
-        "VJSharpPlugin"
-        {
         }
     }
 }

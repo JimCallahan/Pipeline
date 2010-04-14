@@ -110,10 +110,10 @@ MAC_BUILD_DIR = \
   $(patsubst @BUILD_USER_HOME@/%,/Users/@BUILD_USER@/%,@RPM_ROOT@)
 
 WIN_SRC_DIR = \
-  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code/%,@top_srcdir@)
+  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code-@CUSTOMER@/%,@top_srcdir@)
 
 WIN_BUILD_DIR = \
-  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code/%,@RPM_ROOT@)
+  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code-@CUSTOMER@/%,@RPM_ROOT@)
 
 
 API_JAR = DEST/pipeline/@ROOT_INST_DIR@/lib/api.jar
@@ -312,16 +312,16 @@ win-rpm: clean-win-rpm RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686
 RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plwin-@CUSTOMER@-@VERSION@.spec
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  UPDATING: lizard"
+	@echo "  UPDATING: skink"
 	@echo "-----------------------------------------------------------------------------"
 	rm -rf DEST/plwin
 	rsync -av --exclude-from=$(top_srcdir)/config/excluded --delete \
-          $(top_srcdir)/ lizard:$(WIN_SRC_DIR)
+          $(top_srcdir)/ skink:$(WIN_SRC_DIR)
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  BUILDING: lizard"
+	@echo "  BUILDING: skink"
 	@echo "-----------------------------------------------------------------------------"
-	ssh lizard "source .bash_profile; $(MAKE) -C $(WIN_BUILD_DIR) all"
-	rsync -av lizard:$(WIN_BUILD_DIR)/DEST/plwin DEST
+	ssh skink "source .bash_profile; $(MAKE) -C $(WIN_BUILD_DIR) all"
+	rsync -av skink:$(WIN_BUILD_DIR)/DEST/plwin DEST
 	mv DEST/plwin/JobMgr.msi \
            JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi
 	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plwin -bb SPECS/plwin-@CUSTOMER@-@VERSION@.spec

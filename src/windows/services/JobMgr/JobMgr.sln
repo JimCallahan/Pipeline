@@ -1,7 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JobMgr", "JobMgr\JobMgr.vcproj", "{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JobMgr", "JobMgr\JobMgr.vcxproj", "{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{710F368B-E5B8-4F76-9A9E-64A0C59F3524}"
 EndProject

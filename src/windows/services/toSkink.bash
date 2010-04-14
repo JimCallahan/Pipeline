@@ -8,5 +8,5 @@ fi
 
 rsync $* -av --checksum --delete --delete-excluded \
   --cvs-exclude \
-  --exclude="*Lizard.bash" \
-  ./ lizard:/home/jim/code/src/pipeline/src/windows/services
+  --exclude="*Skink.bash" \
+  ./ skink:/home/jim/code-trex/src/pipeline/src/windows/services

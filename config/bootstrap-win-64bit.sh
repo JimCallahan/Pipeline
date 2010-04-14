@@ -24,6 +24,7 @@ pushd debug
   CC="/usr/bin/gcc" \
   CXX="/usr/bin/g++" \
   $plsrcdir/configure \
+    --build=x86_64-pc-cygwin \
     --disable-opt \
     --with-debug-base=$debug_base \
     --with-prof-base=$prof_base \

@@ -43,8 +43,9 @@ namespace JobMgr {
 		/// Set things in motion so your service can do its work.
 		/// </summary>
 		virtual void OnStart(array<String^>^ args) override
-		{
+		{                       
 			this->process1->Start();
+                        this->process1->PriorityClass = System::Diagnostics::ProcessPriorityClass::AboveNormal;
 		}
 
 		/// <summary>

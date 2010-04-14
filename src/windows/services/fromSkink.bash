@@ -8,14 +8,12 @@ fi
 
 rsync $* -av --checksum --delete \
   --cvs-exclude \
-  --exclude="*Lizard.bash" \
-  --exclude="JobMgr/JobMgr.ncb" \
-  --exclude="JobMgr/JobMgr.suo" \
-  --exclude="JobMgr/JobMgr/JobMgr.vcproj.*.*.user" \
+  --exclude="*Skink.bash" \
+  --exclude="JobMgr/JobMgr/JobMgr.vcxproj.user" \
+  --exclude="JobMgr/JobMgr/JobMgr.vcxproj.filters" \
   --exclude="JobMgr/*/Debug" \
   --exclude="JobMgr/*/Release" \
-  lizard:/home/jim/code/src/pipeline/src/windows/services/ .
+  skink:/home/jim/code-trex/src/pipeline/src/windows/services/ .
 
-find PipelineJobManager -type f -exec chmod 644 {} \; 
 find JobMgr -type f -exec chmod 644 {} \; 
 
