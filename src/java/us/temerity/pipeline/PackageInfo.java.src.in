@@ -73,7 +73,7 @@ class PackageInfo
            !osName.equals("Windows 2003") && !osName.equals("Windows NT") && 
            !osName.equals("Windows Vista") && !osName.equals("Windows 7")) 
           throw new HostConfigException
-            ("Attempting to run the (Windows) version on a the (" + osName + ") " + 
+            ("Attempting to run the (Windows) version on a (" + osName + ") " + 
              "operating system!");
       }
     }
