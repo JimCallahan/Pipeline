@@ -147,6 +147,9 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Native ArchType])
 
+AC_SUBST(IS64BIT_BOOLEAN)
+IS64BIT_BOOLEAN=false
+
 AC_SUBST(NATIVE_ARCHTYPE)
 NATIVE_ARCHTYPE=
 
@@ -155,6 +158,7 @@ case $build_cpu in
     NATIVE_ARCHTYPE=x86;;
 
   (x86_64) 
+    IS64BIT_BOOLEAN=true;
     NATIVE_ARCHTYPE=x86_64;;
 
   (powerpc | i386) 
@@ -456,25 +460,27 @@ PLCONFIG_VERSION=
 
 crypto_version=`"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp --version`
 
-function crypto_lookup {
-  "$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp $CUSTOMER_PROFILE --lookup $*
-}
+"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp \
+  $CUSTOMER_PROFILE --autoconf > plconfig-vars.sh
+source plconfig-vars.sh
 
-profile_version=`crypto_lookup PlConfigVersion`
-
-if test "x$crypto_version" == "x" -o "x$profile_version" == "x"
+if test "x$crypto_version" == "x" -o "x$PLCONFIG_PL_CONFIG_VERSION" == "x"
 then 
   AC_MSG_ERROR([unable to determine the Customer Profile and/or CryptoApp versions.])
 fi
 
-if test "$profile_version" != "$crypto_version"
+if test "$PLCONFIG_PL_CONFIG_VERSION" != "$crypto_version"
 then 
-  AC_MSG_ERROR([the Customer Profile version ($profile_version) did not match the CryptoApp version ($crypto_version).])
+  AC_MSG_ERROR([the Customer Profile version ($PLCONFIG_PL_CONFIG_VERSION) did not match the CryptoApp version ($crypto_version).])
 else 
-  PLCONFIG_VERSION=$profile_version	
+  PLCONFIG_VERSION=$PLCONFIG_PL_CONFIG_VERSION	
 fi 
 
 AC_MSG_RESULT([$PLCONFIG_VERSION (OK)])
+
+function crypto_lookup {
+  "$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp $CUSTOMER_PROFILE --lookup $*
+}
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -504,7 +510,7 @@ fi
 AC_MSG_CHECKING([License Type])
 
 AC_SUBST(LICENSE_TYPE)
-LICENSE_TYPE=`crypto_lookup LicenseType`
+LICENSE_TYPE="$PLCONFIG_LICENSE_TYPE"
 
 if test "$LICENSE_TYPE" == "null"
 then
@@ -518,7 +524,7 @@ AC_MSG_RESULT([$LICENSE_TYPE])
 AC_MSG_CHECKING([License Start Stamp])
 
 AC_SUBST(LICENSE_START_STAMP)
-LICENSE_START_STAMP=`crypto_lookup LicenseStartStamp`
+LICENSE_START_STAMP="$PLCONFIG_LICENSE_START_STAMP"
 
 if test "$LICENSE_START_STAMP" == "null"
 then
@@ -532,7 +538,7 @@ AC_MSG_RESULT([$LICENSE_START_STAMP])
 AC_MSG_CHECKING([License End Stamp])
 
 AC_SUBST(LICENSE_END_STAMP)
-LICENSE_END_STAMP=`crypto_lookup LicenseEndStamp`
+LICENSE_END_STAMP="$PLCONFIG_LICENSE_END_STAMP"
 
 if test "$LICENSE_END_STAMP" == "null"
 then
@@ -546,7 +552,7 @@ AC_MSG_RESULT([$LICENSE_END_STAMP])
 AC_MSG_CHECKING([License Valid Until])
 
 AC_SUBST(LICENSE_END)
-LICENSE_END=`crypto_lookup LicenseEnd`
+LICENSE_END="$PLCONFIG_LICENSE_END"
 
 if test "$LICENSE_END" == "null"
 then
@@ -570,7 +576,7 @@ ROOT_INST_PARENT_DIR=""
 AC_SUBST(ROOT_INST_DIR)
 ROOT_INST_DIR=""
 
-root_inst_dir=`crypto_lookup RootInstallDirectory`
+root_inst_dir="$PLCONFIG_ROOT_INSTALL_DIRECTORY"
 
 if test "$root_inst_dir" == "null"
 then
@@ -587,7 +593,7 @@ AC_MSG_RESULT([$ROOT_INST_DIR])
 AC_MSG_CHECKING([User Home Directory])
 
 AC_SUBST(HOMEDIR)
-HOMEDIR=`crypto_lookup HomeDirectory`
+HOMEDIR="$PLCONFIG_HOME_DIRECTORY"
 
 if test "$HOMEDIR" == "null"
 then
@@ -601,7 +607,7 @@ AC_MSG_RESULT([$HOMEDIR])
 AC_MSG_CHECKING([Temporary Directory])
 
 AC_SUBST(TEMPDIR)
-TEMPDIR=`crypto_lookup TemporaryDirectory`
+TEMPDIR="$PLCONFIG_TEMPORARY_DIRECTORY"
 
 if test "$TEMPDIR" == "null"
 then
@@ -615,7 +621,7 @@ AC_MSG_RESULT([$TEMPDIR])
 AC_MSG_CHECKING([Unix Client Java Home Directory])
 
 AC_SUBST(UNIX_JAVA_HOME)
-UNIX_JAVA_HOME=`crypto_lookup UnixJavaHome`
+UNIX_JAVA_HOME="$PLCONFIG_UNIX_JAVA_HOME"
 
 if test "$UNIX_JAVA_HOME" == "null"
 then
@@ -629,7 +635,7 @@ AC_MSG_RESULT([$UNIX_JAVA_HOME])
 AC_MSG_CHECKING([Unix Local Vendor Javadoc Directory])
 
 AC_SUBST(UNIX_LOCAL_VENDOR_JAVADOC)
-UNIX_LOCAL_VENDOR_JAVADOC=`crypto_lookup UnixLocalJavadocDirectory`
+UNIX_LOCAL_VENDOR_JAVADOC="$PLCONFIG_UNIX_LOCAL_JAVADOC_DIRECTORY"
 
 if test "$UNIX_LOCAL_VENDOR_JAVADOC" == "null"
 then
@@ -643,7 +649,7 @@ AC_MSG_RESULT([$UNIX_LOCAL_VENDOR_JAVADOC])
 AC_MSG_CHECKING([Unix Local Vendor Java Libraries])
 
 AC_SUBST(UNIX_LOCAL_JAVA_LIBS)
-UNIX_LOCAL_JAVA_LIBS=`crypto_lookup UnixLocalJavaLibraries`
+UNIX_LOCAL_JAVA_LIBS="$PLCONFIG_UNIX_LOCAL_JAVA_LIBRARIES"
 
 if test "$UNIX_LOCAL_JAVA_LIBS" == "null"
 then
@@ -660,7 +666,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Master Server Hostname])
 
 AC_SUBST(PL_MASTER_SERVER)
-PL_MASTER_SERVER=`crypto_lookup MasterHostname`
+PL_MASTER_SERVER="$PLCONFIG_MASTER_HOSTNAME"
 
 if test "$PL_MASTER_SERVER" == "null"
 then
@@ -674,7 +680,7 @@ AC_MSG_RESULT([$PL_MASTER_SERVER])
 AC_MSG_CHECKING([Pipeline Master Server Port])
 
 AC_SUBST(PL_MASTER_PORT)
-PL_MASTER_PORT=`crypto_lookup MasterPort`
+PL_MASTER_PORT="$PLCONFIG_MASTER_PORT"
 
 if test "$PL_MASTER_PORT" == "null"
 then
@@ -688,7 +694,7 @@ AC_MSG_RESULT([$PL_MASTER_PORT])
 AC_MSG_CHECKING([Pipeline Master Server Heap Size])
 
 AC_SUBST(PL_MASTER_HEAP_SIZE)
-PL_MASTER_HEAP_SIZE=`crypto_lookup MasterHeapSize`
+PL_MASTER_HEAP_SIZE="$PLCONFIG_MASTER_HEAP_SIZE"
 
 if test "$PL_MASTER_HEAP_SIZE" == "null"
 then
@@ -702,7 +708,7 @@ AC_MSG_RESULT([$PL_MASTER_HEAP_SIZE])
 AC_MSG_CHECKING([Root Node Storage Directory])
 
 AC_SUBST(NODEDIR)
-NODEDIR=`crypto_lookup NodeDirectory`
+NODEDIR="$PLCONFIG_NODE_DIRECTORY"
 
 if test "$NODEDIR" == "null"
 then
@@ -718,7 +724,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline File Server Hostname])
 
 AC_SUBST(PL_FILE_SERVER)
-PL_FILE_SERVER=`crypto_lookup FileHostname`
+PL_FILE_SERVER="$PLCONFIG_FILE_HOSTNAME"
 
 if test "$PL_FILE_SERVER" == "null"
 then
@@ -732,7 +738,7 @@ AC_MSG_RESULT([$PL_FILE_SERVER])
 AC_MSG_CHECKING([Pipeline File Server Port])
 
 AC_SUBST(PL_FILE_PORT)
-PL_FILE_PORT=`crypto_lookup FilePort`
+PL_FILE_PORT="$PLCONFIG_FILE_PORT"
 
 if test "$PL_FILE_PORT" == "null"
 then
@@ -746,7 +752,7 @@ AC_MSG_RESULT([$PL_FILE_PORT])
 AC_MSG_CHECKING([Pipeline File Server Heap Size])
 
 AC_SUBST(PL_FILE_HEAP_SIZE)
-PL_FILE_HEAP_SIZE=`crypto_lookup FileHeapSize`
+PL_FILE_HEAP_SIZE="$PLCONFIG_FILE_HEAP_SIZE"
 
 if test "$PL_FILE_HEAP_SIZE" == "null"
 then
@@ -760,7 +766,7 @@ AC_MSG_RESULT([$PL_FILE_HEAP_SIZE])
 AC_MSG_CHECKING([Root Production Directory])
 
 AC_SUBST(PRODDIR)
-PRODDIR=`crypto_lookup ProductionDirectory`
+PRODDIR="$PLCONFIG_PRODUCTION_DIRECTORY"
 
 if test "$PRODDIR" == "null"
 then
@@ -774,7 +780,7 @@ AC_MSG_RESULT([$PRODDIR])
 AC_MSG_CHECKING([Short Symlinks])
 
 AC_SUBST(SHORT_SYMLINKS)
-SHORT_SYMLINKS=`crypto_lookup ShortSymlinks`
+SHORT_SYMLINKS="$PLCONFIG_SHORT_SYMLINKS"
 
 AC_MSG_RESULT([$SHORT_SYMLINKS])
 
@@ -784,7 +790,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Queue Server Hostname])
 
 AC_SUBST(PL_QUEUE_SERVER)
-PL_QUEUE_SERVER=`crypto_lookup QueueHostname`
+PL_QUEUE_SERVER="$PLCONFIG_QUEUE_HOSTNAME"
 
 if test "$PL_QUEUE_SERVER" == "null"
 then
@@ -798,7 +804,7 @@ AC_MSG_RESULT([$PL_QUEUE_SERVER])
 AC_MSG_CHECKING([Pipeline Queue Server Port])
 
 AC_SUBST(PL_QUEUE_PORT)
-PL_QUEUE_PORT=`crypto_lookup QueuePort`
+PL_QUEUE_PORT="$PLCONFIG_QUEUE_PORT"
 
 if test "$PL_QUEUE_PORT" == "null"
 then
@@ -812,7 +818,7 @@ AC_MSG_RESULT([$PL_QUEUE_PORT])
 AC_MSG_CHECKING([Pipeline Queue Server Heap Size])
 
 AC_SUBST(PL_QUEUE_HEAP_SIZE)
-PL_QUEUE_HEAP_SIZE=`crypto_lookup QueueHeapSize`
+PL_QUEUE_HEAP_SIZE="$PLCONFIG_QUEUE_HEAP_SIZE"
 
 if test "$PL_QUEUE_HEAP_SIZE" == "null"
 then
@@ -825,7 +831,7 @@ AC_MSG_RESULT([$PL_QUEUE_HEAP_SIZE])
 AC_MSG_CHECKING([Pipeline Job Server Port])
 
 AC_SUBST(PL_JOB_PORT)
-PL_JOB_PORT=`crypto_lookup JobPort`
+PL_JOB_PORT="$PLCONFIG_JOB_PORT"
 
 if test "$PL_JOB_PORT" == "null"
 then
@@ -839,7 +845,7 @@ AC_MSG_RESULT([$PL_JOB_PORT])
 AC_MSG_CHECKING([Root Queue Storage Directory])
 
 AC_SUBST(QUEUEDIR)
-QUEUEDIR=`crypto_lookup QueueDirectory`
+QUEUEDIR="$PLCONFIG_QUEUE_DIRECTORY"
 
 if test "$QUEUEDIR" == "null"
 then
@@ -855,7 +861,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Plugin Server Hostname])
 
 AC_SUBST(PL_PLUGIN_SERVER)
-PL_PLUGIN_SERVER=`crypto_lookup PluginHostname`
+PL_PLUGIN_SERVER="$PLCONFIG_PLUGIN_HOSTNAME"
 
 if test "$PL_PLUGIN_SERVER" == "null"
 then
@@ -868,7 +874,7 @@ AC_MSG_RESULT([$PL_PLUGIN_SERVER])
 AC_MSG_CHECKING([Pipeline Plugin Server Port])
 
 AC_SUBST(PL_PLUGIN_PORT)
-PL_PLUGIN_PORT=`crypto_lookup PluginPort`
+PL_PLUGIN_PORT="$PLCONFIG_PLUGIN_PORT"
 
 if test "$PL_PLUGIN_PORT" == "null"
 then
@@ -882,7 +888,7 @@ AC_MSG_RESULT([$PL_PLUGIN_PORT])
 AC_MSG_CHECKING([Pipeline Plugin Local Vendor])
 
 AC_SUBST(PL_LOCAL_VENDOR)
-PL_LOCAL_VENDOR=`crypto_lookup LocalVendor`
+PL_LOCAL_VENDOR="$PLCONFIG_LOCAL_VENDOR"
 
 if test "$PL_LOCAL_VENDOR" == "null"
 then
@@ -896,7 +902,7 @@ AC_MSG_RESULT([$PL_LOCAL_VENDOR])
 AC_MSG_CHECKING([Pipeline Plugin Directory])
 
 AC_SUBST(PL_PLUGIN_DIRECTORY)
-PL_PLUGIN_DIRECTORY=`crypto_lookup PluginDirectory`
+PL_PLUGIN_DIRECTORY="$PLCONFIG_PLUGIN_DIRECTORY"
 
 if test "$PL_PLUGIN_DIRECTORY" == "null"
 then
@@ -912,7 +918,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline User])
 
 AC_SUBST(PIPELINE_USER)
-PIPELINE_USER=`crypto_lookup PipelineUser`
+PIPELINE_USER="$PLCONFIG_PIPELINE_USER"
 
 if test "$PIPELINE_USER" == "null"
 then
@@ -925,7 +931,7 @@ AC_MSG_RESULT([$PIPELINE_USER])
 AC_MSG_CHECKING([Pipeline User ID])
 
 AC_SUBST(PIPELINE_UID)
-PIPELINE_UID=`crypto_lookup PipelineUserID`
+PIPELINE_UID="$PLCONFIG_PIPELINE_USER_ID"
 
 if test "$PIPELINE_UID" == "null"
 then
@@ -938,7 +944,7 @@ AC_MSG_RESULT([$PIPELINE_UID])
 AC_MSG_CHECKING([Pipeline Group])
 
 AC_SUBST(PIPELINE_GROUP)
-PIPELINE_GROUP=`crypto_lookup PipelineGroup`
+PIPELINE_GROUP="$PLCONFIG_PIPELINE_GROUP"
 
 if test "$PIPELINE_GROUP" == "null"
 then
@@ -951,7 +957,7 @@ AC_MSG_RESULT([$PIPELINE_GROUP])
 AC_MSG_CHECKING([Pipeline Group ID])
 
 AC_SUBST(PIPELINE_GID)
-PIPELINE_GID=`crypto_lookup PipelineGroupID`
+PIPELINE_GID="$PLCONFIG_PIPELINE_GROUP_ID"
 
 if test "$PIPELINE_GID" == "null"
 then
@@ -988,11 +994,11 @@ MAC_LOCAL_VENDOR_JAVADOC=""
 AC_SUBST(MAC_LOCAL_JAVA_LIBS)
 MAC_LOCAL_JAVA_LIBS=""
 
-mac_support=`crypto_lookup MacSupport`
-mac_root_inst_dir=`crypto_lookup MacRootInstallDirectory`
-mac_prod_dir=`crypto_lookup MacProductionDirectory`
-mac_home_dir=`crypto_lookup MacHomeDirectory`
-mac_temp_dir=`crypto_lookup MacTemporaryDirectory`
+mac_support="$PLCONFIG_MAC_SUPPORT"
+mac_root_inst_dir="$PLCONFIG_MAC_ROOT_INSTALL_DIRECTORY"
+mac_prod_dir="$PLCONFIG_MAC_PRODUCTION_DIRECTORY"
+mac_home_dir="$PLCONFIG_MAC_HOME_DIRECTORY"
+mac_temp_dir="$PLCONFIG_MAC_TEMPORARY_DIRECTORY"
 has_mac=false
 
 if test "$mac_support" == "true" \
@@ -1023,7 +1029,7 @@ then
   AC_MSG_RESULT([$MAC_SDK])
 
   AC_MSG_CHECKING([MacOS Local Vendor Javadoc Directory])         
-  mac_local_vendor_javadoc=`crypto_lookup MacLocalJavadocDirectory`
+  mac_local_vendor_javadoc="$PLCONFIG_MAC_LOCAL_JAVADOC_DIRECTORY"
   if test "$mac_local_vendor_javadoc" != "null"
   then
     MAC_LOCAL_VENDOR_JAVADOC=$mac_local_vendor_javadoc
@@ -1031,7 +1037,7 @@ then
   AC_MSG_RESULT([$MAC_LOCAL_VENDOR_JAVADOC])
 
   AC_MSG_CHECKING([MacOS Local Java Libraries])
-  mac_local_java_libs=`crypto_lookup MacLocalJavaLibraries`
+  mac_local_java_libs="$PLCONFIG_MAC_LOCAL_JAVA_LIBRARIES"
   if test "$mac_local_java_libs" != "null"
   then
     MAC_LOCAL_JAVA_LIBS=$mac_local_java_libs
@@ -1087,15 +1093,15 @@ WIN_LOCAL_VENDOR_JAVADOC=""
 AC_SUBST(WIN_LOCAL_JAVA_LIBS)
 WIN_LOCAL_JAVA_LIBS=""
 
-win_support=`crypto_lookup WinSupport`
-win_root_inst_dir=`crypto_lookup WinRootInstallDirectory`
-win_prod_dir=`crypto_lookup WinProductionDirectory`
-win_user_profile_dir=`crypto_lookup WinUserProfileDirectory`
-win_user_profile_needs_user=`crypto_lookup WinUserProfileNeedsUser`
-win_app_data_dir=`crypto_lookup WinAppDataDirectory`
-win_app_data_needs_user=`crypto_lookup WinAppDataNeedsUser`
-win_temp_dir=`crypto_lookup WinTemporaryDirectory`
-win_java_home=`crypto_lookup WinJavaHome`
+win_support="$PLCONFIG_WIN_SUPPORT"
+win_root_inst_dir="$PLCONFIG_WIN_ROOT_INSTALL_DIRECTORY"
+win_prod_dir="$PLCONFIG_WIN_PRODUCTION_DIRECTORY"
+win_user_profile_dir="$PLCONFIG_WIN_USER_PROFILE_DIRECTORY"
+win_user_profile_needs_user="$PLCONFIG_WIN_USER_PROFILE_NEEDS_USER"
+win_app_data_dir="$PLCONFIG_WIN_APP_DATA_DIRECTORY"
+win_app_data_needs_user="$PLCONFIG_WIN_APP_DATA_NEEDS_USER"
+win_temp_dir="$PLCONFIG_WIN_TEMPORARY_DIRECTORY"
+win_java_home="$PLCONFIG_WIN_JAVA_HOME"
 has_windows=false
 
 if test "$win_support" == "true" \
@@ -1146,7 +1152,7 @@ then
   AC_MSG_RESULT([$WIN_JAVA_HOME])
 
   AC_MSG_CHECKING([Windows Local Vendor Javadoc Directory])         
-  win_local_vendor_javadoc=`crypto_lookup WinLocalJavadocDirectory`
+  win_local_vendor_javadoc="$PLCONFIG_WIN_LOCAL_JAVADOC_DIRECTORY"
   if test "$win_local_vendor_javadoc" != "null"
   then
     WIN_LOCAL_VENDOR_JAVADOC=$win_local_vendor_javadoc
@@ -1154,7 +1160,7 @@ then
   AC_MSG_RESULT([$WIN_LOCAL_VENDOR_JAVADOC])
 
   AC_MSG_CHECKING([Windows Local Java Libraries])
-  win_local_java_libs=`crypto_lookup WinLocalJavaLibraries`
+  win_local_java_libs="$PLCONFIG_WIN_LOCAL_JAVA_LIBRARIES"
   if test "$win_local_java_libs" != "null"
   then
     WIN_LOCAL_JAVA_LIBS=$win_local_java_libs
@@ -1178,8 +1184,9 @@ WIN_PIPELINE_USERNAME="nullptr"
 AC_SUBST(WIN_PIPELINE_PASSWORD)
 WIN_PIPELINE_PASSWORD="nullptr"
 
-win_domain=`crypto_lookup WinDomain`
-win_password=`crypto_lookup WinPassword`
+win_domain="$PLCONFIG_WIN_DOMAIN"
+win_password="$PLCONFIG_WIN_PASSWORD"
+
 if test "$win_support" == "true" \
      -a "$win_domain" != "null" \
      -a "$win_password" != "null"
@@ -1215,7 +1222,7 @@ AC_MSG_RESULT([$HOMEDIR])
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Plugin Version Pattern])
-legacy_plugins=`crypto_lookup LegacyPlugins`
+legacy_plugins="$PLCONFIG_LEGACY_PLUGINS"
 
 AM_CONDITIONAL([BUILD_LEGACY_PLUGINS], [test x$legacy_plugins = xtrue])
 
@@ -1226,7 +1233,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([JRE Info])
 
 AC_SUBST(JAVA_HOME)
-JAVA_HOME=`crypto_lookup JavaHome`
+JAVA_HOME="$PLCONFIG_JAVA_HOME"
 
 if test "$JAVA_HOME" == "null"
 then
@@ -1239,7 +1246,7 @@ AC_MSG_RESULT([$JAVA_HOME])
 AC_MSG_CHECKING([Java Vendor])
 
 AC_SUBST(JAVA_VENDOR)
-JAVA_VENDOR=`crypto_lookup JavaVendor`
+JAVA_VENDOR="$PLCONFIG_JAVA_VENDOR"
 
 if test "$JAVA_VENDOR" == "null"
 then
@@ -1252,7 +1259,7 @@ AC_MSG_RESULT([$JAVA_VENDOR])
 AC_MSG_CHECKING([Java Name])
 
 AC_SUBST(JAVA_NAME)
-JAVA_NAME=`crypto_lookup JavaName`
+JAVA_NAME="$PLCONFIG_JAVA_NAME"
 
 if test "$JAVA_NAME" == "null"
 then
@@ -1265,7 +1272,7 @@ AC_MSG_RESULT([$JAVA_NAME])
 AC_MSG_CHECKING([Java Version])
 
 AC_SUBST(JAVA_VERSION)
-JAVA_VERSION=`crypto_lookup JavaVersion`
+JAVA_VERSION="$PLCONFIG_JAVA_VERSION"
 
 if test "$JAVA_VERSION" == "null"
 then
@@ -1278,7 +1285,7 @@ AC_MSG_RESULT([$JAVA_VERSION])
 AC_MSG_CHECKING([Java Class Version])
 
 AC_SUBST(JAVA_CLASS_VERSION)
-JAVA_CLASS_VERSION=`crypto_lookup JavaClassVersion`
+JAVA_CLASS_VERSION="$PLCONFIG_JAVA_CLASS_VERSION"
 
 if test "$JAVA_CLASS_VERSION" == "null"
 then
