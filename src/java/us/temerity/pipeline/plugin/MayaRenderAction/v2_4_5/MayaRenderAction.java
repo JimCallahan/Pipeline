@@ -660,10 +660,10 @@ class MayaRenderAction
 
           case 2: // Mental Ray
             {
-              if((procs < 1) || (procs > 4))
+              if((procs < 1) || (procs > 16))
                 throw new PipelineException
                   ("The Mental Ray renderer requires that the Processors parameter is " +
-                   "in the range (1-4).");
+                   "in the range (1-16).");
 
               args.add("-rt");
               args.add(procs.toString());
