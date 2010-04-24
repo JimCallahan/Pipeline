@@ -181,6 +181,11 @@ class NodeMod
    * 
    * @param isLocked
    *   Whether the working version is locked.
+   *   
+   * @param lastCTimeUpdate
+   *   If this is a NodeMod being generated after a check-in of a node without an enabled 
+   *   action, then it needs to have its ctime set to prevent downstream nodes from
+   *   incorrectly going stale.
    * 
    * @param correctedStamps
    *   For working files which have been moved into the repository and replaced with 
@@ -192,7 +197,8 @@ class NodeMod
    NodeVersion vsn, 
    long timestamp, 
    boolean isFrozen, 
-   boolean isLocked, 
+   boolean isLocked,
+   Long lastCTimeUpdate,
    TreeMap<String,Long[]> correctedStamps
   ) 
   {
@@ -224,6 +230,9 @@ class NodeMod
     pLastMod               = timestamp;
     pLastCriticalMod       = timestamp;
     pLastCriticalSourceMod = timestamp;
+    
+    if (lastCTimeUpdate != null)
+      pLastCTimeUpdate = lastCTimeUpdate;
 
     pCorrectedStamps = new TreeMap<String,Long[]>();
     if(correctedStamps != null) {

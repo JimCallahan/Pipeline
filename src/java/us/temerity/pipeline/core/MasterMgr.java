@@ -11541,7 +11541,7 @@ class MasterMgr
 
       /* create a new working version and write it to disk */ 
       NodeMod nwork = 
-        new NodeMod(vsn, timestamp, isFrozen && !vsn.isIntermediate(), isLocked, null);
+        new NodeMod(vsn, timestamp, isFrozen && !vsn.isIntermediate(), isLocked, null, null);
       writeWorkingVersion(nodeID, nwork);
 
       /* initialize new working version */ 
@@ -11887,9 +11887,9 @@ class MasterMgr
 	      releaseFileMgrClient(fclient);
 	    }
 	  }
-
+	  
 	  /* create a new working version and write it to disk */ 
-	  NodeMod nwork = new NodeMod(vsn, timestamp, true, true, null);
+	  NodeMod nwork = new NodeMod(vsn, timestamp, true, true, null, null);
 	  writeWorkingVersion(nodeID, nwork);
 	
 	  /* initialize new working version */ 
@@ -25288,9 +25288,14 @@ class MasterMgr
 	    }
 	  }
 
+	  Long lastCTime = null;
+          if (!work.isActionEnabled()) {
+            lastCTime = work.getLastCTimeUpdate();
+          }
+	  
 	  /* create a new working version and write it to disk */ 
 	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification(), false, false, 
-                                      correctedStamps);
+                                      lastCTime, correctedStamps);
 	  writeWorkingVersion(nodeID, nwork);
 
 	  /* update the working bundle */ 

@@ -511,7 +511,7 @@ class MayaPassRenderAction
               "if(!`about -mac`) {\n" +
               "  threadCount -n " + procs +"; " +
               "}\n\n" +
-              "global int $g_mrBatchRenderCmdOption_NumThreadAutoOn = true;\n" +
+              "global int $g_mrBatchRenderCmdOption_NumThreadOn = true;\n" +
               "global int $g_mrBatchRenderCmdOption_NumThread = " + procs + ";\n" +
               "global int $g_mrBatchRenderCmdOption_VerbosityOn = true;\n" +
               "global int $g_mrBatchRenderCmdOption_Verbosity = " + verb  + ";\n");
