@@ -58,12 +58,52 @@ plconfig(1) during Pipeline configuration process.
 
 @ROOT_INST_DIR@/Windows-x86-Debug/sbin/pljobmgr.bat
 
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plbrowse.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plbuilder.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/pljava.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plplugin.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plpython.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plremote.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plscript.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plscript-splash.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plui2.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plui2-j2dgl.bat
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plui.exe
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plui-j2dgl.exe
+@ROOT_INST_DIR@/Windows-x86_64-Opt/bin/plversion.bat
+
+@ROOT_INST_DIR@/Windows-x86_64-Opt/sbin/pljobmgr.bat
+
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plbrowse.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plbuilder.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/pljava.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plplugin.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plpython.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plremote.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plscript.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plscript-splash.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/pltestnative.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/pltestheavy.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/pltestlight.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plui2.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plui2-j2dgl.bat
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plui.exe
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plui-j2dgl.exe
+@ROOT_INST_DIR@/Windows-x86_64-Debug/bin/plversion.bat
+
+@ROOT_INST_DIR@/Windows-x86_64-Debug/sbin/pljobmgr.bat
+
 %defattr(444,root,root)
 @ROOT_INST_DIR@/etc/python/Windows-x86-Debug/plremote.py
 @ROOT_INST_DIR@/etc/python/Windows-x86-Opt/plremote.py
 
+@ROOT_INST_DIR@/etc/python/Windows-x86_64-Debug/plremote.py
+@ROOT_INST_DIR@/etc/python/Windows-x86_64-Opt/plremote.py
+
 %defattr(555,root,root)
 @ROOT_INST_DIR@/lib/Windows-x86-Opt/libNative.dll
+
+@ROOT_INST_DIR@/lib/Windows-x86_64-Opt/libNative.dll
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/jogl/lib/Windows-x86-Opt/gluegen-rt.dll
@@ -71,9 +111,17 @@ plconfig(1) during Pipeline configuration process.
 @ROOT_INST_DIR@/jogl/lib/Windows-x86-Opt/jogl_cg.dll
 @ROOT_INST_DIR@/jogl/lib/Windows-x86-Opt/jogl.dll
 
+@ROOT_INST_DIR@/jogl/lib/Windows-x86_64-Opt/gluegen-rt.dll
+@ROOT_INST_DIR@/jogl/lib/Windows-x86_64-Opt/jogl_awt.dll
+@ROOT_INST_DIR@/jogl/lib/Windows-x86_64-Opt/jogl_cg.dll
+@ROOT_INST_DIR@/jogl/lib/Windows-x86_64-Opt/jogl.dll
+
 %defattr(555,root,root)
 @ROOT_INST_DIR@/jython/Windows-x86-Opt/jython.bat
 @ROOT_INST_DIR@/jython/Windows-x86-Opt/jythonc.bat
+
+@ROOT_INST_DIR@/jython/Windows-x86_64-Opt/jython.bat
+@ROOT_INST_DIR@/jython/Windows-x86_64-Opt/jythonc.bat
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>

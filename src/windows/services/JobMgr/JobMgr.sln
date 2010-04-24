@@ -1,22 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JobMgr", "JobMgr\JobMgr.vcxproj", "{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobMgr", "JobMgr\JobMgr.csproj", "{22FCF2A6-189D-4D9A-B322-E271E86227CD}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{710F368B-E5B8-4F76-9A9E-64A0C59F3524}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{150A5F07-30B8-4D32-9010-64C136582452}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
-		Release|Win32 = Release|Win32
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}.Debug|Win32.Build.0 = Debug|Win32
-		{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}.Release|Win32.ActiveCfg = Release|Win32
-		{4A059C20-1DF3-448E-B2E3-82AB4E60A2BF}.Release|Win32.Build.0 = Release|Win32
-		{710F368B-E5B8-4F76-9A9E-64A0C59F3524}.Debug|Win32.ActiveCfg = Debug
-		{710F368B-E5B8-4F76-9A9E-64A0C59F3524}.Release|Win32.ActiveCfg = Release
+		{22FCF2A6-189D-4D9A-B322-E271E86227CD}.Debug|x86.ActiveCfg = Debug|x86
+		{22FCF2A6-189D-4D9A-B322-E271E86227CD}.Debug|x86.Build.0 = Debug|x86
+		{22FCF2A6-189D-4D9A-B322-E271E86227CD}.Release|x86.ActiveCfg = Release|x86
+		{22FCF2A6-189D-4D9A-B322-E271E86227CD}.Release|x86.Build.0 = Release|x86
+		{150A5F07-30B8-4D32-9010-64C136582452}.Debug|x86.ActiveCfg = Debug
+		{150A5F07-30B8-4D32-9010-64C136582452}.Debug|x86.Build.0 = Debug
+		{150A5F07-30B8-4D32-9010-64C136582452}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

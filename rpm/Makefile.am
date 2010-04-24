@@ -113,7 +113,10 @@ WIN_SRC_DIR = \
   $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code-@CUSTOMER@/%,@top_srcdir@)
 
 WIN_BUILD_DIR = \
-  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code-@CUSTOMER@/%,@RPM_ROOT@)
+  $(patsubst @BUILD_USER_HOME@/%,/home/@BUILD_USER@/%,@RPM_ROOT@)
+
+WIN32_BUILD_DIR = $(patsubst %/debug/rpm,%/debug-x86/rpm,$(WIN_BUILD_DIR))
+WIN64_BUILD_DIR = $(patsubst %/debug/rpm,%/debug-x86_64/rpm,$(WIN_BUILD_DIR))
 
 
 API_JAR = DEST/pipeline/@ROOT_INST_DIR@/lib/api.jar
@@ -209,7 +212,8 @@ endif !PL_LOCAL
 
 RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
-	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plmaster -bb SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plmaster -bb \
+          SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
 	cp -f plmaster.spec $@
@@ -217,7 +221,8 @@ SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
 
 RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   native-only SPECS/pipeline-@CUSTOMER@-@VERSION@.spec 
-	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/pipeline -bb SPECS/pipeline-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/pipeline -bb \
+          SPECS/pipeline-@CUSTOMER@-@VERSION@.spec
 
 if HAS_X86_SUBPASS
 
@@ -253,7 +258,8 @@ endif !HAS_X86_SUBPASS
 
 RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec
-	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plqueuemgr -bb SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plqueuemgr -bb \
+          SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 	cp -f plqueuemgr.spec $@
@@ -261,7 +267,8 @@ SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 
 RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
-	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plpluginmgr -bb SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plpluginmgr -bb \
+          SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec: plpluginmgr.spec
 	cp -f plpluginmgr.spec $@
@@ -270,7 +277,8 @@ if PL_LOCAL
 
 RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
-	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/pllocal -bb SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/pllocal -bb \
+          SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
 
 SPECS/pllocal-@CUSTOMER@-@VERSION@.spec: pllocal.spec
 	cp -f pllocal.spec $@
@@ -297,7 +305,8 @@ RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	@echo "-----------------------------------------------------------------------------"
 	ssh bullfrog "source .bash_profile; $(MAKE) -C $(MAC_BUILD_DIR) all"
 	rsync -av bullfrog:$(MAC_BUILD_DIR)/DEST/plmac DEST
-	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plmac -bb SPECS/plmac-@CUSTOMER@-@VERSION@.spec
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plmac -bb \
+          SPECS/plmac-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plmac-@CUSTOMER@-@VERSION@.spec: plmac.spec
 	cp -f plmac.spec $@
@@ -318,20 +327,34 @@ RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	rsync -av --exclude-from=$(top_srcdir)/config/excluded --delete \
           $(top_srcdir)/ skink:$(WIN_SRC_DIR)
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  BUILDING: skink"
+	@echo "  BUILDING (x86): skink"
 	@echo "-----------------------------------------------------------------------------"
-	ssh skink "source .bash_profile; $(MAKE) -C $(WIN_BUILD_DIR) all"
-	rsync -av skink:$(WIN_BUILD_DIR)/DEST/plwin DEST
-	mv DEST/plwin/JobMgr.msi \
-           JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi
-	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plwin -bb SPECS/plwin-@CUSTOMER@-@VERSION@.spec
+	ssh skink "source .bash_profile; $(MAKE) -C $(WIN32_BUILD_DIR) all"
+	rsync -av skink:$(WIN32_BUILD_DIR)/DEST/plwin DEST
+	rsync -v skink:$(WIN32_BUILD_DIR)/../../JobMgr.msi \
+          JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@-x86.msi
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  BUILDING (x86_64): skink"
+	@echo "-----------------------------------------------------------------------------"
+	ssh skink "source .bash_profile; $(MAKE) -C $(WIN64_BUILD_DIR) all"
+	rsync -av skink:$(WIN64_BUILD_DIR)/DEST/plwin DEST
+	rsync -v skink:$(WIN64_BUILD_DIR)/../../JobMgr.msi \
+          JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@-x86_64.msi
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  PACKAGING..."
+	@echo "-----------------------------------------------------------------------------"
+	$(RPMBUILD) --buildroot=@RPM_ROOT@/DEST/plwin -bb \
+          SPECS/plwin-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plwin-@CUSTOMER@-@VERSION@.spec: plwin.spec
 	cp -f plwin.spec $@
 
 install-win-service:
 	$(INSTALL_DATA) \
-          @RPM_ROOT@/JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi \
+          @RPM_ROOT@/JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@-x86.msi \
+          ../../../../releases/pipeline
+	$(INSTALL_DATA) \
+          @RPM_ROOT@/JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@-x86_64.msi \
           ../../../../releases/pipeline
 
 else !HAS_WINDOWS

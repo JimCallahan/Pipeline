@@ -9,8 +9,10 @@ fi
 rsync $* -av --checksum --delete \
   --cvs-exclude \
   --exclude="*Skink.bash" \
-  --exclude="JobMgr/JobMgr.sdf" \
-  --exclude="JobMgr/JobMgr.suo" \
+  --exclude="libNative.ncb" \
+  --exclude="libNative.opensdf" \
+  --exclude="libNative.sdf" \
+  --exclude="libNative.suo" \
   --exclude="libNative.vcxproj.user" \
   --exclude="ipch/" \
   skink:/home/jim/code-trex/src/pipeline/src/windows/native/ .

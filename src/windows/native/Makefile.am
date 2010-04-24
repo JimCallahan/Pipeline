@@ -8,7 +8,7 @@ WIN_SRCDIR = $(shell echo '@srcdir@' | sed -e 's|/|\\|g')
 
 libNative.dll: FORCE VisualStudioCompile.class
 	java VisualStudioCompile \
-          "C:\cygwin$(WIN_SRCDIR)\libNative.vcxproj" /build debug /project libNative
+          "C:\cygwin$(WIN_SRCDIR)\libNative.sln" /Rebuild Debug-@NATIVE_ARCHTYPE@ 
 
 FORCE:
 

@@ -1176,13 +1176,13 @@ AC_SUBST(SUPPORTS_WIN)
 SUPPORTS_WIN="$win_support"
 
 AC_SUBST(WIN_SERVICE_VERSION)
-WIN_SERVICE_VERSION=2.0.3
+WIN_SERVICE_VERSION=2.0.4
 
 AC_SUBST(WIN_PIPELINE_USERNAME)
-WIN_PIPELINE_USERNAME="nullptr"
+WIN_PIPELINE_USERNAME="null"
 
 AC_SUBST(WIN_PIPELINE_PASSWORD)
-WIN_PIPELINE_PASSWORD="nullptr"
+WIN_PIPELINE_PASSWORD="null"
 
 win_domain="$PLCONFIG_WIN_DOMAIN"
 win_password="$PLCONFIG_WIN_PASSWORD"
@@ -1191,8 +1191,8 @@ if test "$win_support" == "true" \
      -a "$win_domain" != "null" \
      -a "$win_password" != "null"
 then
-  WIN_PIPELINE_USERNAME="L\""$win_domain"\\\\"$PIPELINE_USER"\""
-  WIN_PIPELINE_PASSWORD="L\""$win_password"\""
+  WIN_PIPELINE_USERNAME="\""$win_domain"\\\\"$PIPELINE_USER"\""
+  WIN_PIPELINE_PASSWORD="\""$win_password"\""
 fi
 
 AM_CONDITIONAL(HAS_WIN_LOCAL_JAVA_LIBS, test x$WIN_LOCAL_JAVA_LIBS != "x")
@@ -2248,8 +2248,8 @@ AC_CONFIG_FILES([
   src/windows/native/Makefile
 
   src/windows/services/Makefile
-  src/windows/services/JobMgr/JobMgr/JobMgrWinService.h.src
-  src/windows/services/JobMgr/JobMgr/ProjectInstaller.h
+  src/windows/services/JobMgr/JobMgr/Service1.Designer.cs.src
+  src/windows/services/JobMgr/JobMgr/ProjectInstaller.Designer.cs
 
   src/windows/scripts/Makefile
   src/windows/scripts/plbrowse.bat.src

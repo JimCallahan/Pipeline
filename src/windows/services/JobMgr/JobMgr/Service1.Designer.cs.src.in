@@ -1,0 +1,57 @@
+﻿namespace JobMgr
+{
+    partial class Service1
+    {
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Component Designer generated code
+
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Service1));
+            this.process1 = new System.Diagnostics.Process();
+            // 
+            // process1
+            // 
+            this.process1.StartInfo.Arguments = "@PLJOBMGR_XMS@ @PLJOBMGR_XMX@ -Xrs -Xdebug -Dpipeline.ostype=@NATIVE_OSTYPE@ -Dpipeline.archtype=@NATIVE_ARCHTYPE@ -Dpipeline.buildtype=Debug -cp @PIPELINE_LATEST_JAR@@LOCAL_JAVA_LIBS@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.JobMgrApp";
+            this.process1.StartInfo.Domain = null;
+            this.process1.StartInfo.FileName = "@JAVA_RUNTIME@";
+            this.process1.StartInfo.LoadUserProfile = false;
+            this.process1.StartInfo.Password = null;
+            this.process1.StartInfo.StandardErrorEncoding = null;
+            this.process1.StartInfo.StandardOutputEncoding = null;
+            this.process1.StartInfo.UserName = null; 
+            this.process1.StartInfo.UseShellExecute = false;
+            this.process1.StartInfo.WorkingDirectory = "C:\\Program Files (x86)\\Temerity Software\\JobMgr";
+            // 
+            // Service1
+            // 
+            this.ServiceName = "Service1";
+
+        }
+
+        #endregion
+
+        private System.Diagnostics.Process process1;
+    }
+}
