@@ -649,7 +649,7 @@ AC_MSG_RESULT([$UNIX_LOCAL_VENDOR_JAVADOC])
 AC_MSG_CHECKING([Unix Local Vendor Java Libraries])
 
 AC_SUBST(UNIX_LOCAL_JAVA_LIBS)
-UNIX_LOCAL_JAVA_LIBS="$PLCONFIG_UNIX_LOCAL_JAVA_LIBRARIES"
+UNIX_LOCAL_JAVA_LIBS=`crypto_lookup UnixLocalJavaLibraries`
 
 if test "$UNIX_LOCAL_JAVA_LIBS" == "null"
 then
@@ -1037,7 +1037,7 @@ then
   AC_MSG_RESULT([$MAC_LOCAL_VENDOR_JAVADOC])
 
   AC_MSG_CHECKING([MacOS Local Java Libraries])
-  mac_local_java_libs="$PLCONFIG_MAC_LOCAL_JAVA_LIBRARIES"
+  mac_local_java_libs=`crypto_lookup MacLocalJavaLibraries`
   if test "$mac_local_java_libs" != "null"
   then
     MAC_LOCAL_JAVA_LIBS=$mac_local_java_libs
@@ -1160,7 +1160,7 @@ then
   AC_MSG_RESULT([$WIN_LOCAL_VENDOR_JAVADOC])
 
   AC_MSG_CHECKING([Windows Local Java Libraries])
-  win_local_java_libs="$PLCONFIG_WIN_LOCAL_JAVA_LIBRARIES"
+  win_local_java_libs=`crypto_lookup WinLocalJavaLibraries`
   if test "$win_local_java_libs" != "null"
   then
     WIN_LOCAL_JAVA_LIBS=$win_local_java_libs
