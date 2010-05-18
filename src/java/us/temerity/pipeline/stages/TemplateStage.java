@@ -553,7 +553,7 @@ class TemplateStage
         pLog.log(Kind.Bld, Level.Finer, 
           "Backing up the Action and replacing it with the Touch action.");
         pBackedUpAction = pRegisteredNodeMod.getAction();
-        pRegisteredNodeMod.setAction(getAction(new PluginContext("Touch"), getToolset()));
+        pRegisteredNodeMod.setAction(lookupAction(new PluginContext("Touch"), getToolset()));
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
         pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
       }

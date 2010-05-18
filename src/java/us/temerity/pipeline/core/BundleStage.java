@@ -109,9 +109,9 @@ class BundleStage
   setJobSettings()
     throws PipelineException
   {
-    pRegisteredNodeMod.setExecutionMethod(pExecutionMethod);
-    if (pExecutionMethod == ExecutionMethod.Parallel)
-      pRegisteredNodeMod.setBatchSize(pBatchSize);
+    pRegisteredNodeMod.setExecutionMethod(getExecutionMethod());
+    if (getExecutionMethod() == ExecutionMethod.Parallel)
+      pRegisteredNodeMod.setBatchSize(getBatchSize());
     pRegisteredNodeMod.setJobRequirements(pOrigNodeMod.getJobRequirements()); 
   }
   

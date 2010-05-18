@@ -1,7 +1,5 @@
 package us.temerity.pipeline.stages;
 
-import java.util.*;
-
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
@@ -106,22 +104,21 @@ class StandardStage
   ) 
     throws PipelineException
   {
-    super(name, desc, stageInformation, context, client, nodeName, stageFunction);
-    pSuffix = suffix;
+    super(name, desc, stageInformation, context, client, nodeName, suffix, stageFunction);
     if(editor != null) {
-      pEditor = getEditor(editor, getToolset());
+      setEditor(lookupEditor(editor, getToolset()));
     }
     else {
       PluginContext defaultEditor = stageInformation.getDefaultEditor(getStageFunction());
       if (defaultEditor != null)
-	pEditor = getEditor(defaultEditor, getToolset());
+	setEditor(lookupEditor(defaultEditor, getToolset()));
     }
 
     if(action != null) {
-      pAction = getAction(action, getToolset());
+      setAction(lookupAction(action, getToolset()));
     }
-    pFrameRange = null;
-    pPadding = -1;
+    setFrameRange(null);
+    setPadding(-1);
     init();
   }
 
@@ -228,29 +225,28 @@ class StandardStage
   )
     throws PipelineException
   {
-    super(name, desc, stageInformation, context, client, nodeName, stageFunction);
-    pSuffix = suffix;
+    super(name, desc, stageInformation, context, client, nodeName, suffix, stageFunction);
     if(editor != null) {
-      pEditor = getEditor(editor, getToolset());
+      setEditor(lookupEditor(editor, getToolset()));
     }
     else {
       PluginContext defaultEditor = stageInformation.getDefaultEditor(getStageFunction());
       if (defaultEditor != null)
-	pEditor = getEditor(defaultEditor, getToolset());
+	setEditor(lookupEditor(defaultEditor, getToolset()));
     }
     
     if(action != null) {
-      pAction = getAction(action, getToolset());
+      setAction(lookupAction(action, getToolset()));
     }
     if (range == null)
       throw new PipelineException("You must specify a frame range in a FrameNumStage");
-    pFrameRange = range;
+    setFrameRange(range);
     if (padding == null)
-      pPadding = 4;
+      setPadding(4);
     else if (padding < 0)
       throw new PipelineException("Cannot have a negative padding value");
     else
-      pPadding = padding;
+      setPadding(padding);
     init();
   }
   
@@ -322,28 +318,28 @@ class StandardStage
     String stageFunction
   )
   {
-    super(name, desc, stageInformation, context, client, mod.getName(), stageFunction);
+    super(name, desc, stageInformation, context, client, mod.getName(), 
+          mod.getPrimarySequence().getFilePattern().getSuffix(),  stageFunction);
 
     {
       FileSeq primary = mod.getPrimarySequence();
       FilePattern fpat = primary.getFilePattern();
-      pSuffix = fpat.getSuffix();
-      pFrameRange = primary.getFrameRange();
-      pPadding = fpat.getPadding();
+      setFrameRange(primary.getFrameRange());
+      setPadding(fpat.getPadding());
 
-      pSecondarySequences = new LinkedList<FileSeq>();  // SHOULDN'T NEED THIS!!!
-      pSecondarySequences.addAll(mod.getSecondarySequences());
+      for (FileSeq sSeq : mod.getSecondarySequences())
+        addSecondarySequence(sSeq);
     }
 
-    pEditor = mod.getEditor();
-    pAction = mod.getAction();
+    setEditor(mod.getEditor());
+    setAction(mod.getAction());
 
-    pExecutionMethod = mod.getExecutionMethod();
-    if(pExecutionMethod == ExecutionMethod.Parallel)
-      pBatchSize = mod.getBatchSize();
+    setExecutionMethod(mod.getExecutionMethod());
+    if(getExecutionMethod() == ExecutionMethod.Parallel)
+      setBatchSize(mod.getBatchSize());
 
-    pLinks = new LinkedList<LinkMod>();  // SHOULDN'T NEED THIS!!!
-    pLinks.addAll(mod.getSources());
+    for (LinkMod lmod: mod.getSources())
+      addLink(lmod);
     init();
   }
 
@@ -437,7 +433,7 @@ class StandardStage
   construct()
     throws PipelineException
   {
-    if (pFrameRange == null)
+    if (getFrameRange() == null)
       pRegisteredNodeMod = registerNode();
     else
       pRegisteredNodeMod = registerSequence();
@@ -445,16 +441,12 @@ class StandardStage
     if(pRegisteredNodeMod == null)
       return false;
 
-    if(pSecondarySequences != null)
-      addSecondarySequences();
+    addSecondarySequences();
 
-    if(pLinks != null)
-      createLinks();
+    createLinks();
 
-    if(pAction != null) {
-      setAction();
+    if (setAction())
       setJobSettings();
-    }
       
     setKeys();
 
@@ -506,16 +498,17 @@ class StandardStage
     pNodeConformed = true;
 
     NodeID id = new NodeID(getAuthor(), getView(), nodeName);
+    FrameRange fRange = getFrameRange();
     {
       NodeStatus status = pClient.status(id, true, DownstreamMode.None);
       NodeDetailsLight details = status.getLightDetails();
       NodeMod oldMod = details.getWorkingVersion(); 
       boolean hasFrameNumbers = oldMod.getPrimarySequence().hasFrameNumbers();
-      if (hasFrameNumbers && pFrameRange == null)
+      if (hasFrameNumbers && fRange == null)
         throw new PipelineException
           ("Attempting to conform the node (" + nodeName + ") from one with " +
            "frame numbers to one without frame numbers");
-      if (!hasFrameNumbers && pFrameRange != null)
+      if (!hasFrameNumbers && fRange != null)
         throw new PipelineException
           ("Attempting to conform the node (" + nodeName + ") from one without " +
            "frame numbers to one with frame numbers");
@@ -535,25 +528,22 @@ class StandardStage
       }
     }
 
-    if (pFrameRange != null)
-      pClient.renumber(id, pFrameRange, true);
+    if (fRange != null)
+      pClient.renumber(id, fRange, true);
 
     pRegisteredNodeMod = pClient.getWorkingVersion(id);
     {
       removeSecondarySequences();
-      if(pSecondarySequences != null)
-        addSecondarySequences();
+      addSecondarySequences();
       
       removeLinks();
-      if(pLinks != null)
+      if(getLinks() != null)
         createLinks();
 
       pRegisteredNodeMod.setToolset(getToolset());
-      pRegisteredNodeMod.setEditor(pEditor);
+      pRegisteredNodeMod.setEditor(getEditor());
 
-      setAction();
-      
-      if(pAction != null) {
+      if(setAction()) {
         pRegisteredNodeMod.setJobRequirements(new JobReqs());
         setJobSettings();
       }
@@ -572,7 +562,6 @@ class StandardStage
 
     return true;
   }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -594,7 +583,7 @@ class StandardStage
     String nodeName = getNodeName();
     if(nodeName == null)
       return null;
-    NodeMod toReturn = registerNode(nodeName, pSuffix, pEditor, pIsIntermediate);
+    NodeMod toReturn = registerNode(nodeName, getSuffix(), getEditor(), pIsIntermediate);
     pNodeAdded = true;
     pStageInformation.addNode(nodeName, getAuthor(), getView());
     return toReturn;
@@ -618,9 +607,11 @@ class StandardStage
     String nodeName = getNodeName();
     if(nodeName == null)
       return null;
+    
+    FrameRange fRange = getFrameRange();
     NodeMod toReturn = 
-      registerSequence(nodeName, pPadding, pSuffix, pEditor, pIsIntermediate, 
-	               pFrameRange.getStart(), pFrameRange.getEnd(), pFrameRange.getBy());
+      registerSequence(nodeName, getPadding(), getSuffix(), getEditor(), pIsIntermediate, 
+	               fRange.getStart(), fRange.getEnd(), fRange.getBy());
     pNodeAdded = true;
     pStageInformation.addNode(nodeName, getAuthor(), getView());
     return toReturn;

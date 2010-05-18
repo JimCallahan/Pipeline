@@ -85,7 +85,7 @@ class BuildBlotTestStage
           new MayaContext(), nodeName, true);
     
     if(range != null)
-      setFrameRange(range);
+      setNodeFrameRange(range);
 
     setUnits();
 

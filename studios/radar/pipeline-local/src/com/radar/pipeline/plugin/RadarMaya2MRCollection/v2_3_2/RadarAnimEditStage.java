@@ -36,7 +36,7 @@ class RadarAnimEditStage
           nodeName,
           true);
     if (range != null)
-      setFrameRange(range);
+      setNodeFrameRange(range);
     for (String namespace : assets.keySet()) {
       String node = assets.get(namespace);
       setupLink(node, namespace, getReference(), getModel());

@@ -68,6 +68,7 @@ class MayaFileStage
           editor, 
           action);
     pMayaContext = mayaContext;
+    pActionName = action.getPluginName();
   }
 
   /**
@@ -95,7 +96,7 @@ class MayaFileStage
    * Parameters on the Maya Action.
    */
   protected void
-  setFrameRange
+  setNodeFrameRange
   (
     FrameRange range 
   ) 
@@ -125,8 +126,8 @@ class MayaFileStage
       }
       else
 	throw new PipelineException
-	  ("Illegal attempt to link a node to the MayaScene parameter when it does not exist " +
-	   "in the current Action ("+ pAction.getName() +")");
+	  ("Illegal attempt to link a node to the MayaScene parameter when it does not " +
+	   "exist on the current Action ("+ pActionName +")");
     }
   }
 
@@ -156,7 +157,7 @@ class MayaFileStage
       else
 	throw new PipelineException
 	  ("Illegal attempt to link a node to the InitalMEL parameter when it does not exist " +
-	   "in the current Action ("+ pAction.getName() +")");
+	   "in the current Action ("+ pActionName +")");
     }
   }
 
@@ -187,7 +188,7 @@ class MayaFileStage
       else
 	throw new PipelineException
 	  ("Illegal attempt to link a node to the ModelMEL parameter when it does not exist " +
-	   "in the current Action ("+ pAction.getName() +")");
+	   "in the current Action ("+ pActionName +")");
     }
   }
 
@@ -218,7 +219,7 @@ class MayaFileStage
       else
 	throw new PipelineException
 	  ("Illegal attempt to link a node to the AnimMEL parameter when it does not exist " +
-	   "in the current Action ("+ pAction.getName() +")");
+	   "in the current Action ("+ pActionName +")");
     }
   }
 
@@ -249,7 +250,7 @@ class MayaFileStage
       else
 	throw new PipelineException
 	  ("Illegal attempt to link a node to the FinalMEL parameter when it does not exist " +
-	   "in the current Action ("+ pAction.getName() +")");
+	   "in the current Action ("+ pActionName +")");
     }
   }
   
@@ -280,7 +281,7 @@ class MayaFileStage
       else
 	throw new PipelineException
 	  ("Illegal attempt to link a node to the NewSceneMEL parameter when it does not exist " +
-	   "in the current Action ("+ pAction.getName() +")");
+	   "in the current Action ("+ pActionName +")");
     }
   }
   
@@ -311,16 +312,10 @@ class MayaFileStage
       else
 	throw new PipelineException
 	  ("Illegal attempt to link a node to the PreExportMEL parameter when it does not exist " +
-	   "in the current Action ("+ pAction.getName() +")");
+	   "in the current Action ("+ pActionName +")");
     }
   }
-  
-  /**
-   * The {@link MayaContext} for the stage.
-   */
-  protected MayaContext pMayaContext;
-  
-  private static final long serialVersionUID = -6109809134859336504L;
+
   
   /**
    * See {@link BaseStage#getStageFunction()}
@@ -332,5 +327,25 @@ class MayaFileStage
     return StageFunction.aMayaScene;
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -6109809134859336504L;
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The {@link MayaContext} for the stage.
+   */
+  protected MayaContext pMayaContext;
+  
+  private String pActionName;
 
 }

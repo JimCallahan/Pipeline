@@ -75,6 +75,10 @@ class BaseStage
    * @param nodeName
    *   The name of the node that this stage is going to construct.
    *   
+   * @param suffix
+   *   The suffix of the node that this stage is going to construct.  <code>null</code> is an 
+   *   acceptable value.
+   *   
    * @param stageFunction
    *   A string which describes what sort of node the stage is building.  This is currently
    *   being used to decide which editor to assign to nodes.  This can be set to 
@@ -89,6 +93,7 @@ class BaseStage
     UtilContext context,
     MasterMgrClient client,
     String nodeName,
+    String suffix,
     String stageFunction
   ) 
   {
@@ -98,10 +103,14 @@ class BaseStage
     pClient = client;
     pPlug = PluginMgrClient.getInstance();
     pNodeName = nodeName;
+    pSuffix = suffix;
     pNodeID = new NodeID(context.getAuthor(), context.getView(), nodeName);
     
     pAnnotations = new ListMap<String, BaseAnnotation>();
     pVersionAnnotations = new ListMap<String, BaseAnnotation>();
+    
+    pLinks = new LinkedList<LinkMod>();
+    pSecondarySequences = new LinkedList<FileSeq>();
     
     String logname = pStageInformation.getLoggerName();
     if (logname == null)
@@ -109,7 +118,7 @@ class BaseStage
     else
       pLog = LogMgr.getInstance(logname);
     
-    pExecutionMethod = ExecutionMethod.Serial;
+    setExecutionMethod(ExecutionMethod.Serial);
     pBatchSize = 0;
     pJobReqs = JobReqs.defaultJobReqs();
    
@@ -255,20 +264,27 @@ class BaseStage
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L   H E L P E R S                                                       */
   /*----------------------------------------------------------------------------------------*/
+  
 
   /**
    * Takes all the {@link FileSeq} stored in the pSecondarySequences variable and adds
-   * them to the node being constructed. For use in the {@link #build()} method.
+   * them to the node being constructed. <p>
+   * 
+   * For use in the {@link #build()} method.
    * 
    * @return <code>true</code> if the method completed correctly.
+   * 
    * @throws PipelineException
+   *   If there are any errors while trying to add the secondary sequences.
    */
   protected final boolean 
   addSecondarySequences() 
     throws PipelineException
   {
-    for(FileSeq seq : pSecondarySequences) {
-      pRegisteredNodeMod.addSecondarySequence(seq);
+    if (pSecondarySequences != null) {
+      for(FileSeq seq : pSecondarySequences) {
+        pRegisteredNodeMod.addSecondarySequence(seq);
+      }
     }
     return true;
   }
@@ -296,9 +312,11 @@ class BaseStage
   createLinks() 
     throws PipelineException
   {
-    for(LinkMod link : pLinks) {
-      pClient.link(getAuthor(), getView(), pNodeName, link.getName(), link
-	.getPolicy(), link.getRelationship(), link.getFrameOffset());
+    if (pLinks != null) {
+      for(LinkMod link : pLinks) {
+        pClient.link(getAuthor(), getView(), pNodeName, link.getName(), link
+          .getPolicy(), link.getRelationship(), link.getFrameOffset());
+      }
     }
     return true;
   }
@@ -314,21 +332,30 @@ class BaseStage
       pClient.unlink(getAuthor(), getView(), pNodeName, source);
     }
   }
+  
 
   /**
    * Takes the {@link BaseAction} stored in the pAction variable and adds it to the node
    * being constructed. For use in the {@link #build()} method.
+   *
+   * @return
+   *   <code>true</code> if pAction was not null and <code>false</code> otherwise.
    * 
    * @throws PipelineException
    */
-  protected final void 
+  protected final boolean 
   setAction() 
     throws PipelineException
   {
     pRegisteredNodeMod.setAction(pAction);
-    if(pAction != null) 
+    if(pAction != null) {
       pRegisteredNodeMod.setActionEnabled(true);
+      return true;
+    }
+    else 
+      return false;
   }
+  
   
   /**
    *  Takes all the selection, hardware, and license keys and applies them to the 
@@ -375,25 +402,32 @@ class BaseStage
     }
   }
   
+  
   /**
    * Takes all the Job Requirements (not counting the keys) and applies
-   * them to the registered node.
+   * them to the registered node. <p>
+   * 
+   * This method modifies the {@link #pRegisteredNodeMod} variable, but does not apply
+   * those changes.
    */
   protected void
   setJobSettings()
     throws PipelineException
   {
-    pRegisteredNodeMod.setExecutionMethod(pExecutionMethod);
-    if (pExecutionMethod == ExecutionMethod.Parallel)
-      pRegisteredNodeMod.setBatchSize(pBatchSize);
-    JobReqs reqs = pRegisteredNodeMod.getJobRequirements();
-    reqs.setMaxLoad(pJobReqs.getMaxLoad());
-    reqs.setMinDisk(pJobReqs.getMinDisk());
-    reqs.setMinMemory(pJobReqs.getMinMemory());
-    reqs.setPriority(pJobReqs.getPriority());
-    reqs.setRampUp(pJobReqs.getRampUp());
-    pRegisteredNodeMod.setJobRequirements(reqs);
+    if (pAction != null) {
+      pRegisteredNodeMod.setExecutionMethod(getExecutionMethod());
+      if (getExecutionMethod() == ExecutionMethod.Parallel)
+        pRegisteredNodeMod.setBatchSize(pBatchSize);
+      JobReqs reqs = pRegisteredNodeMod.getJobRequirements();
+      reqs.setMaxLoad(pJobReqs.getMaxLoad());
+      reqs.setMinDisk(pJobReqs.getMinDisk());
+      reqs.setMinMemory(pJobReqs.getMinMemory());
+      reqs.setPriority(pJobReqs.getPriority());
+      reqs.setRampUp(pJobReqs.getRampUp());
+      pRegisteredNodeMod.setJobRequirements(reqs);
+    }
   }
+  
   
   /**
    * Add all the per-node annotations to the node.
@@ -407,6 +441,7 @@ class BaseStage
       pClient.addAnnotation(pNodeName, name, annot);
     }
   }
+  
   
   /**
    * Add all the per-version annotations to the node.
@@ -433,6 +468,7 @@ class BaseStage
     pClient.modifyProperties(getAuthor(), getView(), mod);
     return pClient.getWorkingVersion(getAuthor(), getView(), pNodeName);
   }
+  
 
   /**
    * Removes all the annotations from the node.
@@ -449,6 +485,7 @@ class BaseStage
   /*----------------------------------------------------------------------------------------*/
   /*  N O D E   C O N S T R U C T I O N                                                     */
   /*----------------------------------------------------------------------------------------*/
+  
 
   /**
    * Removes the registered node's Action.
@@ -469,6 +506,7 @@ class BaseStage
     pClient.modifyProperties(getAuthor(), getView(), nodeMod);
   }
   
+  
   /**
    * Disables the registered node's Action.
    * <p>
@@ -488,6 +526,7 @@ class BaseStage
     nodeMod.setActionEnabled(false);
     pClient.modifyProperties(getAuthor(), getView(), nodeMod);
   }
+  
 
   /**
    * Vouches for the registered node.
@@ -503,6 +542,7 @@ class BaseStage
     NodeID nodeID = new NodeID(getAuthor(), getView(), pNodeName);
     pClient.vouch(nodeID);
   }
+  
   
   /**
    * Creates a new node in Pipeline.
@@ -545,6 +585,7 @@ class BaseStage
     pClient.register(getAuthor(), getView(), nodeMod);
     return nodeMod;
   }
+  
   
   /**
    * Create a new node representing a sequence in Pipeline. Registers a node in Pipeline and
@@ -605,6 +646,7 @@ class BaseStage
     pClient.register(getAuthor(), getView(), nodeMod);
     return nodeMod;
   }
+  
   
   /**
    * Creates a new node that matches the old node and then (optionally) copies the old node's
@@ -685,43 +727,43 @@ class BaseStage
     }
     return newMod;
   }
+  
 
   /**
-   * Shortcut for assigning preset values to an Action.
+   * Shortcut for assigning preset values to the stage's Action.
    * <P>
-   * Sets the Single Param Values of the Action to the values in the SortedMap. Modifies the
-   * Action which is passed in.
+   * Sets the Single Param Values of the Action to the values in the SortedMap. 
    * 
-   * @param act
-   *        The Action to set the presets on.
    * @param preset
-   *        The {@link SortedMap} that holds the preset names and values.
+     The {@link SortedMap} that holds the preset names and values.
    */
   @SuppressWarnings("unchecked")
   public void 
   setPresets
   (
-    BaseAction act, 
     SortedMap<String, Comparable> preset
   )
   {
+    if (pAction == null)
+      return;
     for(String name : preset.keySet()) {
-      act.setSingleParamValue(name, preset.get(name));
+      pAction.setSingleParamValue(name, preset.get(name));
     }
   }
   
+  
   /**
-   * Finds a version of an Action plugin from a specified vendor in the given toolset.
+   * Find a version of an Action plugin from a specified vendor in the given toolset.
    * <p>
    * 
    * @param pluginUtil
-   *        Contains the name, vendor, and version number of the plugin 
+   *   Contains the name, vendor, and version number of the plugin 
    * 
    * @param toolset
-   *        The toolset from which the version of the Action will be extracted.
+   *   The toolset from which the version of the Action will be extracted.
    */
   public BaseAction 
-  getAction
+  lookupAction
   (
     PluginContext pluginUtil, 
     String toolset
@@ -763,18 +805,19 @@ class BaseStage
 
     return pPlug.newAction(pluginUtil.getPluginName(), goodVersion, pluginUtil.getPluginVendor());
   }
+  
 
   /**
-   * Finds a version of an Editor plugin from a specified vendor in the given toolset.
+   * Find a version of an Editor plugin from a specified vendor in the given toolset.
 
    * @param pluginUtil
-   *        Contains the name, vendor and version number of the plugin
+   *   Contains the name, vendor and version number of the plugin
    * 
    * @param toolset
-   *        The toolset from which the version of the Editor will be extracted.
+   *   The toolset from which the version of the Editor will be extracted.
    */
   public BaseEditor 
-  getEditor
+  lookupEditor
   (
     PluginContext pluginUtil, 
     String toolset
@@ -907,7 +950,7 @@ class BaseStage
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Sets the pEditor variable.
+   * Set the pEditor variable.
    * <p>
    * This is the {@link BaseEditor} which the {@link #build()} method should assign to the
    * created node.
@@ -923,7 +966,16 @@ class BaseStage
   }
 
   /**
-   * Sets the pAction variable.
+   * Get the editor.
+   */
+  public BaseEditor 
+  getEditor()
+  {
+    return pEditor;
+  }
+
+  /**
+   * Set the pAction variable.
    * <p>
    * This is the {@link BaseAction} which the {@link #build()} method should assign to the
    * created node.
@@ -936,6 +988,63 @@ class BaseStage
   )
   {
     pAction = act;
+  }
+
+  /**
+   * Get the suffix of the node being built.
+   */
+  public String 
+  getSuffix()
+  {
+    return pSuffix;
+  }
+
+  /**
+   * Set the FrameRange for the node.
+   * 
+   * @param frameRange
+   *   The FrameRange or <code>null</code> if the node does not have a frame range.
+   */
+  public void 
+  setFrameRange
+  (
+    FrameRange frameRange
+  )
+  {
+    pFrameRange = frameRange;
+  }
+
+  /**
+   * Get the FrameRange for the node.
+   */
+  public FrameRange 
+  getFrameRange()
+  {
+    return pFrameRange;
+  }
+
+  /**
+   * Set the padding for the node's FrameRange.
+   * 
+   * @param padding
+   *   The padding value or -1 if the node does not have frame numbers.
+   */
+  public void 
+  setPadding
+  (
+    int padding
+  )
+  {
+    pPadding = padding;
+  }
+
+  /**
+   * Get the padding for the node's FrameRange. 
+   */
+  public int 
+  getPadding()
+  {
+    return pPadding;
   }
 
   /**
@@ -955,10 +1064,29 @@ class BaseStage
     LinkMod link
   )
   {
+    /* Should never be null, but I'd rather be safe than have a null pointer.*/
     if(pLinks == null)
       pLinks = new LinkedList<LinkMod>();
     pLinks.add(link);
   }
+
+  /**
+   * Get the list of links to be added when stage is constructed.
+   * 
+   * @return
+   *   An unmodifable list of links.
+   */
+
+
+
+  public List<LinkMod> 
+  getLinks()
+  {
+    return Collections.unmodifiableList(pLinks);
+  }
+  
+
+
 
   /**
    * Adds a Single Parameter to the node's Action..
@@ -1236,7 +1364,7 @@ class BaseStage
   }
   
   /**
-   * Adds an {@link ExecutionMethod} that will be assigned to the registered node.
+   * Set the {@link ExecutionMethod} that will be assigned to the registered node.
    */
   public void
   setExecutionMethod
@@ -1249,7 +1377,19 @@ class BaseStage
   }
 
   /**
-   * Adds a batch size that will be assigned to the registered node, assuming it has the
+   * Get the {@link ExecutionMethod} that will be assigned to the registered node.
+   */
+  public ExecutionMethod 
+  getExecutionMethod()
+  {
+    return pExecutionMethod;
+  }
+  
+
+
+
+  /**
+   * Set the batch size that will be assigned to the registered node, assuming it has the
    * Parallel ExecutionMethod.
    */
   public void
@@ -1261,6 +1401,16 @@ class BaseStage
     pBatchSize = batchSize;
   }
   
+  /**
+   * Get the batch size that will be assigned to the registered node, assuming it has the
+   * Parallel ExecutionMethod.
+   */
+  public int 
+  getBatchSize()
+  {
+    return pBatchSize;
+  }
+
   /**
    * Sets any special job requirements, excluding keys for this job.
    * <p>
@@ -1634,7 +1784,7 @@ class BaseStage
   /**
    * The UtilContext that the stage operates in.
    */
-  protected UtilContext pUtilContext;
+  private UtilContext pUtilContext;
   
   /**
    * Contains shared information between all stages.
@@ -1654,33 +1804,33 @@ class BaseStage
   /**
    * The suffix of the node that is going to be registered.
    */
-  protected String pSuffix = null;
+  private String pSuffix = null;
   
-  protected FrameRange pFrameRange;
+  private FrameRange pFrameRange;
   
-  protected int pPadding;
+  private int pPadding;
 
   /**
    * The Editor for the node that is going to be registered
    */
-  protected BaseEditor pEditor = null;
+  private BaseEditor pEditor = null;
 
   /**
    * The Action for the node that is going to be registered.
    * <p>
    * This also stores all the parameter (single, source, and secondary source) information.
    */
-  protected BaseAction pAction = null;
+  private BaseAction pAction = null;
 
   /**
    * A list of links for the registered node to have.
    */
-  protected LinkedList<LinkMod> pLinks = null;
+  private LinkedList<LinkMod> pLinks = null;
 
   /**
    * A list of secondary sequences for the registered node to have.
    */
-  protected LinkedList<FileSeq> pSecondarySequences = null;
+  private LinkedList<FileSeq> pSecondarySequences;
 
   /**
    * The working version of the registered node, once it has been built. The
@@ -1692,27 +1842,27 @@ class BaseStage
   /**
    * The list of Selection Keys to assign to the built node.
    */
-  protected TreeSet<String> pSelectionKeys;
+  private TreeSet<String> pSelectionKeys;
   
   /**
    * The list of License Keys to assign to the built node.
    */
-  protected TreeSet<String> pLicenseKeys;
+  private TreeSet<String> pLicenseKeys;
   
   /**
    * The list of Hardware Keys to assign to the built node.
    */
-  protected TreeSet<String> pHardwareKeys;
+  private TreeSet<String> pHardwareKeys;
   
-  protected ListMap<String, BaseAnnotation> pAnnotations;
+  private ListMap<String, BaseAnnotation> pAnnotations;
   
-  protected ListMap<String, BaseAnnotation> pVersionAnnotations;
+  private ListMap<String, BaseAnnotation> pVersionAnnotations;
   
-  protected ExecutionMethod pExecutionMethod;
+  private ExecutionMethod pExecutionMethod;
   
-  protected int pBatchSize;
+  private int pBatchSize;
   
-  protected JobReqs pJobReqs;
+  private JobReqs pJobReqs;
   
   /**
    * Instance of {@link MasterMgrClient} to perform the stage's operations with.
