@@ -97,7 +97,7 @@ class SoundtrackStage
     removeAction();
 
     if(pRegisteredNodeMod.getSourceNames().contains(pPlaceholderNodeName)) 
-      pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceholderNodeName); 
+      pClient.unlink(getAuthor(), getView(), getNodeName(), pPlaceholderNodeName); 
 
     vouch(); 
   }

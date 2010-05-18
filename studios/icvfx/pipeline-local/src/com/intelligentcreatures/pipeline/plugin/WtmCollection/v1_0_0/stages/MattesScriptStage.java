@@ -118,8 +118,8 @@ class MattesScriptStage
   {
     removeAction();
 
-    pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pMasterNuke);
-    pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlatesNuke); 
+    pClient.unlink(getAuthor(), getView(), getNodeName(), pMasterNuke);
+    pClient.unlink(getAuthor(), getView(), getNodeName(), pPlatesNuke); 
 
     vouch(); 
   }

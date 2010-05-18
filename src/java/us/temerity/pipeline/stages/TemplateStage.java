@@ -143,15 +143,16 @@ class TemplateStage
     pSourceMod = sourceMod;
     BaseAction act = sourceMod.getAction();
     
+    String nodeName = getNodeName();
     if (pExternal != null && act != null)
       throw new PipelineException
-        ("The node (" + pRegisteredNodeName + ") has an Action assigned to it, " +
+        ("The node (" + nodeName + ") has an Action assigned to it, " +
          "but also has a TemplateExternal annotation associated with it.  Nodes with " +
          "TemplateExternal annotations cannot have Actions.");
     
     if (pExternal != null && PackageInfo.sOsType != OsType.Unix)
       throw new PipelineException
-        ("The node (" + pRegisteredNodeName + ") has a TemplateExternal annotation associated " +
+        ("The node (" + nodeName + ") has a TemplateExternal annotation associated " +
          "with it, but this builder is not being run on a Unix/Linux machine.  " +
          "External Sequence support only exists on Unix-derivative operating systems" );
     
@@ -517,18 +518,19 @@ class TemplateStage
   {
     boolean build = super.build();
     if (build) {
+      String nodeName = getNodeName();
       if (pSrcHasDisabledAction && !pEnableAction) {
         pLog.log(Kind.Bld, Level.Finer, 
           "Disabling the action after building the node.");
         pRegisteredNodeMod.setActionEnabled(false);
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
       }
       if (pCloneFiles  && !pInhibitCopyFiles) {
         pLog.log(Kind.Bld, Level.Finer, 
           "Cloning the files after building the node.");
         NodeID src = new NodeID(getAuthor(), getView(), pSourceMod.getName() );
-        NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+        NodeID tar = getNodeID();
         
         FrameRange srcRange = pSourceMod.getPrimarySequence().getFrameRange();
         FrameRange tgtRange = pRegisteredNodeMod.getPrimarySequence().getFrameRange();
@@ -553,7 +555,7 @@ class TemplateStage
         pBackedUpAction = pRegisteredNodeMod.getAction();
         pRegisteredNodeMod.setAction(getAction(new PluginContext("Touch"), getToolset()));
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
       }
       if (pExternal != null) {
         FileSeq exSeq = pExternal.getFileSeq();
@@ -610,7 +612,7 @@ class TemplateStage
         catch (InterruptedException ex) 
         {
           String message = 
-            "The link subprocess for node (" + pRegisteredNodeName + ") failed.";
+            "The link subprocess for node (" + nodeName + ") failed.";
           throw new PipelineException(Exceptions.getFullMessage(message, ex));
         }
         Integer exit = process.getExitCode();
@@ -626,7 +628,7 @@ class TemplateStage
         catch (PipelineException ex ) {
           String message =
             "An error occurred while attempting to vouch for the node " +
-            "(" + pRegisteredNodeName + ") which was linked to external files.  This is " +
+            "(" + nodeName + ") which was linked to external files.  This is " +
             "most likely caused by the user running the template not having write " +
             "permissions for the external files (which it needs to touch the files).\n" + 
             ex.getMessage();
@@ -644,7 +646,7 @@ class TemplateStage
   touchFilesProcess()
     throws PipelineException
   {
-    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    NodeID nodeID = new NodeID(getAuthor(), getView(), getNodeName());
     if(PackageInfo.sOsType == OsType.Windows) { 
       try {
         File script = File.createTempFile("BuilderTouchFiles", ".bat");
@@ -679,7 +681,7 @@ class TemplateStage
       catch(IOException ex) {
         throw new PipelineException
           ("Unable to write temporary BAT file to touch the files for node " +
-           "(" + pRegisteredNodeName + ")\n" + ex.getMessage());
+           "(" + getNodeName() + ")\n" + ex.getMessage());
       }
     }
     else {
@@ -711,7 +713,7 @@ class TemplateStage
   )
     throws PipelineException
   {
-    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    NodeID nodeID = getNodeID();
     
     Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent()); 
     wpath.toFile().mkdirs();
@@ -804,56 +806,57 @@ class TemplateStage
   finalizeStage()
     throws PipelineException
   {
+    String nodeName = getNodeName();
     if (pDisableAction) {
       pLog.log(Kind.Bld, Level.Finer, 
-        "Disabling the action on (" + pRegisteredNodeName + ") as part of finalization.");
+        "Disabling the action on (" + nodeName + ") as part of finalization.");
       pRegisteredNodeMod.setActionEnabled(false);
     }
     if (pRemoveAction) {
       pLog.log(Kind.Bld, Level.Finer, 
-        "Removing the action on (" + pRegisteredNodeName + ") as part of finalization.");
+        "Removing the action on (" + nodeName + ") as part of finalization.");
       pRegisteredNodeMod.setAction(null);
     }
     if (pDisableAction || pRemoveAction) {
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
       pRegisteredNodeMod = 
-        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
     }
 
     if (!pUnlinkNodes.isEmpty()) {
       for (String oldSrc : pUnlinkNodes.keySet()) {
         for (String newSrc : pUnlinkNodes.get(oldSrc)) {
           pLog.log(Kind.Bld, Level.Finer, 
-            "Unlinking the node (" + newSrc + ") from (" + pRegisteredNodeName + ") due to " +
+            "Unlinking the node (" + newSrc + ") from (" + nodeName + ") due to " +
             "an unlink annotation.");
-          pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, newSrc);
+          pClient.unlink(getAuthor(), getView(), nodeName, newSrc);
         }
       }
       pRegisteredNodeMod = 
-        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
     }
     
     if (pUnlinkAll) {
       pLog.log(Kind.Bld, Level.Finer, 
-        "Unlinking all sources from (" + pRegisteredNodeName + ") due to TemplateSettings " +
+        "Unlinking all sources from (" + nodeName + ") due to TemplateSettings " +
         "Annotation.");
       for (String source : pRegisteredNodeMod.getSourceNames()) {
-        pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, source);
+        pClient.unlink(getAuthor(), getView(), nodeName, source);
       }
     }
 
     if (pTouchFiles) {
       pLog.log(Kind.Bld, Level.Finer, 
-        "Restoring backed-up action to (" + pRegisteredNodeName + ") as part " +
+        "Restoring backed-up action to (" + nodeName + ") as part " +
         "of finalization.");
       pRegisteredNodeMod.setAction(pBackedUpAction);
       pRegisteredNodeMod.setActionEnabled(true);
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
       pRegisteredNodeMod = 
-        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
 
       pLog.log(Kind.Bld, Level.Finer, 
-        "Touching the files on (" + pRegisteredNodeName + ") to remove staleness as part of " +
+        "Touching the files on (" + nodeName + ") to remove staleness as part of " +
         "finalization.");
       SubProcessLight process = touchFilesProcess();
       process.run();
@@ -874,7 +877,7 @@ class TemplateStage
 
     if (pVouch) {
       pLog.log(Kind.Bld, Level.Finer, 
-        "Vouching for the node (" + pRegisteredNodeName + ") as part of finalization.");
+        "Vouching for the node (" + nodeName + ") as part of finalization.");
       vouch();
     }
   }

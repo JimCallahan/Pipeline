@@ -121,7 +121,7 @@ class FileWriterStage
   getWorkingNodeFilePath() 
   {
     NodeID nodeID = 
-      new NodeID(pUtilContext.getAuthor(), pUtilContext.getView(), pRegisteredNodeName);
+      new NodeID(pUtilContext.getAuthor(), pUtilContext.getView(), getNodeName());
     FileSeq seq = pRegisteredNodeMod.getPrimarySequence();
     return new Path(PackageInfo.sProdPath, nodeID.getWorkingParent() + "/" + seq.getFile(0));     
   }

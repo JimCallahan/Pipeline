@@ -106,8 +106,7 @@ class StandardStage
   ) 
     throws PipelineException
   {
-    super(name, desc, stageInformation, context, client, stageFunction);
-    pRegisteredNodeName = nodeName;
+    super(name, desc, stageInformation, context, client, nodeName, stageFunction);
     pSuffix = suffix;
     if(editor != null) {
       pEditor = getEditor(editor, getToolset());
@@ -229,8 +228,7 @@ class StandardStage
   )
     throws PipelineException
   {
-    super(name, desc, stageInformation, context, client, stageFunction);
-    pRegisteredNodeName = nodeName;
+    super(name, desc, stageInformation, context, client, nodeName, stageFunction);
     pSuffix = suffix;
     if(editor != null) {
       pEditor = getEditor(editor, getToolset());
@@ -324,9 +322,7 @@ class StandardStage
     String stageFunction
   )
   {
-    super(name, desc, stageInformation, context, client, stageFunction);
-
-    pRegisteredNodeName = mod.getName();
+    super(name, desc, stageInformation, context, client, mod.getName(), stageFunction);
 
     {
       FileSeq primary = mod.getPrimarySequence();
@@ -394,22 +390,23 @@ class StandardStage
   build() 
     throws PipelineException
   {
+    String nodeName = getNodeName();
     pLog.log
-      (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
+      (Kind.Ops, Level.Fine, "Building the node: " + nodeName );
 
     ActionOnExistence actionOnExistence = 
-      pStageInformation.getActionOnExistence(pRegisteredNodeName);
+      pStageInformation.getActionOnExistence(nodeName);
     pLog.log
       (Kind.Bld, Level.Finer, "Action on Existence for the node: " + actionOnExistence);
-    if (!checkExistance(pRegisteredNodeName, actionOnExistence))
+    if (!checkExistance(nodeName, actionOnExistence))
       return construct();
     else if (actionOnExistence == ActionOnExistence.Conform)
       return conform();
     else {
-      pStageInformation.addSkippedNode(pRegisteredNodeName); 
+      pStageInformation.addSkippedNode(nodeName); 
       pNodeSkipped = true;
       pRegisteredNodeMod = 
-        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pClient.getWorkingVersion(getAuthor(), getView(), getNodeName());
       return false;
     }
   }
@@ -464,7 +461,7 @@ class StandardStage
     pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
 
     pRegisteredNodeMod = 
-      pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+      pClient.getWorkingVersion(getAuthor(), getView(), getNodeName());
 
     if (pStageInformation.doAnnotations()) {
 	doAnnotations();
@@ -502,12 +499,13 @@ class StandardStage
   conform()
     throws PipelineException
   {
+    String nodeName = getNodeName();
     pLog.log
-      (Kind.Ops, Level.Finer, "Conforming the node: " + pRegisteredNodeName );
-    pStageInformation.addConformedNode(pRegisteredNodeName); 
+      (Kind.Ops, Level.Finer, "Conforming the node: " + nodeName );
+    pStageInformation.addConformedNode(nodeName); 
     pNodeConformed = true;
 
-    NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    NodeID id = new NodeID(getAuthor(), getView(), nodeName);
     {
       NodeStatus status = pClient.status(id, true, DownstreamMode.None);
       NodeDetailsLight details = status.getLightDetails();
@@ -515,11 +513,11 @@ class StandardStage
       boolean hasFrameNumbers = oldMod.getPrimarySequence().hasFrameNumbers();
       if (hasFrameNumbers && pFrameRange == null)
         throw new PipelineException
-          ("Attempting to conform the node (" + pRegisteredNodeName + ") from one with " +
+          ("Attempting to conform the node (" + nodeName + ") from one with " +
            "frame numbers to one without frame numbers");
       if (!hasFrameNumbers && pFrameRange != null)
         throw new PipelineException
-          ("Attempting to conform the node (" + pRegisteredNodeName + ") from one without " +
+          ("Attempting to conform the node (" + nodeName + ") from one without " +
            "frame numbers to one with frame numbers");
       
       NodeVersion latest = details.getLatestVersion(); 
@@ -529,7 +527,7 @@ class StandardStage
         if (((oldSuffix == null) && (newSuffix != null)) ||
             ((oldSuffix != null) && !oldSuffix.equals(newSuffix)))
           throw new PipelineException
-            ("Attempting to conform the node (" + pRegisteredNodeName + ") from having " +
+            ("Attempting to conform the node (" + nodeName + ") from having " +
              ((oldSuffix == null) ? "no suffix" : "the suffix (" + oldSuffix + ")") + " " + 
              "to having " + 
              ((newSuffix == null) ? "no suffix" : "the suffix (" + newSuffix + ")") + ".  " + 
@@ -593,11 +591,12 @@ class StandardStage
   registerNode() 
     throws PipelineException
   {
-    if(pRegisteredNodeName == null)
+    String nodeName = getNodeName();
+    if(nodeName == null)
       return null;
-    NodeMod toReturn = registerNode(pRegisteredNodeName, pSuffix, pEditor, pIsIntermediate);
+    NodeMod toReturn = registerNode(nodeName, pSuffix, pEditor, pIsIntermediate);
     pNodeAdded = true;
-    pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
+    pStageInformation.addNode(nodeName, getAuthor(), getView());
     return toReturn;
   }
   
@@ -616,13 +615,14 @@ class StandardStage
   registerSequence() 
     throws PipelineException
   {
-    if(pRegisteredNodeName == null)
+    String nodeName = getNodeName();
+    if(nodeName == null)
       return null;
     NodeMod toReturn = 
-      registerSequence(pRegisteredNodeName, pPadding, pSuffix, pEditor, pIsIntermediate, 
+      registerSequence(nodeName, pPadding, pSuffix, pEditor, pIsIntermediate, 
 	               pFrameRange.getStart(), pFrameRange.getEnd(), pFrameRange.getBy());
     pNodeAdded = true;
-    pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
+    pStageInformation.addNode(nodeName, getAuthor(), getView());
     return toReturn;
   }
   
