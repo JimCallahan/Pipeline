@@ -77,7 +77,7 @@ class BuildBlotAnimStage
 //    pAttachMEL = attachMEL;
 
     if(range != null)
-      setNodeFrameRange(range);
+      setMayaFrameRange(range);
 
     setUnits();
 

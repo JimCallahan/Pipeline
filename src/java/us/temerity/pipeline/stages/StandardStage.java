@@ -117,7 +117,7 @@ class StandardStage
     if(action != null) {
       setAction(lookupAction(action, getToolset()));
     }
-    setFrameRange(null);
+    setNodeFrameRange(null);
     setPadding(-1);
     init();
   }
@@ -240,7 +240,7 @@ class StandardStage
     }
     if (range == null)
       throw new PipelineException("You must specify a frame range in a FrameNumStage");
-    setFrameRange(range);
+    setNodeFrameRange(range);
     if (padding == null)
       setPadding(4);
     else if (padding < 0)
@@ -324,7 +324,7 @@ class StandardStage
     {
       FileSeq primary = mod.getPrimarySequence();
       FilePattern fpat = primary.getFilePattern();
-      setFrameRange(primary.getFrameRange());
+      setNodeFrameRange(primary.getFrameRange());
       setPadding(fpat.getPadding());
 
       for (FileSeq sSeq : mod.getSecondarySequences())
@@ -433,7 +433,7 @@ class StandardStage
   construct()
     throws PipelineException
   {
-    if (getFrameRange() == null)
+    if (getNodeFrameRange() == null)
       pRegisteredNodeMod = registerNode();
     else
       pRegisteredNodeMod = registerSequence();
@@ -498,7 +498,7 @@ class StandardStage
     pNodeConformed = true;
 
     NodeID id = new NodeID(getAuthor(), getView(), nodeName);
-    FrameRange fRange = getFrameRange();
+    FrameRange fRange = getNodeFrameRange();
     {
       NodeStatus status = pClient.status(id, true, DownstreamMode.None);
       NodeDetailsLight details = status.getLightDetails();
@@ -608,7 +608,7 @@ class StandardStage
     if(nodeName == null)
       return null;
     
-    FrameRange fRange = getFrameRange();
+    FrameRange fRange = getNodeFrameRange();
     NodeMod toReturn = 
       registerSequence(nodeName, getPadding(), getSuffix(), getEditor(), pIsIntermediate, 
 	               fRange.getStart(), fRange.getEnd(), fRange.getBy());

@@ -1009,7 +1009,7 @@ class BaseStage
    *   The FrameRange or <code>null</code> if the node does not have a frame range.
    */
   public void 
-  setFrameRange
+  setNodeFrameRange
   (
     FrameRange frameRange
   )
@@ -1021,7 +1021,7 @@ class BaseStage
    * Get the FrameRange for the node.
    */
   public FrameRange 
-  getFrameRange()
+  getNodeFrameRange()
   {
     return pFrameRange;
   }

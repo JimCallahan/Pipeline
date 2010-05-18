@@ -96,7 +96,7 @@ class MayaFileStage
    * Parameters on the Maya Action.
    */
   protected void
-  setNodeFrameRange
+  setMayaFrameRange
   (
     FrameRange range 
   ) 
