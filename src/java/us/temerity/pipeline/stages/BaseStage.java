@@ -863,6 +863,9 @@ class BaseStage
   /*  A C C E S S                                                                           */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the name of the node being built by this stage.
+   */
   public String
   getNodeName()
   {
