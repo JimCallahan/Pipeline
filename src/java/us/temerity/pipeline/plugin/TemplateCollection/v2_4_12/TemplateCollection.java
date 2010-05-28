@@ -36,6 +36,7 @@ class TemplateCollection
     LayoutGroup layout = new LayoutGroup(true);
     layout.addEntry("TemplateBuilder");
     layout.addEntry("TemplateInfoBuilder");
+    layout.addEntry("TemplateManifestBuilder");
     setLayout(layout);
   }
   
@@ -65,6 +66,7 @@ class TemplateCollection
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
     toReturn.put("TemplateBuilder", pkg + "TemplateBuilder");
     toReturn.put("TemplateInfoBuilder", pkg + "TemplateInfoBuilder");
+    toReturn.put("TemplateManifestBuilder", pkg + "TemplateManifestBuilder");
     
     return toReturn;
   }

@@ -79,7 +79,7 @@ class TemplateTraversalUtil
   traverseNetwork
   (
     Set<String> rootNodes,
-    TreeSet<String> allNodes
+    Set<String> allNodes
   )
     throws PipelineException
   {

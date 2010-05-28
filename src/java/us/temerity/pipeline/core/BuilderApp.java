@@ -218,7 +218,7 @@ public class BuilderApp
     }
     finally {
       if (!pGui)
-	LogMgr.getInstance().cleanupAll();
+	LogMgr.cleanupAll();
     }
     if (!pGui)
       System.exit(success ? 0 : 1);

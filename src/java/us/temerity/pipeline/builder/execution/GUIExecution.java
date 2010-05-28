@@ -93,7 +93,7 @@ class GUIExecution
       if (getBuilder().releaseOnError() && phase.haveNodesBeenMade()) {
         SwingUtilities.invokeLater(pDialog.new AskAboutReleaseTask(message));
       }
-      if (phase == ExecutionPhase.SetupPass)
+      if (phase == ExecutionPhase.SetupPass || phase.isEndingPhase())
         SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
     }
     else if (phase == ExecutionPhase.Release) {

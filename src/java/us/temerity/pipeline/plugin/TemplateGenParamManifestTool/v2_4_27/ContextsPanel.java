@@ -1,6 +1,4 @@
-// $Id: ContextsDefaultsPanel.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
-
-package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_12;
+package us.temerity.pipeline.plugin.TemplateGenParamManifestTool.v2_4_27;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -13,44 +11,52 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_12.*;
 import us.temerity.pipeline.ui.*;
 
+
 public 
-class ContextsDefaultsPanel
+class ContextsPanel
   extends JPanel
 {
-  public
-  ContextsDefaultsPanel
+  public 
+  ContextsPanel
   (
-    TemplateGlueInformation oldSettings,
-    MappedListSet<String, String> contexts
+    TemplateGlueInformation glueInfo,
+    TemplateParamManifest oldManifest
   )
   {
     super();
-
-    pNextID = 0;
-    pOrder = new LinkedList<Integer>();
-    pEntries = new TreeMap<Integer, ContextDefaultEntry>();
-    pEntryByContext = new TreeMap<String, ContextDefaultEntry>();
     
     this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
     
-    Box titleBox = TemplateUIFactory.createTitleBox("Context Defaults:");
+    Box titleBox = TemplateUIFactory.createTitleBox("Contexts:");
     pBox.add(titleBox);
     pBox.add(TemplateUIFactory.createLargeVerticalGap());
     
+    pNextID = 0;
     
-    TreeMap<String, ArrayList<TreeMap<String, String>>> olds = 
-      new TreeMap<String, ArrayList<TreeMap<String,String>>>();
-    if (oldSettings != null) {
-      olds.putAll(oldSettings.getContextDefaults());
-    }
+    pEntries = new TreeMap<Integer, ContextDefaultEntry>();
+    pEntryByContext = new TreeMap<String, ContextDefaultEntry>();
+    pOrder = new LinkedList<Integer>();
     
+    
+    
+    TreeMap<String, ArrayList<TreeMap<String, String>>> oldValues; 
+    if (oldManifest != null)
+     oldValues = oldManifest.getContexts();
+    else
+      oldValues = new TreeMap<String, ArrayList<TreeMap<String,String>>>();
+    
+    MappedListSet<String, String> contexts = glueInfo.getContexts();
     for (Entry<String, ListSet<String>> entry : contexts.entrySet()) {
       String context = entry.getKey();
       ListSet<String> replacements = entry.getValue();
-      ArrayList<TreeMap<String, String>> defaults = olds.get(context);
-      createEntry(context, replacements, defaults);
+      ArrayList<TreeMap<String, String>> values = oldValues.get(context);
+      if (values != null)
+        createEntry(context, replacements, values);
+      else {
+        createEntry(context, replacements, glueInfo.getContextDefaults().get(context));
+      }
     }
     
     pBox.add(UIFactory.createFiller(100));
@@ -66,6 +72,7 @@ class ContextsDefaultsPanel
     this.add(scroll); 
   }
   
+  
   private void 
   createEntry
   (
@@ -76,18 +83,19 @@ class ContextsDefaultsPanel
   {
     ContextDefaultEntry entry = 
        new ContextDefaultEntry(context, replacements, defaults);
-     pBox.add(entry);
-     pBox.add(TemplateUIFactory.createLargeVerticalGap());
-     pEntries.put(pNextID, entry);
-     pEntryByContext.put(context, entry);
-     pOrder.add(pNextID);
-     pNextID++;
+    pBox.add(entry);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
+    pEntries.put(pNextID, entry);
+    pEntryByContext.put(context, entry);
+    pOrder.add(pNextID);
+    pNextID++;
   }
   
-  public MappedArrayList<String, TreeMap<String, String>>
-  getContextDefaults()
+  
+  public MappedArrayList<String, TreeMap<String, String>> 
+  getContextValues()
   {
-    MappedArrayList<String, TreeMap<String, String>> toReturn = 
+    MappedArrayList<String, TreeMap<String, String>>toReturn = 
       new MappedArrayList<String, TreeMap<String, String>>();
     
     for (Entry<String, ContextDefaultEntry> entry : pEntryByContext.entrySet()) {
@@ -98,6 +106,7 @@ class ContextsDefaultsPanel
     }
     return toReturn;
   }
+
   
   private class
   ContextDefaultEntry
@@ -287,12 +296,12 @@ class ContextsDefaultsPanel
         return toReturn;
       }
 
-      private static final long serialVersionUID = -2642960639528864716L;
+      private static final long serialVersionUID = 3433499252151793930L;
       
       private TreeMap<String, JTextField> pDefaultValues;
     }
 
-    private static final long serialVersionUID = -5781238900790683836L;
+    private static final long serialVersionUID = 2534051846070465019L;
 
     
     private Box pInsideBox;
@@ -308,10 +317,20 @@ class ContextsDefaultsPanel
     private LinkedList<Integer> pReplaceOrder;
     private TreeMap<Integer, DefaultEntry> pDefaults;
     private JTextField pContextName;
-  }
+  }  
   
-  private static final long serialVersionUID = 2806258744745045971L;
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 4210114812766627833L;
+
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
   private int pNextID;
   private TreeMap<Integer, ContextDefaultEntry> pEntries;
   private TreeMap<String, ContextDefaultEntry> pEntryByContext;

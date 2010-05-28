@@ -8,6 +8,7 @@ import java.util.Map.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.v2_4_12.*;
 import us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3.*;
 import us.temerity.pipeline.stages.*;
 
@@ -28,6 +29,16 @@ class TemplateBuilder
    * 
    * This should never be called from user code.  The template builder will not function 
    * correctly if it is invoked.
+   * 
+   * @param mclient
+   *   The instance of the Master Manager that the Builder is going to use.
+   * 
+   * @param qclient
+   *   The instance of the Queue Manager that the Builder is going to use
+   * 
+   * @param builderInformation
+   *   The instance of the global information class used to share information between all the
+   *   Builders that are invoked.
    */
   public
   TemplateBuilder
@@ -120,6 +131,7 @@ class TemplateBuilder
     
     pStartNode = startNode;
     pTemplateType = TemplateType.TaskSingle;
+    
     init(stringReplacements, contexts, frameRanges, aoeModes, externals, 
          optionalBranches, offsets);
   }
@@ -178,7 +190,7 @@ class TemplateBuilder
     MasterMgrClient mclient,
     QueueMgrClient qclient,
     BuilderInformation builderInformation,
-    TreeSet<String> rootNodes,
+    Set<String> rootNodes,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     TreeMap<String, FrameRange> frameRanges,
@@ -198,6 +210,7 @@ class TemplateBuilder
     
     pRootNodes = rootNodes;
     pTemplateType = TemplateType.TaskList;
+    
     init(stringReplacements, contexts, frameRanges, aoeModes, externals, 
          optionalBranches, offsets);
   }
@@ -261,7 +274,7 @@ class TemplateBuilder
     QueueMgrClient qclient,
     BuilderInformation builderInformation,
     Set<String> rootNodes,
-    TreeSet<String> allNodes,
+    Set<String> allNodes,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     TreeMap<String, FrameRange> frameRanges,
@@ -359,6 +372,15 @@ class TemplateBuilder
       pOffsets.putAll(offsets);
     pLog.log(Kind.Ops, Level.Finest, 
       "The list of offsets available to this template: " + pOffsets);
+    
+    pParamManifest = new TemplateParamManifest();
+    pParamManifest.setReplacements(pReplacements);
+    pParamManifest.setContexts(pContexts);
+    pParamManifest.setFrameRanges(pFrameRanges);
+    pParamManifest.setExternals(pExternals);
+    pParamManifest.setOffsets(pOffsets);
+    pParamManifest.setOptionalBranches(pOptionalBranches);
+    pParamManifest.setAOEModes(aoeModes);
     
     {
       UtilityParam param = 
@@ -587,12 +609,32 @@ class TemplateBuilder
       
       switch(pTemplateType) {
       case TaskSingle:
-        traverseTaskNetwork(pStartNode);
+        {
+          NodeMod mod = getWorkingVersion(pStartNode);
+          pDescManifest = new TemplateDescManifest(pStartNode, mod.getWorkingID());
+          traverseTaskNetwork(pStartNode);
+        }
         break;
       case TaskList:
+        {
+          TreeMap<String, VersionID> roots = new TreeMap<String, VersionID>();
+          for (String root : pRootNodes) {
+            NodeMod mod = getWorkingVersion(root);
+            roots.put(root, mod.getWorkingID());
+          }
+          pDescManifest = new TemplateDescManifest(roots);
+        }
         traverseTaskNetwork(pRootNodes);
         break;
       case NonTask:
+        {
+          TreeMap<String, VersionID> roots = new TreeMap<String, VersionID>();
+          for (String root : pRootNodes) {
+            NodeMod mod = getWorkingVersion(root);
+            roots.put(root, mod.getWorkingID());
+          }
+          pDescManifest = new TemplateDescManifest(roots, pAllNodes);
+        }
         traverseNetwork(pRootNodes, pAllNodes);
         break;
       }
@@ -781,7 +823,11 @@ class TemplateBuilder
               throw new PipelineException
                 ("The node (" + nodeName + ") has an external annotation but also has the " +
                  "intermediate setting.  This is not allowable in the Template Builder.");
-
+            
+            if (node.getManifestType() != null)
+              throw new PipelineException
+                ("The node (" + nodeName + ") has an external annotation but also has a " +
+                 "manifest annotation.  This is not allowable in the Template Builder.");
             
             for (TreeMap<String, String> replace : replacements ) {
               String actualExternal = stringReplace(external, replace);
@@ -792,6 +838,42 @@ class TemplateBuilder
                    "provided for that frame range when the template was invoked.");
 
             }
+          }
+        }
+        {
+          String manifest = node.getManifestType();
+          if (manifest != null) {
+            NodeMod mod = node.getNodeMod();
+            
+            if (mod.getAction() != null)
+              throw new PipelineException
+                ("The node (" + nodeName + ") has a manifest annotation but also has an " +
+                 "Action assigned to it.  This is not allowable in the Template Builder.");
+            
+            if (mod.getPrimarySequence().hasFrameNumbers())
+              throw new PipelineException
+                ("The node (" + nodeName + ") has a manifest annotation but also has frame " +
+                 "numbers in its FileSeq.  This is not allowable in the Template Builder.");
+
+            if (!mod.getSecondarySequences().isEmpty())
+              throw new PipelineException
+                ("The node (" + nodeName + ") has a manifest annotation but also has " +
+                 "secondary sequences.  This is not allowable in the Template Builder.");
+            
+            if (node.touchFiles())
+              throw new PipelineException
+                ("The node (" + nodeName + ") has a manifest annotation but also has the " +
+                 "touch files setting.  This is not allowable in the Template Builder.");
+
+            if (node.isIntermediate())
+              throw new PipelineException
+                ("The node (" + nodeName + ") has a manifest annotation but also has the " +
+                 "intermediate setting.  This is not allowable in the Template Builder.");
+            
+            if (node.getFrameRangeName() != null)
+              throw new PipelineException
+                ("The node (" + nodeName + ") has a manifest annotation but also has a " +
+                 "frame range annotation.  This is not allowable in the Template Builder.");
           }
         }
 
@@ -902,8 +984,10 @@ class TemplateBuilder
       MappedSet<Integer, String> orderedRoots = new MappedSet<Integer, String>();
       
       for (String nodeName : pOptionalCheckoutList) {
-        pLog.log(Kind.Ops, Level.Fine, 
-                "Finding Optional Branch(s) for check out based on template node (" + nodeName +")");
+        pLog.log
+          (Kind.Ops, Level.Fine, 
+           "Finding Optional Branch(s) for check out based on template node " +
+           "(" + nodeName +")");
         TemplateNode node = getTemplateNode(nodeName);
         
         Set<String> contexts = node.getContexts();
@@ -919,13 +1003,15 @@ class TemplateBuilder
         for (String realName : allNames) {
           if (nodeExists(realName)) {
             checkOutNewer(realName, CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
-            pLog.log(Kind.Ops, Level.Finer, 
-              "Checked out the Optional Branch rooted at (" + realName +")");
+            pLog.log
+              (Kind.Ops, Level.Finer, 
+               "Checked out the Optional Branch rooted at (" + realName +")");
           }
           else {
-            pLog.log(Kind.Ops, Level.Finer, 
-              "Skipped the Optional Branch rooted at (" + realName +"), since the node " +
-              "does not exist.");
+            pLog.log
+              (Kind.Ops, Level.Finer, 
+               "Skipped the Optional Branch rooted at (" + realName +"), since the node " +
+               "does not exist.");
           }
         }
       }
@@ -939,9 +1025,9 @@ class TemplateBuilder
         String nodeName = getNodeToBuild();
         if (nodeName == null && !pBuildList.isEmpty())
           throw new PipelineException
-          ("There are no nodes which are ready to be constructed.  " +
-           "This state should be impossible with any node network I can think of." +
-           "The nodes which are left are " + pBuildList);
+            ("There are no nodes which are ready to be constructed.  " +
+             "This state should be impossible with any node network I can think of." +
+             "The nodes which are left are " + pBuildList);
     
         pLog.log(Kind.Ops, Level.Fine, "Template Node: " + nodeName);
         
@@ -982,9 +1068,10 @@ class TemplateBuilder
      
       for (Integer order : orderedRoots.keySet()) {
         for (String root : orderedRoots.get(order)) {
-          pLog.log(Kind.Bld, Level.Finer, 
-            "Order (" + order + ").  Adding root node (" + root + ") to " +
-            "queue and check-in list.");
+          pLog.log
+            (Kind.Bld, Level.Finer, 
+             "Order (" + order + ").  Adding root node (" + root + ") to " +
+             "queue and check-in list.");
           addToQueueList(root);
           addToCheckInList(root);  
         }
@@ -1116,22 +1203,29 @@ class TemplateBuilder
         TemplateStage.getTemplateStage
           (node, getStageInformation(), pContext, pClient, 
            replace, contexts, range,
-           pInhibitCopyFiles, exD, pOffsets, pNodeDatabase);
+           pInhibitCopyFiles, exD, pOffsets, 
+           pParamManifest, pDescManifest, pNodeDatabase);
 
       allNodes.add(nodeName);
       
       if (stage.build()) {
         if (stage.needsFinalization()) {
-          pLog.logAndFlush(Kind.Bld, Level.Finer, "Node added to finalize list.");
+          pLog.logAndFlush
+            (Kind.Bld, Level.Finer, 
+             "Node added to finalize list.");
           pFinalizableStages.add(stage);
         }
         if (stage.needsSecondFinalization()) {
-          pLog.logAndFlush(Kind.Bld, Level.Finer, "Node added to second finalize list.");
+          pLog.logAndFlush
+            (Kind.Bld, Level.Finer, 
+             "Node added to second finalize list.");
           pSecondaryFinalizableStages.add(stage);
         }
         nodesMade.add(nodeName);
         node.addBuiltNode(nodeName);
-        pLog.logAndFlush(Kind.Ops, Level.Fine, "Node Instantiated.");
+        pLog.logAndFlush
+          (Kind.Ops, Level.Fine, 
+           "Node Instantiated.");
       }
     }
     
@@ -1211,8 +1305,9 @@ class TemplateBuilder
         allProducts.add(realProduct);
       }
       
-      pLog.log(Kind.Ops, Level.Finer,
-        "The following products were found:\n " + allProducts);
+      pLog.log
+        (Kind.Ops, Level.Finer,
+         "The following products were found:\n " + allProducts);
 
       for (String realProduct : allProducts) {
         if (node.isAcquiredNode(realProduct) || node.isSkippedNode(realProduct)) {
@@ -1298,7 +1393,7 @@ class TemplateBuilder
     {
       TemplateNode node = getTemplateNode(nodeName);
       if (node.isInTemplate()) {
-        /* Only need to deal with optional nodes we haven't hit yet. */
+        /* Only need to deal wpBuildListith optional nodes we haven't hit yet. */
         if (node.isOptional() && !(node.wasAcquired() || node.wasSkipped())) {
           OptionalBranchType type = node.getOptionalBranchType();
           
@@ -1436,13 +1531,6 @@ class TemplateBuilder
     private static final long serialVersionUID = 6576648274737148570L;
   }  
   
-  private enum
-  TemplateType
-  {
-    TaskSingle,
-    TaskList,
-    NonTask
-  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1468,6 +1556,9 @@ class TemplateBuilder
   
   private boolean pInhibitCopyFiles;
   
+  /*
+   * The information that will drive what is being made.
+   */
   private TreeMap<String, String> pReplacements;
   private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
   private TreeMap<String, FrameRange> pFrameRanges;
@@ -1478,14 +1569,41 @@ class TemplateBuilder
   private us.temerity.pipeline.VersionID.Level pCheckInLevel;
   private String pCheckInMessage;
   
+  /**
+   * A list of stages to be finalized during the first finalize pass.
+   */
   private ArrayList<FinalizableStage> pFinalizableStages;
+  
+  /**
+   * A list of stages to be finalized during the second finalize pass.
+   */
   private ArrayList<TemplateStage> pSecondaryFinalizableStages;
   
+  /**
+   * The list of template nodes to be instantiated. <p>
+   * 
+   * Node names are removed from this list during template instantiated as they are 
+   * instantiated.
+   */
   private TreeSet<String> pBuildList;
+
+  /**
+   * The set of root nodes for optional branches that are being checked out during template
+   * invocation.
+   */
   private TreeSet<String> pOptionalCheckoutList;
-  
+ 
+  /*
+   * Variables that define the sort of the template this is and the nodes that define it.
+   */
   private String pStartNode;
-  private TreeSet<String> pAllNodes;
+  private Set<String> pAllNodes;
   private Set<String> pRootNodes;
   private TemplateType pTemplateType;
+  
+  /*
+   * Template manifests.  
+   */
+  private TemplateDescManifest pDescManifest;
+  private TemplateParamManifest pParamManifest;
 }

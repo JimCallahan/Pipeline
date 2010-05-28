@@ -551,6 +551,73 @@ class BaseUtil
       pClient.checkOut(getAuthor(), getView(), name, latestID, mode, method);
     }
   }
+  
+  /**
+   * Check-out a version of a node if that version is not currently checked-out in the current
+   * working area. <p>
+   * 
+   * Checks the current version ID of a node against the specified version. If the ID's are 
+   * the same, it does nothing. If ID is different it checks out the node, using the
+   * CheckOutMode and CheckOutMethod passed in.
+   * 
+   * @param name
+   *   The name of the node to consider forcheckout.
+   *   
+   * @param verID
+   *   The version of the node to consider for checkout.
+   * 
+   * @param mode
+   *   The {@link CheckOutMode} to use.
+   *   
+   * @param method
+   *   The {@link CheckOutMethod} to use.
+   *   
+   * @throws PipelineException 
+   *   If no checked-in versions of the node exist.
+   */
+  public void
+  checkOutVersionIfDifferent
+  (
+    String name,
+    VersionID verID,
+    CheckOutMode mode, 
+    CheckOutMethod method
+  )
+    throws PipelineException
+  {
+    NodeMod mod = null;
+    try {
+      mod = pClient.getWorkingVersion(getAuthor(), getView(), name);
+    }
+    catch(PipelineException ex) {}
+
+    TreeSet<VersionID> versions = null;
+    try {
+      versions = pClient.getCheckedInVersionIDs(name);
+    }
+    catch(PipelineException ex) {
+      throw new PipelineException
+        ("checkOutVersionIfDifferent has aborted since there is no Checked-In Version " +
+         "of the node.\n " + ex.getMessage());
+    }
+    
+    if (!versions.contains(verID))
+      throw new PipelineException
+        ("There is no version (" + verID + ") of the node named (" + name + ") that was " +
+         "specified for checkout.");
+    
+    if(mod != null) {
+      VersionID currentID = mod.getWorkingID();
+
+      if(currentID.compareTo(verID) < 0) {
+        pClient.checkOut(getAuthor(), getView(), name, verID, mode, method);
+      }
+    }
+    else {
+      pClient.checkOut(getAuthor(), getView(), name, verID, mode, method);
+    }
+    
+  }
 
   /**
    * Check-out the latest version of a node.  <p>
@@ -2155,7 +2222,18 @@ class BaseUtil
   /*----------------------------------------------------------------------------------------*/
   
   public final static String aUtilContext = "UtilContext";
+  
+  public final static ParamMapping aUtilContextAuthorParam = 
+    new ParamMapping(aUtilContext, UtilContextUtilityParam.aAuthor);
 
+  public final static ParamMapping aUtilContextViewParam = 
+    new ParamMapping(aUtilContext, UtilContextUtilityParam.aView);
+  
+  public final static ParamMapping aUtilContextToolsetParam = 
+    new ParamMapping(aUtilContext, UtilContextUtilityParam.aToolset);
+
+
+  
   private static final long serialVersionUID = -7450635393202917345L;
 
   

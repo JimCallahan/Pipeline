@@ -31,6 +31,12 @@ class TemplateNode
    *   
    * @param inTemplate
    *   Whether the node is part of the template or a product node from outside the template.
+   *   
+   * @param log
+   *   An instance of the log manager to use when writing out log output.
+   *   
+   * @throws PipelineException
+   *   If there are any errors retrieving or parsing template annotation parameters.
    */
   public
   TemplateNode
@@ -62,6 +68,7 @@ class TemplateNode
     pOrder = null;
     pConditionalBuild = null;
     pLinkSync = null;
+    pManifestType = null;
     
     MappedSet<String, String> contextLinkValues = new MappedSet<String, String>();
     TreeSet<String> ignorableProductValues = new TreeSet<String>();
@@ -81,33 +88,27 @@ class TemplateNode
         if (aName.equals("TemplateSettings")) {
           pPostRemoveAction = (Boolean) annot.getParamValue(aPostRemoveAction);
           if (pPostRemoveAction)
-            log.log(Kind.Bld, Level.Finest, 
-                   "Node has a PostRemoveAction setting.");
+            log.log(Kind.Bld, Level.Finest, "Node has a PostRemoveAction setting.");
           
           pPostDisableAction = (Boolean) annot.getParamValue(aPostDisableAction);
           if (pPostDisableAction)
-            log.log(Kind.Bld, Level.Finest, 
-                   "Node has a PostDisableAction setting.");
+            log.log(Kind.Bld, Level.Finest, "Node has a PostDisableAction setting.");
           
           pPreEnableAction = (Boolean) annot.getParamValue(aPreEnableAction);
           if (pPreEnableAction)
-            log.log(Kind.Bld, Level.Finest, 
-                   "Node has a PreEnableAction setting.");
+            log.log(Kind.Bld, Level.Finest, "Node has a PreEnableAction setting.");
           
           pCloneFiles = (Boolean) annot.getParamValue(aCloneFiles);
           if (pCloneFiles)
-            log.log(Kind.Bld, Level.Finest, 
-                   "Node has a Clone files setting.");
+            log.log(Kind.Bld, Level.Finest, "Node has a Clone files setting.");
           
           pUnlinkAll = (Boolean) annot.getParamValue(aUnlinkAll);
           if (pUnlinkAll)
-            log.log(Kind.Bld, Level.Finest, 
-                   "Node has an UnlinkAll setting.");
+            log.log(Kind.Bld, Level.Finest, "Node has an UnlinkAll setting.");
           
           pTouchFiles = (Boolean) annot.getParamValue(aTouchFiles);
           if (pTouchFiles)
-            log.log(Kind.Bld, Level.Finest, 
-                   "Node has a TouchFile setting.");
+            log.log(Kind.Bld, Level.Finest, "Node has a TouchFile setting.");
     
           if (annot.hasParam(aVouchable)) {
             pVouchable = (Boolean) annot.getParamValue(aVouchable);
@@ -115,8 +116,9 @@ class TemplateNode
               log.log(Kind.Bld, Level.Finest, "Node has a Vouchable setting.");
           }
           else
-            log.log(Kind.Bld, Level.Warning, 
-                   "Template Setting node is missing a Vouchable param. (" + pNodeName +")");
+            log.log
+              (Kind.Bld, Level.Warning, 
+               "Template Setting node is missing a Vouchable param. (" + pNodeName +")");
 
           if (annot.hasParam(aIntermediate)) {
             pIntermediate = (Boolean) annot.getParamValue(aIntermediate);
@@ -124,9 +126,10 @@ class TemplateNode
               log.log(Kind.Bld, Level.Finest, "Node has an Intermediate setting.");
           }
           else
-            log.log(Kind.Bld, Level.Warning, 
-                   "Template Setting node is missing an Intermediate param. " +
-                   "(" + pNodeName + ")");
+            log.log
+              (Kind.Bld, Level.Warning, 
+               "Template Setting node is missing an Intermediate param. " +
+               "(" + pNodeName + ")");
           
           if (annot.hasParam(aModifyFiles)) {
             pModifyFiles = (Boolean) annot.getParamValue(aModifyFiles);
@@ -134,26 +137,35 @@ class TemplateNode
               log.log(Kind.Bld, Level.Finest, "Node has a Modify Files setting.");
           }
           else
-            log.log(Kind.Bld, Level.Warning, 
-                   "Template Setting node is missing a Modify Files param. " +
-                   "(" + pNodeName + ")");
+            log.log
+              (Kind.Bld, Level.Warning, 
+               "Template Setting node is missing a Modify Files param. " +
+               "(" + pNodeName + ")");
 
         }
         else if (aName.startsWith("TemplateUnlink" )) {
           String unlink = (String) annot.getParamValue(aLinkName);
           checkLink(unlink, sourceNames, "TemplateUnlink");
           pNodesToUnlink.add(unlink);
-          log.log(Kind.Bld, Level.Finest, 
-                  "Node has an Unlink annotation pointing to (" + unlink +").");
+          log.log
+            (Kind.Bld, Level.Finest, 
+             "Node has an Unlink annotation pointing to (" + unlink +").");
+        }
+        else if (aName.equals("TemplateManifest")) {
+          pManifestType = (String) annot.getParamValue(aManifestType);
+          log.log
+            (Kind.Bld, Level.Finest, 
+             "Node has a manifest type of (" + pManifestType +").");
         }
         else if (aName.startsWith("TemplateOffset")) {
           String offset = (String) annot.getParamValue(aOffsetName);
           String linkName = (String) annot.getParamValue(aLinkName);
           checkLink(linkName, sourceNames, "TemplateOffset");
           offsets.put(linkName, offset);
-          log.log(Kind.Bld, Level.Finest, 
-            "Node has an Offset annotation named (" + offset +") pointing to " +
-            "(" + linkName+").");
+          log.log
+            (Kind.Bld, Level.Finest, 
+             "Node has an Offset annotation named (" + offset +") pointing to " +
+             "(" + linkName+").");
         }
         else if (aName.equals("TemplateOptionalBranch")) {
           pOptionalBranch = (String) annot.getParamValue(aOptionName); 
@@ -172,19 +184,20 @@ class TemplateNode
               OptionalProductType.valueOf(OptionalProductType.class, value);
           }
           
-          
-          log.log(Kind.Bld, Level.Finest, 
-                 "Node is part of an Optional Branch named (" + pOptionalBranch +") with a " +
-                 "type of (" + pOptionalBranchType +") and a product type of " +
-                 "(" + pOptionalProductType +").");
+          log.log
+            (Kind.Bld, Level.Finest, 
+             "Node is part of an Optional Branch named (" + pOptionalBranch +") with a " +
+             "type of (" + pOptionalBranchType +") and a product type of " +
+             "(" + pOptionalProductType +").");
         }
         else if (aName.startsWith("TemplateContextLink")) {
           String aSrc = (String) annot.getParamValue(aLinkName);
           String context = (String) annot.getParamValue(aContextName);
           checkLink(aSrc, sourceNames, "TemplateContextLink");
           contextLinkValues.put(aSrc, context);
-          log.log(Kind.Bld, Level.Finest, 
-            "Node has a context link for (" + aSrc + ") with a value of (" + context + ")");
+          log.log
+            (Kind.Bld, Level.Finest, 
+             "Node has a context link for (" + aSrc + ") with a value of (" + context + ")");
         }
         else if (aName.startsWith("TemplateContext")) {
           String context = (String) annot.getParamValue(aContextName); 
@@ -212,16 +225,18 @@ class TemplateNode
             "Node has an AOE mode override named (" + mode + ") with value (" + aoe +")");
         }
         else if (aName.equals("TemplateVouchable")) {
-          log.log(Kind.Bld, Level.Severe, 
-                  "The template vouchable annotation is no longer used in templates " +
-                  "v2.4.10.  Use the vouchable setting on the Template Settings node " +
-                  "instead. (" + pNodeName +")");
+          log.log
+            (Kind.Bld, Level.Severe, 
+             "The template vouchable annotation is no longer used in templates " +
+             "v2.4.10.  Use the vouchable setting on the Template Settings node " +
+             "instead. (" + pNodeName +")");
         }
         else if (aName.equals("TemplateCheckpoint")) {
-          log.log(Kind.Bld, Level.Severe, 
-                  "The template checkpoint annotation is no longer used in templates " +
-                  "v2.4.10.  Use the vouchable setting on the Template Settings node " +
-                  "instead. (" + pNodeName +")");
+          log.log
+            (Kind.Bld, Level.Severe, 
+             "The template checkpoint annotation is no longer used in templates " +
+             "v2.4.10.  Use the vouchable setting on the Template Settings node " +
+             "instead. (" + pNodeName +")");
         }
         else if (aName.equals("TemplateExternal")) {
           pExternalName = (String) annot.getParamValue(aExternalName);
@@ -240,8 +255,7 @@ class TemplateNode
         }
         else if (aName.equals("TemplateLinkSync")) {
           pLinkSync = (String) annot.getParamValue(aLinkName);
-          log.log(Kind.Bld, Level.Finest, 
-            "Node is set to sync links off (" + pLinkSync +")");
+          log.log(Kind.Bld, Level.Finest,"Node is set to sync links off (" + pLinkSync +")");
         }
         else if (aName.equals("TemplateRange")){
           pFrameRangeName = (String) annot.getParamValue("RangeName");
@@ -790,6 +804,20 @@ class TemplateNode
   {
     return pIsOptional;
   }
+
+  /**
+   * Get the manifest type of this node. <p>
+   * 
+   * The two possible values are <code>Param</code> and <code>Desc</code>.
+   * 
+   * @return
+   *   The manifest type or <code>null</code> if the node does not have a manifest type.
+   */
+  public final String
+  getManifestType()
+  {
+    return pManifestType;
+  }
   
   
   
@@ -966,6 +994,7 @@ class TemplateNode
   public static final String aModifyFiles       = "ModifyFile";
   public static final String aSeqName           = "SeqName";
   public static final String aOffsetName        = "OffsetName";
+  public static final String aManifestType = "ManifestType";
   
   
   
@@ -1098,6 +1127,8 @@ class TemplateNode
   private String pConditionalBuild;
   private String pFrameRangeName;
   private String pLinkSync;
+  
+  private String pManifestType;
 
   
   
