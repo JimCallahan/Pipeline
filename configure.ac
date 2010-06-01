@@ -453,16 +453,26 @@ AC_MSG_RESULT([$CRYPTO_APP_DIR])
 
 
 
+AC_MSG_CHECKING([Customer Profile Settings])
+
+"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp \
+  $CUSTOMER_PROFILE --autoconf > ./plconfig-vars.sh
+
+echo
+cat ./plconfig-vars.sh
+
+source ./plconfig-vars.sh
+
+AC_MSG_RESULT([])
+
+
+
 AC_MSG_CHECKING([Customer Profile Version Check])
 
 AC_SUBST(PLCONFIG_VERSION)
 PLCONFIG_VERSION=
 
 crypto_version=`"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp --version`
-
-"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp \
-  $CUSTOMER_PROFILE --autoconf > plconfig-vars.sh
-source plconfig-vars.sh
 
 if test "x$crypto_version" == "x" -o "x$PLCONFIG_PL_CONFIG_VERSION" == "x"
 then 
