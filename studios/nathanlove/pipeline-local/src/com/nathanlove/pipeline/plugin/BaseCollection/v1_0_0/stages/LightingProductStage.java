@@ -55,7 +55,7 @@ class LightingProductStage
   finalizeStage()
     throws PipelineException
   {
-    NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    NodeID id = new NodeID(getAuthor(), getView(), getNodeName());
     removeAction();
     pClient.unlink(id, pSourceNode);
     pClient.unlink(id, pMelScript);

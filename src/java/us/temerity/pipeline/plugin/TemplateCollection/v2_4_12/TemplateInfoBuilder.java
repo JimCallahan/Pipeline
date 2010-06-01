@@ -18,6 +18,10 @@ import us.temerity.pipeline.glue.io.*;
 /*   T E M P L A T E   I N F O   B U I L D E R                                              */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * Builder that allows a user to invoke a template and insert all the replacements values
+ * manually.
+ */
 public 
 class TemplateInfoBuilder
   extends TaskBuilder
@@ -75,7 +79,7 @@ class TemplateInfoBuilder
    * 
    * @param builderInformation
    *   The instance of the global information class used to share information between all the
-   *   Builders that are invoked.e 
+   *   Builders that are invoked.
    * 
    * @param templatePath
    *   The path of the node containing the template glue information.
@@ -187,7 +191,7 @@ class TemplateInfoBuilder
       UtilityParam param = 
         new EnumUtilityParam
           (aCheckInLevel,
-           "The check-in levelto use.",
+           "The check-in level to use.",
            "Minor",
            values);
       addParam(param);
@@ -196,7 +200,7 @@ class TemplateInfoBuilder
     AdvancedLayoutGroup layout = new AdvancedLayoutGroup
     ("Information Pass", 
       "The First pass of the Template Info Builder",
-      "BasicInformation", true);
+      "BasicInfo", true);
 
     layout.addEntry(1, aUtilContext);
     layout.addEntry(1, null);

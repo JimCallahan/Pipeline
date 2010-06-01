@@ -2,10 +2,10 @@
 
 package us.temerity.pipeline.plugin;
 
-import  us.temerity.pipeline.*;
-
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P Y T H O N   A C T I O N   U T I L S                                                  */
@@ -139,7 +139,7 @@ class PythonActionUtils
    * and wait for it complete.  If the subprocess returns an non-zero exit code, the launch
    * function calls sys.exit with an appropriate error message.<P> 
    * 
-   * This method is provided as a convienence for writing dynamically generated Python 
+   * This method is provided as a convenience for writing dynamically generated Python 
    * scripts in a subclasses {@link #prep prep} method which run multiple subprocesses. 
    * By using "launch", you get standardized progress messages and error handling for 
    * free. <P> 
@@ -166,6 +166,48 @@ class PythonActionUtils
        "  result = subprocess.call(a)\n" +
        "  if result != 0:\n" +
        "    sys.exit('  FAILED: Exit Code = ' + str(result));\n\n");
+  }
+
+  /**
+   * Create a launcher using the launch header defined in {@link #getPythonLaunchHeader()}. 
+   * <p>
+   * This String can be included in any python script after the launch header has also been 
+   * included.
+   *
+   * @param program
+   *   The name of the program to run.
+   *   
+   * @param args
+   *   The list of arguments to pass to the program.
+   */
+  public static final String
+  getPythonLauncher
+  (
+    String program,
+    List<String> args
+  )
+  {
+    StringBuffer buf = new StringBuffer();
+    buf.append("launch('");
+    buf.append(program);
+    buf.append("', [");
+    boolean first = true;
+    for (String arg : args) {
+      if (!first)
+        buf.append(", ");
+      else
+        first = false;
+      buf.append("'");
+      if (arg.contains("\\"))
+        arg = escPath(arg);
+      if (arg.contains("\n"))
+        arg = arg.replaceAll("\\n", "\\\\n");
+      buf.append(arg);
+      buf.append("'");
+    }
+    buf.append("])\n");
+                
+    return buf.toString();
   }
   
   /**

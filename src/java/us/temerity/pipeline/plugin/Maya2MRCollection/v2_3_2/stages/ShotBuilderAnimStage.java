@@ -42,7 +42,7 @@ class ShotBuilderAnimStage
           nodeName, 
           true);
     if (range != null)
-      setFrameRange(range);
+      setMayaFrameRange(range);
     setUnits();
     if (cameraNode != null) {
       if (importCamera)

@@ -54,7 +54,7 @@ class AfterFXSceneStage
   {
     disableAction();
     for (String source : pSources)
-      pClient.link(getAuthor(), getView(), pRegisteredNodeName, source, LinkPolicy.Association);
+      pClient.link(getAuthor(), getView(), getNodeName(), source, LinkPolicy.Association);
   }
   
   @Override

@@ -1,5 +1,3 @@
-// $Id: TemplateGlueInformation.java,v 1.1 2009/10/14 18:11:43 jesse Exp $
-
 package us.temerity.pipeline.builder.v2_4_12;
 
 import java.util.*;
@@ -51,6 +49,15 @@ class TemplateGlueInformation
     pOptionalBranches = new ListMap<String, Boolean>();
   }
   
+  /**
+   * Constructor.
+   * 
+   * @param name
+   *   A name for this info file.
+   *   
+   * @param desc
+   *   A description of this info file.
+   */
   public 
   TemplateGlueInformation
   (
@@ -94,7 +101,7 @@ class TemplateGlueInformation
     us.temerity.pipeline.builder.v2_4_3.TemplateGlueInformation oldInfo
   )
   {
-    super(oldInfo.getName(), "Built with the TemplateGlueTool");
+    super(oldInfo.getName(), "Converted from a v2.4.3 TemplateGlueInfo.");
 
     setReplacements(oldInfo.getReplacements());
     setReplacementDefaults(oldInfo.getReplacementDefaults());
@@ -119,7 +126,6 @@ class TemplateGlueInformation
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
   
   /**
    * Return a list of the String replacements for the template. 

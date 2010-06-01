@@ -40,7 +40,7 @@ class LightingEditStage
           mayaContext, 
           nodeName, true);
     if (range != null)
-      setFrameRange(range);
+      setMayaFrameRange(range);
     setUnits();
     setupLink(preLightName, "pre", getReference(), true);
   }

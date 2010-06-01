@@ -84,10 +84,10 @@ class ContextsDefaultsPanel
      pNextID++;
   }
   
-  public MappedArrayList<String, TreeMap<String, String>> 
+  public MappedArrayList<String, TreeMap<String, String>>
   getContextDefaults()
   {
-    MappedArrayList<String, TreeMap<String, String>>toReturn = 
+    MappedArrayList<String, TreeMap<String, String>> toReturn = 
       new MappedArrayList<String, TreeMap<String, String>>();
     
     for (Entry<String, ContextDefaultEntry> entry : pEntryByContext.entrySet()) {

@@ -70,7 +70,7 @@ class ModelEditStage
     removeAction();
     if(pPlaceHolderMel != null)
       if (pRegisteredNodeMod.getSourceNames().contains(pPlaceHolderMel))
-	pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceHolderMel);
+	pClient.unlink(getAuthor(), getView(), getNodeName(), pPlaceHolderMel);
     vouch();
   }
   

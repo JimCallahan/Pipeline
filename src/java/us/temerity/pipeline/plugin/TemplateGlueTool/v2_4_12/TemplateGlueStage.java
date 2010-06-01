@@ -77,7 +77,7 @@ enum TemplateGlueStage
     int ordinal = currentStage.ordinal();
     ordinal--;
     TemplateGlueStage array[] = values();
-    if (ordinal > 0 )
+    if (ordinal >= 0 )
       return array[ordinal];
     else
       return null;

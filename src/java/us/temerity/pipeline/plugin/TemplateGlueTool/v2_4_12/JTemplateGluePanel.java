@@ -114,7 +114,6 @@ class JTemplateGluePanel
       
       firstPass.setMinimumSize(new Dimension(740, 500));
       firstPass.setPreferredSize(new Dimension(740, 500));
-//      firstPass.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
       
       pSettingsPanel = firstPass;
       pSettingsLayouts = firstLayout;

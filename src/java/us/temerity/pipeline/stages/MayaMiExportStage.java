@@ -159,7 +159,7 @@ class MayaMiExportStage
     values.put(aCustomShaders, false);
     values.put(aCustomPhenomena, false);
     values.put(aExportMaterials, false);
-    setPresets(pAction, values);
+    setPresets(values);
   }
   
   @SuppressWarnings("unchecked")
@@ -190,7 +190,7 @@ class MayaMiExportStage
     values.put(aCustomText, false);
     values.put(aCustomShaders, true);
     values.put(aCustomPhenomena, false);
-    setPresets(pAction, values);
+    setPresets(values);
   }
   
   @SuppressWarnings("unchecked")
@@ -221,7 +221,7 @@ class MayaMiExportStage
     values.put(aCustomText, false);
     values.put(aCustomShaders, true);
     values.put(aCustomPhenomena, false);
-    setPresets(pAction, values);
+    setPresets(values);
   }
   
   @SuppressWarnings("unchecked")
@@ -252,7 +252,7 @@ class MayaMiExportStage
     values.put(aCustomText, false);
     values.put(aCustomShaders, false);
     values.put(aCustomPhenomena, false);
-    setPresets(pAction, values);
+    setPresets(values);
   }
   
   @SuppressWarnings("unchecked")
@@ -283,7 +283,7 @@ class MayaMiExportStage
     values.put(aCustomText, false);
     values.put(aCustomShaders, false);
     values.put(aCustomPhenomena, false);
-    setPresets(pAction, values);
+    setPresets(values);
   }
   
   @SuppressWarnings("unchecked")
@@ -315,7 +315,7 @@ class MayaMiExportStage
     values.put(aCustomShaders, false);
     values.put(aCustomPhenomena, false);
     values.put(aExportMaterials, false);
-    setPresets(pAction, values);
+    setPresets(values);
   }
   
   @SuppressWarnings("unchecked")
@@ -346,7 +346,7 @@ class MayaMiExportStage
     values.put(aCustomText, false);
     values.put(aCustomShaders, false);
     values.put(aCustomPhenomena, false);
-    setPresets(pAction, values);
+    setPresets(values);
   }
   
   @SuppressWarnings("unchecked")
@@ -377,7 +377,7 @@ class MayaMiExportStage
     values.put(aCustomText, true);
     values.put(aCustomShaders, true);
     values.put(aCustomPhenomena, true);
-    setPresets(pAction, values);
+    setPresets(values);
   }
   
   /**

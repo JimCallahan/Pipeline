@@ -36,7 +36,7 @@ class AnimEditStage
           nodeName,
           true);
     if (range != null)
-      setFrameRange(range);
+      setMayaFrameRange(range);
     for (String namespace : assets.keySet()) {
       String node = assets.get(namespace);
       setupLink(node, namespace, getReference(), getModel());

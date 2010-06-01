@@ -172,102 +172,102 @@ class HfsMantraStage
   private void
   initStage
   (
-	  String inputNode,
-	  Integer processors,
-	  Integer width,
-	  Integer height,
-	  String ouputFormat,
-	  String colorDepth,
-	  String renderFields,
-	  String extraOptions,
-	  String renderMode,
-	  boolean antiAliasing,
-	  String motionBlur,
-	  boolean depthOfField,
-	  boolean globalIllumination,
-	  Double shadingQuality,
-	  String aaThreshold,
-	  Double jitterScale,
-	  String covingMethod,
-	  Integer mPolyCacheSize,
-	  Integer mPolyMaxSplits,
-	  Integer rayMeshCacheSize,
-	  Double rayShadingRate,
-	  String verbosity,
-	  String profiling
+    String inputNode,
+    Integer processors,
+    Integer width,
+    Integer height,
+    String ouputFormat,
+    String colorDepth,
+    String renderFields,
+    String extraOptions,
+    String renderMode,
+    boolean antiAliasing,
+    String motionBlur,
+    boolean depthOfField,
+    boolean globalIllumination,
+    Double shadingQuality,
+    String aaThreshold,
+    Double jitterScale,
+    String covingMethod,
+    Integer mPolyCacheSize,
+    Integer mPolyMaxSplits,
+    Integer rayMeshCacheSize,
+    Double rayShadingRate,
+    String verbosity,
+    String profiling
   )
-   throws PipelineException
+     throws PipelineException
   {
-	addLink(new LinkMod(inputNode, LinkPolicy.Dependency, LinkRelationship.OneToOne, 0));
-	addSingleParamValue("InputFiles", inputNode);
+    addLink(new LinkMod(inputNode, LinkPolicy.Dependency, LinkRelationship.OneToOne, 0));
+    addSingleParamValue("InputFiles", inputNode);
 
-	if(processors != null)
-		addSingleParamValue("Processors", processors);
+    if(processors != null)
+      addSingleParamValue("Processors", processors);
 
-	if(width != null)
-		addSingleParamValue("ImageWidth", width);
+    if(width != null)
+      addSingleParamValue("ImageWidth", width);
 
-	if(height != null)
-		addSingleParamValue("ImageHeight", height);
+    if(height != null)
+      addSingleParamValue("ImageHeight", height);
 
-	if(ouputFormat != null)
-		addSingleParamValue("OutputFormat", ouputFormat);
+    if(ouputFormat != null)
+      addSingleParamValue("OutputFormat", ouputFormat);
 
-	if(colorDepth != null)
-		addSingleParamValue("ColorDepth", colorDepth);
+    if(colorDepth != null)
+      addSingleParamValue("ColorDepth", colorDepth);
 
-	if(colorDepth != null)
-		addSingleParamValue("ColorDepth", colorDepth);
+    if(colorDepth != null)
+      addSingleParamValue("ColorDepth", colorDepth);
 
-	if(renderFields != null)
-		addSingleParamValue("RenderFields", renderFields);
+    if(renderFields != null)
+      addSingleParamValue("RenderFields", renderFields);
 
-	if(extraOptions != null)
-		addSingleParamValue("ExtraOptions", extraOptions);
+    if(extraOptions != null)
+      addSingleParamValue("ExtraOptions", extraOptions);
 
-	if(renderMode != null)
-		addSingleParamValue("RenderMode", renderMode);
+    if(renderMode != null)
+      addSingleParamValue("RenderMode", renderMode);
 
-	addSingleParamValue("AntiAliasing", antiAliasing);
+    addSingleParamValue("AntiAliasing", antiAliasing);
 
-	if(motionBlur != null)
-		addSingleParamValue("MotionBlur", motionBlur);
+    if(motionBlur != null)
+      addSingleParamValue("MotionBlur", motionBlur);
 
-	if(colorDepth != null)
-		addSingleParamValue("ColorDepth", colorDepth);
+    if(colorDepth != null)
+      addSingleParamValue("ColorDepth", colorDepth);
 
-	if(colorDepth != null)
-		addSingleParamValue("ColorDepth", colorDepth);
+    if(colorDepth != null)
+      addSingleParamValue("ColorDepth", colorDepth);
 
-	addSingleParamValue("DepthOfField", depthOfField);
-	addSingleParamValue("GlobalIllumination", globalIllumination);
+    addSingleParamValue("DepthOfField", depthOfField);
+    addSingleParamValue("GlobalIllumination", globalIllumination);
 
-	if(shadingQuality != null)
-		addSingleParamValue("ShadingQuality", shadingQuality);
+    if(shadingQuality != null)
+      addSingleParamValue("ShadingQuality", shadingQuality);
 
-	if(aaThreshold != null)
-		addSingleParamValue("AntiAliasingThreshold", aaThreshold);
+    if(aaThreshold != null)
+      addSingleParamValue("AntiAliasingThreshold", aaThreshold);
 
-	if(jitterScale != null)
-		addSingleParamValue("JitterScale", jitterScale);
+    if(jitterScale != null)
+      addSingleParamValue("JitterScale", jitterScale);
 
-	if(covingMethod != null)
-		addSingleParamValue("CovingMethod", covingMethod);
+    if(covingMethod != null)
+      addSingleParamValue("CovingMethod", covingMethod);
 
-	if(mPolyCacheSize != null)
-		addSingleParamValue("MicroPolygonCacheSize", mPolyCacheSize);
+    if(mPolyCacheSize != null)
+      addSingleParamValue("MicroPolygonCacheSize", mPolyCacheSize);
 
-	if(mPolyMaxSplits != null)
-		addSingleParamValue("MicroPolygonMaxSplits", mPolyMaxSplits);
+    if(mPolyMaxSplits != null)
+      addSingleParamValue("MicroPolygonMaxSplits", mPolyMaxSplits);
 
-	if(rayShadingRate != null)
-		addSingleParamValue("RayShadingRate", rayShadingRate);
+    if(rayShadingRate != null)
+      addSingleParamValue("RayShadingRate", rayShadingRate);
 
-	if(verbosity != null)
-		addSingleParamValue("Verbosity", verbosity);
+    if(verbosity != null)
+      addSingleParamValue("Verbosity", verbosity);
 
-	if(profiling != null)
-		addSingleParamValue("Profiling", profiling);
+    if(profiling != null)
+      addSingleParamValue("Profiling", profiling);
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -281,14 +281,16 @@ class HfsMantraStage
   public String
   getStageFunction()
   {
-	  if (pSuffix.equals("exr"))
-		  return ICStageFunction.aExrImage;
-	  else if (pSuffix.equals("rat"))
-	  	  return ICStageFunction.aRatImage;
-	  else
-		  return ICStageFunction.aRenderedImage;
+    if (getSuffix().equals("exr"))
+      return ICStageFunction.aExrImage;
+    else if (getSuffix().equals("rat"))
+      return ICStageFunction.aRatImage;
+    else
+      return ICStageFunction.aRenderedImage;
   }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/

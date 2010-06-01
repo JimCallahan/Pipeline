@@ -1,5 +1,3 @@
-// $Id: TemplateStage.java,v 1.3 2009/10/30 05:30:35 jesse Exp $
-
 package us.temerity.pipeline.plugin.TemplateCollection.v2_4_12;
 
 import java.io.*;
@@ -10,6 +8,9 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.*;
+import us.temerity.pipeline.builder.v2_4_12.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.stages.*;
 
@@ -45,6 +46,8 @@ class TemplateStage
     FrameRange templateRange,
     TemplateExternalData external,
     TreeMap<String, Integer> offsets,
+    TemplateParamManifest paramManifest,
+    TemplateDescManifest descManifest,
     TreeMap<String, TemplateNode> nodeDatabase
   ) 
     throws PipelineException
@@ -52,7 +55,8 @@ class TemplateStage
     super("Template", 
           "Stage for use with the Template Builder", 
           stageInfo, context, client, 
-          nodeName, (templateRange != null) ? templateRange : range, padding, suffix, editor, action);
+          nodeName, (templateRange != null) ? templateRange : range, padding, suffix, 
+          editor, action);
     
     pTemplateNode = sourceNode;
     pSourceMod = sourceNode.getNodeMod();
@@ -64,6 +68,9 @@ class TemplateStage
     pInhibitCopyFiles = inhibitCopy;
     pExternal = external;
     pOffsets = offsets;
+    pParamManifest = paramManifest;
+    pDescManifest = descManifest;
+    
     
     init();
   }
@@ -85,6 +92,8 @@ class TemplateStage
     FrameRange templateRange,
     TemplateExternalData external,
     TreeMap<String, Integer> offsets,
+    TemplateParamManifest paramManifest,
+    TemplateDescManifest descManifest,
     TreeMap<String, TemplateNode> nodeDatabase
   ) 
     throws PipelineException
@@ -104,6 +113,8 @@ class TemplateStage
     pInhibitCopyFiles = inhibitCopy;
     pExternal = external;
     pOffsets = offsets;
+    pParamManifest = paramManifest;
+    pDescManifest = descManifest;
     
     init();
   }
@@ -126,17 +137,32 @@ class TemplateStage
   {
     BaseAction act = pSourceMod.getAction();
     
+    String nodeName = getNodeName();
     if (pExternal != null && act != null)
       throw new PipelineException
-        ("The node (" + pRegisteredNodeName + ") has an Action assigned to it, " +
+        ("The node (" + nodeName + ") has an Action assigned to it, " +
          "but also has a TemplateExternal annotation associated with it.  Nodes with " +
          "TemplateExternal annotations cannot have Actions.");
     
     if (pExternal != null && PackageInfo.sOsType != OsType.Unix)
       throw new PipelineException
-        ("The node (" + pRegisteredNodeName + ") has a TemplateExternal annotation " +
+        ("The node (" + nodeName + ") has a TemplateExternal annotation " +
          "associated with it, but this builder is not being run on a Unix/Linux machine. " +
          "External Sequence support only exists on Unix-derivative operating systems" );
+    
+    String manifest = pTemplateNode.getManifestType();
+    if (manifest != null) {
+      if (pSourceMod.getPrimarySequence().hasFrameNumbers())
+        throw new PipelineException
+          ("The node (" + nodeName + ") has a TemplateManifest annotation on it, " +
+           "but also has frame numbers.  This situation is not supported by the template " +
+           "builder.");
+      if (act != null) 
+        throw new PipelineException
+          ("The node (" + nodeName + ") has a TemplateManifest annotation on it, " +
+           "but also has an action.  This situation is not supported by the template " +
+           "builder.");
+    }
     
     setIntermediate(pTemplateNode.isIntermediate());
     
@@ -149,7 +175,6 @@ class TemplateStage
     if (pTemplateNode.cloneFiles() && pTemplateNode.touchFiles())
       pLateFileCopy = true;
    
-    
     for (FileSeq seq : pSourceMod.getSecondarySequences()) {
       String filePat = seq.getFilePattern().toString();
       Set<String> secContexts = pTemplateNode.getSecondaryContextsForSequence(filePat);
@@ -303,6 +328,12 @@ class TemplateStage
    * @param offsets
    *   The frame offset values indexed by the name of the frame offset.
    *   
+   * @param paramManifest
+   *   The parameter manifest for this template.
+   *   
+   * @param descManifest
+   *   The description manifest for this template.
+   *   
    * @param nodeDirectory
    *   The directory of all the template nodes in the project.
    * 
@@ -325,6 +356,8 @@ class TemplateStage
     boolean inhibitCopy,
     TemplateExternalData external,
     TreeMap<String, Integer> offsets,
+    TemplateParamManifest paramManifest,
+    TemplateDescManifest descManifest,
     TreeMap<String, TemplateNode> nodeDirectory
   ) 
     throws PipelineException
@@ -342,7 +375,8 @@ class TemplateStage
       BaseEditor ed = sourceMod.getEditor();
       if (ed != null) {
         VersionID ver = ed.getVersionID();
-        editor = new PluginContext(ed.getName(), ed.getVendor(), new Range<VersionID>(ver, ver));
+        editor = 
+          new PluginContext(ed.getName(), ed.getVendor(), new Range<VersionID>(ver, ver));
       }
     }
     
@@ -351,7 +385,8 @@ class TemplateStage
       BaseAction act = sourceMod.getAction();
       if (act != null) {
         VersionID ver = act.getVersionID();
-        action = new PluginContext(act.getName(), act.getVendor(), new Range<VersionID>(ver, ver));
+        action = 
+          new PluginContext(act.getName(), act.getVendor(), new Range<VersionID>(ver, ver));
       }
     }
     
@@ -364,12 +399,13 @@ class TemplateStage
       return new TemplateStage
         (sourceNode, stageInfo, newContext, client, nodeName, oldRange, padding, suffix, 
          editor, action, inhibitCopy, stringReplacements, contexts, range, external, offsets, 
-         nodeDirectory);
+         paramManifest, descManifest, nodeDirectory);
     }
     else 
       return new TemplateStage
         (sourceNode, stageInfo, newContext, client, nodeName, suffix, editor, action, 
-         inhibitCopy, stringReplacements, contexts, range, external, offsets, nodeDirectory);
+         inhibitCopy, stringReplacements, contexts, range, external, offsets, 
+         paramManifest, descManifest, nodeDirectory);
   }
   
 
@@ -385,18 +421,17 @@ class TemplateStage
   {
     boolean build = super.build();
     if (build) {
+      String nodeName = getNodeName();
       if (pSrcHasDisabledAction && !pTemplateNode.preEnableAction()) {
         pLog.log(Kind.Bld, Level.Finer, 
           "Disabling the action after building the node.");
         pRegisteredNodeMod.setActionEnabled(false);
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
       }
       if (pTemplateNode.cloneFiles()  && !pInhibitCopyFiles) {
-        pLog.log(Kind.Bld, Level.Finer, 
-          "Cloning the files after building the node.");
         NodeID src = new NodeID(getAuthor(), getView(), pSourceMod.getName());
-        NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+        NodeID tar = getNodeID();
         
         FrameRange srcRange = pSourceMod.getPrimarySequence().getFrameRange();
         pTgtRange = pRegisteredNodeMod.getPrimarySequence().getFrameRange();
@@ -409,12 +444,18 @@ class TemplateStage
                 "the source frame range (" + srcRange + ").  Clone files cannot continue.");
           }
 
-          if (!pLateFileCopy)
+          if (!pLateFileCopy) {
+            pLog.log(Kind.Bld, Level.Finer, 
+              "Cloning the files after building the node.");
             pClient.cloneFiles(src, tar, pSecSeqs, pTgtRange, pTgtRange);
+          }
         }
         else {
-          if (!pLateFileCopy)
+          if (!pLateFileCopy) {
+            pLog.log(Kind.Bld, Level.Finer, 
+              "Cloning the files after building the node.");
             pClient.cloneFiles(src, tar, pSecSeqs);
+          }
         }
         
         if (pTemplateNode.modifyFiles() && !pLateFileCopy) {
@@ -426,9 +467,9 @@ class TemplateStage
         pLog.log(Kind.Bld, Level.Finer, 
           "Backing up the Action and replacing it with the Touch action.");
         pBackedUpAction = pRegisteredNodeMod.getAction();
-        pRegisteredNodeMod.setAction(getAction(new PluginContext("Touch"), getToolset()));
+        pRegisteredNodeMod.setAction(lookupAction(new PluginContext("Touch"), getToolset()));
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
       }
       
       if (pExternal != null) {
@@ -486,7 +527,7 @@ class TemplateStage
         catch (InterruptedException ex) 
         {
           String message = 
-            "The link subprocess for node (" + pRegisteredNodeName + ") failed.";
+            "The link subprocess for node (" + nodeName + ") failed.";
           throw new PipelineException(Exceptions.getFullMessage(message, ex));
         }
         Integer exit = process.getExitCode();
@@ -501,14 +542,47 @@ class TemplateStage
         catch (PipelineException ex ) {
           String message =
             "An error occurred while attempting to vouch for the node " +
-            "(" + pRegisteredNodeName + ") which was linked to external files.  This is " +
+            "(" + nodeName + ") which was linked to external files.  This is " +
             "most likely caused by the user running the template not having write " +
             "permissions for the external files (which it needs to touch the files).\n" + 
             ex.getMessage();
           throw new PipelineException(message);
         }
       }
-    }
+      
+      String manifest = pTemplateNode.getManifestType();
+      if (manifest != null) {
+        Path wpath = new Path(PackageInfo.sProdPath, getNodeID().getWorkingParent());
+        
+        wpath.toFile().mkdirs();
+        
+        Path path = new Path(wpath, pRegisteredNodeMod.getPrimarySequence().getPath(0));
+        File file = path.toFile();
+        
+        if (manifest.equals("Param")) {
+          try {
+            GlueEncoderImpl.encodeFile("ParamManifest", pParamManifest, file);
+          }
+          catch (GlueException ex) {
+            throw new PipelineException
+              ("Error while writing the param manifest glue file.", ex);
+          }
+        }
+        else if (manifest.equals("Desc")) {
+          try {
+            GlueEncoderImpl.encodeFile("DescManifest", pDescManifest, file);
+          }
+          catch (GlueException ex) {
+            throw new PipelineException
+              ("Error while writing the desc manifest glue file.", ex);
+          }
+        }
+        else
+          throw new PipelineException("Invalid manifest type (" + manifest + ")");
+        
+      }
+      
+    } //if (build)
     return build;
   }
   
@@ -649,25 +723,25 @@ class TemplateStage
   touchFilesProcess()
     throws PipelineException
   {
-    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
-      ArrayList<String> args = new ArrayList<String>();
-      for(File file : pRegisteredNodeMod.getPrimarySequence().getFiles()) 
+    NodeID nodeID = getNodeID();
+    ArrayList<String> args = new ArrayList<String>();
+    for(File file : pRegisteredNodeMod.getPrimarySequence().getFiles()) 
+      args.add(file.toString());
+
+    for(FileSeq fseq : pRegisteredNodeMod.getSecondarySequences()) {
+      for(File file : fseq.getFiles())
         args.add(file.toString());
-      
-      for(FileSeq fseq : pRegisteredNodeMod.getSecondarySequences()) {
-        for(File file : fseq.getFiles())
-          args.add(file.toString());
-      }
-      
-      Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent()); 
-      wpath.toFile().mkdirs();
-      
-      TreeMap<String, String> toolset = 
-        pClient.getToolsetEnvironment
-          (getAuthor(), getView(), getToolset(), PackageInfo.sOsType);
-      SubProcessLight light = 
-        new SubProcessLight("BuilderTouch", "touch", args, toolset, wpath.toFile());
-      return light;
+    }
+
+    Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent()); 
+    wpath.toFile().mkdirs();
+
+    TreeMap<String, String> toolset = 
+      pClient.getToolsetEnvironment
+      (getAuthor(), getView(), getToolset(), PackageInfo.sOsType);
+    SubProcessLight light = 
+      new SubProcessLight("BuilderTouch", "touch", args, toolset, wpath.toFile());
+    return light;
   }
   
   private SubProcessLight
@@ -677,7 +751,7 @@ class TemplateStage
   )
     throws PipelineException
   {
-    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    NodeID nodeID = getNodeID();
     
     Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent()); 
     wpath.toFile().mkdirs();
@@ -721,7 +795,7 @@ class TemplateStage
     pLog.log
       (Kind.Bld, Level.Fine, "String replacing inside the files.");
     
-    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    NodeID nodeID = getNodeID();
     
     Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent());
     
@@ -831,42 +905,43 @@ class TemplateStage
     throws PipelineException
   {
     boolean changed = false;
+    String nodeName = getNodeName();
     if (pTemplateNode.postDisableAction()) {
       pLog.log(Kind.Bld, Level.Finer, 
-        "Disabling the action on (" + pRegisteredNodeName + ") as part of finalization.");
+        "Disabling the action on (" + nodeName + ") as part of finalization.");
       pRegisteredNodeMod.setActionEnabled(false);
       changed = true;
     }
     if (pTemplateNode.postRemoveAction()) {
       pLog.log(Kind.Bld, Level.Finer, 
-        "Removing the action on (" + pRegisteredNodeName + ") as part of finalization.");
+        "Removing the action on (" + nodeName + ") as part of finalization.");
       pRegisteredNodeMod.setAction(null);
       changed = true;
     }
     if (changed) {
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-      pRegisteredNodeMod = getWorkingVersion(pRegisteredNodeName); 
+      pRegisteredNodeMod = getWorkingVersion(nodeName); 
     }
 
     if (pTemplateNode.unlinkAll()) {
       pLog.log(Kind.Bld, Level.Finer, 
-        "Unlinking all sources from (" + pRegisteredNodeName + ") due to TemplateSettings " +
+        "Unlinking all sources from (" + nodeName + ") due to TemplateSettings " +
         "Annotation.");
       for (String source : pRegisteredNodeMod.getSourceNames()) {
-        pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, source);
+        pClient.unlink(getAuthor(), getView(), nodeName, source);
       }
-      pRegisteredNodeMod = getWorkingVersion(pRegisteredNodeName); 
+      pRegisteredNodeMod = getWorkingVersion(nodeName); 
     }
     else if (!pUnlinkNodes.isEmpty()) {
       for (String oldSrc : pUnlinkNodes.keySet()) {
         for (String newSrc : pUnlinkNodes.get(oldSrc)) {
           pLog.log(Kind.Bld, Level.Finer, 
-            "Unlinking the node (" + newSrc + ") from (" + pRegisteredNodeName + ") due to " +
+            "Unlinking the node (" + newSrc + ") from (" + nodeName + ") due to " +
             "an unlink annotation.");
-          pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, newSrc);
+          pClient.unlink(getAuthor(), getView(), nodeName, newSrc);
         }
       }
-      pRegisteredNodeMod = getWorkingVersion(pRegisteredNodeName);
+      pRegisteredNodeMod = getWorkingVersion(nodeName);
     }
     
     String linkSync = pTemplateNode.getLinkSync();
@@ -877,14 +952,14 @@ class TemplateStage
       if (!workingVersionExists(linkSync)) {
         pLog.log(Kind.Bld, Level.Warning,
           "No working version of the node (" + linkSync +") which was supposed to be used " +
-          "to sync the links of (" + pRegisteredNodeName +") exists.");
+          "to sync the links of (" + nodeName +") exists.");
       }
       else {
         NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), linkSync);
         for (LinkMod link : mod.getSources()) {
-          pClient.link(getAuthor(), getView(), pRegisteredNodeName, link);
+          pClient.link(getAuthor(), getView(), nodeName, link);
         }
-        pRegisteredNodeMod = getWorkingVersion(pRegisteredNodeName);
+        pRegisteredNodeMod = getWorkingVersion(nodeName);
       }
     }
   }
@@ -894,14 +969,15 @@ class TemplateStage
     throws PipelineException
   {
     if (pTemplateNode.touchFiles()) {
+      String nodeName = getNodeName();
       pLog.log(Kind.Bld, Level.Finer, 
-        "Restoring backed-up action to (" + pRegisteredNodeName + ") as part " +
+        "Restoring backed-up action to (" + nodeName + ") as part " +
         "of finalization.");
       pRegisteredNodeMod.setAction(pBackedUpAction);
       pRegisteredNodeMod.setActionEnabled(true);
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
       pRegisteredNodeMod = 
-        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+        pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
       
       try {
         Thread.sleep(5000l);
@@ -913,7 +989,7 @@ class TemplateStage
 
       if (!pLateFileCopy) {
         pLog.log(Kind.Bld, Level.Finer, 
-          "Touching the files on (" + pRegisteredNodeName + ") to remove staleness as part of " +
+          "Touching the files on (" + nodeName + ") to remove staleness as part of " +
           "finalization.");
         if (PackageInfo.sOsType != OsType.Windows) {
           SubProcessLight process = touchFilesProcess();
@@ -932,7 +1008,7 @@ class TemplateStage
               process.getStdOut() + "\n" + process.getStdErr());
         }
         else {
-          NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+          NodeID nodeID = getNodeID();
           long currentTime = System.currentTimeMillis();
           Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent());
           
@@ -960,11 +1036,11 @@ class TemplateStage
       }
       else {
         pLog.log(Kind.Bld, Level.Finer, 
-          "Cloning the files for(" + pRegisteredNodeName + ") to remove staleness as part " +
+          "Cloning the files for(" + nodeName + ") to remove staleness as part " +
           "of finalization.");
 
         NodeID src = new NodeID(getAuthor(), getView(), pSourceMod.getName() );
-        NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+        NodeID tar = getNodeID();
 
         if (pTgtRange != null)
           pClient.cloneFiles(src, tar, pSecSeqs, pTgtRange, pTgtRange);
@@ -1218,4 +1294,10 @@ class TemplateStage
   private FrameRange pTgtRange;
 
   private BaseAction pBackedUpAction;
+  
+  /*
+   * Template manifests.  
+   */
+  private TemplateDescManifest pDescManifest;
+  private TemplateParamManifest pParamManifest;
 }

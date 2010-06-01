@@ -66,7 +66,7 @@ class BuildPreBlotAnimStage
           new MayaContext(), nodeName, true);
 
     if(range != null)
-      setFrameRange(range);
+      setMayaFrameRange(range);
 
     setUnits();
 
