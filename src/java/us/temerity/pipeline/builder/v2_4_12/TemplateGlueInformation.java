@@ -119,6 +119,9 @@ class TemplateGlueInformation
     setAOEModes(oldInfo.getAOEModes());
     setExternals(oldInfo.getExternals());
     setOptionalBranches(oldInfo.getOptionalBranches());
+    
+    pOffsets = new MappedSet<String, String>();
+    pOffsetDefaults = new TreeMap<String, Integer>();
   }
   
   
@@ -598,6 +601,10 @@ class TemplateGlueInformation
       pExternals = new MappedSet<String, String>(externals);
   }
   
+  /**
+   * Get the list of externals for the template.
+   * @return
+   */
   public final MappedSet<String, String>
   getExternals()
   {

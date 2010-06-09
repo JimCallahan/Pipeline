@@ -5,6 +5,9 @@ import java.util.*;
 
 import javax.swing.*;
 
+import com.sun.opengl.impl.*;
+
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_12.*;
 import us.temerity.pipeline.ui.*;
 
@@ -49,20 +52,31 @@ class StringReplacementPanel
       
       pHeaderBox.add(Box.createHorizontalGlue());
     }
+    
 
     {
+      ListSet<String> replacements = new ListSet<String>();
+      if (glueInfo != null)
+        replacements.addAll(glueInfo.getReplacements());
+      else 
+        replacements.addAll(oldManifest.getReplacements().keySet());
+      
       TreeMap<String, String> oldValues;
       if (oldManifest != null)
         oldValues = oldManifest.getReplacements();
       else
         oldValues = new TreeMap<String, String>();
       
-      TreeMap<String, String> defaults = glueInfo.getReplacementDefaults();
+      TreeMap<String, String> defaults;
+      if (glueInfo != null)
+        defaults = glueInfo.getReplacementDefaults();
+      else
+        defaults = new TreeMap<String, String>();
 
-      for (String replace : glueInfo.getReplacements()) {
+      for (String replace : replacements) {
         String value = oldValues.get(replace);
         if (value != null)
-         createEntry(replace, value);
+          createEntry(replace, value);
         else
           createEntry(replace, defaults.get(replace));
       }

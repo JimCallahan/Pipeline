@@ -1,11 +1,14 @@
 package us.temerity.pipeline.plugin.TemplateGenParamManifestTool.v2_4_27;
 
 import java.awt.event.*;
+import java.io.*;
 
 import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_12.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.ui.*;
 
 
@@ -27,13 +30,15 @@ class JTemplateGenParamDialog
   JTemplateGenParamDialog
   (
     TemplateGlueInformation glueInfo,
-    TemplateParamManifest oldManifest
+    TemplateParamManifest oldManifest,
+    File paramFile
   )
   {
     super("Template Gen Param Manifest Tool");
     
     pTopPanel = new JTemplateGenParamPanel(this, glueInfo, oldManifest);
     
+    pParamFile = paramFile;
   }
 
   
@@ -112,6 +117,32 @@ class JTemplateGenParamDialog
     return pTopPanel.isFinished();
   }
   
+  public TemplateParamManifest
+  getNewManifest()
+  {
+    return pTopPanel.getNewManifest();
+  }
+  
+  public void
+  doFinal()
+  {
+    if (isFinished()) {
+      try {
+        TemplateParamManifest newSettings = getNewManifest();
+        pParamFile.delete();
+        GlueEncoderImpl.encodeFile(aParamManifest, newSettings, pParamFile);
+      }
+      catch (GlueException ex) 
+      {
+        String error = Exceptions.getFullMessage(ex);
+        JErrorDialog dialog = new JErrorDialog(this);
+        dialog.setMessage("Error writing the Glue File", error);
+        dialog.setVisible(true);
+      }
+    }
+    doCancel();
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -120,6 +151,7 @@ class JTemplateGenParamDialog
   
   private static final long serialVersionUID = -905919575853440923L;
 
+  public static final String aParamManifest    = "ParamManifest";
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -128,6 +160,8 @@ class JTemplateGenParamDialog
   
   private JButton pPreviousButton;
   private JButton pNextButton;
+  
+  private File pParamFile;
   
   private JTemplateGenParamPanel pTopPanel;
 }

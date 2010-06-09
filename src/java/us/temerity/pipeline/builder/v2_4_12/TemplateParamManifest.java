@@ -32,13 +32,17 @@ class TemplateParamManifest
   {
     super();
     
-    pReplacements = new TreeMap<String, String>();
-    pContexts = new TreeMap<String, ArrayList<TreeMap<String,String>>>();
-    pFrameRanges = new TreeMap<String, FrameRange>();
-    pExternals = new TreeMap<String, TemplateExternalData>();
+    pReplacements     = new TreeMap<String, String>();
+    pContexts         = new TreeMap<String, ArrayList<TreeMap<String,String>>>();
+    pFrameRanges      = new TreeMap<String, FrameRange>();
+    pExternals        = new TreeMap<String, TemplateExternalData>();
     pOptionalBranches = new TreeMap<String, Boolean>();
-    pOffsets = new TreeMap<String, Integer>();
-    pAOEModes = new TreeMap<String, ActionOnExistence>();
+    pOffsets          = new TreeMap<String, Integer>();
+    pAOEModes         = new TreeMap<String, ActionOnExistence>();
+    
+    pExternalContexts   = new MappedSet<String, String>();
+    pOffsetContexts     = new MappedSet<String, String>();
+    pFrameRangeContexts = new MappedSet<String, String>();
   }
 
   
@@ -155,7 +159,10 @@ class TemplateParamManifest
     TreeMap<String, TemplateExternalData> externals
   )
   {
-    pExternals = externals;
+    if (externals == null)
+      pExternals = new TreeMap<String, TemplateExternalData>();
+    else
+      pExternals = externals;
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -210,7 +217,10 @@ class TemplateParamManifest
     TreeMap<String, Integer> offsets
   )
   {
-    pOffsets = offsets;
+    if (offsets == null)
+      pOffsets = new TreeMap<String, Integer>();
+    else
+      pOffsets = offsets;
   }
   
 /*----------------------------------------------------------------------------------------*/
@@ -236,7 +246,91 @@ class TemplateParamManifest
     TreeMap<String, ActionOnExistence> modes
   )
   {
-    pAOEModes= modes;
+    if (modes == null)
+      pAOEModes = new TreeMap<String, ActionOnExistence>();
+    else
+      pAOEModes = modes;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the contexts associated with each frame range.
+   */
+  public final MappedSet<String, String> 
+  getFrameRangeContexts()
+  {
+    return pFrameRangeContexts;
+  }
+  
+  /**
+   * Set the contexts associated with each frame range.
+   * 
+   * @param frameRangeContexts
+   *   The contexts or <code>null</code> to clear all values.
+   */
+  public final void 
+  setFrameRangeContexts
+  (
+    MappedSet<String, String> frameRangeContexts
+  )
+  {
+    if (frameRangeContexts == null)
+      pFrameRangeContexts = new MappedSet<String, String>();
+    else
+      pFrameRangeContexts = frameRangeContexts;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the contexts associated with each external sequence.
+   */
+  public final MappedSet<String, String> 
+  getExternalContexts()
+  {
+    return pExternalContexts;
+  }
+
+  /**
+   * Set the contexts associated with each external sequence.
+   * 
+   * @param externalContexts
+   *   The contexts or <code>null</code> to clear all values.
+   */
+  public final void 
+  setExternalContexts
+  (
+    MappedSet<String, String> externalContexts
+  )
+  {
+    pExternalContexts = externalContexts;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the contexts associated with each offset.
+   */
+  public final MappedSet<String, String> 
+  getOffsetContexts()
+  {
+    return pOffsetContexts;
+  }
+
+  /**
+   * Set the contexts associated with each offset.
+   * 
+   * @param offsetContexts
+   *   The contexts or <code>null</code> to clear all values.
+   */
+  public final void 
+  setOffsetContexts
+  (
+    MappedSet<String, String> offsetContexts
+  )
+  {
+    pOffsetContexts = offsetContexts;
   }
   
   
@@ -289,6 +383,21 @@ class TemplateParamManifest
       if (o != null)
         pAOEModes= (TreeMap<String, ActionOnExistence>) o;
     }
+    {
+      Object o = decoder.decode(aFrameRangeContexts);
+      if (o != null)
+        pFrameRangeContexts = (MappedSet<String, String>) o;
+    }
+    {
+      Object o = decoder.decode(aExternalContexts);
+      if (o != null)
+        pExternalContexts = (MappedSet<String, String>) o;
+    }
+    {
+      Object o = decoder.decode(aOffsetContexts);
+      if (o != null)
+        pOffsetContexts = (MappedSet<String, String>) o;
+    }
   }
   
   @Override
@@ -313,6 +422,13 @@ class TemplateParamManifest
       encoder.encode(aOffsets, pOffsets);
     if (!pAOEModes.isEmpty())
       encoder.encode(aAOEModes, pAOEModes);
+    if (!pFrameRangeContexts.isEmpty())
+      encoder.encode(aFrameRangeContexts, pFrameRangeContexts);
+    if (!pOffsetContexts.isEmpty())
+      encoder.encode(aOffsetContexts, pOffsetContexts);
+    if (!pExternalContexts.isEmpty())
+      encoder.encode(aExternalContexts, pExternalContexts);
+     
   }
 
   
@@ -329,6 +445,10 @@ class TemplateParamManifest
   private static final String aOffsets         = "Offsets";
   private static final String aAOEModes        = "AOEModes";
   
+  private static final String aFrameRangeContexts = "FrameRangeContexts";
+  private static final String aExternalContexts   = "ExternalContexts";
+  private static final String aOffsetContexts     = "OffsetContexts";
+  
  
   
   /*----------------------------------------------------------------------------------------*/
@@ -342,4 +462,8 @@ class TemplateParamManifest
   private TreeMap<String, Boolean> pOptionalBranches;
   private TreeMap<String, Integer> pOffsets;
   private TreeMap<String, ActionOnExistence> pAOEModes;
+  
+  private MappedSet<String, String> pFrameRangeContexts;
+  private MappedSet<String, String> pExternalContexts;
+  private MappedSet<String, String> pOffsetContexts;
 }

@@ -2,10 +2,10 @@ package us.temerity.pipeline.plugin.TemplateGenParamManifestTool.v2_4_27;
 
 import java.awt.*;
 import java.util.*;
-import java.util.Map.*;
 
 import javax.swing.*;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_12.*;
 import us.temerity.pipeline.ui.*;
 
@@ -52,19 +52,30 @@ class OptionalBranchPanel
     }
 
     {
+      TreeSet<String> branches = new TreeSet<String>();
+      if (glueInfo != null)
+        branches.addAll(glueInfo.getOptionalBranches().keySet());
+      else
+        branches.addAll(oldManifest.getOptionalBranches().keySet());
+      
       TreeMap<String, Boolean> oldValues;
       if (oldManifest != null)
         oldValues = oldManifest.getOptionalBranches();
       else
         oldValues = new TreeMap<String, Boolean>();
       
-      for (Entry<String, Boolean> entry : glueInfo.getOptionalBranches().entrySet()) {
-        String branch = entry.getKey();
+      ListMap<String, Boolean> glueValues;
+      if (glueInfo != null)
+        glueValues = glueInfo.getOptionalBranches();
+      else
+        glueValues = new ListMap<String, Boolean>();
+      
+      for (String branch: branches) {
         Boolean value = oldValues.get(branch); 
         if (value != null)
          createEntry(branch, value);
         else
-          createEntry(branch, entry.getValue());
+          createEntry(branch, glueValues.get(branch));
       }
     }
     

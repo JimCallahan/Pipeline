@@ -37,7 +37,6 @@ class TemplateGenParamManifestTool
     super("TemplateGenParamManifest", new VersionID("2.4.27"), "Temerity", 
           "Tool to generate a TemplateParamManifest from a TemplateGlueInformationnode");
     
-    underDevelopment();
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
   }
@@ -54,9 +53,9 @@ class TemplateGenParamManifestTool
   collectPhaseInput()
     throws PipelineException
   {
-    if (pSelected.size() != 2)
+    if (pSelected.size() != 1 && pSelected.size() != 2)
       throw new PipelineException
-        ("You must have two nodes selected to run this tool.");
+        ("You must have either one or two nodes selected to run this tool.");
     
     if (pPrimary == null)
       throw new PipelineException
@@ -77,8 +76,9 @@ class TemplateGenParamManifestTool
   )
     throws PipelineException
   {
-    String srcNode;
-    {
+    String srcNode = null;
+    
+    if (pSelected.size() > 1) {
       TreeSet<String> temp = new TreeSet<String>(pSelected.keySet());
       temp.remove(pPrimary);
       srcNode = temp.first();
@@ -97,14 +97,16 @@ class TemplateGenParamManifestTool
         ("The primary sequence must be a (glue) file");
 
     TemplateParamManifest oldManifest = null;
+    File paramFile;
     {
       Path p = getWorkingNodeFilePath(pPrimary, pSeq);
-      File f = p.toFile(); 
+      File f = p.toFile();
+      paramFile = f;
 
       if (f.isFile()) {
         try {
           Object o = 
-            GlueDecoderImpl.decodeFile("ParamManifest", f);
+            GlueDecoderImpl.decodeFile(aParamManifest, f);
           if (o != null && o instanceof TemplateParamManifest )
             oldManifest = (TemplateParamManifest) o;
         }
@@ -117,7 +119,7 @@ class TemplateGenParamManifestTool
     }
     
     TemplateGlueInformation glueInformation = null;
-    {
+    if (srcNode != null) {
       NodeMod glueMod = mclient.getWorkingVersion(pAuthor, pView, srcNode);
       FileSeq glueSeq = glueMod.getPrimarySequence();
       Path p = getWorkingNodeFilePath(srcNode, glueSeq);
@@ -125,10 +127,8 @@ class TemplateGenParamManifestTool
       
       try {
         Object o = GlueDecoderImpl.decodeFile(aTemplateGlueInfo, f);
-        if (o == null || !(o instanceof TemplateGlueInformation))
-          throw new PipelineException
-            ("There is no TemplateGlueInfo in the srcNode (" + srcNode + ")");
-        glueInformation = (TemplateGlueInformation) o;
+        if (o != null && (o instanceof TemplateGlueInformation))
+          glueInformation = (TemplateGlueInformation) o;
       }
       catch (GlueException ex) {
         throw new PipelineException
@@ -136,9 +136,13 @@ class TemplateGenParamManifestTool
            ex.getMessage());
       }
     }
+    
+    if (glueInformation == null && oldManifest == null)
+      throw new PipelineException
+        ("There was no glue information file and no old param manifest.  Cannot continue");
  
     JTemplateGenParamDialog dialog = 
-      new JTemplateGenParamDialog(glueInformation, oldManifest);
+      new JTemplateGenParamDialog(glueInformation, oldManifest, paramFile);
     dialog.initUI();
     dialog.setVisible(true);
     
@@ -147,12 +151,16 @@ class TemplateGenParamManifestTool
   }
   
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 6184290680922408846L;
   
   public static final String aTemplateGlueInfo = "TemplateGlueInfo";
-  private static final long serialVersionUID = 6184290680922408846L;
+  public static final String aParamManifest    = "ParamManifest";
+
 
   
   

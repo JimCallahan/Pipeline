@@ -2,6 +2,7 @@ package us.temerity.pipeline.plugin.TemplateGenParamManifestTool.v2_4_27;
 
 import java.awt.*;
 import java.util.*;
+import java.util.Map.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -118,8 +119,6 @@ class JTemplateGenParamPanel
     this.add(UIFactory.createSidebar());
     this.add(pSettingsPanel);   
   }
-
-  
   
   public void
   doNext() 
@@ -142,6 +141,10 @@ class JTemplateGenParamPanel
       if (pActiveNode != null)
         ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
       model.nodeChanged(pActiveNode);
+    }
+    else {
+      pFinished = true;
+      pParentDialog.doFinal();
     }
 
     pParentDialog.enableButtons();
@@ -221,6 +224,93 @@ class JTemplateGenParamPanel
         pSettingsLayouts.show(pSettingsPanel, stage.toString());
       }
       break;
+    case FrameRanges:
+      {
+        JPanel panel = pPanels.get(stage);
+        if (panel == null) {
+          TreeSet<String> allRanges = new TreeSet<String>();
+          MappedSet<String, String> fRanges;
+          if (pGlueInfo != null)
+            fRanges = pGlueInfo.getFrameRanges();
+          else 
+            fRanges = pOldManifest.getFrameRangeContexts();
+          
+          pNewManifest.setFrameRangeContexts(fRanges);
+          
+          for (Entry<String, TreeSet<String>> entry : fRanges.entrySet()) {
+            TreeSet<String> contexts = entry.getValue();
+            if (contexts == null || contexts.isEmpty())
+              allRanges.add(entry.getKey());
+            else 
+              for (TreeMap<String, String> map : allContextReplacements(contexts)) {
+                allRanges.add(stringReplace(entry.getKey(), map));
+              }
+          }
+          panel = new FrameRangePanel(allRanges, pGlueInfo, pOldManifest);
+          pPanels.put(stage, panel);
+          pSettingsPanel.add(panel, stage.toString());
+        }
+        pSettingsLayouts.show(pSettingsPanel, stage.toString());
+      }
+      break;
+    case Offsets:
+      {
+        JPanel panel = pPanels.get(stage);
+        if (panel == null) {
+          TreeSet<String> allOffsets= new TreeSet<String>();
+          MappedSet<String, String> offsets;
+          if (pGlueInfo != null)
+            offsets = pGlueInfo.getOffsets();
+          else 
+            offsets = pOldManifest.getOffsetContexts();
+          
+          pNewManifest.setOffsetContexts(offsets);
+          
+          for (Entry<String, TreeSet<String>> entry : offsets.entrySet()) {
+            TreeSet<String> contexts = entry.getValue();
+            if (contexts == null || contexts.isEmpty())
+              allOffsets.add(entry.getKey());
+            else 
+              for (TreeMap<String, String> map : allContextReplacements(contexts)) {
+                allOffsets.add(stringReplace(entry.getKey(), map));
+              }
+          }
+          panel = new OffsetsPanel(allOffsets, pGlueInfo, pOldManifest);
+          pPanels.put(stage, panel);
+          pSettingsPanel.add(panel, stage.toString());
+        }
+        pSettingsLayouts.show(pSettingsPanel, stage.toString());
+      }
+      break;
+    case Externals:
+      {
+        JPanel panel = pPanels.get(stage);
+        if (panel == null) {
+          TreeSet<String> allExternals = new TreeSet<String>();
+          MappedSet<String, String> externals;
+          if (pGlueInfo != null)
+            externals = pGlueInfo.getExternals();
+          else 
+            externals = pOldManifest.getExternalContexts();
+          
+          pNewManifest.setExternalContexts(externals);
+          
+          for (Entry<String, TreeSet<String>> entry : externals.entrySet()) {
+            TreeSet<String> contexts = entry.getValue();
+            if (contexts == null || contexts.isEmpty())
+              allExternals.add(entry.getKey());
+            else 
+              for (TreeMap<String, String> map : allContextReplacements(contexts)) {
+                allExternals.add(stringReplace(entry.getKey(), map));
+              }
+          }
+          panel = new ExternalsPanel(pParentDialog, allExternals, pOldManifest);
+          pPanels.put(stage, panel);
+          pSettingsPanel.add(panel, stage.toString());
+        }
+        pSettingsLayouts.show(pSettingsPanel, stage.toString());    
+      }
+      break;
     }
   }
   
@@ -229,6 +319,7 @@ class JTemplateGenParamPanel
   (
     ParamManifestStage stage  
   )
+    throws PipelineException
   {
     if (stage == null)
       return;
@@ -256,8 +347,118 @@ class JTemplateGenParamPanel
         ContextsPanel panel = (ContextsPanel) pPanels.get(stage);
         pContexts = panel.getContextValues();
         pNewManifest.setContexts(pContexts);
+        pPanels.remove(ParamManifestStage.FrameRanges);
+        pPanels.remove(ParamManifestStage.Externals);
+        pPanels.remove(ParamManifestStage.Offsets);
       }
       break;
+    case FrameRanges:
+      {
+        FrameRangePanel panel = (FrameRangePanel) pPanels.get(stage);
+        pNewManifest.setFrameRanges(panel.getRangeValues());
+      }
+      break;
+    case Offsets:
+      {
+        OffsetsPanel panel = (OffsetsPanel) pPanels.get(stage);
+        pNewManifest.setOffsets(panel.getOffsetValues());
+      }
+      break;
+    case Externals:
+      {
+        ExternalsPanel panel = (ExternalsPanel) pPanels.get(stage);
+        pNewManifest.setExternals(panel.getExternalValues());
+      }
+      break;
+    }
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Replace each key occurrence with the its value in the source string.
+   * 
+   * @param source
+   *   The string which will be replaced.
+   * 
+   * @param stringReplacements
+   *   A map with the keys being the strings to be replaced and the values being what to 
+   *   replace the  
+   */
+  protected String
+  stringReplace
+  (
+    String source,
+    TreeMap<String, String> stringReplacements
+  )
+  {
+    String toReturn = source;
+    for (String pattern : stringReplacements.keySet())
+      toReturn = toReturn.replaceAll(pattern, stringReplacements.get(pattern));
+    return toReturn;
+  }
+  
+  /**
+   * Get all the sets of replacements generated from the list of contexts. <p>
+
+   * @param contexts
+   *   The list of contexts.   
+   * 
+   * @return
+   *   A list of all the maps of string replacements.
+   */
+  private LinkedList<TreeMap<String, String>>
+  allContextReplacements
+  (
+    Set<String> contexts  
+  )
+  {
+    LinkedList<TreeMap<String, String>> toReturn = new LinkedList<TreeMap<String,String>>();
+    if (contexts.isEmpty()) {
+      return toReturn;
+    }
+    allContextReplacementsHelper
+      (new TreeSet<String>(contexts), new TreeMap<String, String>(), toReturn);
+    return toReturn;
+  }
+  
+  private void
+  allContextReplacementsHelper
+  (
+    TreeSet<String> contexts,
+    TreeMap<String,String> replacements, 
+    LinkedList<TreeMap<String, String>> data
+  )
+  {
+    String currentContext = contexts.pollFirst();
+    ArrayList<TreeMap<String, String>> values = pContexts.get(currentContext);
+    
+    if (values == null || values.isEmpty()) {
+      TreeMap<String, String> newReplace = new TreeMap<String, String>(replacements);
+
+      if (contexts.isEmpty()) {  //bottom of the recursion
+        data.add(newReplace);
+      }
+      else {
+        allContextReplacementsHelper(new TreeSet<String>(contexts), newReplace, data);
+      }
+      return;
+    }
+    
+    for (TreeMap<String, String> contextEntry : values) {
+      TreeMap<String, String> newReplace = new TreeMap<String, String>(replacements);
+      newReplace.putAll(contextEntry);
+     
+      if (contexts.isEmpty()) {  //bottom of the recursion
+        data.add(newReplace);
+      }
+      else {
+        allContextReplacementsHelper(new TreeSet<String>(contexts), newReplace, data);
+      }
     }
   }
   
@@ -267,6 +468,11 @@ class JTemplateGenParamPanel
     return pFinished;
   }
   
+  public TemplateParamManifest
+  getNewManifest()
+  {
+    return pNewManifest;
+  }
   
   
   /*----------------------------------------------------------------------------------------*/

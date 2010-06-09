@@ -2,46 +2,43 @@ package us.temerity.pipeline.plugin.TemplateGenParamManifestTool.v2_4_27;
 
 import java.awt.*;
 import java.util.*;
-import java.util.Map.*;
 
 import javax.swing.*;
 
-import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_12.*;
 import us.temerity.pipeline.ui.*;
 
 
 public 
-class AoEModePanel
+class OffsetsPanel
   extends JPanel
 {
   public 
-  AoEModePanel
+  OffsetsPanel
   (
-    JTemplateGenParamDialog dialog,
+    TreeSet<String> offsets,
     TemplateGlueInformation glueInfo,
     TemplateParamManifest oldManifest
   )
   {
     super();
-    pDialog = dialog;
     
     this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
     
-    pTitleBox = TemplateUIFactory.createTitleBox("AoE Modes:");
+    pTitleBox = TemplateUIFactory.createTitleBox("Offsets:");
     
     pNextID = 0;
     
-    pEntries = new TreeMap<Integer, AOEEntry>();
+    pEntries = new TreeMap<Integer, OffsetEntry>();
     pOrder = new LinkedList<Integer>();
     
     {
       pHeaderBox = TemplateUIFactory.createHorizontalBox();
       int width = 150;
       {
-        JLabel label = UIFactory.createFixedLabel("AoE Mode:", width, SwingConstants.LEFT);
+        JLabel label = UIFactory.createFixedLabel("Frame Range:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
       }
       pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
@@ -53,32 +50,26 @@ class AoEModePanel
       
       pHeaderBox.add(Box.createHorizontalGlue());
     }
-
+    
     {
-      TreeSet<String> aoeModes = new TreeSet<String>();
-      if (glueInfo != null)
-        aoeModes.addAll(glueInfo.getAOEModes().keySet());
-      else
-        aoeModes.addAll(oldManifest.getAOEModes().keySet());
-      
-      TreeMap<String, ActionOnExistence> oldValues;
+      TreeMap<String, Integer> oldValues;
       if (oldManifest != null)
-        oldValues = oldManifest.getAOEModes();
+        oldValues = oldManifest.getOffsets();
       else
-        oldValues = new TreeMap<String, ActionOnExistence>();
+        oldValues = new TreeMap<String, Integer>();
       
-      TreeMap<String, ActionOnExistence> glueValues;
+      TreeMap<String, Integer> glueValues;
       if (glueInfo != null)
-        glueValues = glueInfo.getAOEModes();
+        glueValues = glueInfo.getOffsetDefaults();
       else
-        glueValues = new TreeMap<String, ActionOnExistence>();
-
-      for (String aoeMode : aoeModes ) {
-        ActionOnExistence aoe = oldValues.get(aoeMode);
-        if (aoe != null)
-          createEntry(aoeMode, aoe.toString());
+        glueValues = new TreeMap<String, Integer>();
+      
+      for (String offset: offsets) {
+        Integer value = oldValues.get(offset);
+        if (value != null)
+         createEntry(offset, value);
         else
-          createEntry(aoeMode, glueValues.get(aoeMode).toString());
+          createEntry(offset, glueValues.get(offset));
       }
     }
     
@@ -105,7 +96,7 @@ class AoEModePanel
     pBox.add(pHeaderBox);
     pBox.add(TemplateUIFactory.createVerticalGap());
     for (int i : pOrder) {
-      AOEEntry entry = pEntries.get(i);
+      OffsetEntry entry = pEntries.get(i);
       pBox.add(entry);
       pBox.add(TemplateUIFactory.createVerticalGap());
     }
@@ -117,84 +108,87 @@ class AoEModePanel
   createEntry
   (
     String rep,
-    String value
+    Integer value
   )
   {
-    AOEEntry entry = 
-       new AOEEntry(rep, value);
+    OffsetEntry entry = 
+       new OffsetEntry(rep, value);
      pEntries.put(pNextID, entry);
      pOrder.add(pNextID);
      pNextID++;
   }
   
   
-  public TreeMap<String, ActionOnExistence>
-  getAOEModes()
+  public TreeMap<String, Integer>
+  getOffsetValues()
   {
-    TreeMap<String, ActionOnExistence> toReturn = new TreeMap<String, ActionOnExistence>();
+    TreeMap<String, Integer> toReturn = new TreeMap<String, Integer>();
     for (int i : pOrder) {
-      AOEEntry entry = pEntries.get(i);
-      toReturn.put(entry.getAoEMode(), entry.getValue());
+      OffsetEntry entry = pEntries.get(i);
+      String offset = entry.getOffsetName();
+      if (offset != null && !offset.equals("")) {
+        Integer offsetValue = entry.getOffset();
+        if (offsetValue == null)
+          offsetValue = 0;
+        
+        toReturn.put(offset, offsetValue);
+      }
     }
     return toReturn;
   }
 
   
   private class
-  AOEEntry
+  OffsetEntry
     extends Box
   {
     private
-    AOEEntry
+    OffsetEntry
     (
-      String replace,
-      String oldValue
+      String offset,
+      Integer oldValue
     )
     {
       super(BoxLayout.LINE_AXIS);
      
       this.add(TemplateUIFactory.createHorizontalIndent());
-      pAoEMode = UIFactory.createTextField(replace, 150, SwingConstants.LEFT);
-      pAoEMode.setMaximumSize(pAoEMode.getPreferredSize());
-      this.add(pAoEMode);
+      
+      pOffsetName = UIFactory.createTextField(offset, 150, SwingConstants.LEFT);
+      pOffsetName.setMaximumSize(pOffsetName.getPreferredSize());
+      this.add(pOffsetName);
       this.add(TemplateUIFactory.createHorizontalSpacer());
-      ArrayList<String> values = ActionOnExistence.titles();
-      pValue = UIFactory.createCollectionField(values, pDialog, 150);
-      pValue.setMaximumSize(pValue.getPreferredSize());
-      if (oldValue != null)
-        pValue.setSelected(oldValue);
-      this.add(pValue);
+      pOffsetValue = UIFactory.createIntegerField(oldValue, 70, SwingConstants.LEFT);
+      pOffsetValue.setMaximumSize(pOffsetValue.getPreferredSize());
+      this.add(pOffsetValue);
       this.add(Box.createHorizontalGlue());
     }
     
     private String
-    getAoEMode()
+    getOffsetName()
     {
-      return pAoEMode.getText();
+      return pOffsetName.getText();
     }
     
-    private ActionOnExistence
-    getValue()
+    private Integer
+    getOffset()
     {
-      int idx = pValue.getSelectedIndex();
-      
-      return ActionOnExistence.values()[idx];
+      return pOffsetValue.getValue();
     }
-
-    private static final long serialVersionUID = -8120756096207527005L;
-
     
-    private JTextField pAoEMode;
-    private JCollectionField pValue;
+    private static final long serialVersionUID = -6123236253558280449L;
+    
+    private JTextField pOffsetName;
+    private JIntegerField pOffsetValue;
   }
   
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6577844941263198815L;
-
+  private static final long serialVersionUID = -6947858103230001956L;
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -202,12 +196,10 @@ class AoEModePanel
   /*----------------------------------------------------------------------------------------*/
 
   private int pNextID;
-  private TreeMap<Integer, AOEEntry> pEntries;
+  private TreeMap<Integer, OffsetEntry> pEntries;
   private LinkedList<Integer> pOrder;
   
   private Box pBox;
   private Box pHeaderBox;
   private Box pTitleBox;
-  
-  private JTemplateGenParamDialog pDialog;
 }

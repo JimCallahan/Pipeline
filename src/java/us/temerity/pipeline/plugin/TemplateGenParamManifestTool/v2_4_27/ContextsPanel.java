@@ -41,22 +41,44 @@ class ContextsPanel
     
     
     
-    TreeMap<String, ArrayList<TreeMap<String, String>>> oldValues; 
-    if (oldManifest != null)
-     oldValues = oldManifest.getContexts();
-    else
-      oldValues = new TreeMap<String, ArrayList<TreeMap<String,String>>>();
-    
-    MappedListSet<String, String> contexts = glueInfo.getContexts();
-    for (Entry<String, ListSet<String>> entry : contexts.entrySet()) {
-      String context = entry.getKey();
-      ListSet<String> replacements = entry.getValue();
-      ArrayList<TreeMap<String, String>> values = oldValues.get(context);
-      if (values != null)
-        createEntry(context, replacements, values);
-      else {
-        createEntry(context, replacements, glueInfo.getContextDefaults().get(context));
+    {
+      TreeSet<String> contexts = new TreeSet<String>();
+      if (glueInfo != null)
+        contexts.addAll(glueInfo.getContexts().keySet());
+      else
+        contexts.addAll(oldManifest.getContexts().keySet());
+      
+      TreeMap<String, ArrayList<TreeMap<String, String>>> oldValues; 
+      if (oldManifest != null)
+        oldValues = oldManifest.getContexts();
+      else
+        oldValues = new TreeMap<String, ArrayList<TreeMap<String,String>>>();
+
+      MappedListSet<String, String> glueValues;
+      MappedArrayList<String, TreeMap<String, String>> glueDefaults;
+      if (glueInfo != null) {
+        glueValues = glueInfo.getContexts();
+        glueDefaults = glueInfo.getContextDefaults();
       }
+      else {
+        glueValues = new MappedListSet<String, String>();
+        glueDefaults = new MappedArrayList<String, TreeMap<String,String>>();
+      }
+      
+      for (String context : contexts) {
+        ListSet<String> replacements = new ListSet<String>();
+        if (glueInfo != null)
+          replacements.addAll(glueValues.get(context));
+        else
+          replacements.addAll(oldValues.get(context).get(0).keySet());
+        ArrayList<TreeMap<String, String>> values = oldValues.get(context);
+        if (values != null)
+          createEntry(context, replacements, values);
+        else {
+          createEntry(context, replacements, glueDefaults.get(context));
+        }
+      }
+
     }
     
     pBox.add(UIFactory.createFiller(100));
@@ -153,7 +175,7 @@ class ContextsPanel
         pAddBox.add(TemplateUIFactory.createSecondLevelIndent());
         JButton but = 
           TemplateUIFactory.createPanelButton
-            ("Add Defaults", "add", this, "Add another Context Default");
+            ("Add Replacements", "add", this, "Add another Context Default");
         pAddBox.add(but);
         pAddBox.add(Box.createHorizontalGlue());
       }

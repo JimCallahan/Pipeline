@@ -168,7 +168,6 @@ class TemplateManifestAction
       setSingleLayout(layout);
     }
     
-    underDevelopment();
     addSupport(OsType.MacOS);
     addSupport(OsType.Unix);
   }
