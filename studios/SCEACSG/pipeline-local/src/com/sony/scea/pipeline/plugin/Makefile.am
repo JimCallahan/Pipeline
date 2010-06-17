@@ -9,6 +9,8 @@ makefile_DATA = \
 SUBDIRS = \
   MayaAnimInstanceBuildAction \
   ModelReplaceAction \
+  MRayTextureGroupAction \
+  MRayTextureGroupTool \
   ProjectSetterUpper \
   ShakeQuickTimeAction \
   ShakeQuickTimeThumbnailAction

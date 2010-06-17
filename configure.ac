@@ -2492,6 +2492,12 @@ AC_CONFIG_FILES([
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/Makefile                
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile         
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile.local
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupAction/Makefile                
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupAction/v1_0_0/Makefile         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupAction/v1_0_0/Makefile.local
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupTool/Makefile                
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupTool/v1_0_0/Makefile         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupTool/v1_0_0/Makefile.local
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/Makefile                         
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile                  
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile.local                 
