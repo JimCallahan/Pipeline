@@ -34,7 +34,7 @@ class ShotBuilderLightStage
           mayaContext, 
           nodeName, true);
     if (range != null)
-      setFrameRange(range);
+      setNodeFrameRange(range);
     setUnits();
     setupLink(sourceName, sourcePrefix, getReference(), true);
     if (lgtRigName != null)
