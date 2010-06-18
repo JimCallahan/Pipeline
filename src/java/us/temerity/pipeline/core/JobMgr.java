@@ -1266,7 +1266,7 @@ class JobMgr
       ActionAgenda agenda
     ) 
     {
-      Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent()); 
+      Path wpath = agenda.getTargetPath();
       for(FileSeq fseq : agenda.getTargetSequences()) {
         for(Path fpath : fseq.getPaths()) {
           Path path = new Path(wpath, fpath); 
