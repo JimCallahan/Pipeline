@@ -2529,6 +2529,7 @@ class JNodeDetailsPanel
 	  hbox.add(btn);
 	  
 	  {
+            NodeMod work = getWorkingVersion();
 	    String title = pStatus.toString();
 	    
 	    ArrayList<String> snames  = new ArrayList<String>();
@@ -2536,21 +2537,28 @@ class JNodeDetailsPanel
 	    ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
 	    
 	    for(String sname : pWorkingSources.keySet()) {
-	      NodeCommon lcom = pWorkingSources.get(sname);
+              LinkMod link = work.getSource(sname);
+              switch(link.getPolicy()) {
+              case Dependency:
+              case Reference: 
+                {
+                  NodeCommon lcom = pWorkingSources.get(sname); 
 
-	      FileSeq primary = lcom.getPrimarySequence();
-	      String stitle = primary.toString();
-
-	      snames.add(sname);
-	      stitles.add(stitle);
-	      sfseqs.add(null);
-
-	      for(FileSeq fseq : lcom.getSecondarySequences()) {
-		snames.add(sname);
-		stitles.add(stitle);
-		sfseqs.add(fseq);
-	      }
-	    }
+                  FileSeq primary = lcom.getPrimarySequence();
+                  String stitle = primary.toString();
+                  
+                  snames.add(sname);
+                  stitles.add(stitle);
+                  sfseqs.add(null);
+                  
+                  for(FileSeq fseq : lcom.getSecondarySequences()) {
+                    snames.add(sname);
+                    stitles.add(stitle);
+                    sfseqs.add(fseq);
+                  }
+                }
+              }
+            }
 	    
 	    pEditSourceParamsDialog = 
 	      new JSourceParamsDialog
@@ -2616,24 +2624,30 @@ class JNodeDetailsPanel
 	    ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
 
 	    for(LinkVersion link : vsn.getSources()) {
-	      String sname = link.getName();
-	      VersionID vid = link.getVersionID();
-
-	      NodeCommon lcom = pCheckedInSources.get(sname, vid);
-
-	      FileSeq primary = lcom.getPrimarySequence();
-	      String stitle = primary.toString();
-
-	      snames.add(sname);
-	      stitles.add(stitle);
-	      sfseqs.add(null);
-
-	      for(FileSeq fseq : lcom.getSecondarySequences()) {
-		snames.add(sname);
-		stitles.add(stitle);
-		sfseqs.add(fseq);
-	      }
-	    }
+              switch(link.getPolicy()) {
+              case Dependency:
+              case Reference: 
+                {
+                  String sname = link.getName();
+                  VersionID vid = link.getVersionID();
+                  
+                  NodeCommon lcom = pCheckedInSources.get(sname, vid);
+                  
+                  FileSeq primary = lcom.getPrimarySequence();
+                  String stitle = primary.toString();
+                  
+                  snames.add(sname);
+                  stitles.add(stitle);
+                  sfseqs.add(null);
+                  
+                  for(FileSeq fseq : lcom.getSecondarySequences()) {
+                    snames.add(sname);
+                    stitles.add(stitle);
+                    sfseqs.add(fseq);
+                  }
+                }
+              }
+            }
 	    
 	    pViewSourceParamsDialog = 
 	      new JSourceParamsDialog
@@ -5054,6 +5068,7 @@ class JNodeDetailsPanel
       waction.setSourceParamValues(caction);
       
       {
+        NodeMod work = getWorkingVersion();
 	String title = pStatus.toString();
 	
 	ArrayList<String> snames  = new ArrayList<String>();
@@ -5061,21 +5076,28 @@ class JNodeDetailsPanel
 	ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
 	
 	for(String sname : pStatus.getSourceNames()) {
-	  NodeMod lmod = pStatus.getSource(sname).getLightDetails().getWorkingVersion();
+          LinkMod link = work.getSource(sname);
+          switch(link.getPolicy()) {
+          case Dependency:
+          case Reference: 
+            {
+              NodeMod lmod = pStatus.getSource(sname).getLightDetails().getWorkingVersion();
 	  
-	  FileSeq primary = lmod.getPrimarySequence();
-	  String stitle = primary.toString();
+              FileSeq primary = lmod.getPrimarySequence();
+              String stitle = primary.toString();
 	  
-	  snames.add(sname);
-	  stitles.add(stitle);
-	  sfseqs.add(null);
-	  
-	  for(FileSeq fseq : lmod.getSecondarySequences()) {
-	    snames.add(sname);
-	    stitles.add(stitle);
-	    sfseqs.add(fseq);
-	  }
-	}
+              snames.add(sname);
+              stitles.add(stitle);
+              sfseqs.add(null);
+              
+              for(FileSeq fseq : lmod.getSecondarySequences()) {
+                snames.add(sname);
+                stitles.add(stitle);
+                sfseqs.add(fseq);
+              }
+            }
+          }
+        }
 	
 	pEditSourceParamsDialog = 
 	  new JSourceParamsDialog
