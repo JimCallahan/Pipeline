@@ -1223,7 +1223,47 @@ class MasterMgrDirectLightClient
     }
   }  
   
+  /** 
+   * Get the working versions for a set of nodes. <P> 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param names 
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The found working versions indexed by fully resolved node name.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the working versions.
+   */
+  public TreeMap<String,NodeMod> 
+  getWorkingVersions
+  ( 
+   String author, 
+   String view, 
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    NodeGetMultiWorkingReq req = new NodeGetMultiWorkingReq(author, view, names);
+
+    Object obj = pMasterMgr.getMultiWorkingVersion(req);
+    if(obj instanceof NodeGetMultiWorkingRsp) {
+      NodeGetMultiWorkingRsp rsp = (NodeGetMultiWorkingRsp) obj;
+      return rsp.getNodeMods();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K E D - I N   V E R S I O N S                                                */
@@ -1293,6 +1333,38 @@ class MasterMgrDirectLightClient
   }  
 
   /** 
+   * Get the revision numbers of all checked-in versions for the given set of node names. <P> 
+   * 
+   * @param names 
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The revision numbers indexed by node name.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public MappedSet<String,VersionID>
+  getCheckedInVersionIDs
+  ( 
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    NodeGetByNamesReq req = new NodeGetByNamesReq(names);
+
+    Object obj = pMasterMgr.getMultiCheckedInVersionIDs(req);
+    if(obj instanceof NodeGetMultiVersionIDsRsp) {
+      NodeGetMultiVersionIDsRsp rsp = (NodeGetMultiVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /** 
    * Get the revision numbers of all checked-in versions of a node do not save 
    * intermediate (temporary) version of files in the repository. <P>
    * 
@@ -1321,6 +1393,39 @@ class MasterMgrDirectLightClient
       return null;
     }
   }  
+
+  /** 
+   * Get the revision numbers of all checked-in versions of the given set of nodes that do 
+   * not save intermediate (temporary) version of files in the repository. <P>
+   * 
+   * @param names
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The revision numbers indexed by node name.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public MappedSet<String,VersionID>
+  getIntermediateVersionIDs
+  ( 
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    NodeGetByNamesReq req = new NodeGetByNamesReq(names);
+
+    Object obj = pMasterMgr.getMultiIntermediateVersionIDs(req);
+    if(obj instanceof NodeGetMultiVersionIDsRsp) {
+      NodeGetMultiVersionIDsRsp rsp = (NodeGetMultiVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
 
   /** 
    * Get the checked-in version of a node. <P> 
@@ -1419,6 +1524,39 @@ class MasterMgrDirectLightClient
       return null;
     }
   }  
+
+  /** 
+   * Get the log messages associated with all checked-in versions for the given set of 
+   * nodes. 
+   * 
+   * @param names 
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The log messages indexed by node name and revision number.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the log messages.
+   */
+  public DoubleMap<String,VersionID,LogMessage> 
+  getHistory
+  ( 
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    NodeGetByNamesReq req = new NodeGetByNamesReq(names);
+
+    Object obj = pMasterMgr.getMultiHistory(req);
+    if(obj instanceof NodeGetMultiHistoryRsp) {
+      NodeGetMultiHistoryRsp rsp = (NodeGetMultiHistoryRsp) obj;
+      return rsp.getHistory();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
 
   /**
    * Get whether each file associated with each checked-in version of a node 

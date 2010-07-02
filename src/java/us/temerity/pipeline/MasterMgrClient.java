@@ -4494,6 +4494,48 @@ class MasterMgrClient
     }
   }  
 
+  /** 
+   * Get the working versions for a set of nodes. <P> 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param names 
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The found working versions indexed by fully resolved node name.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the working versions.
+   */
+  public TreeMap<String,NodeMod> 
+  getWorkingVersions
+  ( 
+   String author, 
+   String view, 
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetMultiWorkingReq req = new NodeGetMultiWorkingReq(author, view, names);
+
+    Object obj = performTransaction(MasterRequest.GetMultiWorking, req);
+    if(obj instanceof NodeGetMultiWorkingRsp) {
+      NodeGetMultiWorkingRsp rsp = (NodeGetMultiWorkingRsp) obj;
+      return rsp.getNodeMods();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -5232,6 +5274,40 @@ class MasterMgrClient
   }  
 
   /** 
+   * Get the revision numbers of all checked-in versions for the given set of node names. <P> 
+   * 
+   * @param names 
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The revision numbers indexed by node name.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public MappedSet<String,VersionID>
+  getCheckedInVersionIDs
+  ( 
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetByNamesReq req = new NodeGetByNamesReq(names);
+
+    Object obj = performTransaction(MasterRequest.GetMultiCheckedInVersionIDs, req);
+    if(obj instanceof NodeGetMultiVersionIDsRsp) {
+      NodeGetMultiVersionIDsRsp rsp = (NodeGetMultiVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /** 
    * Get the revision numbers of all checked-in versions of a node do not save 
    * intermediate (temporary) version of files in the repository. <P>
    * 
@@ -5255,6 +5331,42 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.GetIntermediateVersionIDs, req);
     if(obj instanceof NodeGetVersionIDsRsp) {
       NodeGetVersionIDsRsp rsp = (NodeGetVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+
+  /** 
+   * Get the revision numbers of all checked-in versions of the given set of nodes that do 
+   * not save intermediate (temporary) version of files in the repository. <P>
+   * 
+   * @param names
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The revision numbers indexed by node name.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public MappedSet<String,VersionID>
+  getIntermediateVersionIDs
+  ( 
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetByNamesReq req = new NodeGetByNamesReq(names);
+
+    Object obj = performTransaction(MasterRequest.GetMultiIntermediateVersionIDs, req);
+    if(obj instanceof NodeGetMultiVersionIDsRsp) {
+      NodeGetMultiVersionIDsRsp rsp = (NodeGetMultiVersionIDsRsp) obj;
       return rsp.getVersionIDs();      
     }
     else {
@@ -5359,6 +5471,40 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.GetHistory, req);
     if(obj instanceof NodeGetHistoryRsp) {
       NodeGetHistoryRsp rsp = (NodeGetHistoryRsp) obj;
+      return rsp.getHistory();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+  /** 
+   * Get the log messages associated with all checked-in versions for the given set of nodes. 
+   * 
+   * @param names 
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The log messages indexed by node name and revision number.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the log messages.
+   */
+  public DoubleMap<String,VersionID,LogMessage> 
+  getHistory
+  ( 
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetByNamesReq req = new NodeGetByNamesReq(names);
+
+    Object obj = performTransaction(MasterRequest.GetMultiHistory, req);
+    if(obj instanceof NodeGetMultiHistoryRsp) {
+      NodeGetMultiHistoryRsp rsp = (NodeGetMultiHistoryRsp) obj;
       return rsp.getHistory();      
     }
     else {
@@ -8305,6 +8451,40 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.GetOfflineVersionIDs, req);
     if(obj instanceof NodeGetVersionIDsRsp) {
       NodeGetVersionIDsRsp rsp = (NodeGetVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+  /**
+   * Get the revision nubers of all offline checked-in versions for the given nodes.<P>
+   * 
+   * @param names 
+   *   The fully resolved node names.
+   *
+   * @return 
+   *   The revision numbers indexed by node name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the offline versions.
+   */ 
+  public synchronized MappedSet<String,VersionID>
+  getOfflineVersionIDs
+  (
+   TreeSet<String> names
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetByNamesReq req = new NodeGetByNamesReq(names);
+
+    Object obj = performTransaction(MasterRequest.GetMultiOfflineVersionIDs, req);
+    if(obj instanceof NodeGetMultiVersionIDsRsp) {
+      NodeGetMultiVersionIDsRsp rsp = (NodeGetMultiVersionIDsRsp) obj;
       return rsp.getVersionIDs();      
     }
     else {

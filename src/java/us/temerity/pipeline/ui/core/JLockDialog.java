@@ -124,9 +124,9 @@ class JLockDialog
   updateVersions
   (
    TreeMap<String,VersionID> base, 
-   TreeMap<String,TreeSet<VersionID>> versions, 
-   TreeMap<String,TreeSet<VersionID>> offline,
-   TreeMap<String,TreeSet<VersionID>> inter
+   MappedSet<String,VersionID> versions, 
+   MappedSet<String,VersionID> offline, 
+   MappedSet<String,VersionID> inter
   )
   {
     pVersionIDs.clear(); 

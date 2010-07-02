@@ -7913,6 +7913,61 @@ class MasterMgr
   }  
 
   /** 
+   * Get the working versions for a set of nodes. <P> 
+   * 
+   * @param req 
+   *   The get working version request.
+   * 
+   * @return
+   *   <CODE>NodeGetMultiWorkingRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the working version.
+   */
+  public Object
+  getMultiWorkingVersion
+  ( 
+   NodeGetMultiWorkingReq req
+  ) 
+  {	 
+    TaskTimer timer = new TaskTimer();
+
+    String author = req.getAuthor(); 
+    String view = req.getView(); 
+    TreeSet<String> names = req.getNames();
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();	
+
+      TreeMap<String,NodeMod> mods = new TreeMap<String,NodeMod>(); 
+      for(String name : names) {
+        NodeID nodeID = new NodeID(author, view, name); 
+
+        timer.aquire();
+        LoggedLock lock = getWorkingLock(nodeID);
+        lock.acquireReadLock();
+        try {
+          timer.resume();	
+          
+          NodeMod mod = new NodeMod(getWorkingBundle(nodeID).getVersion());
+          mods.put(name, mod); 
+        }
+        catch(PipelineException ex) {
+          // silently ignore missing nodes
+        }
+        finally {
+          lock.releaseReadLock();
+        }
+      }
+        
+      return new NodeGetMultiWorkingRsp(timer, mods);
+    }
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }  
+  }  
+
+  /** 
    * Set the node properties of the working version of the node. <P> 
    * 
    * Node properties include: <BR>
@@ -9364,6 +9419,56 @@ class MasterMgr
   }  
     
   /** 
+   * Get the revision numbers of all checked-in versions of the given node. <P> 
+   * 
+   * @param req 
+   *   The get checked-in version request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInVersionIDsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in version.
+   */
+  public Object
+  getMultiCheckedInVersionIDs
+  ( 
+   NodeGetByNamesReq req
+  ) 
+  {
+    TreeSet<String> names = req.getNames();
+    TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInVersionIDs(): [multiple]");
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();
+    
+      MappedSet<String,VersionID> vids = new MappedSet<String,VersionID>();
+      for(String name : names) {
+        timer.aquire();
+        LoggedLock lock = getCheckedInLock(name);
+        lock.acquireReadLock();
+        try {
+          timer.resume();	
+        
+          TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+          vids.put(name, new TreeSet<VersionID>(checkedIn.keySet())); 
+        }
+        catch(PipelineException ex) {
+          // silently ignore missing nodes
+        }
+        finally {
+          lock.releaseReadLock();
+        }
+      }
+
+      return new NodeGetMultiVersionIDsRsp(timer, vids);
+    }
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }  
+  }  
+    
+  /** 
    * Get the revision numbers of all checked-in versions of a node which do not save 
    * intermediate (temporary) version of files in the repository. <P>
    * 
@@ -9381,7 +9486,7 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    TaskTimer timer = new TaskTimer("MasterMgr.getIntermediateVersionIDs(): " + name);
+    TaskTimer timer = new TaskTimer("MasterMgr.getIntermediateVersionIDs(): [mutiple]"); 
 
     timer.aquire();
     pDatabaseLock.acquireReadLock();
@@ -9404,6 +9509,60 @@ class MasterMgr
     }
     finally {
       lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
+    }  
+  }  
+        
+  /** 
+   * Get the revision numbers of all checked-in versions of a node which do not save 
+   * intermediate (temporary) version of files in the repository. <P>
+   * 
+   * @param req 
+   *   The get checked-in version request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInVersionIDsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in version.
+   */
+  public Object
+  getMultiIntermediateVersionIDs
+  ( 
+   NodeGetByNamesReq req
+  ) 
+  {
+    TreeSet<String> names = req.getNames();
+    TaskTimer timer = new TaskTimer("MasterMgr.getIntermediateVersionIDs(): [mutiple]");
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();
+    
+      MappedSet<String,VersionID> vids = new MappedSet<String,VersionID>();
+      for(String name : names) {
+        timer.aquire();
+        LoggedLock lock = getCheckedInLock(name);
+        lock.acquireReadLock();
+        try {
+          timer.resume();	
+
+          TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+          for(Map.Entry<VersionID,CheckedInBundle> entry : checkedIn.entrySet()) {
+            if(entry.getValue().getVersion().isIntermediate()) 
+              vids.put(name, entry.getKey());
+          }
+        }
+        catch(PipelineException ex) {
+          // silently ignore missing nodes
+        }
+        finally {
+          lock.releaseReadLock();
+        }
+      }
+
+      return new NodeGetMultiVersionIDsRsp(timer, vids);
+    }
+    finally {
       pDatabaseLock.releaseReadLock();
     }  
   }  
@@ -9546,6 +9705,59 @@ class MasterMgr
     }
     finally {
       lock.releaseReadLock();
+      pDatabaseLock.releaseReadLock();
+    }  
+  }  
+
+  /** 
+   * Get the log messages associated with all checked-in versions of the given node.
+   * 
+   * @param req 
+   *   The get history request.
+   * 
+   * @return
+   *   <CODE>NodeGetHistoryRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the log messages.
+   */
+  public Object
+  getMultiHistory
+  ( 
+   NodeGetByNamesReq req
+  ) 
+  {	 
+    TaskTimer timer = new TaskTimer();
+
+    TreeSet<String> names = req.getNames();
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();
+
+      DoubleMap<String,VersionID,LogMessage> history = 
+        new DoubleMap<String,VersionID,LogMessage>();
+      for(String name : names) {
+        timer.aquire();
+        LoggedLock lock = getCheckedInLock(name);
+        lock.acquireReadLock();
+        try {
+          timer.resume();	
+
+          TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+          for(VersionID vid : checkedIn.keySet()) 
+            history.put(name, vid, checkedIn.get(vid).getVersion().getLogMessage());
+        }
+        catch(PipelineException ex) {
+          // silently ignore missing nodes
+        }
+        finally {
+          lock.releaseReadLock();
+        }
+      }
+
+      return new NodeGetMultiHistoryRsp(timer, history);
+    }
+    finally {
       pDatabaseLock.releaseReadLock();
     }  
   }  
@@ -16753,6 +16965,60 @@ class MasterMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }  
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }  
+  }
+
+  /**
+   * Get the revision nubers of all offline checked-in versions of the given node. <P> 
+   * 
+   * @param req
+   *   The file sizes request.
+   * 
+   * @return
+   *   <CODE>NodeGetOfflineVersionIDsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
+   */ 
+  public Object
+  getMultiOfflineVersionIDs
+  (
+   NodeGetByNamesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    TreeSet<String> names = req.getNames();
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();	
+
+      MappedSet<String,VersionID> offlined = new MappedSet<String,VersionID>();
+      for(String name : names) {
+        timer.aquire();
+        LoggedLock onOffLock = getOnlineOfflineLock(name);
+        onOffLock.acquireReadLock();
+        try {
+          timer.resume();	
+          
+          TreeSet<VersionID> offld = getOfflinedVersions(timer, name);
+          if(offld == null) 
+            offld = new TreeSet<VersionID>();
+          
+          offlined.put(name, offld); 
+        }
+        catch(PipelineException ex) {
+          // silently ignore missing nodes
+        }
+        finally {
+          onOffLock.releaseReadLock();
+        }  
+      }
+      
+      return new NodeGetMultiVersionIDsRsp(timer, offlined);
+    }    
     finally {
       pDatabaseLock.releaseReadLock();
     }  

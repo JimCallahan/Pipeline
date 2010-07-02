@@ -5053,27 +5053,24 @@ class JNodeViewerPanel
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.acquireMasterMgrClient();
 
-    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
-    TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
-    TreeMap<String,TreeSet<VersionID>> inter    = new TreeMap<String,TreeSet<VersionID>>();
+    MappedSet<String,VersionID> versions = new MappedSet<String,VersionID>();
+    MappedSet<String,VersionID> offline  = new MappedSet<String,VersionID>();
+    MappedSet<String,VersionID> inter    = new MappedSet<String,VersionID>();
 
-    TreeMap<String,TreeMap<VersionID,LogMessage>> messages = 
-      new TreeMap<String,TreeMap<VersionID,LogMessage>>();
+    DoubleMap<String,VersionID,LogMessage> messages = 
+      new DoubleMap<String,VersionID,LogMessage>();
 
     try {
-      for(String name : getMostDownstreamOfSelectedNames()) {
-        if(!versions.containsKey(name)) {
-          try {
-            versions.put(name, client.getCheckedInVersionIDs(name));
-            offline.put(name, client.getOfflineVersionIDs(name));
-            inter.put(name, client.getIntermediateVersionIDs(name));
-	    messages.put(name, client.getHistory(name));
-          }
-          catch (PipelineException ex) {
-            master.showErrorDialog(ex);
-            return;
-          }
-        }
+      TreeSet<String> names = getMostDownstreamOfSelectedNames(); 
+      try {
+        versions = client.getCheckedInVersionIDs(names); 
+        offline  = client.getOfflineVersionIDs(names);
+        inter    = client.getIntermediateVersionIDs(names);
+        messages = client.getHistory(names);
+      }
+      catch (PipelineException ex) {
+        master.showErrorDialog(ex);
+        return;
       }
     }
     finally {
@@ -5110,40 +5107,36 @@ class JNodeViewerPanel
     MasterMgrClient client = master.acquireMasterMgrClient();
 
     TreeMap<String,VersionID> base = new TreeMap<String,VersionID>();
-    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
-    TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
-    TreeMap<String,TreeSet<VersionID>> inter    = new TreeMap<String,TreeSet<VersionID>>();
     TreeMap<String,VersionID> lockedVersionIDs = new TreeMap<String,VersionID>();
 
+    MappedSet<String,VersionID> versions = new MappedSet<String,VersionID>();
+    MappedSet<String,VersionID> offline  = new MappedSet<String,VersionID>();
+    MappedSet<String,VersionID> inter    = new MappedSet<String,VersionID>();
+    
     try {
-      for(String name : getMostDownstreamOfSelectedNames()) {
-        if(!base.containsKey(name)) {
-          try {
-            NodeMod mod = client.getWorkingVersion(pAuthor, pView, name);
-            if(mod != null) {
-              VersionID vid = mod.getWorkingID();
-              if(vid != null) 
-                base.put(name, vid);
-
-	      /* store the current VersionID of a locked node */
-	      if(mod.isLocked())
-		lockedVersionIDs.put(name, vid);
-            }
-          }
-          catch (PipelineException ex) {
-            base.put(name, null);
-          }
-
-          try {
-            versions.put(name, client.getCheckedInVersionIDs(name));
-            offline.put(name, client.getOfflineVersionIDs(name));
-            inter.put(name, client.getIntermediateVersionIDs(name));
-          }
-          catch (PipelineException ex) {
-            master.showErrorDialog(ex);
-            return;
+      TreeSet<String> names = getMostDownstreamOfSelectedNames(); 
+      try {
+        TreeMap<String,NodeMod> mods = client.getWorkingVersions(pAuthor, pView, names);
+        for(String name : names) {
+          NodeMod mod = mods.get(name); 
+          if(mod != null) {
+            VersionID vid = mod.getWorkingID();
+            if(vid != null) 
+              base.put(name, vid);
+            
+            /* store the current VersionID of a locked node */
+            if(mod.isLocked())
+              lockedVersionIDs.put(name, vid);
           }
         }
+
+        versions = client.getCheckedInVersionIDs(names); 
+        offline  = client.getOfflineVersionIDs(names);
+        inter    = client.getIntermediateVersionIDs(names);
+      }
+      catch (PipelineException ex) {
+        master.showErrorDialog(ex);
+        return;
       }
     }
     finally {
@@ -5200,45 +5193,45 @@ class JNodeViewerPanel
       MasterMgrClient client = master.acquireMasterMgrClient();
 
       TreeMap<String,VersionID> currentIDs = new TreeMap<String,VersionID>();
-      TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
-      TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
+      MappedSet<String,VersionID> versions = new MappedSet<String,VersionID>();
+      MappedSet<String,VersionID> offline  = new MappedSet<String,VersionID>();
 
-      TreeMap<String,TreeMap<VersionID,LogMessage>> messages = 
-	new TreeMap<String,TreeMap<VersionID,LogMessage>>();
-      
+      DoubleMap<String,VersionID,LogMessage> messages = 
+        new DoubleMap<String,VersionID,LogMessage>();
+
+      for(ViewerNode vnode : pSelected.values()) {
+        String name = vnode.getName();
+        NodeStatus status = vnode.getNodeStatus();
+        NodeDetailsLight details = status.getLightDetails();
+        if(details != null) {
+          NodeMod work = details.getWorkingVersion();
+          if((work != null) && !work.isFrozen()) {
+            if(!versions.containsKey(name)) 
+              currentIDs.put(name, work.getWorkingID());
+          }
+        }
+      }
+
       try {
-	for(ViewerNode vnode : pSelected.values()) {
-	  String name = vnode.getName();
-	  NodeStatus status = vnode.getNodeStatus();
-	  NodeDetailsLight details = status.getLightDetails();
-	  if(details != null) {
-	    NodeMod work = details.getWorkingVersion();
-	    if((work != null) && !work.isFrozen()) {
-	      if(!versions.containsKey(name)) {
-		try {
-		  currentIDs.put(name, work.getWorkingID());
-		  versions.put(name, client.getCheckedInVersionIDs(name));
-		  offline.put(name, client.getOfflineVersionIDs(name));
-		  messages.put(name, client.getHistory(name));
-		}
-		catch (PipelineException ex) {
-		  master.showErrorDialog(ex);
-		  return;
-		}
-	      }
-	    }
-	  }
-	}
+        TreeSet<String> names = new TreeSet<String>(currentIDs.keySet());
+        try {
+          versions = client.getCheckedInVersionIDs(names); 
+          offline  = client.getOfflineVersionIDs(names);
+          messages = client.getHistory(names);
+        }
+        catch (PipelineException ex) {
+          master.showErrorDialog(ex);
+          return;
+        }
       }
       finally {
 	master.releaseMasterMgrClient(client);
       }
-
+      
       if(pEvolveDialog == null) 
 	pEvolveDialog = new JEvolveDialog(getTopFrame());
 
-      pEvolveDialog.updateNameVersions
-	(currentIDs, versions, offline, messages);
+      pEvolveDialog.updateNameVersions(currentIDs, versions, offline, messages);
       pEvolveDialog.setVisible(true);
 	  
       if(pEvolveDialog.wasConfirmed()) {
