@@ -1134,6 +1134,43 @@ class BaseMasterExt
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Whether to test before an Editor plugin can be started for a working version of a node.
+   */  
+  public boolean
+  hasPreEditingStartedTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before an Editor plugin can be started for a working version of a node.
+   *
+   * @param nodeID
+   *   The unique working version identifier.
+   *
+   * @param editorID
+   *   The unique identifier of the Editor plugin which will be run.
+   *
+   * @param hostname
+   *   The full name of the host on which the Editor will be run.
+   *
+   * @param imposter
+   *   The name of the user impersonating the owner of the node to be edited or
+   *   <CODE>null<CODE> if the editing user is the node's owner.
+   */
+  public void 
+  preEditingStartedTest
+  (
+   NodeID nodeID,
+   PluginID editorID, 
+   String hostname,
+   String imposter
+  )
+    throws PipelineException
+  {}
+  
+
+  /**
    * Whether to run a task after an Editor plugin has been started for a working version 
    * of a node. <P>
    */  

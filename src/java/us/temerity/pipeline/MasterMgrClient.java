@@ -7395,6 +7395,34 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Test whether the current user should be allowed to edit the given node.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param editorID
+   *   The unique identifier of the Editor plugin which will be run.
+   * 
+   * @throws PipelineException
+   *   The reason why editing should not be allowed.
+   */ 
+  public synchronized void
+  editingTest
+  (
+   NodeID nodeID,  
+   PluginID editorID
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeEditingTestReq req = new NodeEditingTestReq(nodeID, editorID); 
+    
+    Object obj = performTransaction(MasterRequest.EditingTest, req);
+    handleSimpleResponse(obj);        
+  }
+
+  /**
    * Signal that an Editor plugin has started editing files associated with the 
    * given working version of a node.
    * 

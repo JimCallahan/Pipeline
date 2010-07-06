@@ -1595,6 +1595,24 @@ class MasterMgrServer
                 }
                 break;    
 
+              case EditingTest: 
+                {
+                  NodeEditingTestReq req = (NodeEditingTestReq) objIn.readObject();
+
+                  TaskTimer timer = new TaskTimer(); 
+                  try {
+                    InetAddress addr = pSocket.getInetAddress();
+                    String hostname = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
+                    objOut.writeObject(pMasterMgr.editingTest(req, hostname)); 
+                  }
+                  catch(Exception ex) {
+                    objOut.writeObject(new FailureRsp(timer, ex.getMessage()));
+                  }
+
+                  objOut.flush(); 
+                }
+                break;    
+
               case EditingStarted: 
                 {
                   NodeEditingStartedReq req = (NodeEditingStartedReq) objIn.readObject();

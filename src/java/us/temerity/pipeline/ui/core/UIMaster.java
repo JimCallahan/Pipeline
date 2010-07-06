@@ -6227,6 +6227,13 @@ class UIMaster
               ignoreExitCode = editor.ignoreExitCode();
 	    }
 
+            /* test whether editing should be allowed */ 
+            NodeID nodeID = null; 
+            if(mod != null) {
+              nodeID = new NodeID(pAuthorName, pViewName, pNodeCommon.getName());
+              client.editingTest(nodeID, editor.getPluginID()); 
+            }
+
 	    /* lookup the toolset environment */ 
 	    TreeMap<String,String> env = null;
 	    {
@@ -6301,10 +6308,8 @@ class UIMaster
             }
 
 	    /* generate the editing started event */ 
-	    if(mod != null) {
-	      NodeID nodeID = new NodeID(pAuthorName, pViewName, pNodeCommon.getName());
+	    if(mod != null) 
 	      editID = client.editingStarted(nodeID, editor);
-	    }
 	  }
 	  catch(IllegalArgumentException ex) {
 	    master.showErrorDialog("Error:", ex.getMessage());	    

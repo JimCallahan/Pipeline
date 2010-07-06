@@ -13983,6 +13983,45 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Test whether the current user should be allowed to edit the given node.
+   * 
+   * @param req
+   *   The requet.
+   *
+   * @param hostname
+   *   The full name of the host on which the Editor will be run.
+   * 
+   * @return
+   *   <CODE>SucessRsp</CODE> if editing is allowed or 
+   *   <CODE>FailureRsp</CODE> if editing is not allowed.
+   */ 
+  public Object 
+  editingTest
+  (
+   NodeEditingTestReq req, 
+   String hostname 
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+    PluginID editorID = req.getEditorID();
+    String imposter = req.getImposter(); 
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.editingTest(): " + nodeID + 
+                    ((imposter != null) ? (" by " + imposter) : ""));
+
+    EditingTestExtFactory factory = 
+      new EditingTestExtFactory(nodeID, editorID, hostname, imposter); 
+    try {
+      performExtensionTests(timer, factory);
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+   
+  /**
    * Signal that an Editor plugin has started editing files associated with the 
    * given working version of a node.
    * 

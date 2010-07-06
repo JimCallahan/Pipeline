@@ -840,6 +840,11 @@ enum MasterRequest
   GetEvents, 
 
   /**
+   * An instance of {@link NodeEditingTest} is next.
+   */
+  EditingTest, 
+
+  /**
    * An instance of {@link NodeEditingStarted} is next.
    */
   EditingStarted, 
