@@ -3216,6 +3216,10 @@ class ScriptApp
            "does not support the " + PackageInfo.sOsType.toTitle() + " operating system!");
     }
     
+    /* test whether editing should be allowed */   
+    if(mod != null)
+      client.editingTest(nodeID, editor.getPluginID()); 
+
     /* lookup the toolset environment */ 
     TreeMap<String,String> env = null;
     {

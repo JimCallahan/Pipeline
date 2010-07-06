@@ -125,9 +125,9 @@ class JEvolveDialog
   updateNameVersions
   (
    TreeMap<String,VersionID> currentIDs, 
-   TreeMap<String,TreeSet<VersionID>> versions, 
-   TreeMap<String,TreeSet<VersionID>> offline, 
-   TreeMap<String,TreeMap<VersionID,LogMessage>> checkedInMessages
+   MappedSet<String,VersionID> versions, 
+   MappedSet<String,VersionID> offline, 
+   DoubleMap<String,VersionID,LogMessage> checkedInMessages
   )
   { 
     pCheckedInMessages.clear();

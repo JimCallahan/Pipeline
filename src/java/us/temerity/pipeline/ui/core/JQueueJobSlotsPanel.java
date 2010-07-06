@@ -1047,6 +1047,9 @@ class JQueueJobSlotsPanel
               ignoreExitCode = editor.ignoreExitCode();
  	    }
 
+            /* test whether editing should be allowed */ 
+            client.editingTest(pNodeID, editor.getPluginID()); 
+
  	    /* lookup the toolset environment */ 
  	    TreeMap<String,String> env = null;
  	    {

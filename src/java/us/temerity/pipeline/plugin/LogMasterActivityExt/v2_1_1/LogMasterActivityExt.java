@@ -340,6 +340,15 @@ LogMasterActivityExt
       {
 	ExtensionParam param = 
 	  new BooleanExtensionParam
+	  (aAllowEditing,
+	   "Whether to allow editing of nodes.", 
+	   true);
+	addParam(param);
+      }
+
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
 	  (aLogEditingStarted, 
 	   "Enable logging of when Editor plugins are started.", 
 	   true);
@@ -784,6 +793,7 @@ LogMasterActivityExt
 	sub.addEntry(aAllowRenumber);
 	sub.addEntry(aLogRenumber);
 	sub.addSeparator();
+        sub.addEntry(aAllowEditing); 
 	sub.addEntry(aLogEditingStarted);
 	sub.addEntry(aLogEditingFinished);
 
@@ -2147,6 +2157,57 @@ LogMasterActivityExt
   
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to test before an Editor plugin can be started for a working version of a node.
+   */  
+  public boolean
+  hasPreEditingStartedTest() 
+  {
+    return true; 
+  }
+
+  /**
+   * Test to perform before an Editor plugin can be started for a working version of a node.
+   *
+   * @param nodeID
+   *   The unique working version identifier.
+   *
+   * @param editorID
+   *   The unique identifier of the Editor plugin which will be run.
+   *
+   * @param hostname
+   *   The full name of the host on which the Editor will be run.
+   *
+   * @param imposter
+   *   The name of the user impersonating the owner of the node to be edited or
+   *   <CODE>null<CODE> if the editing user is the node's owner.
+   */
+  public void 
+  preEditingStartedTest
+  (
+   NodeID nodeID,
+   PluginID editorID, 
+   String hostname,
+   String imposter
+  )
+    throws PipelineException
+  {
+    if(!isParamTrue(aAllowEditing)) {
+      String msg = 
+        ("EDITING PREVENTED\n" +
+         "  Modified Node : " + nodeID.getName() + "\n" +
+         "   Working Area : " + nodeID.getAuthor() + "|" + nodeID.getView() + "\n" + 
+         "       Hostname : " + hostname + "\n" + 
+         "       Imposter : " + ((imposter != null) ? imposter : "NONE")); 
+      
+      getLogMgr().logAndFlush
+        (LogMgr.Kind.Ext, LogMgr.Level.Warning, 
+         msg);
+      
+      throw new PipelineException("Editing has been disabled!"); 
+    }
+  }
   
   /**
    * Whether to run a task after an Editor plugin has been started for a working version 
@@ -4084,6 +4145,7 @@ LogMasterActivityExt
   private static final String  aAllowRenumber 	        = "AllowRenumber";  	   
   private static final String  aLogRenumber 		= "LogRenumber";  		   
 
+  private static final String  aAllowEditing            = "AllowEditing"; 
   private static final String  aLogEditingStarted       = "LogEditingStarted";  
   private static final String  aLogEditingFinished      = "LogEditingFinished";  
 

@@ -602,6 +602,11 @@ enum MasterRequest
   GetWorking, 
 
   /**
+   * An instance of {@link NodeGetMultiWorkingReq} is next.
+   */
+  GetMultiWorking, 
+
+  /**
    * An instance of {@link NodeModifyPropertiesReq} is next.
    */
   ModifyProperties, 
@@ -645,24 +650,46 @@ enum MasterRequest
   GetCheckedIn, 
 
   /**
+   * An instance of {@link NodeGetMultiCheckedInReq} is next.
+   */
+  GetMultiCheckedIn, 
+
+  /**
    * An instance of {@link NodeGetAllCheckedInReq} is next.
    */
   GetAllCheckedIn, 
 
   /**
-   * An instance of {@link NodeGetVersionIDsReq} is next.
+   * Get the revision numbers of all checked-in versions of a node.
    */
   GetCheckedInVersionIDs, 
 
   /**
-   * An instance of {@link NodeGetInVersionIDsReq} is next.
+   * Get the revision numbers of all checked-in versions for the given set of node names.
+   */
+  GetMultiCheckedInVersionIDs, 
+
+  /**
+   * Get the revision numbers of all checked-in versions of a node do not save 
+   * intermediate (temporary) version of files in the repository.
    */
   GetIntermediateVersionIDs, 
 
   /**
-   * An instance of {@link NodeGetHistoryReq} is next.
+   * Get the revision numbers of all checked-in versions of the given set of nodes that do 
+   * not save intermediate (temporary) version of files in the repository.
+   */
+  GetMultiIntermediateVersionIDs, 
+
+  /**
+   * Get the log messages associated with all checked-in versions of a node.
    */
   GetHistory, 
+
+  /**
+   * Get the log messages associated with all checked-in versions for the given set of nodes.
+   */
+  GetMultiHistory, 
 
   /**
    * An instance of {@link NodeGetCheckedInFileNoveltyReq} is next.
@@ -818,6 +845,11 @@ enum MasterRequest
   GetEvents, 
 
   /**
+   * An instance of {@link NodeEditingTest} is next.
+   */
+  EditingTest, 
+
+  /**
    * An instance of {@link NodeEditingStarted} is next.
    */
   EditingStarted, 
@@ -902,9 +934,14 @@ enum MasterRequest
   OfflineQuery, 
 
   /**
-   * An instance of {@link NodeGetOfflineVersionIDsReq} is next.
+   * Get the revision nubers of all offline checked-in versions of the given node.
    */
   GetOfflineVersionIDs, 
+
+  /**
+   * Get the revision nubers of all offline checked-in versions for the given nodes.
+   */
+  GetMultiOfflineVersionIDs, 
 
   /**
    * An instance of {@link MiscGetOfflineSizesReq} is next.

@@ -13553,6 +13553,7 @@ class QueueMgr
       String author = agenda.getNodeID().getAuthor();
       Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent());
       Path tpath = new Path(PackageInfo.sTargetPath, Long.toString(jobID));
+
       Map<String,String> env = System.getenv();
 
       /* create the windows job target directory */ 
@@ -13649,16 +13650,21 @@ class QueueMgr
       switch(pHostOsType) {
       case Windows:
         {
+          Path dpath = null;
+          for(String comp : agenda.getNodeID().getWorkingParent().getComponents()) 
+            dpath = (dpath == null) ? new Path("..") : new Path(dpath, new Path("..")); 
+          dpath = new Path(new Path(dpath, "target"), Long.toString(jobID)); 
+          
           ArrayList<String> targets = new ArrayList<String>();
           {
             for(Path target : agenda.getPrimaryTarget().getPaths()) {
-              Path path = new Path(tpath, target); 
+              Path path = new Path(dpath, target); 
               targets.add(path.toOsString()); 
             }
             
             for(FileSeq fseq : agenda.getSecondaryTargets()) {
               for(Path target : fseq.getPaths()) {
-                Path path = new Path(tpath, target); 
+                Path path = new Path(dpath, target); 
                 targets.add(path.toOsString()); 
               }
             }

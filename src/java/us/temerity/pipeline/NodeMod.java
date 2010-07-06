@@ -785,6 +785,11 @@ class NodeMod
       throw new IllegalArgumentException
 	("The new secondary file sequence cannot be (null)!");
     
+    if(fseq.equals(pPrimarySeq)) 
+      throw new PipelineException
+        ("The new secondary file sequence (" + fseq + ") cannot be the same as the " +
+         "primary file sequence (" + pPrimarySeq + ")!"); 
+
     if(fseq.numFrames() != pPrimarySeq.numFrames()) 
       throw new PipelineException
 	("The new secondary file sequence (" + fseq + ") does not contain the same number " +

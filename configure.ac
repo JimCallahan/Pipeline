@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.27)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.28)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -453,16 +453,26 @@ AC_MSG_RESULT([$CRYPTO_APP_DIR])
 
 
 
+AC_MSG_CHECKING([Customer Profile Settings])
+
+"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp \
+  $CUSTOMER_PROFILE --autoconf > ./plconfig-vars.sh
+
+echo
+cat ./plconfig-vars.sh
+
+source ./plconfig-vars.sh
+
+AC_MSG_RESULT([])
+
+
+
 AC_MSG_CHECKING([Customer Profile Version Check])
 
 AC_SUBST(PLCONFIG_VERSION)
 PLCONFIG_VERSION=
 
 crypto_version=`"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp --version`
-
-"$JAVA" -classpath $CRYPTO_APP_DIR/CryptoApp.jar CryptoApp \
-  $CUSTOMER_PROFILE --autoconf > plconfig-vars.sh
-source plconfig-vars.sh
 
 if test "x$crypto_version" == "x" -o "x$PLCONFIG_PL_CONFIG_VERSION" == "x"
 then 
@@ -2482,6 +2492,12 @@ AC_CONFIG_FILES([
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/Makefile                
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile         
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile.local
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupAction/Makefile                
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupAction/v1_0_0/Makefile         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupAction/v1_0_0/Makefile.local
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupTool/Makefile                
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupTool/v1_0_0/Makefile         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MRayTextureGroupTool/v1_0_0/Makefile.local
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/Makefile                         
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile                  
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile.local                 

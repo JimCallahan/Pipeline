@@ -115,7 +115,7 @@ fi
 win_support=`java -classpath $plsrcdir/plconfig/CryptoApp.jar CryptoApp $plprofile --lookup WinSupport`
 if [ "x$win_support" == "xtrue" ]
 then
-  WIN_HOSTNAME=lizard
+  WIN_HOSTNAME=skink
 
   echo 
   echo "-------------------------------------------------------------------------------------"
@@ -124,11 +124,11 @@ then
 
   time \
   rsync -av --exclude-from=$plsrcdir/config/excluded --delete-excluded \
-    $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code/src/pipeline
+    $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code-$customer/src/pipeline
 
   time \
   ssh $WIN_HOSTNAME "source .bash_profile; \
-                     cd code/build/pipeline; \
+                     cd code-$customer/build/pipeline; \
                      ../../src/pipeline/config/bootstrap-win.sh \
                        $customer $sitep $debug_base $prof_base"
 fi

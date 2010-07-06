@@ -1230,6 +1230,14 @@ class MasterMgrServer
                 }
                 break;
 
+              case GetMultiWorking:
+                {
+                  NodeGetMultiWorkingReq req = (NodeGetMultiWorkingReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getMultiWorkingVersion(req));
+                  objOut.flush(); 
+                }
+                break;
+
               case ModifyProperties:
                 {
                   NodeModifyPropertiesReq req = (NodeModifyPropertiesReq) objIn.readObject();
@@ -1297,6 +1305,15 @@ class MasterMgrServer
                 }
                 break;
 	    
+              case GetMultiCheckedIn:
+                {
+                  NodeGetMultiCheckedInReq req = 
+                    (NodeGetMultiCheckedInReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getMultiCheckedInVersions(req));
+                  objOut.flush(); 
+                }
+                break;
+	    
               case GetAllCheckedIn:
                 {
                   NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
@@ -1313,6 +1330,14 @@ class MasterMgrServer
                 }
                 break;
 
+              case GetMultiCheckedInVersionIDs:
+                {
+                  NodeGetByNamesReq req = (NodeGetByNamesReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getMultiCheckedInVersionIDs(req));
+                  objOut.flush(); 
+                }
+                break;
+
               case GetIntermediateVersionIDs:
                 {
                   NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
@@ -1321,10 +1346,26 @@ class MasterMgrServer
                 }
                 break;
 
+              case GetMultiIntermediateVersionIDs:
+                {
+                  NodeGetByNamesReq req = (NodeGetByNamesReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getMultiIntermediateVersionIDs(req));
+                  objOut.flush(); 
+                }
+                break;
+
               case GetHistory:
                 {
                   NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getHistory(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetMultiHistory:
+                {
+                  NodeGetByNamesReq req = (NodeGetByNamesReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getMultiHistory(req));
                   objOut.flush(); 
                 }
                 break;
@@ -1563,6 +1604,24 @@ class MasterMgrServer
                 }
                 break;    
 
+              case EditingTest: 
+                {
+                  NodeEditingTestReq req = (NodeEditingTestReq) objIn.readObject();
+
+                  TaskTimer timer = new TaskTimer(); 
+                  try {
+                    InetAddress addr = pSocket.getInetAddress();
+                    String hostname = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
+                    objOut.writeObject(pMasterMgr.editingTest(req, hostname)); 
+                  }
+                  catch(Exception ex) {
+                    objOut.writeObject(new FailureRsp(timer, ex.getMessage()));
+                  }
+
+                  objOut.flush(); 
+                }
+                break;    
+
               case EditingStarted: 
                 {
                   NodeEditingStartedReq req = (NodeEditingStartedReq) objIn.readObject();
@@ -1700,6 +1759,14 @@ class MasterMgrServer
                 {
                   NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getOfflineVersionIDs(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetMultiOfflineVersionIDs:
+                {
+                  NodeGetByNamesReq req = (NodeGetByNamesReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getMultiOfflineVersionIDs(req));
                   objOut.flush(); 
                 }
                 break;

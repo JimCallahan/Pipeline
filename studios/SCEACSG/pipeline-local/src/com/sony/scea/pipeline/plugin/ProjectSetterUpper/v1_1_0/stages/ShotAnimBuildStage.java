@@ -37,7 +37,7 @@ extends MayaAnimInstanceBuildStage
 				nodeName,
 				true);
 		if (range != null)
-			setFrameRange(range);
+			setNodeFrameRange(range);
 		for (String namespace : assets.keySet()) {
 			String node = assets.get(namespace);
 			Integer count = assetCounts.get(namespace);
