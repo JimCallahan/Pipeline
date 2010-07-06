@@ -558,7 +558,6 @@ class PanelUpdater
             /* get the versions of the source nodes of the working, base and latest versions
                of the node displayed in the Node Details panel */ 
             if(pNodeDetailsPanel != null) {
-              // THIS COULD BE FASTER IF IT USED FEWER SERVER CALLS!
 	      master.updatePanelOp(pGroupID, "Updating Source Versions...");
 
               pWorkingSources   = new TreeMap<String,NodeCommon>();
@@ -574,6 +573,8 @@ class PanelUpdater
                 latest = details.getLatestVersion();
               }
 
+              MappedSet<String,VersionID> missingVIDs = new MappedSet<String,VersionID>();
+
               /* working version sources */ 
               if(work != null) {
                 if(work.isLocked()) {
@@ -583,8 +584,12 @@ class PanelUpdater
                     VersionID svid = link.getVersionID();
                     NodeVersion node = 
                       scavengeSourceVersion(mclient, pDetailedNode, sname, svid); 
+                    if(node == null) 
+                      missingVIDs.put(sname, svid);
+                    else 
+                      pCheckedInSources.put(sname, svid, node);
+                    
                     pWorkingSources.put(sname, node);
-                    pCheckedInSources.put(sname, svid, node);
                   }
                 }
                 else {
@@ -605,7 +610,10 @@ class PanelUpdater
                   if(!pCheckedInSources.containsKey(sname, svid)) {
                     NodeVersion node = 
                       scavengeSourceVersion(mclient, pDetailedNode, sname, svid); 
-                    pCheckedInSources.put(sname, svid, node);
+                    if(node == null) 
+                      missingVIDs.put(sname, svid);
+                    else 
+                      pCheckedInSources.put(sname, svid, node);
                   }
                 }
               }
@@ -618,7 +626,26 @@ class PanelUpdater
                   if(!pCheckedInSources.containsKey(sname, svid)) {
                     NodeVersion node = 
                       scavengeSourceVersion(mclient, pDetailedNode, sname, svid); 
-                    pCheckedInSources.put(sname, svid, node);
+                    if(node == null) 
+                      missingVIDs.put(sname, svid);
+                    else 
+                      pCheckedInSources.put(sname, svid, node);
+                  }
+                }
+              }
+
+              /* lookup any versions we were not able to find from NodeStatus */ 
+              {
+                DoubleMap<String,VersionID,NodeVersion> versions = 
+                  mclient.getCheckedInVersions(missingVIDs); 
+                for(String sname : versions.keySet()) {
+                  boolean missingWork = (pWorkingSources.containsKey(sname) && 
+                                         (pWorkingSources.get(sname) == null)); 
+                  for(VersionID svid : versions.keySet(sname)) {
+                    NodeVersion node = versions.get(sname, svid);
+                    if(missingWork) 
+                      pWorkingSources.put(sname, node);
+                    pCheckedInSources.put(sname, svid, node); 
                   }
                 }
               }
@@ -889,8 +916,7 @@ class PanelUpdater
 
   /**
    * Try to lookup the given checked-in version from the base/latest checked-in versions
-   * associated with the source NodeStatus of the given root status, and if that fails
-   * just ask the server.
+   * associated with the source NodeStatus of the given root status.
    * 
    * @param mclient
    *    The master manager connection.
@@ -931,7 +957,7 @@ class PanelUpdater
       }
     }
 
-    return mclient.getCheckedInVersion(sname, svid);
+    return null;
   }
 
 

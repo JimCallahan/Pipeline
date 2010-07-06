@@ -9617,6 +9617,67 @@ class MasterMgr
   }  
       
   /** 
+   * Get the checked-in versions for each of the given nodes. <P> 
+   * 
+   * @param req 
+   *   The get checked-in versions request.
+   * 
+   * @return
+   *   <CODE>NodeGetMultiCheckedInRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in versions.
+   */
+  public Object
+  getMultiCheckedInVersions
+  ( 
+   NodeGetMultiCheckedInReq req
+  ) 
+  {	 
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();	
+
+      DoubleMap<String,VersionID,NodeVersion> results =
+        new DoubleMap<String,VersionID,NodeVersion>();
+
+      MappedSet<String,VersionID> versions = req.getVersionIDs();
+      for(String name : versions.keySet()) {
+
+        timer.aquire();
+        LoggedLock lock = getCheckedInLock(name);
+        lock.acquireReadLock();
+        try {
+          timer.resume();	
+
+          TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+          for(VersionID vid : versions.get(name)) {
+            CheckedInBundle bundle = checkedIn.get(vid);
+            if(bundle == null) 
+              throw new PipelineException 
+                ("Somehow no checked-in version (" + vid + ") of node " + 
+                 "(" + name + ") exists!"); 
+            
+            results.put(name, vid, new NodeVersion(bundle.getVersion()));
+          }
+        }
+        finally {
+          lock.releaseReadLock();
+        }
+      }
+
+      return new NodeGetMultiCheckedInRsp(timer, results); 
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }  
+  }  
+   
+  /** 
    * Get all of the checked-in versions of a node. <P> 
    * 
    * @param req 

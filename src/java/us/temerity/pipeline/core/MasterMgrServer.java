@@ -1305,6 +1305,15 @@ class MasterMgrServer
                 }
                 break;
 	    
+              case GetMultiCheckedIn:
+                {
+                  NodeGetMultiCheckedInReq req = 
+                    (NodeGetMultiCheckedInReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getMultiCheckedInVersions(req));
+                  objOut.flush(); 
+                }
+                break;
+	    
               case GetAllCheckedIn:
                 {
                   NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();

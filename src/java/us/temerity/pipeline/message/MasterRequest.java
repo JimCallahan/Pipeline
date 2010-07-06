@@ -650,6 +650,11 @@ enum MasterRequest
   GetCheckedIn, 
 
   /**
+   * An instance of {@link NodeGetMultiCheckedInReq} is next.
+   */
+  GetMultiCheckedIn, 
+
+  /**
    * An instance of {@link NodeGetAllCheckedInReq} is next.
    */
   GetAllCheckedIn, 

@@ -975,6 +975,25 @@ interface MasterMgrLightClient
     throws PipelineException;
 
   /** 
+   * Get the checked-in versions for each of the given nodes. <P> 
+   * 
+   * @param vids 
+   *   The set of revision numbers to lookup indexed by the fully resolved node names.
+   * 
+   * @return 
+   *   The checked-in versions indexed by node name and revision number.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public DoubleMap<String,VersionID,NodeVersion> 
+  getCheckedInVersions
+  ( 
+   MappedSet<String,VersionID> vids
+  ) 
+    throws PipelineException; 
+
+  /** 
    * Get all of the checked-in versions of a node. <P> 
    * 
    * @param name 
