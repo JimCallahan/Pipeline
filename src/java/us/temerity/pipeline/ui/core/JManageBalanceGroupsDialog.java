@@ -18,6 +18,7 @@ import us.temerity.pipeline.ui.core.BalanceGroupTableModel.*;
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   B A L A N C E   G R O U P S   D I A L O G                                */
 /*------------------------------------------------------------------------------------------*/
+
 /**
  * Dialog for managing user balance groups.
  */

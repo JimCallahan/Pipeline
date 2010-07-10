@@ -321,7 +321,7 @@ class JManageToolsetsDialog
                 (lst, 
                  ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
                  ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
-                 new Dimension(150, 150), new Dimension(sLWidth, sLHeight), null);
+                 new Dimension(150, 150), size, null);
 
 	      vbox.add(scroll);
 	    }
