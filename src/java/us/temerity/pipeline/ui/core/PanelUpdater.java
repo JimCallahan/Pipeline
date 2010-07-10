@@ -376,6 +376,8 @@ class PanelUpdater
       
     if(pQueueJobBrowserPanel != null) {
       pSelectedJobGroupIDs = pQueueJobBrowserPanel.getSelectedGroupIDs();
+      
+      pJobFilterOverride = pQueueJobBrowserPanel.getFilterOverride();
 
       switch(pQueueJobBrowserPanel.getViewFilter()) {
       case SingleView:
@@ -724,7 +726,10 @@ class PanelUpdater
 	    /* job browser/viewer panel related */ 
 	    if((pQueueJobBrowserPanel != null) || (pQueueJobViewerPanel != null)) {
 	      master.updatePanelOp(pGroupID, "Updating Jobs...");
-	      pJobGroups = qclient.getJobGroups(pJobGroupAuthor, pJobGroupView); 
+	      if (pJobFilterOverride != null) 
+	        pJobGroups = qclient.getJobGroups(pJobFilterOverride);
+	      else
+	        pJobGroups = qclient.getJobGroups(pJobGroupAuthor, pJobGroupView); 
               if(!pJobGroups.isEmpty()) {
                 TreeSet<Long> groupIDs = new TreeSet<Long>(pJobGroups.keySet());
                 pJobStateDist = qclient.getJobStateDistribution(groupIDs);
@@ -1292,6 +1297,11 @@ class PanelUpdater
    */
   private String  pJobGroupAuthor;
   private String  pJobGroupView;
+  
+  /**
+   * A set of job groups whose information will be retrieved.
+   */
+  private Set<Long> pJobFilterOverride;
 
   /**
    * The distribution of job states for the jobs associated with each of the given 

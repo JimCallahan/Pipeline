@@ -367,6 +367,12 @@ class JManagerPanel
 
       pPopup.addSeparator();
 
+      item = new JMenuItem("Job Monitor Dialog...");
+      pJobMonitorItem = item;
+      item.setActionCommand("job-monitor");
+      item.addActionListener(this);
+      pPopup.add(item);
+      
       item = new JMenuItem("Preferences...");
       pPreferencesItem = item;
       item.setActionCommand("preferences");
@@ -383,7 +389,7 @@ class JManagerPanel
       pUpdatePluginsItem = item;
       item.setActionCommand("update-plugins");
       item.addActionListener(this);
-      pPopup.add(item);  
+      pPopup.add(item);
       
       JMenu menu = new JMenu("Launch Builders");
       pLaunchBuilderMenu = menu;
@@ -568,23 +574,10 @@ class JManagerPanel
 
     /* group popup menu */ 
     {
-      JMenuItem item;
+      Object[] groupMenu = UIFactory.createGroupMenu(this, "group");
       
-      pGroupPopup = new JPopupMenu();  
-      pGroupItems = new JMenuItem[10];
-
-      int wk;
-      for(wk=0; wk<10; wk++) {
-	item = new JMenuItem();
-	pGroupItems[wk] = item;
-
-	item.setIcon(sGroupIcons[wk]);
-	item.setDisabledIcon(sGroupDisabledIcons[wk]);
-	item.setActionCommand("group:" + wk);
-	item.addActionListener(this);
-
-	pGroupPopup.add(item);  
-      }
+      pGroupPopup = (JPopupMenu) groupMenu[0];  
+      pGroupItems = (JMenuItem[]) groupMenu[1];
     }
     
     /* set the initial tool tips */ 
@@ -1017,7 +1010,7 @@ class JManagerPanel
 
     pTypeLabel.setText(" " + pTopLevelPanel.getTypeName());
 
-    pGroupMenuAnchor.setIcon(sGroupIcons[pTopLevelPanel.getGroupID()]);
+    pGroupMenuAnchor.setIcon(UIFactory.sGroupIcons[pTopLevelPanel.getGroupID()]);
     pOwnerViewField.setText(pTopLevelPanel.getTitle());
     pLockedLight.setIcon(pTopLevelPanel.isLocked() ? sLockedLightOnIcon : sLockedLightIcon);
   }
@@ -1228,6 +1221,10 @@ class JManagerPanel
       (pUpdatePluginsItem, prefs.getUpdatePlugins(), 
        "Make sure that the latest plugins and plugin menus are being used.");
 
+    updateMenuToolTip
+      (pJobMonitorItem, prefs.getShowJobMonitor(), 
+       "Show the job monitor panel.");
+    
     updateMenuToolTip
       (pManagePrivilegesItem, prefs.getShowManagePrivileges(), 
        "Manage the user privileges.");
@@ -1950,6 +1947,12 @@ class JManagerPanel
         master.doDefaultLayout();
         return true;
       }
+      
+      else if ((prefs.getShowJobMonitor() != null) &&
+               prefs.getShowJobMonitor().wasPressed(e)) {
+        master.showJobMonitorDialog();
+        return true;
+      }
 
       else if((prefs.getShowUserPrefs() != null) &&
               prefs.getShowUserPrefs().wasPressed(e)) {
@@ -2216,6 +2219,8 @@ class JManagerPanel
         master.clearPluginCache();
       else if(cmd.startsWith("launch-builder:")) 
         doLaunchBuilder(cmd.substring(15));
+      else if(cmd.equals("job-monitor"))
+        master.showJobMonitorDialog();
 
       else if(cmd.equals("manage-privileges"))
         master.showManagePrivilegesDialog();
@@ -3248,7 +3253,7 @@ class JManagerPanel
   )
   {
     pTopLevelPanel.setGroupID(groupID);
-    pGroupMenuAnchor.setIcon(sGroupIcons[groupID]);
+    pGroupMenuAnchor.setIcon(UIFactory.sGroupIcons[groupID]);
   }
 
  
@@ -3686,7 +3691,7 @@ class JManagerPanel
     {
       super();
 
-      setIcon(sGroupIcons[0]);
+      setIcon(UIFactory.sGroupIcons[0]);
 
       Dimension size = new Dimension(19, 19);
       setMinimumSize(size);
@@ -3942,48 +3947,6 @@ class JManagerPanel
   private static final Icon sMenuAnchorPressedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("MenuAnchorPressedIcon.png"));
 
-
-  private static final Icon sGroupIcons[] = {
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group0.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group1.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group2.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group3.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group4.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group5.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group6.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group7.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group8.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group9.png"))
-  };
-
-  @SuppressWarnings("unused")
-  private static final Icon sGroupSelectedIcons[] = {
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group0Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group1Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group2Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group3Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group4Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group5Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group6Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group7Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group8Selected.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group9Selected.png"))
-  };
-
-  private static final Icon sGroupDisabledIcons[] = {
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group0Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group1Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group2Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group3Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group4Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group5Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group6Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group7Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group8Disabled.png")),
-    new ImageIcon(LookAndFeelLoader.class.getResource("Group9Disabled.png"))
-  };
-
-
   private static final Icon sLockedLightIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("LockedLightIcon.png"));
 
@@ -4083,6 +4046,7 @@ class JManagerPanel
   private JMenuItem  pPreferencesItem;
   private JMenuItem  pDefaultEditorsItem;
   private JMenuItem  pUpdatePluginsItem;
+  private JMenuItem  pJobMonitorItem;
 
   private JMenuItem  pManagePrivilegesItem;
   private JMenuItem  pManageToolsetsItem;

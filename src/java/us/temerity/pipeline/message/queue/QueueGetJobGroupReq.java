@@ -2,9 +2,6 @@
 
 package us.temerity.pipeline.message.queue;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
-
 import java.io.*;
 import java.util.*;
 
@@ -13,7 +10,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get the job group with the given ID. 
+ * A request to get the job group with the given IDs. 
  */
 public
 class QueueGetJobGroupReq
@@ -35,9 +32,29 @@ class QueueGetJobGroupReq
    long groupID
   )
   { 
-    pGroupID = groupID;
+    pGroupIDs = new TreeSet<Long>();
+    pGroupIDs.add(groupID);
   }
-
+  
+  /** 
+   * Constructs a new request. <P> 
+   * 
+   * @param groupIDs
+   *   The set of unique job group identifier.
+   */
+  public
+  QueueGetJobGroupReq
+  (
+    Set<Long> groupIDs
+  )
+  {
+    if (groupIDs == null || groupIDs.isEmpty())
+      throw new IllegalArgumentException
+        ("The groupIDs parameter must be a valid set and contain at least one ID.");
+    pGroupIDs = new TreeSet<Long>();
+    pGroupIDs.addAll(groupIDs);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -45,12 +62,12 @@ class QueueGetJobGroupReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the unique job group identifier. 
+   * Get the unique job group identifiers. 
    */
-  public long
-  getGroupID() 
+  public TreeSet<Long>
+  getGroupIDs() 
   {
-    return pGroupID; 
+    return pGroupIDs; 
   }
 
   
@@ -70,8 +87,6 @@ class QueueGetJobGroupReq
   /**
    * The unique job group identifier. 
    */ 
-  private long  pGroupID; 
-
+  private TreeSet<Long> pGroupIDs; 
 }
 
-  

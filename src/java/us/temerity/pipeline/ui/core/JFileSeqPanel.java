@@ -1320,11 +1320,13 @@ class JFileSeqPanel
       if(master.beginPanelOp(pParent.getGroupID(), "Submitting Jobs to the Queue...")) {
         MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
-	  client.submitJobs(pParent.getAuthor(), pParent.getView(), 
-                            pStatus.getName(), pIndices, 
-			    pBatchSize, pPriority, pRampUp, 
-			    pMaxLoad, pMinMemory, pMinDisk,
-			    pSelectionKeys, pLicenseKeys, pHardwareKeys);
+	  LinkedList<QueueJobGroup> groups = 
+	    client.submitJobs(pParent.getAuthor(), pParent.getView(), 
+                              pStatus.getName(), pIndices, 
+                              pBatchSize, pPriority, pRampUp, 
+                              pMaxLoad, pMinMemory, pMinDisk,
+                              pSelectionKeys, pLicenseKeys, pHardwareKeys);
+	  master.monitorJobGroups(groups);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);

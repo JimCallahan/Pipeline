@@ -6939,7 +6939,7 @@ class QueueMgr
       synchronized(pJobGroups) {
         timer.resume();
 
-	Long groupID = req.getGroupID();
+	Long groupID = req.getGroupIDs().first();
 	QueueJobGroup group = pJobGroups.get(groupID);
 	if(group == null) 
 	  throw new PipelineException
@@ -6951,6 +6951,44 @@ class QueueMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }   
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+  
+  /**
+   * Get the job groups with the following ids.
+   * 
+   * @param req 
+   *   The job groups request.
+   *    
+   * @return 
+   *   <CODE>QueueGetJobGroupsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the job groups.
+   */ 
+  public Object
+  getJobGroupsByID
+  (
+    QueueGetJobGroupReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      synchronized(pJobGroups) {
+        timer.resume();
+        TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
+        for(Long groupID : req.getGroupIDs()) {
+          QueueJobGroup group = pJobGroups.get(groupID);
+          if(group != null)
+              groups.put(groupID, group);
+        }
+        
+        return new QueueGetJobGroupsRsp(timer, groups);
+      }
+    }
     finally {
       pDatabaseLock.releaseReadLock();
     }

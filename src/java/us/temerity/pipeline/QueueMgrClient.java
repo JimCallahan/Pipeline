@@ -2684,6 +2684,37 @@ class QueueMgrClient
   }
   
   /**
+   * Get the job groups with the given IDs. 
+   * 
+   * @param groupIDs
+   *   The unique job group identifiers.
+   * 
+   * @throws PipelineException
+   *   If no job group exists with the given ID.
+   */ 
+  public synchronized TreeMap<Long, QueueJobGroup>
+  getJobGroups
+  (
+    Set<Long> groupIDs
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetJobGroupReq req = new QueueGetJobGroupReq(groupIDs);
+
+    Object obj = performTransaction(QueueRequest.GetJobGroupsByID, req);
+    if(obj instanceof QueueGetJobGroupsRsp) {
+      QueueGetJobGroupsRsp rsp = (QueueGetJobGroupsRsp) obj;
+      return rsp.getJobGroups();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+  
+  /**
    * Get all of the existing job groups.
    * 
    * @throws PipelineException

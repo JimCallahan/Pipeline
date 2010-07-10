@@ -2,19 +2,17 @@
 
 package us.temerity.pipeline.message.queue;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
-import us.temerity.pipeline.message.*;
-
-import java.io.*;
 import java.util.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   G E T   J O B   G R O U P   R S P                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to {@link QueueGetJobGroupReq QueueGetJobGroupReq} request.
+ * A successful response to a {@link QueueGetJobGroupReq QueueGetJobGroupReq} request.
  */
 public
 class QueueGetJobGroupRsp
@@ -44,11 +42,39 @@ class QueueGetJobGroupRsp
 
     if(group == null) 
       throw new IllegalArgumentException("The job group cannot be (null)!");
-    pJobGroup = group;
+    pJobGroups = new TreeMap<Long, QueueJobGroup>();
+    pJobGroups.put(group.getGroupID(), group);
 
     LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
        "QueueMgr.getJobGroup():\n  " + getTimer());
+  }
+  
+  /** 
+   * Constructs a new response.
+   * 
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param groups
+   *   The job groups. 
+   */ 
+  public
+  QueueGetJobGroupRsp
+  (
+   TaskTimer timer, 
+   TreeMap<Long, QueueJobGroup> groups
+  )
+  { 
+    super(timer);
+
+    if(groups == null || groups.isEmpty()) 
+      throw new IllegalArgumentException("The job group map cannot be (null) or empty!");
+    pJobGroups = new TreeMap<Long, QueueJobGroup>(groups);
+
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "QueueMgr.getJobGroups():\n  " + getTimer());
   }
 
 
@@ -58,12 +84,21 @@ class QueueGetJobGroupRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets job group.
+   * Get job group.
    */
   public QueueJobGroup
   getJobGroup() 
   {
-    return pJobGroup;
+    return pJobGroups.firstEntry().getValue();
+  }
+  
+  /**
+   * Get the map of job groups indexed by job group id.
+   */
+  public TreeMap<Long, QueueJobGroup>
+  getJobGroups()
+  {
+    return pJobGroups;
   }
   
 
@@ -83,7 +118,6 @@ class QueueGetJobGroupRsp
   /**
    * The job group. 
    */ 
-  private QueueJobGroup  pJobGroup;
-
+  private TreeMap<Long, QueueJobGroup>  pJobGroups;
 }
   

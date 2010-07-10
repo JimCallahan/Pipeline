@@ -1068,6 +1068,14 @@ class QueueMgrServer
                   objOut.flush(); 
                 }
                 break;
+                
+              case GetJobGroupsByID:
+                {
+                  QueueGetJobGroupReq req = (QueueGetJobGroupReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.getJobGroupsByID(req));
+                  objOut.flush();
+                }
+                break;
 	    
               case DeleteJobGroups:
                 {

@@ -68,7 +68,8 @@ class JQueueJobBrowserPanel
       pJobStateDist = new TreeMap<Long,double[]>();
       pSelectedIDs  = new TreeSet<Long>();
 
-      pViewFilter = ViewFilter.SingleView; 
+      pViewFilter = ViewFilter.SingleView;
+      pFilterOverride = null;
     }
 
     /* initialize the popup menus */ 
@@ -107,6 +108,20 @@ class JQueueJobBrowserPanel
 	  sub.add(item);
 	}
 
+	pGroupsPopup.addSeparator();
+	
+	item = new JMenuItem("Clear Focus");
+	pClearFocusItem = item;
+	item.setActionCommand("clear-focus");
+	item.addActionListener(this);
+	pGroupsPopup.add(item);
+	
+	item = new JMenuItem("Monitor Groups");
+        pMonitorGroupsItem = item;
+        item.setActionCommand("monitor-groups");
+        item.addActionListener(this);
+        pGroupsPopup.add(item);
+	
 	pGroupsPopup.addSeparator();
 
 	item = new JMenuItem("Queue Jobs");
@@ -202,7 +217,8 @@ class JQueueJobBrowserPanel
 	  
 	{
 	  JLabel label = new JLabel("Job Groups:");
-	  label.setName("DialogHeaderLabel");	
+	  label.setName("DialogHeaderLabel");
+	  pHeaderLabel = label;
 	    
 	  panel.add(label);	  
 	}
@@ -527,6 +543,43 @@ class JQueueJobBrowserPanel
   {
     return pViewFilter; 
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The set of job group ids which comprise the filter override or <code>null</code> if 
+   * there is no filter override.
+   */
+  public Set<Long>
+  getFilterOverride()
+  {
+    if (pFilterOverride == null)
+      return null;
+    else
+      return Collections.unmodifiableSet(pFilterOverride);
+  }
+  
+  /**
+   * Set the job groups ids which comprise the filter override or <code>null</code> to clear 
+   * the override. <p>
+   * 
+   * Note that this does NOT cause a panel update.  On order for this chane to appear to the 
+   * user, a panel update needs to be trigger after this is called.
+   * 
+   * @param filterOverride
+   *   The set of job group ids or <code>null</code>.
+   */
+  public void
+  setFilterOverride
+  (
+    Set<Long> filterOverride
+  )
+  {
+    if (filterOverride == null)
+      pFilterOverride = null;
+    else
+      pFilterOverride = new TreeSet<Long>(filterOverride);
+  }
 
 
 
@@ -671,6 +724,11 @@ class JQueueJobBrowserPanel
     case AllViews:
       pDeleteCompletedButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
     }
+    
+    if (pFilterOverride == null) 
+      pHeaderLabel.setText("Queue Jobs:");
+    else
+      pHeaderLabel.setText("Queue Jobs: (Focused)");
     
     /* deal with the job keys need update button.*/
     if (!pDoJobKeysNeedUpdate) 
@@ -819,6 +877,12 @@ class JQueueJobBrowserPanel
     updateMenuToolTip
       (pGroupsAllViewsItem, prefs.getJobBrowserAllViewsFilter(),
        "Show job groups from all views.");
+    updateMenuToolTip
+      (pMonitorGroupsItem, prefs.getJobBrowserMonitorGroups(),
+       "Add the selected job groups to the job monitor panel.");
+    updateMenuToolTip
+      (pMonitorGroupsItem, prefs.getJobBrowserClearFocus(),
+       "Clear the current focus on a specific set of job groups.");
     updateMenuToolTip
       (pGroupsQueueItem, prefs.getQueueJobs(), 
        "Resubmit aborted and failed jobs to the queue for the selected groups.");
@@ -1042,6 +1106,11 @@ class JQueueJobBrowserPanel
       doOwnedViewsFilter();
     else if(cmd.equals("all-views")) 
       doAllViewsFilter();
+    
+    else if(cmd.equals("clear-focus"))
+      doClearFocus();
+    else if(cmd.equals("monitor-groups"))
+      doMonitorGroups();
 
     else if(cmd.equals("groups-queue-jobs")) 
       doGroupsQueueJobs();
@@ -1134,7 +1203,32 @@ class JQueueJobBrowserPanel
     updatePanels();
   }
   
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Clear the filter override which causes the view filters to be ignored.
+   */
+  public void
+  doClearFocus()
+  {
+    setFilterOverride(null);
+    updatePanels(true);
+  }
+  
+  /**
+   * Add the currently selected job groups to the job monitor panel.
+   */
+  public void
+  doMonitorGroups()
+  {
+    LinkedList<QueueJobGroup> groups = new LinkedList<QueueJobGroup>();
+    for(Long groupID : getSelectedGroupIDs()) {
+      QueueJobGroup group = pJobGroups.get(groupID);
+      groups.add(group);
+    }
+    UIMaster.getInstance().monitorJobGroups(groups);
+  }
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1482,6 +1576,7 @@ class JQueueJobBrowserPanel
       encoder.encode("SelectedIDs", pSelectedIDs);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public synchronized void 
   fromGlue
@@ -1658,8 +1753,6 @@ class JQueueJobBrowserPanel
       if(e.getValueIsAdjusting())
 	return;
       
-      int numPrevSelected = pSelectedIDs.size();
-
       /* update selected IDs */ 
       {
 	pSelectedIDs.clear(); 
@@ -1813,6 +1906,7 @@ class JQueueJobBrowserPanel
       pHardwareKeys  = hardwareKeys;
     }
 
+    @SuppressWarnings("incomplete-switch")
     @Override
     public void 
     run() 
@@ -1844,10 +1938,12 @@ class JQueueJobBrowserPanel
             if(!targetSeqs.isEmpty()) {
               master.updatePanelOp(pGroupID, 
                                    "Resubmitting Jobs to the Queue: " + targetID.getName());
-              mclient.resubmitJobs
-                (targetID, targetSeqs, pBatchSize, pPriority, pRampUp,
-                 pMaxLoad, pMinMemory, pMinDisk,
-                 pSelectionKeys, pLicenseKeys, pHardwareKeys);
+              LinkedList<QueueJobGroup> groups = 
+                mclient.resubmitJobs
+                  (targetID, targetSeqs, pBatchSize, pPriority, pRampUp,
+                   pMaxLoad, pMinMemory, pMinDisk,
+                   pSelectionKeys, pLicenseKeys, pHardwareKeys);
+              master.monitorJobGroups(groups);
             }
           }
         }
@@ -2314,6 +2410,12 @@ class JQueueJobBrowserPanel
    * The working area view filter.
    */
   private ViewFilter  pViewFilter; 
+  
+  /**
+   * A specific list of job groups to display in the queue job browser panel, which will take
+   * precedence over any other view filter.
+   */
+  private TreeSet<Long> pFilterOverride;
 
   /**
    * A boolean which reflects whether key choosers need to be rerun for all jobs in the 
@@ -2335,6 +2437,10 @@ class JQueueJobBrowserPanel
   private JMenuItem  pGroupsSingleViewItem; 
   private JMenuItem  pGroupsOwnedViewsItem; 
   private JMenuItem  pGroupsAllViewsItem; 
+
+  private JMenuItem  pClearFocusItem;
+  private JMenuItem  pMonitorGroupsItem;
+  
   private JMenuItem  pGroupsQueueItem; 
   private JMenuItem  pGroupsQueueSpecialItem; 
   private JMenuItem  pGroupsPauseItem; 
@@ -2353,6 +2459,11 @@ class JQueueJobBrowserPanel
    */ 
   private JPanel pGroupsHeaderPanel; 
 
+  /**
+   * The panel title.
+   */
+  private JLabel  pHeaderLabel;
+  
   /**
    * Used to select the current view filter.
    */ 

@@ -3624,6 +3624,76 @@ class UIMaster
   }
 
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A N E L   C O N T R O L                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Direct a Node Browser panel on the provided channel to show a set of nodes in a 
+   * particular working area.
+   * 
+   * @param channel
+   *   The channel to find the node browser on.  If there is no Node Browser on this channel, 
+   *   then this command will have no effect.
+   * 
+   * @param author
+   *   The author whose working area the node browser will display.
+   *   
+   * @param view
+   *   The working area the node browser will display.
+   *   
+   * @param nodeNames
+   *   The set of node names to select in the node browser.
+   */
+  public void
+  selectAndShowNodes
+  (
+    int channel,
+    String author,
+    String view,
+    TreeSet<String> nodeNames
+  )
+  {
+    if (channel > 0) {
+      JNodeBrowserPanel panel = pNodeBrowserPanels.getPanel(channel);
+      if (panel != null) {
+        panel.applyPanelUpdates(author, view, nodeNames);
+        PanelUpdater pu = new PanelUpdater(panel, true);
+        pu.execute();
+      }
+    }
+  }
+  
+  
+  /**
+   * Direct a job browser panel to show only a specific set of job groups.
+   * 
+   * @param channel
+   *   The channel to find the job browser on.  If there is no Job Browser on this channel, 
+   *   then this command will have no effect.
+   * 
+   * @param jobGroups
+   *   The set of job groups to show in the Job Browser.
+   */
+  public void
+  selectAndShowJobGroups
+  (
+    int channel,
+    TreeSet<Long> jobGroups
+  )
+  {
+    JQueueJobBrowserPanel panel = pQueueJobBrowserPanels.getPanel(channel);
+    if (panel != null) {
+      panel.setFilterOverride(jobGroups);
+      PanelUpdater pu = new PanelUpdater(panel, true);
+      pu.execute();
+    }
+  }
+  
+  
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   D I A L O G S                                                                        */
@@ -3984,7 +4054,38 @@ class UIMaster
   {
     pArchiveVolumesDialog.setVisible(true);
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Show a dialog for monitoring the user's currently active job groups.
+   */ 
+  public void 
+  showJobMonitorDialog()
+  {
+    if (!pJobMonitorDialog.isVisible())
+      pJobMonitorDialog.setVisible(true);
+    else
+      pJobMonitorDialog.toFront();
+  }
+  
+  /**
+   * Add jobs to the monitor panel.
+   * 
+   * @param jobGroups
+   *   The list of job groups to add to the panel.
+   */
+  public void
+  monitorJobGroups
+  (
+    LinkedList<QueueJobGroup> jobGroups 
+  )
+  {
+    pJobMonitorDialog.addJobGroups(jobGroups);
+    UserPrefs prefs = UserPrefs.getInstance();
+    if (prefs.getAutoOpenJobMonitor())
+      showJobMonitorDialog();
+  }
 
   /*----------------------------------------------------------------------------------------*/
  
@@ -5081,6 +5182,8 @@ class UIMaster
 	pOfflineDialog        = new JOfflineDialog();
 	pRestoreDialog        = new JRestoreDialog();
 	pArchiveVolumesDialog = new JArchiveVolumesDialog();
+	
+	pJobMonitorDialog     = new JJobMonitorDialog();
 
 	{
 	  ArrayList<LogMgr.Kind> kinds = new ArrayList<LogMgr.Kind>();
@@ -6507,10 +6610,12 @@ class UIMaster
 	  for(String name : pIndices.keySet()) {
 	    updatePanelOp(pChannel, "Submitting Jobs to the Queue: " + name);
             try {
-              client.submitJobs(pAuthorName, pViewName, name, 
-                                pIndices.get(name), pBatchSize, pPriority, pRampUp,
-                                pMaxLoad, pMinMemory, pMinDisk,
-                                pSelectionKeys, pLicenseKeys, pHardwareKeys);
+              LinkedList<QueueJobGroup> group = 
+                client.submitJobs(pAuthorName, pViewName, name, 
+                                  pIndices.get(name), pBatchSize, pPriority, pRampUp,
+                                  pMaxLoad, pMinMemory, pMinDisk,
+                                  pSelectionKeys, pLicenseKeys, pHardwareKeys);
+              monitorJobGroups(group);
             }
             catch(PipelineException ex) {
               buf.append(ex.getMessage() + "\n\n"); 
@@ -7626,4 +7731,9 @@ class UIMaster
    * The remote working node selection dialog.
    */
   private JWorkingSelectDialog  pWorkingSelectDialog;
+  
+  /**
+   * The job monitor dialog.
+   */
+  private JJobMonitorDialog pJobMonitorDialog;
 }

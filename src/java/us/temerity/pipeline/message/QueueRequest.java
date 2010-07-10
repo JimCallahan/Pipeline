@@ -2,6 +2,8 @@
 
 package us.temerity.pipeline.message;
 
+import us.temerity.pipeline.message.queue.*;
+
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   R E Q U E S T                                                              */
 /*------------------------------------------------------------------------------------------*/
@@ -490,6 +492,11 @@ enum QueueRequest
    * An instance {@link QueueGetJobGroupReq} is next.
    */
   GetJobGroup, 
+  
+  /**
+   * An instance of {@link QueueGetJobGroupReq} is next.
+   */
+  GetJobGroupsByID,
 
   /**
    * An instance {@link QueueGetJobGroupsReq} is next.

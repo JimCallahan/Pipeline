@@ -92,7 +92,11 @@ class GenUserPrefsApp
 	 "UpdatePlugins", "Update Plugins:",
 	 false, true, false, 85),  /* ALT+U */
 	 
-	 new HotKeyPref
+	new HotKeyPref
+	("Show the Job Monitor Dialog",
+	 "ShowJobMonitor", "Job Monitor Dialog:"),
+	 
+	new HotKeyPref
 	 ("Opens up a dialog allowing the selection and invocation of all installed " + 
           "builders.",
 	  "LaunchBuilders", "Launch Builders:"),
@@ -506,7 +510,13 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new BooleanPref
-	("Whether to beep.", "Beep", "Beep:", true)
+	("Whether to beep.", "Beep", "Beep:", true),
+	
+	new BasePref(),
+	
+	new BooleanPref
+        ("Whether to auto-open the job monitor panel.", 
+         "AutoOpenJobMonitor", "Auto Open JobMonitor:", true),
       };
 
       pPrefs.put("Main Menu|General", prefs);
@@ -1656,12 +1666,22 @@ class GenUserPrefsApp
 	
 	new HotKeyPref
 	("Show job groups from any view owned by the current user.", 
-	 "JobBrowserOwnedViewsFilter", "Single View Filter:"), 
+	 "JobBrowserOwnedViewsFilter", "Owned Views Filter:"), 
 	
 	new HotKeyPref
 	("Show job groups from all views.", 
-	 "JobBrowserAllViewsFilter", "Single View Filter:"), 
+	 "JobBrowserAllViewsFilter", "All Views Filter:"), 
 
+	new BasePref(),
+
+	new HotKeyPref
+	("Add the selected job groups to the job monitor panel.", 
+	 "JobBrowserMonitorGroups", "Monitor Groups:"), 
+
+	 new HotKeyPref
+	 ("Clear the current focus on a specific set of job groups.", 
+	  "JobBrowserClearFocus", "Clear Job Focus:"),  
+	
 	new BasePref(),
 
 	new DuplicateHotKeyPref
@@ -2749,6 +2769,8 @@ class GenUserPrefsApp
 	group.add("JobBrowserSingleViewFilter");
 	group.add("JobBrowserOwnedViewsFilter");
 	group.add("JobBrowserAllViewsFilter");
+	group.add("JobBrowserMonitorGroups");
+	group.add("JobBrowserClearFocus");
 	group.addAll(jobs);
 	group.addAll(jobReqs);
 	group.add("JobBrowserGroupsDelete");

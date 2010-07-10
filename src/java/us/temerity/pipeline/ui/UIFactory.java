@@ -4336,8 +4336,63 @@ class UIFactory
 
     return spanel;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a popup menu which allows the user to select a channel from 0-9 for a panel to
+   * run on. <p>
+   * 
+   * The action commands for each menu item is the string passed in for the action command 
+   * followed by a colon and then the number of the channel (e.g., if the actionCommand 
+   * parameter is <code>group</code> then the action command for the first channel would be
+   * <code>group:1</code>).
+   * 
+   * @param listener
+   *   The action listener which will catch entries on this menu.
+   *   
+   * @param actionCommand
+   *   The name of the action command to assign to each entry in the menu.
+   * 
+   * @return
+   *   A two item Object array, with the first element being the {@link JPopupMenu} and the 
+   *   second item being an array of {@link JMenuItem JMenuItems} for each entry in the
+   *   menu.
+   */
+  public static Object[]
+  createGroupMenu
+  (
+    ActionListener listener,
+    String actionCommand
+  )
+  {
+    JPopupMenu menu = new JPopupMenu();  
+    JMenuItem groupItems[] = new JMenuItem[10];
+    
+    JMenuItem item;
+
+    int wk;
+    for(wk=0; wk<10; wk++) {
+      item = new JMenuItem();
+      groupItems[wk] = item;
+
+      item.setIcon(sGroupIcons[wk]);
+      item.setDisabledIcon(sGroupDisabledIcons[wk]);
+      item.setActionCommand(actionCommand + ":" + wk);
+      item.addActionListener(listener);
+
+      menu.add(item);  
+    }
+    
+    Object toReturn[] = new Object[2];
+    toReturn[0] = menu;
+    toReturn[1] = groupItems;
+    
+    return toReturn;
+  }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P O N E N T   U T I L I T I E S                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -4520,6 +4575,46 @@ class UIFactory
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
+  
+  public static final Icon sGroupIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group0.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group1.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group2.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group3.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group4.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group5.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group6.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group7.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group8.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group9.png"))
+  };
+
+  @SuppressWarnings("unused")
+  public static final Icon sGroupSelectedIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group0Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group1Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group2Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group3Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group4Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group5Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group6Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group7Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group8Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group9Selected.png"))
+  };
+
+  public static final Icon sGroupDisabledIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group0Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group1Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group2Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group3Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group4Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group5Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group6Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group7Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group8Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group9Disabled.png"))
+  };
   
   /**
    * Beep preference boolean.

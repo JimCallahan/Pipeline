@@ -3477,20 +3477,25 @@ class JQueueJobViewerPanel
 	    }
 
 	    if(!targetSeqs.isEmpty()) {
-	      if(pSpecial) 
-		client.resubmitJobs
-		  (nodeID, targetSeqs, pBatchSize, pPriority, pRampUp,
-	           pMaxLoad, pMinMemory, pMinDisk,
-	           pSelectionKeys, pLicenseKeys, pHardwareKeys);
+	      if(pSpecial) { 
+		LinkedList<QueueJobGroup> groups = 
+		  client.resubmitJobs
+		    (nodeID, targetSeqs, pBatchSize, pPriority, pRampUp,
+	             pMaxLoad, pMinMemory, pMinDisk,
+	             pSelectionKeys, pLicenseKeys, pHardwareKeys);
+		master.monitorJobGroups(groups);
+	      }
 	      else {
 		long jobID = targets.firstKey();
 		QueueJob job = queue.getJob(jobID);
 		JobReqs reqs = job.getJobRequirements();
-		client.resubmitJobs
-		  (nodeID, targetSeqs, pBatchSize, 
-		   reqs.getPriority(), reqs.getRampUp(),
-	           reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
-	           reqs.getSelectionKeys(), reqs.getLicenseKeys(), reqs.getHardwareKeys());
+		LinkedList<QueueJobGroup> groups =
+		  client.resubmitJobs
+		    (nodeID, targetSeqs, pBatchSize, 
+		     reqs.getPriority(), reqs.getRampUp(),
+	             reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
+	             reqs.getSelectionKeys(), reqs.getLicenseKeys(), reqs.getHardwareKeys());
+		master.monitorJobGroups(groups);
 	      }
 	    }
 	  }
