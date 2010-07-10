@@ -42,10 +42,11 @@ class TemplateDescManifest
    *   The start node of the template
    *   
    * @param verID
-   *   The versionID of the start node.
+   *   The versionID of the start node or <code>null</code>.  If it is null, the version ID 
+   *   will be set to 1.0.0
    *   
    * @throws IllegalArgumentException
-   *   If startNode or verID is <code>null</code>.
+   *   If startNode is <code>null</code>.
    */
   public 
   TemplateDescManifest
@@ -61,8 +62,9 @@ class TemplateDescManifest
     pStartNode = startNode;
     
     if (verID == null)
-      throw new IllegalArgumentException("The verID parameter cannot be null");
-    pStartNodeVersion = verID;
+      pStartNodeVersion = new VersionID();
+    else
+      pStartNodeVersion = verID;
   }
   
   /**
@@ -88,7 +90,11 @@ class TemplateDescManifest
       throw new IllegalArgumentException("The rootNodes parameter cannot be null");
     if (rootNodes.isEmpty())
       throw new IllegalArgumentException("The rootNodes parameter cannot be an empty set.");
-    pRootNodes = new TreeMap<String, VersionID>(rootNodes); 
+    pRootNodes = new TreeMap<String, VersionID>(rootNodes);
+    for (String key : pRootNodes.keySet()) {
+      if (pRootNodes.get(key) == null)
+        pRootNodes.put(key, new VersionID());
+    }
   }
 
   /**
@@ -117,6 +123,10 @@ class TemplateDescManifest
     if (rootNodes.isEmpty())
       throw new IllegalArgumentException("The rootNodes parameter cannot be an empty set.");
     pRootNodes = new TreeMap<String, VersionID>(rootNodes);
+    for (String key : pRootNodes.keySet()) {
+      if (pRootNodes.get(key) == null)
+        pRootNodes.put(key, new VersionID());
+    }
     
     if (allNodes == null)
       throw new IllegalArgumentException("The allNodes parameter cannot be null");

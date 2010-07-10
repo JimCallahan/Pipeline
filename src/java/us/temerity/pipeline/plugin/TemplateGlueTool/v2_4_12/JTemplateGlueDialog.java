@@ -124,6 +124,7 @@ class JTemplateGlueDialog
       try {
         TemplateGlueInformation newSettings = getNewSettings();
         pTemplateFile.delete();
+        pTemplateFile.getParentFile().mkdirs();
         GlueEncoderImpl.encodeFile(aTemplateGlueInfo, newSettings, pTemplateFile);
       }
       catch (GlueException ex) 

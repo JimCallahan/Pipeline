@@ -611,7 +611,7 @@ class TemplateBuilder
       case TaskSingle:
         {
           NodeMod mod = getWorkingVersion(pStartNode);
-          pDescManifest = new TemplateDescManifest(pStartNode, mod.getWorkingID());
+          pDescManifest = new TemplateDescManifest(pStartNode, mod.getWorkingID());  
           traverseTaskNetwork(pStartNode);
         }
         break;
