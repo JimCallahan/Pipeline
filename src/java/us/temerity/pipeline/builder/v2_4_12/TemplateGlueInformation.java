@@ -603,7 +603,6 @@ class TemplateGlueInformation
   
   /**
    * Get the list of externals for the template.
-   * @return
    */
   public final MappedSet<String, String>
   getExternals()
