@@ -55,6 +55,8 @@ class JJobMonitorDialog
     pCurrentSelection = new TreeSet<Long>();
     pCurrentSelectionLock = new Object();
     
+    pShowNodeChannelItems = new ArrayList<JMenuItem>();
+    pShowJobChannelItems = new ArrayList<JMenuItem>();
     /* Job Group Menu*/
     {
       JMenuItem item;
@@ -67,18 +69,46 @@ class JJobMonitorDialog
       item.addActionListener(this);
       pJobGroupMenu.add(item);
       
-      item = new JMenuItem("Show Jobs");
+      item = new JMenuItem("Show Job Groups");
       pShowJobItem = item;
       item.setActionCommand("show-job");
       item.addActionListener(this);
       pJobGroupMenu.add(item);
+      
+      pJobGroupMenu.addSeparator();
+      
+      {
+        JMenu sub = new JMenu("Show Nodes...");
+        for (int i = 1; i < 10; i++) {
+          item = new JMenuItem("Channel " + i);
+          item.setActionCommand("show-node-" + i);
+          item.addActionListener(this);
+          pShowNodeChannelItems.add(item);
+          sub.add(item);
+        }
+        pJobGroupMenu.add(sub);
+      }
+      
+      {
+        JMenu sub = new JMenu("Show Job Groups...");
+        for (int i = 1; i < 10; i++) {
+          item = new JMenuItem("Channel " + i);
+          item.setActionCommand("show-job-" + i);
+          item.addActionListener(this);
+          pShowJobChannelItems.add(item);
+          sub.add(item);
+        }
+        pJobGroupMenu.add(sub);
+      }
+      
+      pJobGroupMenu.addSeparator();
+      
+      item = new JMenuItem("Remove Job Groups");
+      pRemoveGroupsItem = item;
+      item.setActionCommand("remove-groups");
+      item.addActionListener(this);
+      pJobGroupMenu.add(item);
     }
-    
-    {
-      pNodeChannelMenu = (JPopupMenu) UIFactory.createGroupMenu(this, "node")[0];
-      pJobChannelMenu = (JPopupMenu) UIFactory.createGroupMenu(this, "job")[0];
-    }
-    
     
     {
       JPanel mainPanel = new JPanel();
@@ -93,43 +123,23 @@ class JJobMonitorDialog
         vbox.add(Box.createRigidArea(new Dimension(0, 8)));
         
         {
-          Box headerBox = new Box(BoxLayout.X_AXIS);
-          JLabel label = 
-            UIFactory.createFixedLabel("Node Channel:", 100, SwingConstants.LEFT);
-          headerBox.add(label);
-          headerBox.add(Box.createHorizontalStrut(4));
-          
-          {
-            GroupMenuAnchor anchor = new GroupMenuAnchor(pNodeChannelMenu);
-            pNodeMenuAnchor = anchor;
+          JList lst = new JList(new DefaultListModel()) {
+
+            @Override
+            public Point 
+            getToolTipLocation
+            (
+              MouseEvent event
+            )
+            {
+              int index = locationToIndex(event.getPoint());
+              Rectangle rect = getCellBounds(index, index);
+              return new Point((int)rect.getMinX(), (int)rect.getMinY());
+            }
             
-            anchor.setToolTipText(UIFactory.formatToolTip("The node channel selector."));
-            headerBox.add(anchor);    
-          }
-          
-          headerBox.add(Box.createHorizontalStrut(16));
-          label = 
-            UIFactory.createFixedLabel("Job Channel:", 100, SwingConstants.LEFT);
-          headerBox.add(label);
-          headerBox.add(Box.createHorizontalStrut(4));
-          
-          {
-            GroupMenuAnchor anchor = new GroupMenuAnchor(pJobChannelMenu);
-            pJobMenuAnchor = anchor;
-            
-            anchor.setToolTipText(UIFactory.formatToolTip("The job channel selector."));
-            headerBox.add(anchor);    
-          }
-          
-          headerBox.add(Box.createHorizontalGlue());
-          
-          vbox.add(headerBox);
-        }
-        
-        vbox.add(Box.createVerticalStrut(12));
-        
-        {
-          JList lst = new JList(new DefaultListModel());
+            private static final long serialVersionUID = -1444992080444627786L;
+          };
+
           pJobList = lst;
 
           lst.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -144,21 +154,20 @@ class JJobMonitorDialog
               (lst, 
                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
-               new Dimension(150, 150), 
+               new Dimension(15, 15), 
                new Dimension(375, 450), null);
 
             pListScrollPane = scroll;
             vbox.add(scroll);
           }
         }
-        
         mainPanel.add(vbox);
       }
       
+      
+      
       mainPanel.add(Box.createRigidArea(new Dimension(8, 0)));
-      super.initUI("Job Monitor:", mainPanel, null, null, null, null, null);
-      doNodeGroup(1);
-      doJobGroup(2);
+      super.initUI(null, mainPanel, null, null, null, null, null);
     }
   }
   
@@ -172,13 +181,14 @@ class JJobMonitorDialog
     PluginMgrClient.init();
     UIMaster.init(null, false, false, false, true, false, false, false);
     UIFactory.initializePipelineUI();
-    LogMgr.getInstance().setLevel(Kind.Job, Level.Finest);
+    
+//    LogMgr.getInstance().setLevel(Kind.Job, Level.Finest);
     JJobMonitorDialog dialog = new JJobMonitorDialog();
     QueueMgrClient client = new QueueMgrClient();
     QueueJobGroup group = client.getJobGroup(1322l);
     LinkedList<QueueJobGroup> groups = new LinkedList<QueueJobGroup>();
     groups.add(group);
-    groups.add(client.getJobGroup(1323l));
+    groups.add(client.getJobGroup(1324l));
     dialog.addJobGroups(groups);
     dialog.setVisible(true);
     PluginMgrClient.getInstance().disconnect();
@@ -464,11 +474,74 @@ class JJobMonitorDialog
                   MouseEvent.SHIFT_DOWN_MASK |
                   MouseEvent.ALT_DOWN_MASK |
                   MouseEvent.CTRL_DOWN_MASK);
-     
+      
+      int on2  = (MouseEvent.BUTTON3_DOWN_MASK |
+                  MouseEvent.SHIFT_DOWN_MASK);
+      
+      int off2  = (MouseEvent.BUTTON1_DOWN_MASK | 
+                   MouseEvent.BUTTON2_DOWN_MASK | 
+                   MouseEvent.ALT_DOWN_MASK |
+                   MouseEvent.CTRL_DOWN_MASK);
+      
+      int on3   = (MouseEvent.BUTTON3_DOWN_MASK |
+                   MouseEvent.CTRL_DOWN_MASK);
+
+      int off3  = (MouseEvent.BUTTON1_DOWN_MASK | 
+                   MouseEvent.BUTTON2_DOWN_MASK | 
+                   MouseEvent.ALT_DOWN_MASK |
+                   MouseEvent.SHIFT_DOWN_MASK);
+      
+      boolean updateSelect = ((mods & (on2 | off2)) == on2 || (mods & (on3 | off3)) == on3);
+      boolean showMenu = ((mods & (on1 | off1)) == on1 || updateSelect); 
+      
+      
       /* BUTTON3: popup menu */ 
-      if((mods & (on1 | off1)) == on1) {
+      if(showMenu) {
         Component comp = e.getComponent();
         if(comp == pJobList) {
+          int index = pJobList.locationToIndex(e.getPoint());
+          if (updateSelect) {
+            pJobList.getSelectionModel().addSelectionInterval(index, index);
+          }
+          else {
+            pJobList.getSelectionModel().setSelectionInterval(index, index);
+          }
+          
+          UIMaster master = UIMaster.getInstance();
+          TreeSet<Integer> freeNodeChannels = master.getChannelsWithoutNodePanels();
+          TreeSet<Integer> freeJobChannels = master.getChannelsWithoutJobPanels();
+          
+          for (int channel = 1; channel < 10; channel++ ) {
+            int idx = 0;
+            if (freeNodeChannels.contains(channel) || master.hasNodePanelBundle(channel))
+              pShowNodeChannelItems.get(idx).setEnabled(true);
+            else
+              pShowNodeChannelItems.get(idx).setEnabled(false);
+            
+            if (freeJobChannels.contains(channel) || master.hasJobsPanelBundle(channel))
+              pShowJobChannelItems.get(idx).setEnabled(true);
+            else
+              pShowJobChannelItems.get(idx).setEnabled(false);
+          }
+          
+          {
+            int channel = 
+              Integer.parseInt(UserPrefs.getInstance().getJobMonitorNodeChannel());
+            if (freeNodeChannels.contains(channel) || master.hasNodePanelBundle(channel))
+              pShowNodeItem.setEnabled(true);
+            else
+              pShowNodeItem.setEnabled(false);
+          }
+          
+          {
+            int channel = 
+              Integer.parseInt(UserPrefs.getInstance().getJobMonitorJobsChannel());
+            if (freeJobChannels.contains(channel) || master.hasJobsPanelBundle(channel))
+              pShowJobItem.setEnabled(true);
+            else
+              pShowNodeItem.setEnabled(false);
+          }
+          
           pJobGroupMenu.show(comp, e.getX(), e.getY());
         }
       }
@@ -495,46 +568,29 @@ class JJobMonitorDialog
   {
     String cmd = e.getActionCommand();
     
-    if (cmd.startsWith("node"))
-      doNodeGroup(Integer.valueOf(cmd.substring(5)));
-    else if (cmd.startsWith("job"))
-      doJobGroup(Integer.valueOf(cmd.substring(4)));
-    else if (cmd.equals("show-node"))
-      doShowNodes();
+    if (cmd.equals("show-node"))
+      doShowNodes(null);
     else if (cmd.equals("show-job"))
-      doShowJobs();
+      doShowJobs(null);
+    else if (cmd.startsWith("show-node-"))
+      doShowNodes(Character.digit(cmd.charAt(10), 10));
+    else if (cmd.startsWith("show-job-"))
+      doShowJobs(Character.digit(cmd.charAt(9), 10));
     else
       super.actionPerformed(e);
   }
   
   /**
-   * Change the node group.
-   */ 
-  private void 
-  doNodeGroup
-  (
-    int groupID
-  )
-  {
-    pNodeChannel = groupID;
-    pNodeMenuAnchor.setIcon(UIFactory.sGroupIcons[groupID]);
-  }
-  
-  /**
-   * Change the job group.
-   */ 
-  private void 
-  doJobGroup
-  (
-    int groupID
-  )
-  {
-    pJobChannel = groupID;
-    pJobMenuAnchor.setIcon(UIFactory.sGroupIcons[groupID]);
-  }
-  
+   * Show the nodes.
+   * 
+   * @param channel
+   *   The channel to show it on or <code>null</code> to use the default channel.
+   */
   private void
-  doShowNodes()
+  doShowNodes
+  (
+    Integer channel  
+  )
   {
     TreeSet<Long> select;
     synchronized (pCurrentSelectionLock) {
@@ -563,12 +619,28 @@ class JJobMonitorDialog
         }
       }
 
-      UIMaster.getInstance().selectAndShowNodes(pNodeChannel, author, view, nodeNames);
+      
+      
+      int chan;
+      if (channel == null)
+        chan = Integer.parseInt(UserPrefs.getInstance().getJobMonitorNodeChannel());
+      else
+        chan = channel;
+      UIMaster.getInstance().selectAndShowNodes(chan, author, view, nodeNames);
     }
   }
 
+  /**
+   * Show the job groups.
+   * 
+   * @param channel
+   *   The channel to show it on or <code>null</code> to use the default channel.
+   */
   private void
-  doShowJobs()
+  doShowJobs
+  (
+    Integer channel  
+  )
   {
     TreeSet<Long> select;
     synchronized (pCurrentSelectionLock) {
@@ -576,7 +648,12 @@ class JJobMonitorDialog
     }
     
     if (select.size() > 0) {
-      UIMaster.getInstance().selectAndShowJobGroups(pJobChannel, select);
+      int chan;
+      if (channel == null)
+        chan = Integer.parseInt(UserPrefs.getInstance().getJobMonitorJobsChannel());
+      else
+        chan = channel;
+      UIMaster.getInstance().selectAndShowJobGroups(chan, select);
     }
   }
   
@@ -607,121 +684,6 @@ class JJobMonitorDialog
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * A anchor icon which shows the group popup menu when pressed.
-   */ 
-  private
-  class GroupMenuAnchor
-    extends JLabel
-    implements MouseListener
-  {
-    GroupMenuAnchor
-    (
-      JPopupMenu groupMenu  
-    )
-    {
-      super();
-      
-      pGroupPopup = groupMenu;
-
-      setIcon(UIFactory.sGroupIcons[0]);
-
-      Dimension size = new Dimension(19, 19);
-      setMinimumSize(size);
-      setMaximumSize(size);
-      setPreferredSize(size);
-      
-      addMouseListener(this);
-    }
-
-
-    /*-- MOUSE LISTENER METHODS ------------------------------------------------------------*/
-
-    /**
-     * Invoked when the mouse button has been clicked (pressed and released) on a component. 
-     */ 
-    public void 
-    mouseClicked(MouseEvent e) {}
-    
-    /**
-     * Invoked when the mouse enters a component. 
-     */
-    public void 
-    mouseEntered(MouseEvent e) {}
-
-    /**
-     * Invoked when the mouse exits a component. 
-     */ 
-    public void 
-    mouseExited(MouseEvent e) {}
-
-    /**
-     * Invoked when a mouse button has been pressed on a component. 
-     */
-    public void 
-    mousePressed
-    (
-     MouseEvent e
-    )
-    {
-      int mods = e.getModifiersEx();
-      
-      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);                  
-      
-      int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-                  MouseEvent.BUTTON2_DOWN_MASK | 
-                  MouseEvent.SHIFT_DOWN_MASK | 
-                  MouseEvent.ALT_DOWN_MASK |
-                  MouseEvent.CTRL_DOWN_MASK);
-
-      int on2  = (MouseEvent.BUTTON3_DOWN_MASK);                  
-      
-      int off2 = (MouseEvent.BUTTON1_DOWN_MASK | 
-                  MouseEvent.BUTTON2_DOWN_MASK | 
-                  MouseEvent.SHIFT_DOWN_MASK | 
-                  MouseEvent.ALT_DOWN_MASK |
-                  MouseEvent.CTRL_DOWN_MASK);
-      
-      /* BUTTON3: popup menu */ 
-      if(((mods & (on1 | off1)) == on1) ||
-         ((mods & (on2 | off2)) == on2)) {
-        handleAnchorMouseEvent(e);
-      }
-    }
-
-    /**
-     * Invoked when a mouse button has been released on a component. 
-     */ 
-    public void 
-    mouseReleased(MouseEvent e) {}
-
-    /**
-     * Handle popup anchor mouse events.
-     */ 
-    public void
-    handleAnchorMouseEvent
-    (
-     MouseEvent e 
-    ) 
-    {
-      int wk;
-      
-      pGroupPopup.show(e.getComponent(), e.getX(), e.getY()); 
-    }
-
-    
-    /*-- STATIC INTERNALS ------------------------------------------------------------------*/
-
-    private static final long serialVersionUID = 8811675052095600218L;
-
-    
-    /*-- INTERNALS -------------------------------------------------------------------------*/
-    
-    private JPopupMenu pGroupPopup;
-  }
-  
-  /*----------------------------------------------------------------------------------------*/
-  
   private
   class UpdateUIThread
     extends Thread
@@ -868,9 +830,6 @@ class JJobMonitorDialog
   private TreeMap<Long, double[]> pJobDistributions;
   private Object pJobDistributionsLock;
   
-  private Integer pNodeChannel;
-  private Integer pJobChannel;
-
   /**
    * The thread running the job group updator.
    */
@@ -885,12 +844,12 @@ class JJobMonitorDialog
   
   private JMenuItem  pShowNodeItem;
   private JMenuItem  pShowJobItem;
-
-  private JPopupMenu pNodeChannelMenu;
-  private GroupMenuAnchor pNodeMenuAnchor;
-  private JPopupMenu pJobChannelMenu;
-  private GroupMenuAnchor pJobMenuAnchor;
   
+  private JMenuItem  pRemoveGroupsItem;
+  
+  private ArrayList<JMenuItem> pShowNodeChannelItems;
+  private ArrayList<JMenuItem> pShowJobChannelItems;
+
   private JList pJobList;
   private JScrollPane pListScrollPane;
   

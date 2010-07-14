@@ -139,7 +139,7 @@ class JTopLevelDialog
       root.add(body);
 
     JButton[] extraBtns = null;
-    {
+    if (apply != null || confirm != null || cancel != null || extra != null) {
       JPanel panel = new JPanel();
       
       String mac = "";

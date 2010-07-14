@@ -3,9 +3,10 @@
 package us.temerity.pipeline.ui.core;
 
 import java.awt.*;
-import java.util.*;
+import java.awt.font.*;
+import java.awt.geom.*;
+
 import javax.swing.*;
-import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P R O P O R T I O N    G R A P H                                                       */
@@ -44,9 +45,6 @@ class JProportionGraph
    * 
    * @param colors
    *   The colors to use when drawing bars for each proportion value. 
-   * 
-   * @param highlight
-   *   Whether to highlight the first sample.
    */ 
   public void 
   setValues
@@ -56,9 +54,34 @@ class JProportionGraph
   ) 
   {
     pValues = values;
-    pColors = colors; 
+    pColors = colors;
+    pLabel = null;
   } 
 
+  /**
+   * Set the values to be displayed. <P> 
+   * 
+   * @param values
+   *   The set of proportion values (should sum to 1.0).
+   * 
+   * @param colors
+   *   The colors to use when drawing bars for each proportion value.
+   *   
+   * @param label
+   *   A string to draw on top of the graph.
+   */ 
+  public void 
+  setValues
+  (
+   double[] values, 
+   Color[] colors,
+   String label
+  ) 
+  {
+    pValues = values;
+    pColors = colors; 
+    pLabel = label;
+  } 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -68,6 +91,7 @@ class JProportionGraph
   /**
    * Performs any custom painting.
    */
+  @Override
   protected void 
   paintComponent
   (
@@ -95,7 +119,7 @@ class JProportionGraph
 	int wk;
 	for(wk=0; wk<pValues.length; wk++) {
 	  if(pValues[wk] > 0.0) {
-	    int size = Math.max(1, (int) (pValues[wk] * ((double) width)));
+	    int size = Math.max(1, (int) (pValues[wk] * width));
 	    ws[wk] = size; 
 	    total += size;
 	  }
@@ -108,7 +132,7 @@ class JProportionGraph
       if(total == 0) 
 	return;
 
-      /* increase/descrease the size of the largest bar until the total size matches the 
+      /* increase/decrease the size of the largest bar until the total size matches the 
 	   width of the component */ 
       while(total != width) {
 	int wk;
@@ -138,6 +162,16 @@ class JProportionGraph
 	left += ws[wk];
       }
     }
+
+    if (pLabel != null) {
+      gfx.setColor(Color.white);
+      Font font = gfx.getFont();
+      FontRenderContext frc = gfx.getFontRenderContext();
+      Rectangle2D bounds = font.getStringBounds(pLabel, frc);
+//      int rX = (width - (int) bounds.getWidth())/2;
+      int rY = (height - (int) bounds.getHeight()/2);
+      gfx.drawString(pLabel, 8, rY);
+    }
   }
 
 
@@ -163,5 +197,10 @@ class JProportionGraph
    * The bar colors. 
    */ 
   private Color[]  pColors; 
+  
+  /**
+   * The string to draw on top of the graph.
+   */
+  private String   pLabel;
 
 }

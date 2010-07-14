@@ -166,6 +166,64 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item);
       }
+      
+      {
+        pNodePanelBundleItems = new ArrayList<JMenuItem>();
+        pDetailsPanelBundleItems = new ArrayList<JMenuItem>();
+        pQueuePanelBundleItems = new ArrayList<JMenuItem>();
+        pJobPanelBundleItems = new ArrayList<JMenuItem>();
+        
+        JMenu sub = new JMenu("Panel Bundles");   
+        pPopup.add(sub);  
+        
+        {
+          JMenu subsub = new JMenu("Node Panel Bundle");
+          for (int i = 1; i < 10; i++) {
+            item = new JMenuItem("Channel " + i);
+            item.setActionCommand("node-bundle-" + i);
+            item.addActionListener(this);
+            subsub.add(item);
+            pNodePanelBundleItems.add(item);
+          }
+          sub.add(subsub);
+        }
+        
+        {
+          JMenu subsub = new JMenu("Details Panel Bundle");
+          for (int i = 1; i < 10; i++) {
+            item = new JMenuItem("Channel " + i);
+            item.setActionCommand("details-bundle-" + i);
+            item.addActionListener(this);
+            subsub.add(item);
+            pDetailsPanelBundleItems.add(item);
+          }
+          sub.add(subsub);
+        }
+        
+        {
+          JMenu subsub = new JMenu("Queue Panel Bundle");
+          for (int i = 1; i < 10; i++) {
+            item = new JMenuItem("Channel " + i);
+            item.setActionCommand("queue-bundle-" + i);
+            item.addActionListener(this);
+            subsub.add(item);
+            pQueuePanelBundleItems.add(item);
+          }
+          sub.add(subsub);
+        }
+        
+        {
+          JMenu subsub = new JMenu("Job Panel Bundle");
+          for (int i = 1; i < 10; i++) {
+            item = new JMenuItem("Channel " + i);
+            item.setActionCommand("job-bundle-" + i);
+            item.addActionListener(this);
+            subsub.add(item);
+            pJobPanelBundleItems.add(item);
+          }
+          sub.add(subsub);
+        }
+      }
 
       item = new JMenuItem("Rename Window");
       pRenameWindowItem = item;
@@ -2134,6 +2192,16 @@ class JManagerPanel
 
       else if(cmd.equals("none-window"))
         doEmptyWindow();
+      
+      else if (cmd.startsWith("node-bundle"))
+        UIMaster.getInstance().makeNodePanelBundle(Character.digit(cmd.charAt(12), 10));
+      else if (cmd.startsWith("details-bundle"))
+        UIMaster.getInstance().makeDetailsPanelBundle(Character.digit(cmd.charAt(15), 10));
+      else if (cmd.startsWith("job-bundle"))
+        UIMaster.getInstance().makeJobsPanelBundle(Character.digit(cmd.charAt(11), 10));
+      else if (cmd.startsWith("queue-bundle"))
+        UIMaster.getInstance().makeQueuePanelBundle(Character.digit(cmd.charAt(13), 10));
+
 
       else if(cmd.equals("rename-window"))
         doRenameWindow();
@@ -3518,9 +3586,9 @@ class JManagerPanel
 	pAddBelowItem.setEnabled(vert);
       }
 
+      UIMaster master = UIMaster.getInstance();
       /* panel layout items */ 
       {
-	UIMaster master = UIMaster.getInstance();
 	pSaveLayoutItem.setEnabled(master.getLayoutPath() != null);
 
 	pRestoreLayoutMenu.removeAll();
@@ -3552,7 +3620,6 @@ class JManagerPanel
       /* privileged status */
       if (channel != 0) {
         pAdminSubMenu.setEnabled(true);
- 	UIMaster master = UIMaster.getInstance();
 	UICache cache = master.getUICache(channel);
  	try {
  	  PrivilegeDetails privileges = cache.getCachedPrivilegeDetails();
@@ -3572,12 +3639,26 @@ class JManagerPanel
       
       if (channel != 0) {
         pLaunchBuilderMenu.setEnabled(true);
-        UIMaster master = UIMaster.getInstance();
         master.rebuildDefaultBuilderCollectionMenu
           (pPopup, channel, pLaunchBuilderMenu, pPanel, true);
       }
       else {
         pLaunchBuilderMenu.setEnabled(false);
+      }
+      
+      {
+        TreeSet<Integer> freeNodeChannels = master.getChannelsWithoutNodePanels();
+        TreeSet<Integer> freeDetailsChannels = master.getChannelsWithoutDetailPanels();
+        TreeSet<Integer> freeJobChannels = master.getChannelsWithoutJobPanels();
+        TreeSet<Integer> freeQueueChannels = master.getChannelsWithoutQueuePanels();
+        
+        for (int i = 0; i < 9; i++) {
+          int chan = i + 1;
+          pNodePanelBundleItems.get(i).setEnabled(freeNodeChannels.contains(chan));
+          pDetailsPanelBundleItems.get(i).setEnabled(freeDetailsChannels.contains(chan));
+          pQueuePanelBundleItems.get(i).setEnabled(freeQueueChannels.contains(chan));
+          pJobPanelBundleItems.get(i).setEnabled(freeJobChannels.contains(chan));
+        }
       }
       
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 
@@ -4024,6 +4105,11 @@ class JManagerPanel
   private JMenuItem  pJobViewerPanelItem;
   private JMenuItem  pJobDetailsPanelItem;
   private JMenuItem  pEmptyPanelItem;
+  
+  private ArrayList<JMenuItem> pNodePanelBundleItems;
+  private ArrayList<JMenuItem> pDetailsPanelBundleItems;
+  private ArrayList<JMenuItem> pQueuePanelBundleItems;
+  private ArrayList<JMenuItem> pJobPanelBundleItems;
 
   private JMenuItem  pAddTabItem; 
   private JMenuItem  pAddTopTabItem; 

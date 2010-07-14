@@ -563,6 +563,31 @@ class GenUserPrefsApp
     }
 
     {
+      LinkedList<String> channel = new LinkedList();
+      channel.add("1");
+      channel.add("2");
+      channel.add("3");
+      channel.add("4");
+      channel.add("5");
+      channel.add("6");
+      channel.add("7");
+      channel.add("8");
+      channel.add("9");
+
+      BasePref prefs[] = {
+        new ChoicePref
+        ("The default update channel to use when viewing nodes from the job monitor panel", 
+         "JobMonitorNodeChannel", "Node Channel:", channel, "1"), 
+
+         new ChoicePref
+         ("The default update channel to use when viewing jobs from the job monitor panel", 
+          "JobMonitorJobsChannel", "Jobs Channel:", channel, "2"), 
+      };
+
+      pPrefs.put("Panels|Job Monitor", prefs);
+    }
+    
+    {
       BasePref prefs[] = {
 	new BooleanPref
 	("Whether to warn about unsaved panel changes which would be lost during an update.", 
@@ -2397,6 +2422,7 @@ class GenUserPrefsApp
       pPrefPanels.add("Main Menu|Panel Layout|Hot Keys");
 
       pPrefPanels.add("Panels|Remote Node Select");
+      pPrefPanels.add("Panels|Job Monitor");
       pPrefPanels.add("Panels|Appearance");
       pPrefPanels.add("Panels|Hot Keys");
 

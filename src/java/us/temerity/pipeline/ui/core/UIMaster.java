@@ -3216,8 +3216,430 @@ class UIMaster
     field.updatePlugins(layout, builderLayouts, plugins);
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A N E L   B U N D L E S                                                            */
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Make a new window containing a linked Node Browser and Node Viewer on the given channel.
+   * <p>
+   * This command will fail if either of the two panels already exist on the 
+   * specified channel.
+   * 
+   * @param channel
+   *   The channel to make the bundle on.
+   * 
+   * @return
+   *   <code>True</code> if either the panels were made or both panels already exist on 
+   *   that channel. <code>False</code> if only one of the panels existed on the channel.
+   */
+  public boolean
+  makeNodePanelBundle
+  (
+    int channel  
+  )
+  {
+    boolean hasViewer = (pNodeViewerPanels.getPanel(channel) != null);
+    boolean hasBrowser = (pNodeBrowserPanels.getPanel(channel) != null);
+    if (hasViewer && hasBrowser)
+      return true;
+    else if (!hasViewer && !hasBrowser) {
+      JPanelFrame frame = createWindow();
+      frame.setSize(1100, 800);
+      frame.setTitle("Node Panel Bundle - Channel " + channel);
 
+      JManagerPanel mgr = frame.getManagerPanel();
+
+      JManagerPanel left = null;
+      {
+        left = new JManagerPanel();
+        mgr.doGroup(channel);
+        JNodeBrowserPanel panel = new JNodeBrowserPanel();
+        left.setContents(panel); 
+        left.doGroup(channel);
+      }
+      
+      JManagerPanel right = null;
+      {    
+        right = new JManagerPanel();
+        JNodeViewerPanel viewer = new JNodeViewerPanel();
+        right.setContents(viewer); 
+        right.doGroup(channel);
+      }
+ 
+      JHorzSplitPanel split = new JHorzSplitPanel(left, right);
+      split.setDividerLocation(400);
+      
+      mgr.setContents(split);
+      mgr.refocusOnChildPanel();
+      
+      frame.validate();
+      frame.repaint();
+      
+      return true;
+    }
+    else
+      return false;
+  }
+  
+  /**
+   * Make a new window containing tabbed Node Details, Node Files, and Node History 
+   * on the given channel.
+   * <p>
+   * This command will fail if any of the three panels already exist on the specified channel.
+   * 
+   * @param channel
+   *   The channel to make the bundle on.
+   * 
+   * @return
+   *   <code>True</code> if either the panels were made or the panels already exist on 
+   *   that channel. <code>False</code> if only some of the panels existed on the channel.
+   */
+  public boolean
+  makeDetailsPanelBundle
+  (
+    int channel  
+  )
+  {
+    boolean hasDetails = (pNodeDetailsPanels.getPanel(channel) != null);
+    boolean hasFiles = (pNodeFilesPanels.getPanel(channel) != null);
+    boolean hasHistory = (pNodeDetailsPanels.getPanel(channel) != null);
+    
+    if (hasDetails && hasFiles && hasHistory)
+      return true;
+    else if (!hasDetails && !hasFiles && !hasHistory) {
+      JPanelFrame frame = createWindow();
+      frame.setSize(612, 752);
+      frame.setTitle("Details Panel Bundle - Channel " + channel);
+      
+      JManagerPanel mgr = frame.getManagerPanel();
+      mgr.doGroup(channel);
+      
+      JManagerPanel details = null;
+      {
+        details = new JManagerPanel();
+        JNodeDetailsPanel panel = new JNodeDetailsPanel();
+        details.setContents(panel); 
+        details.doGroup(channel);
+      }
+      
+      JManagerPanel history = null;
+      {
+        history = new JManagerPanel();
+        JNodeHistoryPanel panel = new JNodeHistoryPanel();
+        history.setContents(panel); 
+        history.doGroup(channel);
+      }
+      
+      JManagerPanel files = null;
+      {
+        files = new JManagerPanel();
+        JNodeFilesPanel panel = new JNodeFilesPanel();
+        files.setContents(panel); 
+        files.doGroup(channel);
+      }
+      
+      JTabbedPanel tabs = new JTabbedPanel();
+      tabs.addTab(details);
+      tabs.addTab(history);
+      tabs.addTab(files);
+      
+      mgr.setContents(tabs);
+      mgr.refocusOnChildPanel();
+
+      frame.setState(JFrame.NORMAL);
+      frame.toFront();
+      
+      frame.validate();
+      frame.repaint();
+      
+      return true;
+    }
+    else
+      return false;
+  }
+  
+  /**
+   * Make a new window containing linked Job Browser, Job Viewer, and Job Details panels.
+   * <p>
+   * This command will fail if any of the three panels already exist on the specified channel.
+   * 
+   * @param channel
+   *   The channel to make the bundle on.
+   * 
+   * @return
+   *   <code>True</code> if either the panels were made or the panels already exist on 
+   *   that channel. <code>False</code> if only some of the panels existed on the channel.
+   */
+  public boolean
+  makeJobsPanelBundle
+  (
+    int channel  
+  )
+  {
+    boolean hasBrowser = (pQueueJobBrowserPanels.getPanel(channel) != null);
+    boolean hasViewer = (pQueueJobViewerPanels.getPanel(channel) != null);
+    boolean hasDetails = (pQueueJobDetailsPanels.getPanel(channel) != null);
+    
+    if (hasBrowser && hasViewer && hasDetails)
+      return true;
+    else if (!hasBrowser && !hasViewer && !hasDetails) {
+      
+      JPanelFrame frame = createWindow();
+      frame.setSize(1200, 800);
+      frame.setTitle("Jobs Panel Bundle - Channel " + channel);
+      
+      JManagerPanel mgr = frame.getManagerPanel();
+      mgr.doGroup(channel);
+      
+      JManagerPanel browser = null;
+      {
+        browser = new JManagerPanel();
+        JQueueJobBrowserPanel panel = new JQueueJobBrowserPanel();
+        browser.setContents(panel); 
+        browser.doGroup(channel);
+      }
+      
+      JManagerPanel viewer = null;
+      {
+        viewer = new JManagerPanel();
+        JQueueJobViewerPanel panel = new JQueueJobViewerPanel();
+        viewer.setContents(panel); 
+        viewer.doGroup(channel);
+      }
+      
+      JManagerPanel details = null;
+      {
+        details = new JManagerPanel();
+        JQueueJobDetailsPanel panel = new JQueueJobDetailsPanel();
+        details.setContents(panel); 
+        details.doGroup(channel);
+      }
+
+      JManagerPanel bottom = new JManagerPanel();
+      {
+        JHorzSplitPanel split = new JHorzSplitPanel(viewer, details);
+        split.setDividerLocation(600);
+        bottom.setContents(split);
+      }
+      
+      mgr.setContents(new JVertSplitPanel(browser, bottom));
+      mgr.refocusOnChildPanel();
+
+      frame.validate();
+      frame.repaint();
+      
+      return true;
+    }
+    else
+      return false;
+  }
+
+  /**
+   * Make a new window containing linked Queue Slots, Queue Server, and Queue Stats panels.
+   * <p>
+   * This command will fail if any of the three panels already exist on the specified channel.
+   * 
+   * @param channel
+   *   The channel to make the bundle on.
+   * 
+   * @return
+   *   <code>True</code> if either the panels were made or the panels already exist on 
+   *   that channel. <code>False</code> if only some of the panels existed on the channel.
+   */
+  public boolean
+  makeQueuePanelBundle
+  (
+    int channel
+  )
+  {
+    boolean hasStats = (pQueueJobServerStatsPanels.getPanel(channel) != null);
+    boolean hasSlots = (pQueueJobSlotsPanels.getPanel(channel) != null);
+    boolean hasServers = (pQueueJobServersPanels.getPanel(channel) != null);
+    
+    if (hasStats && hasSlots && hasServers) 
+      return true;
+    else if (!hasStats && !hasSlots && !hasServers) {
+   
+      JPanelFrame frame = createWindow();
+      frame.setSize(1200, 800);
+      frame.setTitle("Queue Panel Bundle - Channel " + channel);
+      
+      JManagerPanel mgr = frame.getManagerPanel();
+      mgr.doGroup(channel);
+      
+      JManagerPanel stats = null;
+      {
+        stats = new JManagerPanel();
+        JQueueJobServerStatsPanel panel = new JQueueJobServerStatsPanel();
+        stats.setContents(panel); 
+        stats.doGroup(channel);
+      }
+      
+      JManagerPanel servers = null;
+      {
+        servers = new JManagerPanel();
+        JQueueJobServersPanel panel = new JQueueJobServersPanel();
+        servers.setContents(panel); 
+        servers.doGroup(channel);
+      }
+      
+      JManagerPanel slots = null;
+      {
+        slots = new JManagerPanel();
+        JQueueJobSlotsPanel panel = new JQueueJobSlotsPanel();
+        slots.setContents(panel); 
+        slots.doGroup(channel);
+      }
+
+      JManagerPanel bottom = new JManagerPanel();
+      {
+        JTabbedPanel tabs = new JTabbedPanel();
+        tabs.addTab(servers);
+        tabs.addTab(slots);
+        bottom.setContents(tabs);
+      }
+      
+      
+      JVertSplitPanel split = new JVertSplitPanel(stats, bottom);
+      split.setDividerLocation(350);
+      mgr.setContents(split);
+      mgr.refocusOnChildPanel();
+
+      frame.validate();
+      frame.repaint();
+      
+
+      
+      return true;
+    }
+    else
+      return false;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the list of channels which are open for a new Node Panel Bundle.
+   * 
+   * @return
+   *   The set of channels.
+   */
+  public TreeSet<Integer>
+  getChannelsWithoutNodePanels()
+  {
+    TreeSet<Integer> toReturn = new TreeSet<Integer>();
+    for (int i = 1; i < 10; i++) {
+      boolean hasViewer = (pNodeViewerPanels.getPanel(i) != null);
+      boolean hasBrowser = (pNodeBrowserPanels.getPanel(i) != null);
+      if (!hasViewer && !hasBrowser)
+        toReturn.add(i);
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Get the list of channels which are open for a new Details Panel Bundle.
+   * 
+   * @return
+   *   The set of channels.
+   */
+  public TreeSet<Integer>
+  getChannelsWithoutDetailPanels()
+  {
+    TreeSet<Integer> toReturn = new TreeSet<Integer>();
+    for (int i = 1; i < 10; i++) {
+      boolean hasDetails = (pNodeDetailsPanels.getPanel(i) != null);
+      boolean hasFiles = (pNodeFilesPanels.getPanel(i) != null);
+      boolean hasHistory = (pNodeHistoryPanels.getPanel(i) != null);
+      if (!hasDetails&& !hasFiles && !hasHistory)
+        toReturn.add(i);
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Get the list of channels which are open for a new Jobs Panel Bundle.
+   * 
+   * @return
+   *   The set of channels.
+   */
+  public TreeSet<Integer>
+  getChannelsWithoutJobPanels()
+  {
+    TreeSet<Integer> toReturn = new TreeSet<Integer>();
+    for (int i = 1; i < 10; i++) {
+      boolean hasViewer = (pQueueJobViewerPanels.getPanel(i) != null);
+      boolean hasBrowser = (pQueueJobBrowserPanels.getPanel(i) != null);
+      boolean hasDetails = (pQueueJobDetailsPanels.getPanel(i) != null);
+      if (!hasViewer && !hasBrowser && !hasDetails)
+        toReturn.add(i);
+    }
+    return toReturn;
+  }
+
+  /**
+   * Get the list of channels which are open for a new Queue Panel Bundle.
+   * 
+   * @return
+   *   The set of channels.
+   */
+  public TreeSet<Integer>
+  getChannelsWithoutQueuePanels()
+  {
+    TreeSet<Integer> toReturn = new TreeSet<Integer>();
+    for (int i = 1; i < 10; i++) {
+      boolean hasStats = (pQueueJobServerStatsPanels.getPanel(i) != null);
+      boolean hasServers = (pQueueJobServersPanels.getPanel(i) != null);
+      boolean hasSlots = (pQueueJobSlotsPanels.getPanel(i) != null);
+      if (!hasStats && !hasServers && !hasSlots)
+        toReturn.add(i);
+    }
+    return toReturn;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Does this channel have all the panels that form a node panel bundle on it?
+   * 
+   * @param channel
+   *   The channel to search.
+   */
+  public boolean
+  hasNodePanelBundle
+  (
+    int channel  
+  )
+  {
+    boolean hasViewer = (pNodeViewerPanels.getPanel(channel) != null);
+    boolean hasBrowser = (pNodeBrowserPanels.getPanel(channel) != null);
+    
+    return (hasViewer && hasBrowser);
+  }
+
+  /**
+   * Does this channel have all the panels that form a job panel bundle on it?
+   * 
+   * @param channel
+   *   The channel to search.
+   */
+  public boolean
+  hasJobsPanelBundle
+  (
+    int channel  
+  )
+  {
+    boolean hasBrowser = (pQueueJobBrowserPanels.getPanel(channel) != null);
+    boolean hasViewer = (pQueueJobViewerPanels.getPanel(channel) != null);
+    boolean hasDetails = (pQueueJobDetailsPanels.getPanel(channel) != null);
+    
+    return (hasBrowser && hasViewer && hasDetails);
+  }
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   R E M O T E                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -3656,7 +4078,11 @@ class UIMaster
   )
   {
     if (channel > 0) {
+      makeNodePanelBundle(channel);
       JNodeBrowserPanel panel = pNodeBrowserPanels.getPanel(channel);
+      JFrame f = (JFrame) SwingUtilities.getRoot(panel);
+      f.setState(JFrame.NORMAL);
+      f.toFront();
       if (panel != null) {
         panel.applyPanelUpdates(author, view, nodeNames);
         PanelUpdater pu = new PanelUpdater(panel, true);
@@ -3683,11 +4109,17 @@ class UIMaster
     TreeSet<Long> jobGroups
   )
   {
-    JQueueJobBrowserPanel panel = pQueueJobBrowserPanels.getPanel(channel);
-    if (panel != null) {
-      panel.setFilterOverride(jobGroups);
-      PanelUpdater pu = new PanelUpdater(panel, true);
-      pu.execute();
+    if (channel > 0) {
+      makeJobsPanelBundle(channel);
+      JQueueJobBrowserPanel panel = pQueueJobBrowserPanels.getPanel(channel);
+      JFrame f = (JFrame) SwingUtilities.getRoot(panel);
+      f.setState(JFrame.NORMAL);
+      f.toFront();
+      if (panel != null) {
+        panel.setFilterOverride(jobGroups);
+        PanelUpdater pu = new PanelUpdater(panel, true);
+        pu.execute();
+      }
     }
   }
   
@@ -4065,8 +4497,10 @@ class UIMaster
   {
     if (!pJobMonitorDialog.isVisible())
       pJobMonitorDialog.setVisible(true);
-    else
+    else {
+      pJobMonitorDialog.setState(JFrame.NORMAL);
       pJobMonitorDialog.toFront();
+    }
   }
   
   /**

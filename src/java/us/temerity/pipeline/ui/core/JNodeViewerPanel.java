@@ -3891,6 +3891,7 @@ class JNodeViewerPanel
     if(pPrimary != null) {
       pLastDetailsName = pPrimary.getName();
       
+      UIMaster.getInstance().makeDetailsPanelBundle(pGroupID);
       if (pGroupID != 0) {
         PanelUpdater pu = new PanelUpdater(this, true, true, null, false);
         pu.execute();

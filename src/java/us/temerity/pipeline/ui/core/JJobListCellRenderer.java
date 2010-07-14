@@ -1,6 +1,7 @@
 package us.temerity.pipeline.ui.core;
 
 import java.awt.*;
+import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -24,10 +25,31 @@ class JJobListCellRenderer
   public 
   JJobListCellRenderer()
   {
-    LayoutManager layout = new BoxLayout(this, BoxLayout.LINE_AXIS);
+    LayoutManager layout = new BoxLayout(this, BoxLayout.PAGE_AXIS);
     this.setLayout(layout);
     
     {
+      Box hbox = Box.createHorizontalBox();
+      hbox.add(Box.createHorizontalStrut(8));
+      {
+        pGroupIDLabel = UIFactory.createFixedLabel("", 65, SwingConstants.LEFT);
+        hbox.add(pGroupIDLabel);
+        hbox.add(Box.createHorizontalStrut(4));
+
+        pWorkingAreaLabel = UIFactory.createLabel("", 10, SwingConstants.LEFT);
+        hbox.add(pWorkingAreaLabel);
+        hbox.add(Box.createHorizontalGlue());
+      }
+      this.add(hbox);
+    }
+
+    this.add(Box.createVerticalStrut(3));
+    
+    {
+      Box hbox = new Box(BoxLayout.LINE_AXIS);
+      
+      hbox.add(Box.createHorizontalStrut(4));
+      
       JPanel panel = new JPanel();
 
       panel.setLayout(new BorderLayout());
@@ -35,56 +57,15 @@ class JJobListCellRenderer
       JProportionGraph graph = new JProportionGraph();
       pGraph = graph;
       
-      graph.setMinimumSize(new Dimension(80, 20));
-      graph.setPreferredSize(new Dimension(80, 20));
+      graph.setMinimumSize(new Dimension(25, 18));
+      graph.setPreferredSize(new Dimension(220, 18));
 
       panel.add(graph);
-      this.add(panel);
+      hbox.add(panel);
+      hbox.add(Box.createHorizontalStrut(4));
+      this.add(hbox);
     }
-    
-    this.add(Box.createHorizontalStrut(8));
-    
-    {
-      Box box = Box.createVerticalBox();
-      {
-        Box hbox = Box.createHorizontalBox();
-        pGroupIDTitleLabel = 
-          UIFactory.createFixedLabel("Job Group ID:", 90, SwingConstants.RIGHT); 
-        hbox.add(pGroupIDTitleLabel);
-        hbox.add(Box.createHorizontalStrut(4));
-        pGroupIDLabel = UIFactory.createFixedLabel("", 175, SwingConstants.LEFT);
-        hbox.add(pGroupIDLabel);
-        hbox.add(Box.createHorizontalGlue());
-        
-        box.add(hbox);
-      }
-      {
-        Box hbox = Box.createHorizontalBox();
-        pWorkingAreaTitleLabel = 
-          UIFactory.createFixedLabel("Working Area:", 90, SwingConstants.RIGHT); 
-        hbox.add(pWorkingAreaTitleLabel);
-        hbox.add(Box.createHorizontalStrut(4));
-        pWorkingAreaLabel = UIFactory.createFixedLabel("", 175, SwingConstants.LEFT);
-        hbox.add(pWorkingAreaLabel);
-        hbox.add(Box.createHorizontalGlue());
-        
-        box.add(hbox);
-      }
-      {
-        Box hbox = Box.createHorizontalBox();
-        pFileSeqTitleLabel = 
-          UIFactory.createFixedLabel("File Seq:", 90, SwingConstants.RIGHT); 
-        hbox.add(pFileSeqTitleLabel);
-        hbox.add(Box.createHorizontalStrut(4));
-        pFileSeqLabel = UIFactory.createFixedLabel("", 175, SwingConstants.LEFT);
-        hbox.add(pFileSeqLabel);
-        hbox.add(Box.createHorizontalGlue());
-        
-        box.add(hbox);
-      }
-      this.add(box);
-    }
-    this.setBorder(sNormalBorder);
+    this.add(Box.createVerticalStrut(2));
   }
   
   
@@ -106,18 +87,17 @@ class JJobListCellRenderer
     
     pGroupIDLabel.setText(String.valueOf(group.getGroupID()));
     NodeID id = group.getNodeID();
-    pWorkingAreaLabel.setText(id.getAuthor() + ":" + id.getView());
-    pFileSeqLabel.setText(group.getRootSequence().toString());
+    pWorkingAreaLabel.setText(id.getAuthor() + " | " + id.getView());
     
     if (isSelected) {
-      pGroupIDTitleLabel.setForeground(Color.yellow);
-      pWorkingAreaTitleLabel.setForeground(Color.yellow);
-      pFileSeqTitleLabel.setForeground(Color.yellow);
+      pGroupIDLabel.setForeground(Color.yellow);
+      pWorkingAreaLabel.setForeground(Color.yellow);
+      this.setBorder(sSelectedBorder);
     }
     else {
-      pGroupIDTitleLabel.setForeground(Color.white);
-      pWorkingAreaTitleLabel.setForeground(Color.white);
-      pFileSeqTitleLabel.setForeground(Color.white);
+      pGroupIDLabel.setForeground(Color.white);
+      pWorkingAreaLabel.setForeground(Color.white);
+      this.setBorder(sNormalBorder);
     }
 
     double total = 0.0f;
@@ -146,11 +126,13 @@ class JJobListCellRenderer
         colorCast(prefs.getQueuedCoreColor())
       };
 
-      pGraph.setValues(sorted, colors);
+      pGraph.setValues(sorted, colors, group.getRootSequence().toString());
     }
     else {
       pGraph.setValues(null, null);
     }
+    
+    this.setToolTipText(group.getNodeID().getName());
 
     return this;
   }
@@ -211,7 +193,6 @@ class JJobListCellRenderer
       return pDist;
     }
     
-    
     private QueueJobGroup pJobGroup;
     private double[] pDist;
   }
@@ -231,10 +212,15 @@ class JJobListCellRenderer
   };
   
 
-  private static final Border sNormalBorder = BorderFactory.createEmptyBorder(2, 0, 2, 0);;
-//  private static final Border sSelectedBorder = 
-//    BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0), 
-//                                       BorderFactory.createLineBorder(Color.yellow));
+//  private static final Border sNormalBorder = BorderFactory.createEmptyBorder(2, 0, 2, 0);
+  
+  private static final Border sNormalBorder = 
+    BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0), 
+                                       BorderFactory.createLineBorder(Color.black));
+  
+  private static final Border sSelectedBorder = 
+    BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0), 
+                                       BorderFactory.createLineBorder(Color.yellow));
 
 
   
@@ -251,17 +237,9 @@ class JJobListCellRenderer
    * The label that contains the job group ID.
    */
   private JLabel pGroupIDLabel;
-  private JLabel pGroupIDTitleLabel;
   
   /**
    * The label that contains the working area information.
    */
   private JLabel pWorkingAreaLabel;
-  private JLabel pWorkingAreaTitleLabel;
-  
-  /**
-   * The label that contains the file sequence information.
-   */
-  private JLabel pFileSeqLabel;
-  private JLabel pFileSeqTitleLabel;
 }
