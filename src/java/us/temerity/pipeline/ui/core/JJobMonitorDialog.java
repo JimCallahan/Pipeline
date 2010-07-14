@@ -107,6 +107,7 @@ class JJobMonitorDialog
       pRemoveGroupsItem = item;
       item.setActionCommand("remove-groups");
       item.addActionListener(this);
+      item.setEnabled(false);
       pJobGroupMenu.add(item);
     }
     
