@@ -163,7 +163,7 @@ class JEvolveDialog
 	      {
 		TreeSet<VersionID> ovids = offline.get(name);
 		if((ovids != null) && ovids.contains(vid))
-		  extra = " -  Offiline";
+		  extra = " - Offline";
 	      }
 
 	      values.add("v" + vid + extra);
