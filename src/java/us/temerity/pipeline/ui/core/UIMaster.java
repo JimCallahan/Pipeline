@@ -7039,6 +7039,7 @@ class UIMaster
       boolean errors = false;
 
       MasterMgrClient client = acquireMasterMgrClient();
+      LinkedList<QueueJobGroup> allGroups = new LinkedList<QueueJobGroup>();
       if(beginPanelOp(pChannel)) {
 	try {
 	  for(String name : pIndices.keySet()) {
@@ -7049,7 +7050,7 @@ class UIMaster
                                   pIndices.get(name), pBatchSize, pPriority, pRampUp,
                                   pMaxLoad, pMinMemory, pMinDisk,
                                   pSelectionKeys, pLicenseKeys, pHardwareKeys);
-              monitorJobGroups(group);
+              allGroups.addAll(group);
             }
             catch(PipelineException ex) {
               buf.append(ex.getMessage() + "\n\n"); 
@@ -7060,6 +7061,8 @@ class UIMaster
 	finally {
 	  releaseMasterMgrClient(client);
 	  endPanelOp(pChannel, "Done.");
+	  if (!allGroups.isEmpty())
+	    monitorJobGroups(allGroups);
 	}
 
         if(errors) 

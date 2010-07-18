@@ -9,6 +9,7 @@ import java.util.*;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.naming.*;
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -306,6 +307,8 @@ class JQueueJobViewerPanel
     }
     
     /* job group popup menu */ 
+    
+    pShowNodeChannelItems = new ArrayList<JMenuItem>();
     {
       JMenuItem item;
       
@@ -398,6 +401,18 @@ class JQueueJobViewerPanel
       item.setActionCommand("show-node");
       item.addActionListener(this);
       pGroupPopup.add(item);
+      
+      {
+        JMenu sub = new JMenu("Show Node...");
+        for (int i = 1; i < 10; i++) {
+          item = new JMenuItem("Channel " + i);
+          item.setActionCommand("show-node-" + i);
+          item.addActionListener(this);
+          pShowNodeChannelItems.add(item);
+          sub.add(item);
+        }
+//        pGroupPopup.add(sub);
+      }
     }
 
     updateMenuToolTips();
@@ -3461,13 +3476,14 @@ class JQueueJobViewerPanel
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
         QueueMgrClient queue = master.acquireQueueMgrClient();
+        LinkedList<QueueJobGroup> allGroups = new LinkedList<QueueJobGroup>();
 	try {
 	  for(NodeID nodeID : pTargets.keySet()) {
 	    master.updatePanelOp(pGroupID, 
 				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
 
 	    /* To implement 1701 iterate though all the jobIDs, not just the first one.  
-	       This way mutliple jobs which have batches can be queued together. */
+	       This way multiple jobs which have batches can be queued together. */
 	    TreeMap<Long,TreeSet<FileSeq>> targets = pTargets.get(nodeID);
 	    TreeSet<FileSeq> targetSeqs = new TreeSet<FileSeq>();
 
@@ -3483,7 +3499,7 @@ class JQueueJobViewerPanel
 		    (nodeID, targetSeqs, pBatchSize, pPriority, pRampUp,
 	             pMaxLoad, pMinMemory, pMinDisk,
 	             pSelectionKeys, pLicenseKeys, pHardwareKeys);
-		master.monitorJobGroups(groups);
+		allGroups.addAll(groups);
 	      }
 	      else {
 		long jobID = targets.firstKey();
@@ -3495,7 +3511,7 @@ class JQueueJobViewerPanel
 		     reqs.getPriority(), reqs.getRampUp(),
 	             reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
 	             reqs.getSelectionKeys(), reqs.getLicenseKeys(), reqs.getHardwareKeys());
-		master.monitorJobGroups(groups);
+		allGroups.addAll(groups);
 	      }
 	    }
 	  }
@@ -3508,6 +3524,7 @@ class JQueueJobViewerPanel
 	  master.releaseMasterMgrClient(client);
 	  master.releaseQueueMgrClient(queue);
 	  master.endPanelOp(pGroupID, "Done.");
+	  master.monitorJobGroups(allGroups);
 	}
 
 	updatePanels();
@@ -4003,6 +4020,8 @@ class JQueueJobViewerPanel
   private JMenuItem  pChangeJobReqsItem;
   private JMenuItem  pUpdateJobKeysItem;
   private JMenuItem  pJobShowNodeItem;
+  
+  private ArrayList<JMenuItem> pShowNodeChannelItems;
 
   /**
    * The view with submenu.

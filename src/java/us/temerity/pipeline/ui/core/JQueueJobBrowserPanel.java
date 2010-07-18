@@ -1915,6 +1915,7 @@ class JQueueJobBrowserPanel
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient mclient = master.acquireMasterMgrClient();
         QueueMgrClient  qclient = master.acquireQueueMgrClient();
+        LinkedList<QueueJobGroup> allGroups = new LinkedList<QueueJobGroup>();
 	try {
           master.updatePanelOp(pGroupID, "Updating Job Status..."); 
           TreeMap<Long,JobStatus> jstatus = 
@@ -1943,7 +1944,7 @@ class JQueueJobBrowserPanel
                   (targetID, targetSeqs, pBatchSize, pPriority, pRampUp,
                    pMaxLoad, pMinMemory, pMinDisk,
                    pSelectionKeys, pLicenseKeys, pHardwareKeys);
-              master.monitorJobGroups(groups);
+              allGroups.addAll(groups);
             }
           }
         }
@@ -1955,6 +1956,8 @@ class JQueueJobBrowserPanel
 	  master.releaseMasterMgrClient(mclient);
 	  master.releaseQueueMgrClient(qclient);
 	  master.endPanelOp(pGroupID, "Done.");
+	  if (!allGroups.isEmpty())
+	    master.monitorJobGroups(allGroups);
 	}
 
 	updatePanels();
