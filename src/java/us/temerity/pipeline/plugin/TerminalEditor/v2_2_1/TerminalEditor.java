@@ -86,7 +86,7 @@ class TerminalEditor
     /* create temporary shell script */ 
     File script = null;
     try {
-      Path spath = new Path(PackageInfo.sTempPath, "pipeline");
+      Path spath = new Path(PackageInfo.sTempPath, author);
       File sdir = spath.toFile();
       sdir.mkdir();
       
