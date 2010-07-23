@@ -455,11 +455,13 @@ class FileSeqTableModel
         break;
 
       case 2: 
-        value = pFileInfos[idx].getFileSize();
+        if (pFileInfos[idx] != null)
+          value = pFileInfos[idx].getFileSize();
         break;
 
       case 3: 
-        value = pFileInfos[idx].getTimeStamp();
+        if (pFileInfos[idx] != null)
+          value = pFileInfos[idx].getTimeStamp();
         break;
 
       default:
