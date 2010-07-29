@@ -4050,7 +4050,7 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   /*   P A N E L   C O N T R O L                                                            */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
    * Direct a Node Browser panel on the provided channel to show a set of nodes in a 
    * particular working area.
@@ -4059,34 +4059,72 @@ class UIMaster
    *   The channel to find the node browser on.  If there is no Node Browser on this channel, 
    *   then this command will have no effect.
    * 
-   * @param author
-   *   The author whose working area the node browser will display.
-   *   
-   * @param view
-   *   The working area the node browser will display.
-   *   
-   * @param nodeNames
-   *   The set of node names to select in the node browser.
+   * @param nodeIDs
+   *   The set of node ids to display.  If these node ids are from different working areas, 
+   *   then only a subset of them will be displayed.
    */
+  @SuppressWarnings("null")
   public void
   selectAndShowNodes
   (
     int channel,
-    String author,
-    String view,
-    TreeSet<String> nodeNames
+    TreeSet<NodeID> nodeIDs
   )
   {
-    if (channel > 0) {
-      makeNodePanelBundle(channel);
-      JNodeBrowserPanel panel = pNodeBrowserPanels.getPanel(channel);
-      JFrame f = (JFrame) SwingUtilities.getRoot(panel);
-      f.setState(JFrame.NORMAL);
-      f.toFront();
-      if (panel != null) {
-        panel.applyPanelUpdates(author, view, nodeNames);
-        PanelUpdater pu = new PanelUpdater(panel, true);
-        pu.execute();
+    if (nodeIDs != null && !nodeIDs.isEmpty()) {
+      if (channel > 0) {
+        boolean show = makeNodePanelBundle(channel);
+        if (show) {
+          JNodeBrowserPanel panel = pNodeBrowserPanels.getPanel(channel);
+          JFrame f = (JFrame) SwingUtilities.getRoot(panel);
+          
+          String author = null;
+          String view = null;
+          TreeSet<String> nodeNames = new TreeSet<String>();
+          TreeSet<String> notShown = new TreeSet<String>();
+          
+          for (NodeID nodeID : nodeIDs) {
+            if (author == null) {
+              author = nodeID.getAuthor();
+              view = nodeID.getView();
+              nodeNames.add(nodeID.getName());
+            }
+            else 
+              if (author.equals(nodeID.getAuthor()) && view.equals(nodeID.getView()))
+                nodeNames.add(nodeID.getName());
+              else
+                notShown.add(nodeID.getName());
+          }
+          
+          if (notShown.size() > 0 && UserPrefs.getInstance().getWarnOnWorkingArea()) {
+            String message = 
+              "Unable to display all the selected nodes do to working area conflicts.\n" +
+              "The following nodes will not be displayed in the working area " +
+              "(" + view + ") for user (" + author + ").\n";
+            for (String node : notShown)
+              message += "\t" + node + "\n";
+            JErrorPrefDialog dialog = new JErrorPrefDialog(f);
+            dialog.setMessage("Working Area Conflict:", message);
+            dialog.setVisible(true);
+            if (!dialog.getShowDialogInFuture()) {
+              UserPrefs.getInstance().setWarnOnWorkingArea(false);
+              try {
+                UserPrefs.save();
+              }
+              catch(Exception ex) {
+                showErrorDialog(ex);
+              }
+            }
+          }     
+
+          f.setState(JFrame.NORMAL);
+          f.toFront();
+          if (panel != null) {
+            panel.applyPanelUpdates(author, view, nodeNames);
+            PanelUpdater pu = new PanelUpdater(panel, true);
+            pu.execute();
+          }
+        }
       }
     }
   }

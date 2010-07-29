@@ -135,7 +135,10 @@ class JJobMonitorDialog
             {
               int index = locationToIndex(event.getPoint());
               Rectangle rect = getCellBounds(index, index);
-              return new Point((int)rect.getMinX(), (int)rect.getMinY());
+              if (rect != null)
+                return new Point((int)rect.getMinX(), (int)rect.getMinY());
+              else
+                return null;
             }
             
             private static final long serialVersionUID = -1444992080444627786L;
@@ -527,7 +530,7 @@ class JJobMonitorDialog
           
           {
             int channel = 
-              Integer.parseInt(UserPrefs.getInstance().getJobMonitorNodeChannel());
+              Integer.parseInt(UserPrefs.getInstance().getDefaultNodeChannel());
             if (freeNodeChannels.contains(channel) || master.hasNodePanelBundle(channel))
               pShowNodeItem.setEnabled(true);
             else
@@ -536,7 +539,7 @@ class JJobMonitorDialog
           
           {
             int channel = 
-              Integer.parseInt(UserPrefs.getInstance().getJobMonitorJobsChannel());
+              Integer.parseInt(UserPrefs.getInstance().getDefaultJobsChannel());
             if (freeJobChannels.contains(channel) || master.hasJobsPanelBundle(channel))
               pShowJobItem.setEnabled(true);
             else
@@ -598,36 +601,23 @@ class JJobMonitorDialog
      select = new TreeSet<Long>(pCurrentSelection); 
     }
     if (select.size() > 0) {
-      String author = null;
-      String view = null;
-      TreeSet<String> nodeNames = new TreeSet<String>();
+      TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
 
       for (Long id : select) {
         QueueJobGroup group;
         synchronized (pAllJobGroupsLock) {
           group = pAllJobGroups.get(id);
         }
-        if (group != null) {
-          NodeID nodeID = group.getNodeID();
-          if (author == null) {
-            author = nodeID.getAuthor();
-            view = nodeID.getView();
-            nodeNames.add(nodeID.getName());
-          }
-          else 
-            if (author.equals(nodeID.getAuthor()) && view.equals(nodeID.getView()))
-              nodeNames.add(nodeID.getName());
-        }
+        if (group != null) 
+          nodeIDs.add(group.getNodeID());
       }
 
-      
-      
       int chan;
       if (channel == null)
-        chan = Integer.parseInt(UserPrefs.getInstance().getJobMonitorNodeChannel());
+        chan = Integer.parseInt(UserPrefs.getInstance().getDefaultNodeChannel());
       else
         chan = channel;
-      UIMaster.getInstance().selectAndShowNodes(chan, author, view, nodeNames);
+      UIMaster.getInstance().selectAndShowNodes(chan, nodeIDs);
     }
   }
 
@@ -651,7 +641,7 @@ class JJobMonitorDialog
     if (select.size() > 0) {
       int chan;
       if (channel == null)
-        chan = Integer.parseInt(UserPrefs.getInstance().getJobMonitorJobsChannel());
+        chan = Integer.parseInt(UserPrefs.getInstance().getDefaultJobsChannel());
       else
         chan = channel;
       UIMaster.getInstance().selectAndShowJobGroups(chan, select);

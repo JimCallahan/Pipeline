@@ -501,8 +501,35 @@ class GenUserPrefsApp
       options.add("Disabled");
       options.add("Save Only");
       options.add("Save & Make Default");
+      
+      LinkedList<String> channel = new LinkedList();
+      channel.add("1");
+      channel.add("2");
+      channel.add("3");
+      channel.add("4");
+      channel.add("5");
+      channel.add("6");
+      channel.add("7");
+      channel.add("8");
+      channel.add("9");
 
       BasePref prefs[] = {
+        
+        new ChoicePref
+        ("The default update channel to use when viewing nodes.", 
+         "DefaultNodeChannel", "Node Channel:", channel, "1"), 
+
+        new ChoicePref
+        ("The default update channel to use when viewing job groups and jobs", 
+         "DefaultJobsChannel", "Jobs Channel:", channel, "2"),
+         
+         new BooleanPref
+         ("Whether to warn if nodes being sent to a browser are in different working area.", 
+          "WarnOnWorkingArea", "Warn On Working Area:", true),
+
+            
+        new BasePref(),
+        
 	new ChoicePref
 	("Whether to automatically save the current layout on exit.",
 	 "AutoSaveLayout", "Auto Save Layout:", options, "Disabled"),
@@ -560,31 +587,6 @@ class GenUserPrefsApp
       };
 
       pPrefs.put("Panels|Remote Node Select", prefs);
-    }
-
-    {
-      LinkedList<String> channel = new LinkedList();
-      channel.add("1");
-      channel.add("2");
-      channel.add("3");
-      channel.add("4");
-      channel.add("5");
-      channel.add("6");
-      channel.add("7");
-      channel.add("8");
-      channel.add("9");
-
-      BasePref prefs[] = {
-        new ChoicePref
-        ("The default update channel to use when viewing nodes from the job monitor panel", 
-         "JobMonitorNodeChannel", "Node Channel:", channel, "1"), 
-
-         new ChoicePref
-         ("The default update channel to use when viewing jobs from the job monitor panel", 
-          "JobMonitorJobsChannel", "Jobs Channel:", channel, "2"), 
-      };
-
-      pPrefs.put("Panels|Job Monitor", prefs);
     }
     
     {
@@ -2422,7 +2424,6 @@ class GenUserPrefsApp
       pPrefPanels.add("Main Menu|Panel Layout|Hot Keys");
 
       pPrefPanels.add("Panels|Remote Node Select");
-      pPrefPanels.add("Panels|Job Monitor");
       pPrefPanels.add("Panels|Appearance");
       pPrefPanels.add("Panels|Hot Keys");
 
