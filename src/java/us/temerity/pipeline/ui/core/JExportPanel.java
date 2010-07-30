@@ -584,6 +584,20 @@ class JExportPanel
       else {
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 9);
 	
+	{
+	  JBooleanField field = 
+            UIFactory.createTitledBooleanField(tpanel, "Export All Params:", pTSize,
+                                              vpanel, pVSize);
+	  
+	  field.setValue(false);
+	  
+	  field.addActionListener(this);
+	  field.setActionCommand("toggle-action-params");
+	  pActionParamToggleField = field;
+	}
+	
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 6);
+	
 	for(ActionParam param : action.getSingleParams()) {
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
@@ -777,6 +791,27 @@ class JExportPanel
 
 	{
 	  Box vbox = new Box(BoxLayout.Y_AXIS);
+	  
+	  {
+	    Component comps[] = UIFactory.createTitledPanels();
+            {
+              JPanel tpanel = (JPanel) comps[0];
+              JPanel vpanel = (JPanel) comps[1];
+              
+              JBooleanField field = 
+                UIFactory.createTitledBooleanField(tpanel, "Export All Links:", pTSize-14, 
+                                                  vpanel, pVSize);
+              
+              vbox.add(comps[2]);
+              
+              field.setValue(false);
+              field.addActionListener(this);
+              field.setActionCommand("source-toggle");
+              pSourceToggleField = field;
+            }
+	  }
+	  
+	  vbox.add(Box.createVerticalStrut(6));
 	  
 	  for(String sname : node.getSourceNames()) {
 	    Component comps[] = UIFactory.createTitledPanels();
@@ -1007,6 +1042,10 @@ class JExportPanel
       doActionChanged();
     else if(cmd.equals("export-all-changed")) 
       doExportAllChanged();
+    else if (cmd.equals("source-toggle"))
+      doSourceToggle();
+    else if (cmd.equals("toggle-action-params"))
+      doActionParamToggle();
   }
 
   
@@ -1029,6 +1068,12 @@ class JExportPanel
     for(JBooleanField field : pActionParamFields.values()) {
       field.setEnabled(hasAction);
       field.setValue(hasAction ? true : null);
+    }
+    
+    if (pActionParamToggleField != null) {
+      pActionParamToggleField.removeActionListener(this);
+      pActionParamToggleField.setValue(hasAction ? true : null);
+      pActionParamToggleField.addActionListener(this);
     }
 
     if(pActionSourceParamsField != null) {
@@ -1082,6 +1127,24 @@ class JExportPanel
     
     for (JBooleanField field : pVersionAnnotationFields.values())
       field.setValue(exportAll);
+  }
+  
+  private void
+  doSourceToggle()
+  {
+    boolean toggleSources = pSourceToggleField.getValue();
+    
+    for (JBooleanField field : pSourceFields.values())
+      field.setValue(toggleSources);
+  }
+  
+  private void
+  doActionParamToggle()
+  {
+    boolean paramToggle = pActionParamToggleField.getValue();
+    
+    for (JBooleanField field : pActionParamFields.values())
+      field.setValue(paramToggle);
   }
 
 
@@ -1156,6 +1219,11 @@ class JExportPanel
    * The action parameters container.
    */ 
   private Box  pActionParamsBox;
+  
+  /**
+   * Toggle on and off all the action parameter fields.
+   */
+  private JBooleanField pActionParamToggleField;
 
   /**
    * Whether to export each single action parameter indexed by parameter name.
@@ -1262,6 +1330,11 @@ class JExportPanel
    */ 
   private JDrawer  pSourcesDrawer; 
 
+  /**
+   * Quick toggle to turn off or on all the source fields.
+   */
+  private JBooleanField pSourceToggleField;
+  
   /**
    * Whether to export each source link indexed by the name of the upstream node.
    */ 
