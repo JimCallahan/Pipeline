@@ -7,8 +7,7 @@
   <META content="text/html; charset=us-ascii" http-equiv=
   "content-type">
 
-  <TITLE>plping(1)</TITLE>
-  <STYLE type="text/css">
+  <TITLE>plping(1)</TITLE><STYLE type="text/css">
 div.c7 {margin-left: 40px}
   div.c6 {margin-left: 80px;}
   br.c5 {font-weight: bold;}
@@ -16,8 +15,7 @@ div.c7 {margin-left: 40px}
   div.c3 {margin-left: 40px;}
   span.c2 {font-weight: bold;}
   a.c1 {font-weight: bold;}
-  </STYLE>
-  <STYLE type="text/css">
+  </STYLE><STYLE type="text/css">
 a.c1 {font-style: italic}
   </STYLE>
 </HEAD>
@@ -53,7 +51,7 @@ a.c1 {font-style: italic}
 
   <BLOCKQUOTE>
     This program regularly communicates with the core server
-    deamons of Pipeline to insure that they are acknoledging
+    deamons of Pipeline to insure that they are acknowledging
     network requests and logs their response times. This can be
     useful in detecting and diagnosing networking, system load, JVM
     bugs and other problems related to the underlying
@@ -108,16 +106,39 @@ a.c1 {font-style: italic}
   Options<BR></H3>
 
   <DIV class="c3">
+
+    <SPAN class="c2"><A name="--once"></A>--once</SPAN>=master|queue|plugin
+    <BR><BR>
+
+    <DIV class="c3">
+        If specified, then only a single type of server (master, queue or plugin) will be contacted and only one attempt will be made. If this attempt is successful, an exit code of zero be returned. A non-zero exit code will be returned for any type of failure. This option would be useful as part of a system monitoring script. All normal output is supressed when using this option.
+        <BR><BR>
+        
+        This option and <SPAN class="c2">--interval</SPAN> are mutually exclusive.
+    </DIV><BR>
+
     <SPAN class="c2"><A name=
     "--interval"></A>--interval</SPAN>=<SPAN class="c4">msec<BR>
     <BR></SPAN>
 
     <DIV class="c3">
-      The amount of time (msec) in milliseconds between network
-      connectivity tests.<BR>
+        The amount of time (msec) in milliseconds between network connectivity tests. 
+        <BR>
       <BR>
       The default is (900000) msec. Which is (15) minutes.
     </DIV><BR>
+
+    <SPAN class="c2"><A name=
+    "--timeout"></A>--timeout</SPAN>=<SPAN class="c4">msec<BR>
+    <BR></SPAN>
+
+    <DIV class="c3">
+        The amount of time (msec) in milliseconds to wait on a response from a server before giving up and considering the attempt a failure.
+        <BR>
+      <BR>
+         The default is (300000) msec. Which is (5) minutes.
+      </DIV><BR>
+
     <BR>
     <SPAN class="c2"><A name=
     "--log-file"></A>--log-file</SPAN>=<SPAN class=
@@ -174,8 +195,10 @@ a.c1 {font-style: italic}
     </DIV><BR>
     <SPAN class="c2"><A name="--log"></A>--log</SPAN>=<SPAN class=
     "c4">logger:level</SPAN>[<SPAN class=
-    "c4">,logger:level</SPAN>[...]]
-  </DIV>
+    "c4">,logger:level</SPAN>[...]] 
+      <br>
+      <br>
+    </DIV>
 
   <DIV class="c3">
     <BR>

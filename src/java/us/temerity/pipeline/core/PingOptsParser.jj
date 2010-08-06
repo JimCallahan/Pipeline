@@ -86,9 +86,21 @@ PingOptsParser
   private boolean  pHasCommands; 
 
   /**
+   * Whether to perform once-only tests.
+   */ 
+  private boolean  pMasterOnce;
+  private boolean  pQueueOnce; 
+  private boolean  pPluginOnce;
+
+  /**
    * The testing interval (in milliseconds).
    */ 
   private long  pInterval; 
+
+  /**
+   * The timeout interval (in milliseconds).
+   */ 
+  private long  pTimeout; 
 
 }
 
@@ -113,7 +125,9 @@ TOKEN :
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
 | <LOG:               "--log">                : LOG_SEP
 
+| <ONCE:              "--once">               : ONCE_SEP
 | <INTERVAL:          "--interval">           : INTEGER_SEP 
+| <TIMEOUT:           "--timeout">            : INTEGER_SEP 
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -167,6 +181,24 @@ TOKEN :
 | <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
 }
 
+
+/* --once arguments */ 
+<ONCE_SEP> 
+TOKEN :
+{
+  <EQ5:                "=">   : ONCE_SERVER
+| <MISSING_ONCE_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<ONCE_SERVER> 
+TOKEN :
+{
+  <MASTER:              "master">       
+| <QUEUE: 	        "queue">        
+| <PLUGIN: 	        "plugin">  
+| <AE3:                 ["\0"]>          : DEFAULT
+| <ILLEGAL_ONCE_SERVER: (~[":","\0"])+>   : IGNORE_STATE      
+}
 
 
 /* --log arguments */ 
@@ -250,7 +282,21 @@ CommandLine()
         }
       }
       
-      pApp.testConnections(pInterval);
+      if(pMasterOnce) {
+        if(!pApp.testMasterConnection(pTimeout)) 
+          System.exit(1);
+      }
+      else if(pQueueOnce) {
+        if(!pApp.testQueueConnection(pTimeout)) 
+          System.exit(1);
+      }
+      else if(pPluginOnce) {
+        if(!pApp.testPluginConnection(pTimeout)) 
+          System.exit(1);
+      }
+      else {
+        pApp.testConnections(pInterval, pTimeout);
+      }
     }
   }
 }
@@ -352,7 +398,7 @@ GlobalOpts() :
 {}
 {
   (Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
-   Interval()) 
+   Once() | Interval() | Timeout()) 
   {}
 }
 
@@ -577,6 +623,44 @@ LogMgr.Level DetailLevel() :
 
 /*------------------------------------------------------------------------------------------*/
 
+void Once() : 
+{
+  pMasterOnce = false;
+  pQueueOnce  = false;
+  pPluginOnce = false;
+}
+{
+  <ONCE> EQ() (Master() | Queue() | Plugin()) 
+  {}
+}
+
+void Master() : 
+{}
+{
+  <MASTER> 
+  {
+    pMasterOnce = true;
+  }
+}
+
+void Queue() : 
+{}
+{
+  <QUEUE> 
+  {
+    pQueueOnce = true;
+  }
+}
+
+void Plugin() : 
+{}
+{
+  <PLUGIN> 
+  {
+    pPluginOnce = true;
+  }
+}
+
 void Interval() : 
 {
   Token t;
@@ -587,6 +671,18 @@ void Interval() :
     pInterval = Long.parseLong(t.image);
   }
 }
+
+void Timeout() : 
+{
+  Token t;
+}
+{
+  <TIMEOUT> EQ() t=<INTEGER>
+  { 
+    pTimeout = Long.parseLong(t.image);
+  }
+}
+
 
 
 
@@ -600,7 +696,7 @@ AE() :
   Token t;
 }
 {
-  (t=<AE1> | t=<AE2>)
+  (t=<AE1> | t=<AE2> | t=<AE3>)
   { 
     return t; 
   }
@@ -612,7 +708,7 @@ EQ() :
   Token t;
 }
 { 
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5>)
   { 
     return t; 
   }

@@ -64,7 +64,6 @@ class PingApp
 
       parser.setApp(this);
       parser.CommandLine();   
-
       success = true;
     }
     catch(ParseException ex) {
@@ -98,7 +97,8 @@ class PingApp
   public void
   testConnections
   (
-   long interval
+   long interval, 
+   long timeout
   ) 
     throws PipelineException
   {
@@ -117,9 +117,9 @@ class PingApp
 
         TaskTimer timer = new TaskTimer();
         
-        performTest(mclient, "Master");        
-        performTest(qclient, "Queue ");        
-        performTest(pclient, "Plugin");
+        performTest(mclient, "Master", timeout);        
+        performTest(qclient, "Queue ", timeout);        
+        performTest(pclient, "Plugin", timeout);
       
         long nap = interval - timer.getTotalDuration();
         if(nap > 0) {
@@ -152,17 +152,20 @@ class PingApp
   /**
    * Perform one of the communication tests.
    */ 
-  private void 
+  private void
   performTest
   (
    BaseMgrClient client, 
-   String title
+   String title, 
+   long timeout
   ) 
   {
     {
       TaskTimer timer = new TaskTimer(); 
       try {
-        client.ping();
+        int to = (int) timeout; 
+        client.ping(to, to);
+
         timer.suspend();
         LogMgr.getInstance().logAndFlush
           (LogMgr.Kind.Ops, LogMgr.Level.Info, 
@@ -171,7 +174,6 @@ class PingApp
       catch(PipelineException ex) {
         timer.suspend();
         long tm = timer.getTotalDuration();
-
         LogMgr log = LogMgr.getInstance(); 
         log.logAndFlush
           (LogMgr.Kind.Ops, LogMgr.Level.Info, 
@@ -189,12 +191,79 @@ class PingApp
           log.logAndFlush
             (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
              Exceptions.getFullMessage(title + " Manager Failure Details:", ex)); 
-        }
+        } 
       }
     }
   }
 
-  
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Perform the one-time network connectivity test of the Master Manager.
+   */ 
+  public boolean
+  testMasterConnection
+  (
+   long timeout  
+  ) 
+    throws PipelineException
+  {
+    return testConnectionOnce(new MasterMgrClient(), timeout);
+  }
+
+  /**
+   * Perform the one-time network connectivity test of the Queue Manager.
+   */ 
+  public boolean
+  testQueueConnection
+  (
+   long timeout  
+  ) 
+    throws PipelineException
+  {
+    return testConnectionOnce(new QueueMgrClient(), timeout);
+  }
+
+  /**
+   * Perform the one-time network connectivity test of the Plugin Manager.
+   */ 
+  public boolean
+  testPluginConnection
+  (
+   long timeout  
+  ) 
+    throws PipelineException
+  {
+    return testConnectionOnce(new PluginMgrPingClient(), timeout);
+  }
+
+  /**
+   * Perform the one-time network connectivity test of the Master Manager.
+   */ 
+  private boolean
+  testConnectionOnce
+  (
+   BaseMgrClient client, 
+   long timeout  
+  ) 
+    throws PipelineException
+  {
+    try {
+      int to = (int) timeout; 
+      client.ping(to, to);
+      return true;
+    }
+    catch(PipelineException ex) {
+      return false;
+    }
+    finally {
+      if(client != null) 
+        client.disconnect();
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   O P T I O N S                                                                        */
@@ -219,7 +288,7 @@ class PingApp
        "  plping --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--interval=...]\n" +
+       "  [--once=...] [--interval=...] [--time-out=...]\n" +
        "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
        "  [--log-backups=...] [--log=...]\n" +
        "\n" + 
