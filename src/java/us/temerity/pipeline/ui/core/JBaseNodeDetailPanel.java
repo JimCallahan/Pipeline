@@ -1184,7 +1184,8 @@ class JBaseNodeDetailPanel
               hardwareKeys = diag.getHardwareKeys();
             
             QueueJobsTask task = 
-              new QueueJobsTask(pStatus.getName(), indices.get(pStatus.getName()), 
+              new QueueJobsTask(pStatus.getName(), 
+                                (indices == null ? null : indices.get(pStatus.getName())), 
                                 batchSize, priority, interval,
                                 maxLoad, minMemory, minDisk,
                                 selectionKeys, licenseKeys, hardwareKeys);
