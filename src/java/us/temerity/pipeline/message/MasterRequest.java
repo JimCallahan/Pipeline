@@ -763,6 +763,11 @@ enum MasterRequest
   CheckOut, 
 
   /**
+   * An instance of {@link NodeCheckOutSoloReq} is next.
+   */
+  CheckOutSolo, 
+
+  /**
    * An instance of {@link NodeLockReq} is next.
    */
   Lock, 

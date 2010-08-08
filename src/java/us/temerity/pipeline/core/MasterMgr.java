@@ -11956,6 +11956,341 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Check-Out a single node into a working area, ignoring all upstream nodes. <P> 
+   * 
+   * @param req 
+   *   The node check-out request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or
+   *   <CODE>NodeGetUnfinishedJobIDsRsp</CODE> if running jobs prevent the check-out or 
+   *   <CODE>FailureRsp</CODE> if unable to the check-out the node.
+   */ 
+  public Object
+  checkOutSolo
+  ( 
+   NodeCheckOutSoloReq req 
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+    String name = nodeID.getName(); 
+
+    TaskTimer timer = new TaskTimer("MasterMgr.checkOutSolo(): " + nodeID);
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();	      
+
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may check-out nodes owned by " + 
+	   "another user!");
+
+      /* determine the version to check-out */ 
+      VersionID vid = req.getVersionID();
+      if(vid == null) {
+        timer.aquire();  
+        LoggedLock checkedInLock = getCheckedInLock(name);
+        checkedInLock.acquireReadLock();
+        try {
+          timer.resume();	
+
+          TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+          try {
+            checkedIn = getCheckedInBundles(name);
+            vid = checkedIn.lastKey();
+          }
+          catch(PipelineException ex) {
+            throw new PipelineException
+              ("There are no checked-in versions of node (" + name + ") to check-out!");
+          }
+          if(checkedIn == null)
+            throw new IllegalStateException(); 
+        }
+        finally {
+          checkedInLock.releaseReadLock();  
+        }
+      }
+
+      /* make sure no unfinished jobs associated with the current node or the checked-out 
+         downstream nodes currently exist */
+      {
+        TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
+        getDownstreamWorkingSeqs(nodeID, fseqs, timer);
+
+ 	if(!fseqs.isEmpty()) {
+          QueueMgrControlClient qclient = acquireQueueMgrClient();
+          try {
+            MappedSet<String,Long> jobIDs = 
+              qclient.getUnfinishedJobsForNodes(nodeID.getAuthor(), nodeID.getView(), fseqs);
+            if(!jobIDs.isEmpty()) 
+              return new QueueGetUnfinishedJobsForNodesRsp(timer, jobIDs);
+          }
+          finally {
+            releaseQueueMgrClient(qclient);
+          }
+ 	}
+      }
+
+      /* lock online/offline status of the node */ 
+      timer.aquire();
+      LoggedLock onOffLock = getOnlineOfflineLock(name);
+      onOffLock.acquireReadLock();
+      try {
+	timer.resume();	
+      
+        /* make sure version being checked-out is online */ 
+        {
+          TreeSet<VersionID> offline = getOfflinedVersions(timer, name);
+          if((offline != null) && offline.contains(vid)) {
+            StringBuilder buf = new StringBuilder();
+
+            buf.append
+              ("Unable to perform check-out because the checked-in version (" + vid + ") " + 
+               "is currently offline.\n\n");
+
+            MappedSet<String,VersionID> offlineVersions = new MappedSet<String,VersionID>();
+            offlineVersions.put(name, vid);
+            Object obj = requestRestore(new MiscRequestRestoreReq(offlineVersions, req));
+            if(obj instanceof FailureRsp) {
+              FailureRsp rsp = (FailureRsp) obj;
+              buf.append("The request to restore the offline version also failed.\n"); 
+            }
+            else {
+              buf.append
+                ("However, a request has been submitted to restore the offline version " + 
+                 "so that it may be used once they have been brought back online.");
+            }
+	  
+            throw new PipelineException(buf.toString());
+          }
+        }
+
+        /* perform the check-out */ 
+        {
+          timer.aquire();
+          LoggedLock workingLock = getWorkingLock(nodeID);
+          workingLock.acquireWriteLock();
+          LoggedLock checkedInLock = getCheckedInLock(name);
+          checkedInLock.acquireReadLock();
+          try {
+            timer.resume();	
+          
+            /* lookup versions */ 
+            WorkingBundle working = null;
+            TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+            {
+              try {
+                working = getWorkingBundle(nodeID);
+              }
+              catch(PipelineException ex) {
+              }
+              
+              try {
+                checkedIn = getCheckedInBundles(name);
+              }
+              catch(PipelineException ex) {
+                throw new PipelineException
+                  ("There are no checked-in versions of node (" + name + ") to check-out!");
+              }
+              if(checkedIn == null)
+                throw new IllegalStateException(); 
+            }
+            
+            /* extract the working and the checked-in version to be checked-out */ 
+            NodeMod work    = null;
+            NodeVersion vsn = null;
+            {
+              if(working != null)
+                work = new NodeMod(working.getVersion());
+              
+              if(vid != null) {
+                CheckedInBundle bundle = checkedIn.get(vid);
+                if(bundle == null) 
+                  throw new PipelineException 
+                    ("Somehow no checked-in version (" + vid + ") of node (" + name + ") " + 
+                     "exists!"); 
+                vsn = new NodeVersion(bundle.getVersion());
+              }
+              else {
+                if(checkedIn.isEmpty())
+                  throw new PipelineException
+                    ("Somehow no checked-in versions of node (" + name + ") exist!"); 
+                CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
+                vsn = new NodeVersion(bundle.getVersion());
+              }
+            }
+
+            /* pre-op test */ 
+            CheckOutExtFactory factory = new CheckOutExtFactory();
+            if(hasAnyExtensionTests(timer, factory)) 
+              performExtensionTests
+                (timer, new CheckOutExtFactory(nodeID, new NodeVersion(vsn), null, null));
+            
+            /* get the current timestamp */ 
+            long timestamp = TimeStamps.now(); 
+
+            /* check-out the node's files */ 
+            boolean filesCreated = false;
+            {
+              FileMgrClient fclient = acquireFileMgrClient();
+              try {
+                /* remove the existing working area files before the check-out */ 
+                if(work != null) 
+                  fclient.removeAll(nodeID, work.getSequences());	
+                
+                /* only check-out files if there isn't an action */ 
+                if(!vsn.isActionEnabled()) {
+                  fclient.checkOut(nodeID, vsn, false);
+                  filesCreated = true;
+                }
+              }
+              finally {
+                releaseFileMgrClient(fclient);
+              }
+            }
+            
+            /* create a new working version and write it to disk */ 
+            NodeMod nwork = new NodeMod(vsn, timestamp, false, false, null, null);
+            nwork.removeAllSources();
+            writeWorkingVersion(nodeID, nwork);
+
+            /* initialize new working version */ 
+            if(working == null) {
+              /* register the node name and sequences */ 
+              addWorkingNodeTreePath
+                (nodeID, nwork.getPrimarySequence(), nwork.getSequences());
+
+              /* create a new working bundle */ 
+              timer.aquire();
+              synchronized(pWorkingBundles) {
+                timer.resume();
+                TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+                if(table == null) {
+                  table = new TreeMap<NodeID,WorkingBundle>();
+                  pWorkingBundles.put(name, table);
+                }
+                table.put(nodeID, new WorkingBundle(nwork));
+              }
+              
+              /* keep track of the change to the node version cache */ 
+              incrementWorkingCounter(nodeID);
+            }
+	 
+            /* update existing working version */ 
+            else {
+              /* unregister the old working node name and sequences,
+                 register the new node name and sequences */ 
+              pNodeTree.updateWorkingNodeTreePath
+                (nodeID, work.getSequences(), nwork.getPrimarySequence(), 
+                 nwork.getSequences());
+	
+              /* update the working bundle */ 
+              working.setVersion(nwork);
+
+              /* remove the downstream links from any existing upstream nodes */ 
+              for(LinkMod link : work.getSources()) {
+                String source = link.getName();
+                
+                timer.aquire();
+                LoggedLock downstreamLock = getDownstreamLock(source);
+                downstreamLock.acquireWriteLock();  
+                try {
+                  timer.resume();
+                  
+                  DownstreamLinks links = getDownstreamLinks(source); 
+                  links.removeWorking(new NodeID(nodeID, source), name);
+                }
+                finally {
+                  downstreamLock.releaseWriteLock();
+                }
+              }  
+            }
+
+            /* initialize the checksum cache for the new working version */ 
+            {
+              /* copy the checksums from the checked-in version without updated-on 
+                 timestamps */ 
+              CheckSumCache wcache = new CheckSumCache(nodeID, vsn); 
+        
+              /* lookup timestamps of the working files to set the checksum updated-on 
+                 times */ 
+              FileMgrClient fclient = acquireFileMgrClient();
+              try {
+                ArrayList<String> fnames = new ArrayList<String>();
+                for(FileSeq fseq : vsn.getSequences()) {
+                  for(Path path : fseq.getPaths())
+                    fnames.add(path.toString());
+                }
+                
+                ArrayList<Long> stamps = fclient.getWorkingTimeStamps(nodeID, fnames); 
+                int wk;
+                for(wk=0; wk<stamps.size(); wk++) {
+                  String fname = fnames.get(wk);
+                  Long stamp = stamps.get(wk);
+                  if(stamp != null) 
+                    wcache.replaceUpdatedOn(fname, stamp);
+                  else 
+                    wcache.remove(fname);
+                }
+              }
+              finally {
+                releaseFileMgrClient(fclient);
+              }
+              
+              /* update the save the checksum bundle to disk */ 
+              timer.aquire();
+              LoggedLock clock = getCheckSumLock(nodeID);
+              clock.acquireWriteLock();
+              try { 
+                timer.resume();
+                
+                CheckSumBundle cbundle = getCheckSumBundle(nodeID); 
+                if(filesCreated) 
+                  cbundle.setCache(wcache); 
+                writeCheckSumCache(cbundle.getCache()); 
+              }
+              finally {
+                clock.releaseWriteLock();
+              }  
+            }
+            
+            /* record event */ 
+            pPendingEvents.add
+              (new CheckedOutNodeEvent(nodeID, vsn.getVersionID(), false, false)); 
+            
+            /* post-op tasks */  
+            if(hasAnyExtensionTasks(timer, factory)) 
+              startExtensionTasks(timer, new CheckOutExtFactory(nodeID, new NodeMod(nwork)));
+          }
+          finally {
+            checkedInLock.releaseReadLock();  
+            workingLock.releaseWriteLock();
+          }
+        }
+      }
+      finally {
+        onOffLock.releaseReadLock();
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, 
+			    "Check-Out operation aborted!\n\n" +
+			    ex.getMessage());
+    }   
+    finally {
+      pDatabaseLock.releaseReadLock();
+    } 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
    * Lock the working version of a node to a specific checked-in version. <P> 
    * 
    * @param req 

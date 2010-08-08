@@ -1487,6 +1487,14 @@ class MasterMgrServer
                 }
                 break;
 
+              case CheckOutSolo:
+                {
+                  NodeCheckOutSoloReq req = (NodeCheckOutSoloReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.checkOutSolo(req));
+                  objOut.flush(); 
+                }
+                break;
+
               case Lock:
                 {
                   NodeLockReq req = (NodeLockReq) objIn.readObject();

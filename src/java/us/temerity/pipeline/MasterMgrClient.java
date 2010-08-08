@@ -6378,6 +6378,118 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Check-Out a single node into a working area, ignoring all upstream nodes. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
+   * version. <P>
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status. <P> 
+   * 
+   * Nodes will always be checked-out in a modifiable form regardless of the current contents
+   * of the target working area.  No upstream nodes will be checked-out and no links to 
+   * upstream nodes will be created.  If a version of the node already exists in the working
+   * area which has upstream links, those links will be removed by this operation.  <P> 
+   * 
+   * Any files associated with an existing working version before this operation will be 
+   * removed.  If the version being checked-out has an enabled Action, no files will be 
+   * checked-out since they will inevitably be stale.  If there is no Action or its not 
+   * enabled, the files will be copied (not linked) to the working area as usual.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param vid 
+   *   The revision number of the node to check-out.
+   * 
+   * @return 
+   *   The unfinished job IDs indexed by node name if aborted or 
+   *   <CODE>null</CODE> if successful.
+   * 
+   * @throws PipelineException
+   *   If unable to check-out the nodes.
+   */ 
+  public synchronized MappedSet<String,Long> 
+  checkOutSolo
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    return checkOutSolo(new NodeID(author, view, name), vid);
+  } 
+
+  /** 
+   * Check-Out a single node into a working area, ignoring all upstream nodes. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
+   * version. <P>
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.<P> 
+   * 
+   * Nodes will always be checked-out in a modifiable form regardless of the current contents
+   * of the target working area.  No upstream nodes will be checked-out and no links to 
+   * upstream nodes will be created.  If a version of the node already exists in the working
+   * area which has upstream links, those links will be removed by this operation.  <P> 
+   * 
+   * Any files associated with an existing working version before this operation will be 
+   * removed.  If the version being checked-out has an enabled Action, no files will be 
+   * checked-out since they will inevitably be stale.  If there is no Action or its not 
+   * enabled, the files will be copied (not linked) to the working area as usual.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param vid 
+   *   The revision number of the node to check-out.
+   * 
+   * @return 
+   *   The unfinished job IDs indexed by node name if aborted or 
+   *   <CODE>null</CODE> if successful.
+   * 
+   * @throws PipelineException
+   *   If unable to check-out the nodes.
+   */ 
+  public synchronized MappedSet<String,Long> 
+  checkOutSolo
+  ( 
+   NodeID nodeID,
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeCheckOutSoloReq req = new NodeCheckOutSoloReq(nodeID, vid);
+
+    Object obj = performLongTransaction(MasterRequest.CheckOutSolo, req, 15000, 60000); 
+    if(obj instanceof QueueGetUnfinishedJobsForNodesRsp) {
+      QueueGetUnfinishedJobsForNodesRsp rsp = (QueueGetUnfinishedJobsForNodesRsp) obj;
+      return rsp.getJobIDs();
+    }
+    else if(obj instanceof SuccessRsp) {
+      return null;
+    }
+    else {
+      handleFailure(obj);
+      return null;        
+    } 
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
    * Lock the working version of a node to a specific checked-in version. <P> 
    * 
    * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then lock to the base checked-in
