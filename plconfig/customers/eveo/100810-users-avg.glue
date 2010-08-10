@@ -1,0 +1,254 @@
+Average <TripleMap> #1 {
+  {
+    Key <Integer> #2 { 2010 }
+    Val <TreeMap> #3 {
+      {
+        Key <Integer> #4 { 5 }
+        Val <TreeMap> #5 {
+          {
+            Key <Integer> #6 { 14 }
+            Val <Double> #7 { 1.00000 }
+          }
+          {
+            Key <Integer> #8 { 15 }
+            Val <Double> #9 { 1.00000 }
+          }
+          {
+            Key <Integer> #10 { 16 }
+            Val <Double> #11 { 1.50000 }
+          }
+          {
+            Key <Integer> #12 { 17 }
+            Val <Double> #13 { 1.62500 }
+          }
+          {
+            Key <Integer> #14 { 18 }
+            Val <Double> #15 { 1.71875 }
+          }
+          {
+            Key <Integer> #16 { 19 }
+            Val <Double> #17 { 1.78906 }
+          }
+          {
+            Key <Integer> #18 { 20 }
+            Val <Double> #19 { 1.84180 }
+          }
+          {
+            Key <Integer> #20 { 21 }
+            Val <Double> #21 { 1.63135 }
+          }
+          {
+            Key <Integer> #22 { 22 }
+            Val <Double> #23 { 1.47351 }
+          }
+          {
+            Key <Integer> #24 { 23 }
+            Val <Double> #25 { 1.60513 }
+          }
+          {
+            Key <Integer> #26 { 24 }
+            Val <Double> #27 { 1.70385 }
+          }
+          {
+            Key <Integer> #28 { 25 }
+            Val <Double> #29 { 2.02789 }
+          }
+          {
+            Key <Integer> #30 { 26 }
+            Val <Double> #31 { 2.27092 }
+          }
+          {
+            Key <Integer> #32 { 27 }
+            Val <Double> #33 { 2.45319 }
+          }
+          {
+            Key <Integer> #34 { 28 }
+            Val <Double> #35 { 2.58989 }
+          }
+          {
+            Key <Integer> #36 { 29 }
+            Val <Double> #37 { 2.69242 }
+          }
+          {
+            Key <Integer> #38 { 30 }
+            Val <Double> #39 { 2.51931 }
+          }
+        }
+      }
+      {
+        Key <Integer> #40 { 6 }
+        Val <TreeMap> #41 {
+          {
+            Key <Integer> #42 { 1 }
+            Val <Double> #43 { 2.63948 }
+          }
+          {
+            Key <Integer> #44 { 2 }
+            Val <Double> #45 { 2.72961 }
+          }
+          {
+            Key <Integer> #46 { 3 }
+            Val <Double> #47 { 2.79721 }
+          }
+          {
+            Key <Integer> #48 { 4 }
+            Val <Double> #49 { 2.84791 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #50 { 2.88593 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #51 { 2.91445 }
+          }
+          {
+            Key <Integer> #52 { 7 }
+            Val <Double> #53 { 2.68584 }
+          }
+          {
+            Key <Integer> #54 { 8 }
+            Val <Double> #55 { 2.76438 }
+          }
+          {
+            Key <Integer> #56 { 9 }
+            Val <Double> #57 { 2.82328 }
+          }
+          {
+            Key <Integer> #58 { 10 }
+            Val <Double> #59 { 2.86746 }
+          }
+          {
+            Key <Integer> #60 { 11 }
+            Val <Double> #61 { 2.90060 }
+          }
+          {
+            Key <Integer> #62 { 12 }
+            Val <Double> #63 { 2.92545 }
+          }
+          {
+            Key <Integer> #64 { 13 }
+            Val <Double> #65 { 2.69409 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #66 { 2.52056 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #67 { 2.39042 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #68 { 2.29282 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #69 { 2.21961 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #70 { 2.16471 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #71 { 2.12353 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #72 { 2.09265 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #73 { 2.06949 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #74 { 2.05212 }
+          }
+          {
+            Key <REF> #24
+            Val <Double> #75 { 2.03909 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #76 { 2.02931 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #77 { 2.02199 }
+          }
+          {
+            Key <REF> #30
+            Val <Double> #78 { 2.01649 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #79 { 2.01237 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #80 { 2.00928 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #81 { 2.00696 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #82 { 2.00522 }
+          }
+          {
+            Key <Integer> #83 { 31 }
+            Val <Double> #84 { 2.00391 }
+          }
+        }
+      }
+      {
+        Key <REF> #52
+        Val <TreeMap> #85 {
+          {
+            Key <REF> #42
+            Val <Double> #86 { 2.00293 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #87 { 2.00220 }
+          }
+          {
+            Key <REF> #46
+            Val <Double> #88 { 2.00165 }
+          }
+          {
+            Key <REF> #48
+            Val <Double> #89 { 2.00124 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #90 { 2.00093 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #91 { 2.00070 }
+          }
+          {
+            Key <REF> #52
+            Val <Double> #92 { 2.00052 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #93 { 2.00039 }
+          }
+          {
+            Key <REF> #56
+            Val <Double> #94 { 2.00029 }
+          }
+          {
+            Key <REF> #58
+            Val <Double> #95 { 2.00022 }
+          }
+        }
+      }
+    }
+  }
+}
