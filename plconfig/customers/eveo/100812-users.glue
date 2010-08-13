@@ -1,0 +1,166 @@
+DailyUsers <TreeMap> #1 {
+  {
+    Key <Long> #2 { 1276498800000 }
+    Val <Integer> #3 { 1 }
+  }
+  {
+    Key <Long> #4 { 1276585200000 }
+    Val <Integer> #5 { 3 }
+  }
+  {
+    Key <Long> #6 { 1276671600000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #7 { 1276758000000 }
+    Val <Integer> #8 { 2 }
+  }
+  {
+    Key <Long> #9 { 1276844400000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #10 { 1277103600000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #11 { 1277276400000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #12 { 1277362800000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #13 { 1277449200000 }
+    Val <Integer> #14 { 4 }
+  }
+  {
+    Key <Long> #15 { 1277708400000 }
+    Val <REF> #14
+  }
+  {
+    Key <Long> #16 { 1277794800000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #17 { 1277881200000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #18 { 1277967600000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #19 { 1278054000000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #20 { 1278399600000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #21 { 1278486000000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #22 { 1278572400000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #23 { 1278658800000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #24 { 1278918000000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #25 { 1279004400000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #26 { 1279090800000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #27 { 1279177200000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #28 { 1279263600000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #29 { 1279522800000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #30 { 1279609200000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #31 { 1279695600000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #32 { 1279782000000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #33 { 1279868400000 }
+    Val <REF> #14
+  }
+  {
+    Key <Long> #34 { 1280041200000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #35 { 1280127600000 }
+    Val <Integer> #36 { 5 }
+  }
+  {
+    Key <Long> #37 { 1280214000000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #38 { 1280300400000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #39 { 1280386800000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #40 { 1280473200000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #41 { 1280818800000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #42 { 1280905200000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #43 { 1280991600000 }
+    Val <REF> #8
+  }
+  {
+    Key <Long> #44 { 1281337200000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #45 { 1281423600000 }
+    Val <REF> #3
+  }
+  {
+    Key <Long> #46 { 1281510000000 }
+    Val <REF> #5
+  }
+  {
+    Key <Long> #47 { 1281596400000 }
+    Val <REF> #8
+  }
+}

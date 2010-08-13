@@ -1,0 +1,62 @@
+UserDays <TreeMap> #1 {
+  {
+    Key <String> #2 { "aartist" }
+    Val <Integer> #3 { 3 }
+  }
+  {
+    Key <String> #4 { "bgumban" }
+    Val <Integer> #5 { 1 }
+  }
+  {
+    Key <String> #6 { "dgladstein" }
+    Val <Integer> #7 { 39 }
+  }
+  {
+    Key <String> #8 { "flewis" }
+    Val <REF> #3
+  }
+  {
+    Key <String> #9 { "hchen" }
+    Val <Integer> #10 { 2 }
+  }
+  {
+    Key <String> #11 { "kjohnson" }
+    Val <Integer> #12 { 5 }
+  }
+  {
+    Key <String> #13 { "mfilipowicz" }
+    Val <REF> #5
+  }
+  {
+    Key <String> #14 { "mhennessy" }
+    Val <Integer> #15 { 12 }
+  }
+  {
+    Key <String> #16 { "mmalmberg" }
+    Val <REF> #5
+  }
+  {
+    Key <String> #17 { "moregon" }
+    Val <Integer> #18 { 7 }
+  }
+  {
+    Key <String> #19 { "pbenn" }
+    Val <REF> #5
+  }
+  {
+    Key <String> #20 { "phill" }
+    Val <REF> #5
+  }
+  {
+    Key <String> #21 { "pipeline" }
+    Val <Integer> #22 { 11 }
+  }
+  {
+    Key <String> #23 { "sara" }
+    Val <REF> #5
+  }
+  {
+    Key <String> #24 { "sdavy" }
+    Val <REF> #3
+  }
+}
