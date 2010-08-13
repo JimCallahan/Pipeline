@@ -1035,7 +1035,7 @@ then
   AC_MSG_RESULT([$MAC_TEMPDIR])
 
   AC_MSG_CHECKING([MacOS SDK])
-  MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
+  MAC_SDK=/Developer/SDKs/MacOSX10.6.sdk
   AC_MSG_RESULT([$MAC_SDK])
 
   AC_MSG_CHECKING([MacOS Local Vendor Javadoc Directory])         
