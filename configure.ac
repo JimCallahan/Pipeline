@@ -87,7 +87,7 @@ case $build_os in
     NATIVE_OSTYPE=Unix;
     AC_DEFINE([OS_IS_UNIX], [], [The OsType is a standard UNIX variant.]);;
    
-  (darwin8.*.* | darwin9.*.*) 
+  (darwin8.*.* | darwin9.*.* | darwin10.*.*) 
     NATIVE_OSTYPE=MacOS;
     AC_DEFINE([OS_IS_MAC_OS], [], [The OsType is a MacOS (Darwin) system.]);;
 
