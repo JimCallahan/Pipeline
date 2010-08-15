@@ -1,18 +1,13 @@
-// $Id: JQueueJobViewerPanel.java,v 1.76 2010/01/07 10:17:06 jim Exp $
-
 package us.temerity.pipeline.ui.core;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
-import javax.naming.*;
+import javax.media.opengl.*;
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
+import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -217,6 +212,8 @@ class JQueueJobViewerPanel
       pPanelPopup.add(item);
     }
     
+    pJobShowNodeChannelItems = new ArrayList<JMenuItem>();
+    
     /* job popup menu */ 
     {
       JMenuItem item;
@@ -304,11 +301,22 @@ class JQueueJobViewerPanel
       item.setActionCommand("show-node");
       item.addActionListener(this);
       pJobPopup.add(item);
+      
+      {
+        JMenu showNodeMenu = new JMenu("Show Nodes...");
+        for (int i = 1; i < 10; i++) {
+          item = new JMenuItem("Channel " + i);
+          item.setActionCommand("show-node-" + i);
+          item.addActionListener(this);
+          pJobShowNodeChannelItems.add(item);
+          showNodeMenu.add(item);
+        }
+        pJobPopup.add(showNodeMenu);  
+      }
     }
     
-    /* job group popup menu */ 
-    
-    pShowNodeChannelItems = new ArrayList<JMenuItem>();
+    /* job group popup menu */
+    pGroupShowNodeChannelItems = new ArrayList<JMenuItem>();
     {
       JMenuItem item;
       
@@ -396,22 +404,22 @@ class JQueueJobViewerPanel
 
       pGroupPopup.addSeparator();
 
-      item = new JMenuItem("Show Node");
+      item = new JMenuItem("Show Nodes");
       pGroupShowNodeItem = item;
       item.setActionCommand("show-node");
       item.addActionListener(this);
       pGroupPopup.add(item);
       
       {
-        JMenu sub = new JMenu("Show Node...");
+        JMenu showNodeMenu = new JMenu("Show Nodes...");
         for (int i = 1; i < 10; i++) {
           item = new JMenuItem("Channel " + i);
           item.setActionCommand("show-node-" + i);
           item.addActionListener(this);
-          pShowNodeChannelItems.add(item);
-          sub.add(item);
+          pGroupShowNodeChannelItems.add(item);
+          showNodeMenu.add(item);
         }
-//        pGroupPopup.add(sub);
+        pGroupPopup.add(showNodeMenu);  
       }
     }
 
@@ -670,6 +678,7 @@ class JQueueJobViewerPanel
     pUpdateJobKeysItem.setEnabled(!isLocked());
 
     updateEditorMenus();
+    updateShowNodeMenu();
   }
 
   /**
@@ -688,6 +697,7 @@ class JQueueJobViewerPanel
     pGroupUpdateJobKeys.setEnabled(!isLocked());
 
     updateEditorMenus();
+    updateShowNodeMenu();
   }
 
   /**
@@ -718,6 +728,38 @@ class JQueueJobViewerPanel
       master.rebuildEditorMenu(pGroupID, toolset, pGroupViewWithMenu, this);
       
       pEditorMenuToolset = toolset;
+    }
+  }
+  
+  /**
+   * Update the show node menu items.
+   */
+  private void
+  updateShowNodeMenu()
+  {
+    UIMaster master = UIMaster.getInstance();
+    TreeSet<Integer> freeNodeChannels = master.getChannelsWithoutNodePanels();
+
+    for (int channel = 1; channel < 10; channel++ ) {
+      int idx = 0;
+      if (freeNodeChannels.contains(channel) || master.hasNodePanelBundle(channel)) {
+        pJobShowNodeChannelItems.get(idx).setEnabled(true);
+        pGroupShowNodeChannelItems.get(idx).setEnabled(true);
+      }
+      else {
+        pJobShowNodeChannelItems.get(idx).setEnabled(false);
+        pGroupShowNodeChannelItems.get(idx).setEnabled(false);
+      }
+      
+    }
+    
+    {
+      int channel = 
+        Integer.parseInt(UserPrefs.getInstance().getDefaultNodeChannel());
+      if (freeNodeChannels.contains(channel) || master.hasNodePanelBundle(channel))
+        pJobShowNodeItem.setEnabled(true);
+      else
+        pJobShowNodeItem.setEnabled(false);
     }
   }
 
@@ -2105,7 +2147,7 @@ class JQueueJobViewerPanel
 
       else if((prefs.getShowNode() != null) &&
 	      prefs.getShowNode().wasPressed(e))
-	doShowNode();
+	doShowNode(null);
 
       else 
 	undefined = true;
@@ -2161,7 +2203,7 @@ class JQueueJobViewerPanel
 
       else if((prefs.getShowNode() != null) &&
 	      prefs.getShowNode().wasPressed(e))
-	doShowNode();
+	doShowNode(null);
 
       else 
 	undefined = true;
@@ -2384,7 +2426,9 @@ class JQueueJobViewerPanel
     else if(cmd.equals("delete-group"))
       doDeleteJobGroups();
     else if(cmd.equals("show-node"))
-      doShowNode();
+      doShowNode(null);
+    else if (cmd.startsWith("show-node-"))
+      doShowNode(Character.digit(cmd.charAt(10), 10));
     else if (cmd.equals("change-job-reqs"))
       doChangeJobReqs();
     else if (cmd.equals("update-job-keys"))
@@ -3126,26 +3170,29 @@ class JQueueJobViewerPanel
    * Show the node which created the primary selected job/group in the Node Viewer. 
    */ 
   private synchronized void 
-  doShowNode() 
+  doShowNode
+  (
+    Integer channel  
+  ) 
   {
-    NodeID nodeID = null;
-    if(pPrimaryGroup != null) {
-      QueueJobGroup group = pPrimaryGroup.getGroup();
-      nodeID = group.getNodeID();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    
+    if (pSelectedGroups != null) {
+      for (ViewerJobGroup vjg : pSelectedGroups.values())
+        nodeIDs.add(vjg.getGroup().getNodeID());
     }
-    else if(pPrimary != null) {
-      JobStatus status = pPrimary.getJobStatus();
-      nodeID = status.getNodeID();
+    
+    if (pSelected != null) {
+      for (ViewerJob vj : pSelected.values())
+        nodeIDs.add(vj.getJobStatus().getNodeID());
     }
-
-    if(pGroupID > 0) {
-      PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-      JNodeViewerPanel panel = panels.getPanel(pGroupID);
-      if(panel != null) { 
-	panel.addRoot(nodeID.getAuthor(), nodeID.getView(), nodeID.getName());
-	panel.updateManagerTitlePanel();
-      }
-    }    
+    
+    int chan;
+    if (channel == null)
+      chan = Integer.parseInt(UserPrefs.getInstance().getDefaultNodeChannel());
+    else
+      chan = channel;
+    UIMaster.getInstance().selectAndShowNodes(chan, nodeIDs);    
     
     clearSelection();
     refresh(); 
@@ -4021,7 +4068,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pUpdateJobKeysItem;
   private JMenuItem  pJobShowNodeItem;
   
-  private ArrayList<JMenuItem> pShowNodeChannelItems;
+  private ArrayList<JMenuItem> pJobShowNodeChannelItems;
 
   /**
    * The view with submenu.
@@ -4050,6 +4097,8 @@ class JQueueJobViewerPanel
   private JMenuItem  pGroupShowNodeItem;
   private JMenuItem  pGroupChangeJobReqs;
   private JMenuItem  pGroupUpdateJobKeys;
+  
+  private ArrayList<JMenuItem> pGroupShowNodeChannelItems;
 
   /**
    * The view with group submenu.

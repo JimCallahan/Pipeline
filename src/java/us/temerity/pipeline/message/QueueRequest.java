@@ -3,6 +3,7 @@
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.message.queue.*;
+import us.temerity.pipeline.message.simple.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   R E Q U E S T                                                              */
@@ -499,9 +500,14 @@ enum QueueRequest
   GetJobGroupsByID,
 
   /**
-   * An instance {@link QueueGetJobGroupsReq} is next.
+   * An instance of {@link QueueGetJobGroupsReq} is next.
    */
   GetJobGroups, 
+  
+  /**
+   * An instance of {@link SimpleSetReq} is next.
+   */
+  GetJobGroupsByUsers,
 
   /**
    * An instance {@link QueueDeleteJobGroupsReq} is next.
@@ -512,6 +518,11 @@ enum QueueRequest
    * An instance {@link QueueDeleteViewJobGroupsReq} is next.
    */
   DeleteViewJobGroups, 
+  
+  /**
+   * An instance of {@link SimpleSetReq} is next.
+   */
+  DeleteUsersJobGroups,
   
   /** 
    * Delete all of the completed job groups in all working areas. 

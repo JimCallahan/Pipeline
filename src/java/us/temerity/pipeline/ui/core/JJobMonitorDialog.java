@@ -187,15 +187,15 @@ class JJobMonitorDialog
     UIFactory.initializePipelineUI();
     
 //    LogMgr.getInstance().setLevel(Kind.Job, Level.Finest);
-    JJobMonitorDialog dialog = new JJobMonitorDialog();
-    QueueMgrClient client = new QueueMgrClient();
-    QueueJobGroup group = client.getJobGroup(1322l);
-    LinkedList<QueueJobGroup> groups = new LinkedList<QueueJobGroup>();
-    groups.add(group);
-    groups.add(client.getJobGroup(1324l));
-    dialog.addJobGroups(groups);
-    dialog.setVisible(true);
-    PluginMgrClient.getInstance().disconnect();
+//    JJobMonitorDialog dialog = new JJobMonitorDialog();
+//    QueueMgrClient client = new QueueMgrClient();
+//    QueueJobGroup group = client.getJobGroup(1322l);
+//    LinkedList<QueueJobGroup> groups = new LinkedList<QueueJobGroup>();
+//    groups.add(group);
+//    groups.add(client.getJobGroup(1324l));
+//    dialog.addJobGroups(groups);
+//    dialog.setVisible(true);
+//    PluginMgrClient.getInstance().disconnect();
   }
   
   /**
@@ -254,34 +254,36 @@ class JJobMonitorDialog
     TreeSet<Long> finishedGroups = new TreeSet<Long>();
     TreeSet<Long> garbageGroups = new TreeSet<Long>();
     try {
-      TreeMap<Long, double[]> dists = qclient.getJobStateDistribution(activeJobGroups);
-      
-      for (Entry<Long, double[]> entry : dists.entrySet()) {
-        double[] states = entry.getValue();
-        Long key = entry.getKey();
-        
-        double totalJobs = 0;
-        double doneJobs = 0;
-        
-        if (states.length == 0 ) {
-          garbageGroups.add(key);
-          log.log
+      if (activeJobGroups.size() > 0) {
+        TreeMap<Long, double[]> dists = qclient.getJobStateDistribution(activeJobGroups);
+
+        for (Entry<Long, double[]> entry : dists.entrySet()) {
+          double[] states = entry.getValue();
+          Long key = entry.getKey();
+
+          double totalJobs = 0;
+          double doneJobs = 0;
+
+          if (states.length == 0 ) {
+            garbageGroups.add(key);
+            log.log
             (Kind.Job, Level.Finer, 
-             "No job state information found for job: " + key);
-          break;
+              "No job state information found for job: " + key);
+            break;
+          }
+
+          for (int i = 0 ; i < states.length; i++) {
+            totalJobs += states[i];
+            if (i == finished || i == aborted || i == failed)
+              doneJobs += states[i];
+          }
+          if (doneJobs == totalJobs)
+            finishedGroups.add(key);
         }
-        
-        for (int i = 0 ; i < states.length; i++) {
-          totalJobs += states[i];
-          if (i == finished || i == aborted || i == failed)
-            doneJobs += states[i];
+
+        synchronized (pJobDistributionsLock) {
+          pJobDistributions.putAll(dists);
         }
-        if (doneJobs == totalJobs)
-          finishedGroups.add(key);
-      }
-      
-      synchronized (pJobDistributionsLock) {
-        pJobDistributions.putAll(dists);
       }
       
       long time = System.currentTimeMillis();

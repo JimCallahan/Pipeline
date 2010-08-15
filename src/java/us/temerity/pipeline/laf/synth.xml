@@ -338,8 +338,37 @@
 	  </state>
   </style>
   <bind style="StaleKeyChooserButton" type="name" key="StaleKeyChooserButton"/>
+  
+  
+  <!--  F I L T E R   M E N U   B U T T O N  -->
+  
+  <style id="JobBrowserFilterButton"> 
+    <state>
+      <imagePainter path="JobBrowserFilterButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="JobBrowserFilterButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="JobBrowserFilterButton" type="name" key="JobBrowserFilterButton"/>
 
 
+  
+  <!--  V I E W   M E N U   B U T T O N  -->
+  
+  <style id="JobBrowserViewButton"> 
+    <state>
+      <imagePainter path="JobBrowserViewButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="JobBrowserViewButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="JobBrowserViewButton" type="name" key="JobBrowserViewButton"/>
 
   <!--  B R O W S E   B U T T O N  -->
 
@@ -2340,6 +2369,34 @@
     <insets top="4" bottom="4" right="2" left="8"/>
   </style>
   <bind style="CheckBoxMenuItem" type="region" key="CheckBoxMenuItem"/>
+  
+  <style id="RadioButtonMenuItem">
+    <state>
+      <imagePainter path="CheckBoxMenuItem.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>
+    <state value="MOUSE_OVER">
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <imagePainter path="CheckBoxMenuItem.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>
+    <state value="SELECTED AND MOUSE_OVER">
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <imagePainter path="CheckBoxMenuItemSelected.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="CheckBoxMenuItemSelected.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
+      <imagePainter path="CheckBoxMenuItemDisabled.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>    
+    <insets top="4" bottom="4" right="2" left="8"/>
+  </style>
+  <bind style="RadioButtonMenuItem" type="region" key="RadioButtonMenuItem"/>  
 
   <style id="PopupMenu">
     <opaque value="false"/>

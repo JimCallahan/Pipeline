@@ -1076,7 +1076,15 @@ class QueueMgrServer
                   objOut.flush();
                 }
                 break;
+                
+              case GetJobGroupsByUsers:
+                {
+                  SimpleSetReq req = (SimpleSetReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.getJobGroupsByUsers(req));
+                  objOut.flush();
+                }
 	    
+              break;
               case DeleteJobGroups:
                 {
                   QueueDeleteJobGroupsReq req = (QueueDeleteJobGroupsReq) objIn.readObject();
@@ -1093,6 +1101,14 @@ class QueueMgrServer
                   objOut.flush(); 
                 }
                 break;
+                
+              case DeleteUsersJobGroups:
+                {
+                  SimpleSetReq req =
+                    (SimpleSetReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.deleteUsersJobGroups(req));
+                  objOut.flush();
+                }
 	    
               case DeleteAllJobGroups:
                 {

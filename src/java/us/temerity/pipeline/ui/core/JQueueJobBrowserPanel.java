@@ -5,13 +5,15 @@ package us.temerity.pipeline.ui.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.Map.*;
 
+import javax.crypto.spec.*;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.laf.*;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -24,7 +26,7 @@ import us.temerity.pipeline.ui.*;
 public 
 class JQueueJobBrowserPanel
   extends JTopLevelPanel
-  implements MouseListener, KeyListener, ActionListener
+  implements MouseListener, KeyListener, ActionListener, PopupMenuListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -68,11 +70,13 @@ class JQueueJobBrowserPanel
       pJobStateDist = new TreeMap<Long,double[]>();
       pSelectedIDs  = new TreeSet<Long>();
 
-      pViewFilter = ViewFilter.SingleView;
+      pStatusFilter = StatusFilter.AllGroups;
+      pViewFilter = ViewFilter.MyJobs;
       pFilterOverride = null;
     }
 
-    /* initialize the popup menus */ 
+    /* initialize the popup menus */
+    pShowNodeChannelItems = new ArrayList<JMenuItem>();
     {
       JMenuItem item;
       	
@@ -85,29 +89,24 @@ class JQueueJobBrowserPanel
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
 
+	item = new JMenuItem("Show Nodes");
+	pGroupShowNodeItem = item;
+	item.setActionCommand("show-node");
+	item.addActionListener(this);
+	pGroupsPopup.add(item);
+	      
 	{
-	  JMenu sub = new JMenu("View Filter");
-	  pGroupsPopup.add(sub);
-
-	  item = new JMenuItem("Single View");
-	  pGroupsSingleViewItem = item;
-	  item.setActionCommand("single-view");
-	  item.addActionListener(this);
-	  sub.add(item);
-	
-	  item = new JMenuItem("Owned Views");
-	  pGroupsOwnedViewsItem = item;
-	  item.setActionCommand("owned-views");
-	  item.addActionListener(this);
-	  sub.add(item);
-	
-	  item = new JMenuItem("All Views");
-	  pGroupsAllViewsItem = item;
-	  item.setActionCommand("all-views");
-	  item.addActionListener(this);
-	  sub.add(item);
+	  JMenu showNodeMenu = new JMenu("Show Nodes...");
+	  for (int i = 1; i < 10; i++) {
+	    item = new JMenuItem("Channel " + i);
+	    item.setActionCommand("show-node-" + i);
+	    item.addActionListener(this);
+	    pShowNodeChannelItems.add(item);
+	    showNodeMenu.add(item);
+	  }
+	  pGroupsPopup.add(showNodeMenu);
 	}
-
+	
 	pGroupsPopup.addSeparator();
 	
 	item = new JMenuItem("Clear Focus");
@@ -197,6 +196,124 @@ class JQueueJobBrowserPanel
 
       updateMenuToolTips();  
     }
+    
+    {
+      JRadioButtonMenuItem item;
+      ButtonGroup bgroup = new ButtonGroup();
+      
+      pFilterButtons = new TreeMap<StatusFilter, JRadioButtonMenuItem>();
+      
+      {
+        pFilterPopup = new JPopupMenu();
+        
+        item = new JRadioButtonMenuItem("All Groups");
+        item.setActionCommand("filter-all-jobs");
+        item.addActionListener(this);
+        pFilterPopup.add(item);
+        bgroup.add(item);
+        pFilterButtons.put(StatusFilter.AllGroups, item);
+        bgroup.setSelected(item.getModel(), true);
+        
+        pFilterPopup.addSeparator();
+        
+        item = new JRadioButtonMenuItem("Any Failed Jobs");
+        item.setActionCommand("filter-any-failed");
+        item.addActionListener(this);
+        pFilterPopup.add(item);
+        bgroup.add(item);
+        pFilterButtons.put(StatusFilter.AnyFailed, item);
+        
+        item = new JRadioButtonMenuItem("Any Limbo Jobs");
+        item.setActionCommand("filter-any-limbo");
+        item.addActionListener(this);
+        pFilterPopup.add(item);
+        bgroup.add(item);
+        pFilterButtons.put(StatusFilter.AnyLimbo, item);
+        
+        item = new JRadioButtonMenuItem("Any Running Jobs");
+        item.setActionCommand("filter-any-running");
+        item.addActionListener(this);
+        pFilterPopup.add(item);
+        bgroup.add(item);
+        pFilterButtons.put(StatusFilter.AnyRunning, item);
+        
+        item = new JRadioButtonMenuItem("Any Paused Jobs");
+        item.setActionCommand("filter-any-paused");
+        item.addActionListener(this);
+        pFilterPopup.add(item);
+        bgroup.add(item);
+        pFilterButtons.put(StatusFilter.AnyPaused, item);;
+        
+        pFilterPopup.addSeparator();
+        
+        item = new JRadioButtonMenuItem("All Completed Groups");
+        item.setActionCommand("filter-all-completed");
+        item.addActionListener(this);
+        pFilterPopup.add(item);
+        bgroup.add(item);
+        pFilterButtons.put(StatusFilter.AllCompleted, item);;
+      }
+      
+      pFilterButtonGroup = bgroup;
+      pFilterPopup.addPopupMenuListener(this);
+    }
+    
+    {
+      JRadioButtonMenuItem item;
+      ButtonGroup bgroup = new ButtonGroup();
+      
+      pViewButtons = new TreeMap<ViewFilter, JRadioButtonMenuItem>();
+      
+      //TODO morehere.
+      {
+        pViewPopup = new JPopupMenu();
+        
+        item = new JRadioButtonMenuItem("My Groups");
+        item.setActionCommand("view-my-jobs");
+        item.addActionListener(this);
+        pViewPopup.add(item);
+        bgroup.add(item);
+        pViewButtons.put(ViewFilter.MyJobs, item);
+        bgroup.setSelected(item.getModel(), true);
+        
+        item = new JRadioButtonMenuItem("All Groups");
+        item.setActionCommand("view-all-jobs");
+        item.addActionListener(this);
+        pViewPopup.add(item);
+        bgroup.add(item);
+        pViewButtons.put(ViewFilter.AllJobs, item);
+        
+        pViewPopup.addSeparator();
+        
+        pViewUserMenu = new JMenu("By User");
+        pViewPopup.add(pViewUserMenu);
+        pViewUserButtons = new TreeMap<String, JRadioButtonMenuItem>();
+        
+        pViewGroupMenu = new JMenu("By Group");
+        pViewPopup.add(pViewGroupMenu);
+        pViewGroupButtons = new TreeMap<String, JRadioButtonMenuItem>();
+        
+        pViewPopup.addSeparator();
+        
+        item = new JRadioButtonMenuItem("Working Area Groups");
+        item.setActionCommand("view-working-area-jobs");
+        item.addActionListener(this);
+        pViewPopup.add(item);
+        bgroup.add(item);
+        pViewButtons.put(ViewFilter.Default, item);
+
+        item = new JRadioButtonMenuItem("Custom Users...");
+        item.setActionCommand("view-custom-jobs");
+        item.addActionListener(this);
+        item.setEnabled(false);
+        pViewPopup.add(item);
+        bgroup.add(item);
+        pViewButtons.put(ViewFilter.CustomJobs, item);
+      }
+
+      pViewButtonGroup = bgroup;
+      pViewPopup.addPopupMenuListener(this);
+    }
 
     
     /* initialize the panel components */ 
@@ -224,6 +341,42 @@ class JQueueJobBrowserPanel
 	}
 	  
 	panel.add(Box.createHorizontalGlue());
+	
+	{
+          JLabel anchor = new JLabel();
+          anchor.setIcon(sFilterAnchorIcon);
+
+          Dimension size = new Dimension(39, 24);
+          anchor.setMinimumSize(size);
+          anchor.setMaximumSize(size);
+          anchor.setPreferredSize(size);
+
+          anchor.addMouseListener(this);
+          
+          panel.add(anchor);
+          
+          pFilterMenuLabel = anchor;
+        }
+	
+	panel.add(Box.createRigidArea(new Dimension(10, 0)));
+	
+	{
+	  JLabel anchor = new JLabel();
+	  anchor.setIcon(sViewAnchorIcon);
+
+	  Dimension size = new Dimension(39, 24);
+	  anchor.setMinimumSize(size);
+	  anchor.setMaximumSize(size);
+	  anchor.setPreferredSize(size);
+
+	  anchor.addMouseListener(this);
+
+	  panel.add(anchor);
+
+	  pViewMenuLabel = anchor;
+	}
+
+	panel.add(Box.createRigidArea(new Dimension(10, 0)));
 	
 	{
           JButton btn = new JButton();          
@@ -260,24 +413,6 @@ class JQueueJobBrowserPanel
 	  btn.setPreferredSize(size);
 	    
 	  btn.setActionCommand("delete-completed");
-	  btn.addActionListener(this);
-	    
-	  panel.add(btn);
-	} 
-	  
-	panel.add(Box.createRigidArea(new Dimension(10, 0)));
-	  
-	{
-	  JButton btn = new JButton();		
-	  pViewFilterButton = btn;
-	  btn.setName(pViewFilter + "Button");
-	    
-	  Dimension size = new Dimension(19, 19);
-	  btn.setMinimumSize(size);
-	  btn.setMaximumSize(size);
-	  btn.setPreferredSize(size);
-	    
-	  btn.setActionCommand("view-filter-changed"); 
 	  btn.addActionListener(this);
 	    
 	  panel.add(btn);
@@ -328,6 +463,7 @@ class JQueueJobBrowserPanel
       }
     }
  
+    updatePanelHeader();
     updateJobs(null, null);
   }
 
@@ -543,6 +679,39 @@ class JQueueJobBrowserPanel
   {
     return pViewFilter; 
   }
+
+  /**
+   * Get the name of the user being filtered on when the viewfilter is set to
+   * {@link ViewFilter#UserJobs}
+   */
+  public String
+  getUserFilter()
+  {
+    return pUserFilter;
+  }
+  
+  /**
+   * Get the name of the group being filtered on when the viewfilter is set to
+   * {@link ViewFilter#GroupJobs}
+   */
+  public String
+  getGroupFilter()
+  {
+    return pGroupFilter;
+  }
+  
+  /**
+   * Get the set of users being filtered on when the viewfilter is set to 
+   * {@link ViewFilter#CustomJobs}
+   */
+  public Set<String>
+  getCustomFilter()
+  {
+    if (pCustomFilter == null)
+      return null;
+    else
+      return Collections.unmodifiableSet(pCustomFilter);
+  }
   
   /*----------------------------------------------------------------------------------------*/
   
@@ -641,6 +810,12 @@ class JQueueJobBrowserPanel
    * @param doJobKeysNeedUpdate
    *   A boolean which reflects whether key choosers need to be rerun for all jobs in the 
    *   queue.
+   *   
+   * @param wusers
+   *   The set of all the current users.
+   *   
+   * @param wgroups
+   *   The set of all the current groups.
    */
   public synchronized void 
   applyPanelUpdates
@@ -649,13 +824,22 @@ class JQueueJobBrowserPanel
    String view, 
    TreeMap<Long,QueueJobGroup> groups, 
    TreeMap<Long,double[]> dist,
-   boolean doJobKeysNeedUpdate
+   boolean doJobKeysNeedUpdate,
+   Set<String> wusers,
+   Set<String> wgroups
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);    
+      super.setAuthorView(author, view);
+
+    pWorkUsers = wusers;
+    pWorkGroups = wgroups;
+    
+    updateViewMenu();
 
     pDoJobKeysNeedUpdate = doJobKeysNeedUpdate;
+    
+    updatePanelHeader();
     
     updateJobs(groups, dist);
   }
@@ -716,19 +900,17 @@ class JQueueJobBrowserPanel
 
     /* enable/disable the DeleteCompleted button */ 
     switch(pViewFilter) {
-    case SingleView:
-    case OwnedViews:
+    case MyJobs:
+      pDeleteCompletedButton.setEnabled(true);
+      break;
+
+    case Default:
       pDeleteCompletedButton.setEnabled(!isLocked());
       break;
       
-    case AllViews:
+    default:
       pDeleteCompletedButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
     }
-    
-    if (pFilterOverride == null) 
-      pHeaderLabel.setText("Queue Jobs:");
-    else
-      pHeaderLabel.setText("Queue Jobs: (Focused)");
     
     /* deal with the job keys need update button.*/
     if (!pDoJobKeysNeedUpdate) 
@@ -748,33 +930,92 @@ class JQueueJobBrowserPanel
     if(dist != null) 
       pJobStateDist.putAll(dist);
     
-    /* update the groups table, 
-         reselects any of the previously selected job groups which still exist */
-    {
-      JTable table = pGroupsTablePanel.getTable();
-      ListSelectionModel smodel = table.getSelectionModel();
-
-      smodel.removeListSelectionListener(pGroupsListSelector);
-      { 
-	pGroupsTableModel.setQueueJobGroups(pJobGroups, pJobStateDist);
-	
-	TreeSet<Long> selected = new TreeSet<Long>();
-	for(Long groupID : pSelectedIDs) {
-	  int row = pGroupsTableModel.getGroupRow(groupID);
-	  if(row != -1) {
-	    table.addRowSelectionInterval(row, row);
-	    selected.add(groupID);
-	  }
-	}
-
-	pSelectedIDs.clear();
-	pSelectedIDs.addAll(selected);
-      }      
-      smodel.addListSelectionListener(pGroupsListSelector);
-    }
+    filterJobs();
   }
+  
+  /**
+   * Update the job groups table, using the filtering information in the {@link StatusFilter} 
+   * to determine which jobs to show.  <p>
+   * 
+   * Calling this method does not cause a server-roundtrip to update the job groups, so it can
+   * be called very efficiently.
+   */
+  private void
+  filterJobs()
+  {
+    TreeMap<Long, QueueJobGroup> groups = new TreeMap<Long, QueueJobGroup>();
+    TreeMap<Long, double[]> dists = new TreeMap<Long, double[]>();
+    
+    for (Entry<Long, QueueJobGroup> entry : pJobGroups.entrySet()) {
+      Long groupID = entry.getKey();
+      double dist[] = pJobStateDist.get(groupID);
+      switch (pStatusFilter) {
+      case AllGroups:
+        groups.put(groupID, entry.getValue());
+        dists.put(groupID, dist);
+        break;
+      case AnyFailed:
+        if (dist[JobState.Failed.ordinal()] > 0) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
+        break;
+      case AnyLimbo:
+        if (dist[JobState.Limbo.ordinal()] > 0) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
+        break;
+      case AnyPaused:
+        if (dist[JobState.Paused.ordinal()] > 0) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
+        break;
+      case AnyRunning:
+        if (dist[JobState.Running.ordinal()] > 0) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
+        break;
+      case AllCompleted:
+        if (dist[JobState.Limbo.ordinal()] == 0 &&
+            dist[JobState.Paused.ordinal()] == 0 &&
+            dist[JobState.Preempted.ordinal()] == 0 &&
+            dist[JobState.Queued.ordinal()] == 0 &&
+            dist[JobState.Running.ordinal()] == 0) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
+       break;
+      }
+    }
+    
+    /* update the groups table, 
+    reselects any of the previously selected job groups which still exist */
+    JTable table = pGroupsTablePanel.getTable();
+    ListSelectionModel smodel = table.getSelectionModel();
 
+    smodel.removeListSelectionListener(pGroupsListSelector);
+    { 
+      pGroupsTableModel.setQueueJobGroups(groups, dists);
 
+      TreeSet<Long> selected = new TreeSet<Long>();
+      for(Long groupID : pSelectedIDs) {
+        int row = pGroupsTableModel.getGroupRow(groupID);
+        if(row != -1) {
+          table.addRowSelectionInterval(row, row);
+          selected.add(groupID);
+        }
+      }
+
+      pSelectedIDs.clear();
+      pSelectedIDs.addAll(selected);
+    }      
+    smodel.addListSelectionListener(pGroupsListSelector);
+    
+    updatePanelHeader();
+  }
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -787,8 +1028,7 @@ class JQueueJobBrowserPanel
     boolean selected = (pGroupsTablePanel.getTable().getSelectedRowCount() > 0);
 
     switch(pViewFilter) {
-    case SingleView:
-    case OwnedViews:
+    case Default:
       pGroupsQueueItem.setEnabled(selected && !isLocked()); 
       pGroupsQueueSpecialItem.setEnabled(selected && !isLocked()); 
       pGroupsPauseItem.setEnabled(selected && !isLocked()); 
@@ -801,7 +1041,7 @@ class JQueueJobBrowserPanel
       pGroupsDeleteCompletedItem.setEnabled(!isLocked());
       break;
 
-    case AllViews:
+    default:
       pGroupsQueueItem.setEnabled(selected); 
       pGroupsQueueSpecialItem.setEnabled(selected); 
       pGroupsPauseItem.setEnabled(selected); 
@@ -822,9 +1062,229 @@ class JQueueJobBrowserPanel
       pUpdateAllJobKeysItem.setEnabled(false);
   }
 
+  /**
+   * Rebuild the view menu.
+   */
+  @SuppressWarnings("incomplete-switch")
+  private void
+  updateViewMenu()
+  {
+    String userSelected = null;
+    String groupSelected = null;
+    switch (pViewFilter) {
+    case UserJobs:
+      userSelected = pUserFilter;
+      break;
+    case GroupJobs:
+      groupSelected = pGroupFilter;
+      break;
+    }
+    
+    for (JRadioButtonMenuItem item : pViewUserButtons.values())
+      pViewButtonGroup.remove(item);
+    
+    for (JRadioButtonMenuItem item : pViewGroupButtons.values())
+      pViewButtonGroup.remove(item);
+    
+    pViewUserButtons.clear();
+    pViewGroupButtons.clear();
+    
+    pViewUserMenu.removeAll();
+    pViewGroupMenu.removeAll();
 
+    {
+      ArrayList<TreeSet<String>> userMenus = generateSubmenus(pWorkUsers);
+      if(!userMenus.isEmpty()) {
+        for(TreeSet<String> ugroup : userMenus) {
+          String ufirst = ugroup.first();
+          String first3 = ufirst.substring(0, Math.min(3, ufirst.length()));
+
+          String ulast  = ugroup.last(); 
+          String last3  = ulast.substring(0, Math.min(3, ulast.length()));
+
+          JMenu gsub = new JMenu(first3.toUpperCase() + "-" + last3.toUpperCase()); 
+          pViewUserMenu.add(gsub);
+          
+          generateSubMenu(ugroup, gsub, userSelected, "view-user-", pViewUserButtons);
+        }
+      }
+      else
+        generateSubMenu(pWorkUsers, pViewUserMenu, userSelected, "view-user-", 
+                        pViewUserButtons);
+    }
+    
+    {
+      ArrayList<TreeSet<String>> groupMenus = generateSubmenus(pWorkGroups);
+      if(!groupMenus.isEmpty()) {
+        for(TreeSet<String> ggroup : groupMenus) {
+          String gfirst = ggroup.first();
+          String first3 = gfirst.substring(0, Math.min(3, gfirst.length()));
+
+          String glast  = ggroup.last(); 
+          String last3  = glast.substring(0, Math.min(3, glast.length()));
+
+          JMenu gsub = new JMenu(first3.toUpperCase() + "-" + last3.toUpperCase()); 
+          pViewGroupMenu.add(gsub);
+          
+          generateSubMenu(ggroup, gsub, groupSelected, "view-group-", pViewGroupButtons);
+        }
+      }
+      else
+        generateSubMenu(pWorkGroups, pViewGroupMenu, groupSelected, "view-group-", 
+                        pViewGroupButtons);
+    }
+  }
+  
+  /**
+   * Update the header of the panel.
+   */
+  private void
+  updatePanelHeader()
+  {
+    StringBuilder header = new StringBuilder("Queue Jobs: ");
+    
+    if (pFilterOverride != null)
+      header.append("(Focused) ");
+
+    switch(pStatusFilter) {
+    case AllCompleted:
+      header.append("(Filter: All Completed) ");
+      break;
+    case AnyFailed:
+      header.append("(Filter: Any Failed) ");
+      break;
+    case AnyLimbo:
+      header.append("(Filter: Any Limbo) ");
+      break;
+    case AnyPaused:
+      header.append("(Filter: Any Paused) ");
+      break;
+    case AnyRunning:
+      header.append("(Filter: Any Running) ");
+      break;
+    case AllGroups:
+      break;
+    }
+    
+    if (pFilterOverride == null) {
+      switch (pViewFilter) {
+      case AllJobs:
+        header.append("(View: All Jobs) ");
+        break;
+      case MyJobs:
+        header.append("(View: My Jobs) ");
+        break;
+      case UserJobs:
+        if (pUserFilter != null)
+          header.append("(View: " + pUserFilter + "'s Jobs) ");
+        break;
+      case GroupJobs:
+        if (pGroupFilter != null)
+          header.append("(View: [[" + pGroupFilter + "]]'s Jobs) ");
+        break;
+      case Default:
+        break;
+      case CustomJobs:
+        header.append("(View: Custom) ");
+        break;
+      }
+    }
+    pHeaderLabel.setText(header.toString());
+  }
+
+  /**
+   * Generate a submenu.
+   * 
+   * @param currentSelection
+   *   The current selection or <code>null</code> if there is not a current selection among 
+   *   the entries
+   * 
+   * @param entries
+   *   The entries to put in the submenu
+   * 
+   * @param menu
+   *   The menu the entries are being added to.
+   *   
+   * @param actionPrefix
+   *   The prefix for the action command for the menu items.
+   *   
+   * @param buttonList
+   *   The list of buttons to stash the new entries in.
+   */
+  private void generateSubMenu
+  (
+    Set<String> entries,
+    JMenu menu,
+    String currentSelection,
+    String actionPrefix,
+    TreeMap<String,JRadioButtonMenuItem> buttonList
+  )
+  {
+    for(String entry : entries)  {
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem(entry);
+      if (currentSelection != null && entry.equals(currentSelection))
+        item.setSelected(true);
+      item.setActionCommand(actionPrefix + entry);
+      item.addActionListener(this);
+      menu.add(item);
+      pViewButtonGroup.add(item);
+      buttonList.put(entry, item);
+    }
+  }
+  
+  /**
+   * Group a set of values into reasonable submenus.
+   * 
+   * @param values
+   *   The set of values to be grouped.
+   * 
+   * @return
+   *   The values in the set grouped by submenu.
+   */ 
+  @SuppressWarnings("null")
+  private ArrayList<TreeSet<String>> 
+  generateSubmenus
+  (
+    Set<String> values  
+  )
+  {
+    ArrayList<TreeSet<String>> toReturn = new ArrayList<TreeSet<String>>();
+    
+    int numEntries = values.size();
+    int maxPerMenu = 12;
+    if(numEntries > maxPerMenu) {
+      int numMenus = Math.max(numEntries / maxPerMenu, 2);
+      int perMenu  = numEntries / numMenus;
+      int extra    = numEntries % perMenu;
+      
+      int cnt = 0;
+      int max = 0;
+      TreeSet<String> egroup = null;
+      for(String entry : values) {
+        if(cnt == 0) {
+          egroup = new TreeSet<String>();
+          toReturn.add(egroup);
+          
+          max = perMenu - 1;
+          if(extra > 0) 
+            max++;
+          extra--;
+        }
+          
+        egroup.add(entry);
+        cnt++;
+        
+        if(cnt > max) 
+          cnt = 0;
+      }
+    }
+    return toReturn;
+  }
 
   /*----------------------------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------------------------*/
+  
+  
 
   /**
    * Refocus keyboard events on this panel if it contains the mouse.
@@ -869,15 +1329,6 @@ class JQueueJobBrowserPanel
       (pGroupsUpdateItem, prefs.getUpdate(),
        "Update the status of all jobs and job groups.");
     updateMenuToolTip
-      (pGroupsSingleViewItem, prefs.getJobBrowserSingleViewFilter(),
-      "Show only job groups owned by the current view.");
-    updateMenuToolTip
-      (pGroupsOwnedViewsItem, prefs.getJobBrowserOwnedViewsFilter(),
-       "Show job groups from any view owned by the current user.");
-    updateMenuToolTip
-      (pGroupsAllViewsItem, prefs.getJobBrowserAllViewsFilter(),
-       "Show job groups from all views.");
-    updateMenuToolTip
       (pMonitorGroupsItem, prefs.getJobBrowserMonitorGroups(),
        "Add the selected job groups to the job monitor panel.");
     updateMenuToolTip
@@ -916,14 +1367,8 @@ class JQueueJobBrowserPanel
        "Delete all completed job groups.");
   }
 
-
-
   /*----------------------------------------------------------------------------------------*/
-  /*   L I S T E N E R S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
-
+  
   /**
    * Invoked when the mouse button has been clicked (pressed and released) on a component. 
    */ 
@@ -967,7 +1412,7 @@ class JQueueJobBrowserPanel
 		    MouseEvent.SHIFT_DOWN_MASK |
 		    MouseEvent.ALT_DOWN_MASK |
 		    MouseEvent.CTRL_DOWN_MASK);
-
+	
 	/* BUTTON3: popup menus */ 
 	if((mods & (on1 | off1)) == on1) {
 	  updateGroupsMenu();
@@ -978,6 +1423,31 @@ class JQueueJobBrowserPanel
 	    Toolkit.getDefaultToolkit().beep();
 	}
       }
+      break;
+    case MouseEvent.BUTTON1: 
+      {
+        int on2  = (MouseEvent.BUTTON1_DOWN_MASK);
+        
+        int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+                    MouseEvent.BUTTON3_DOWN_MASK | 
+                    MouseEvent.SHIFT_DOWN_MASK | 
+                    MouseEvent.ALT_DOWN_MASK |
+                    MouseEvent.CTRL_DOWN_MASK);
+        if ((mods & (on2 | off2)) == on2) {
+          if (e.getComponent() == pFilterMenuLabel) {
+            
+            pFilterMenuLabel.setIcon(sFilterAnchorPressedIcon);
+            
+            pFilterPopup.show(e.getComponent(), e.getX(), e.getY());
+          }
+          else if (e.getComponent() == pViewMenuLabel) {
+            
+            pViewMenuLabel.setIcon(sViewAnchorPressedIcon);
+            
+            pViewPopup.show(e.getComponent(), e.getX(), e.getY());
+          }
+        }
+      }
     }
   }
 
@@ -986,6 +1456,29 @@ class JQueueJobBrowserPanel
    */ 
   public void 
   mouseReleased(MouseEvent e) {}
+
+  
+  
+  /*-- POPUP MENU LISTENER METHODS -------------------------------------------------------*/
+
+  public void         
+  popupMenuCanceled(PopupMenuEvent e) {} 
+
+  public void         
+  popupMenuWillBecomeInvisible
+  (
+   PopupMenuEvent e
+  )
+  {
+    Object source = e.getSource();
+    if (source == pFilterPopup)
+      pFilterMenuLabel.setIcon(sFilterAnchorIcon);
+    else if (source == pViewPopup)
+      pViewMenuLabel.setIcon(sViewAnchorIcon);
+  }
+
+  public void
+  popupMenuWillBecomeVisible(PopupMenuEvent e) {} 
 
 
 
@@ -1011,21 +1504,21 @@ class JQueueJobBrowserPanel
        prefs.getUpdate().wasPressed(e))
       updatePanels();
     else {
-      if((prefs.getJobBrowserToggleViewsFilter() != null) &&
-	 prefs.getJobBrowserToggleViewsFilter().wasPressed(e))
-	doViewFilterChanged();
-      else if((prefs.getJobBrowserSingleViewFilter() != null) &&
-	      prefs.getJobBrowserSingleViewFilter().wasPressed(e))
-	doSingleViewFilter();
-      else if((prefs.getJobBrowserOwnedViewsFilter() != null) &&
-	      prefs.getJobBrowserOwnedViewsFilter().wasPressed(e))
-	doOwnedViewsFilter();
-      else if((prefs.getJobBrowserAllViewsFilter() != null) &&
-	      prefs.getJobBrowserAllViewsFilter().wasPressed(e))
-	doAllViewsFilter();
+//      if((prefs.getJobBrowserToggleViewsFilter() != null) &&
+//	 prefs.getJobBrowserToggleViewsFilter().wasPressed(e))
+//	doViewFilterChanged();
+//      else if((prefs.getJobBrowserSingleViewFilter() != null) &&
+//	      prefs.getJobBrowserSingleViewFilter().wasPressed(e))
+//	doSingleViewFilter();
+//      else if((prefs.getJobBrowserOwnedViewsFilter() != null) &&
+//	      prefs.getJobBrowserOwnedViewsFilter().wasPressed(e))
+//	doOwnedViewsFilter();
+//      else if((prefs.getJobBrowserAllViewsFilter() != null) &&
+//	      prefs.getJobBrowserAllViewsFilter().wasPressed(e))
+//	doAllViewsFilter();
       
-      else if((prefs.getQueueJobs() != null) &&
-	      prefs.getQueueJobs().wasPressed(e))
+      if((prefs.getQueueJobs() != null) &&
+	  prefs.getQueueJobs().wasPressed(e))
 	doGroupsQueueJobs();
       else if((prefs.getQueueJobsSpecial() != null) &&
 	      prefs.getQueueJobsSpecial().wasPressed(e))
@@ -1098,14 +1591,37 @@ class JQueueJobBrowserPanel
     if(cmd.equals("update")) 
       updatePanels();
 
-    else if(cmd.equals("view-filter-changed")) 
-      doViewFilterChanged();
-    else if(cmd.equals("single-view")) 
-      doSingleViewFilter();
-    else if(cmd.equals("owned-views")) 
-      doOwnedViewsFilter();
-    else if(cmd.equals("all-views")) 
-      doAllViewsFilter();
+    else if(cmd.equals("show-node"))
+      doShowNode(null);
+    else if (cmd.startsWith("show-node-"))
+      doShowNode(Character.digit(cmd.charAt(10), 10));
+    
+    else if (cmd.equals("view-my-jobs"))
+      doViewMyJobs();
+    else if (cmd.equals("view-all-jobs"))
+      doViewAllJobs();
+    else if (cmd.equals("view-working-area-jobs"))
+      doViewWorkingAreaJobs();
+    else if (cmd.equals("view-custom-jobs"))
+      doViewCustomJobs();
+    
+    else if (cmd.startsWith("view-user-"))
+      doViewUserJobs(cmd.substring(10));
+    else if (cmd.startsWith("view-group-"))
+      doViewGroupJobs(cmd.substring(11));
+    
+    else if(cmd.equals("filter-all-jobs"))
+      doFilterAllJobs();
+    else if(cmd.equals("filter-any-failed"))
+      doFilterAnyFailed();
+    else if(cmd.equals("filter-any-limbo"))
+      doFilterAnyLimbo();
+    else if(cmd.equals("filter-any-running"))
+      doFilterAnyRunning();
+    else if(cmd.equals("filter-any-paused"))
+      doFilterAnyPaused();
+    else if(cmd.equals("filter-all-completed"))
+      doFilterAllCompleted();
     
     else if(cmd.equals("clear-focus"))
       doClearFocus();
@@ -1148,59 +1664,130 @@ class JQueueJobBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Toggle the view filter between single view, owned views and all views. 
-   */ 
+   * Show job groups owned by the user running pipeline.
+   */
   public void 
-  doViewFilterChanged()
+  doViewMyJobs()
   {
-    switch(pViewFilter) {
-    case SingleView:
-      pViewFilter = ViewFilter.OwnedViews;
-      break;
-
-    case OwnedViews:
-      pViewFilter = ViewFilter.AllViews;
-      break;
-
-    case AllViews:
-      pViewFilter = ViewFilter.SingleView;
-    }
-
-    pViewFilterButton.setName(pViewFilter + "Button");
+    pViewFilter = ViewFilter.MyJobs;
     updatePanels();
   }
   
   /**
-   * Show only job groups owned by the current view.
-   */ 
+   * Show all job groups.
+   */
   public void 
-  doSingleViewFilter() 
+  doViewAllJobs()
   {
-    pViewFilter = ViewFilter.SingleView;
-    pViewFilterButton.setName(pViewFilter + "Button");
+    pViewFilter = ViewFilter.AllJobs;
     updatePanels();
   }
   
   /**
-   * Show job groups from any view owned by the current user.
-   */ 
-  public void 
-  doOwnedViewsFilter() 
+   * Show job groups owned by the specified user.
+   * 
+   * @param user
+   *   The name of the user.
+   */
+  public void
+  doViewUserJobs
+  (
+    String user  
+  )
   {
-    pViewFilter = ViewFilter.OwnedViews;
-    pViewFilterButton.setName(pViewFilter + "Button");
+    pViewFilter = ViewFilter.UserJobs;
+    pUserFilter = user;
+    
     updatePanels();
   }
   
   /**
-   * Show job groups from all views.
-   */ 
-  public void 
-  doAllViewsFilter() 
+   * Show job groups owned by users in the specified group.
+   * 
+   * @param group
+   *   The name of Pipeline workgroup.
+   */
+  public void
+  doViewGroupJobs
+  (
+    String group
+  )
   {
-    pViewFilter = ViewFilter.AllViews;
-    pViewFilterButton.setName(pViewFilter + "Button");
+    pViewFilter = ViewFilter.GroupJobs;
+    pGroupFilter = group;
+    
     updatePanels();
+  }
+  
+  /**
+   * Show jobs groups from the current working area.
+   */
+  public void
+  doViewWorkingAreaJobs()
+  {
+    pViewFilter = ViewFilter.Default;
+    
+    updatePanels();
+  }
+  
+  /**
+   * Display a dialog allowing the selection of a custom set of users whose jobs will be
+   * displayed.
+   */
+  private void
+  doViewCustomJobs()
+  {
+    //TODO
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  public void
+  doFilterAllJobs() 
+  {
+    pStatusFilter = StatusFilter.AllGroups;
+    
+    filterJobs();
+  }
+  
+  public void
+  doFilterAnyLimbo() 
+  {
+    pStatusFilter = StatusFilter.AnyLimbo;
+    
+    filterJobs();
+  }
+  
+  public void
+  doFilterAnyRunning() 
+  {
+    pStatusFilter = StatusFilter.AnyRunning;
+    
+    filterJobs();
+  }
+  
+  public void
+  doFilterAnyFailed() 
+  {
+    pStatusFilter = StatusFilter.AnyFailed;
+    
+    filterJobs();
+  }
+  
+  public void
+  doFilterAnyPaused() 
+  {
+    pStatusFilter = StatusFilter.AnyPaused;
+    
+    filterJobs();
+  }
+  
+  public void
+  doFilterAllCompleted() 
+  {
+    pStatusFilter = StatusFilter.AllCompleted;
+    
+    filterJobs();
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -1424,20 +2011,37 @@ class JQueueJobBrowserPanel
   { 
     String msg = null;
     switch(pViewFilter) {
-    case SingleView:
+    case Default:
       if((pAuthor != null) && !pAuthor.equals(PackageInfo.sUser) && 
          pPrivilegeDetails.isQueueManaged(pAuthor))
         msg = ("This will delete ALL complete Job Groups owned by (" + pAuthor + ") in " + 
                "the current working area!"); 
       break;
 
-    case OwnedViews:
-      if((pAuthor != null) && !pAuthor.equals(PackageInfo.sUser) && 
-         pPrivilegeDetails.isQueueManaged(pAuthor))
-      msg = "This will delete ALL completed Job Groups owned by (" + pAuthor + ")!"; 
+    case MyJobs:
+      msg = "This will delete ALL completed Job Groups owned by you!"; 
       break;
-
-    case AllViews:
+      
+    case UserJobs:
+      if((pUserFilter != null) && !pUserFilter.equals(PackageInfo.sUser) && 
+        pPrivilegeDetails.isQueueManaged(pUserFilter))
+      msg = "This will delete ALL completed Job Groups owned by (" + pUserFilter + ")!"; 
+      break;
+    
+    case GroupJobs:
+      if((pGroupFilter != null) && pPrivilegeDetails.isQueueManager())
+      msg = "This will delete ALL completed Job Groups owned by users in the group " +
+      	    "(" + pGroupFilter + ")!"; 
+      break;
+      
+    case CustomJobs:
+      if((pCustomFilter != null) && pPrivilegeDetails.isQueueManager())
+      msg = "This will delete ALL completed Job Groups owned by the following users " +
+             pCustomFilter + " !"; 
+      break;
+      
+      
+    case AllJobs:
       msg = "This will delete ALL completed Job Groups for ALL users!"; 
     }
 
@@ -1553,6 +2157,32 @@ class JQueueJobBrowserPanel
       task.start();
     }
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Show the node which created the primary selected job/group in the Node Viewer. 
+   */ 
+  private synchronized void 
+  doShowNode
+  (
+    Integer channel  
+  ) 
+  {
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    
+    if (pSelectedIDs != null) {
+      for (Long groupID : pSelectedIDs)
+        nodeIDs.add(pJobGroups.get(groupID).getNodeID());
+    }
+    
+    int chan;
+    if (channel == null)
+      chan = Integer.parseInt(UserPrefs.getInstance().getDefaultNodeChannel());
+    else
+      chan = channel;
+    UIMaster.getInstance().selectAndShowNodes(chan, nodeIDs);    
+  }
 
 
   
@@ -1570,7 +2200,13 @@ class JQueueJobBrowserPanel
   {
     super.toGlue(encoder);
     
+    encoder.encode("StatusFilter", pStatusFilter);
     encoder.encode("ViewFilter", pViewFilter);
+    encoder.encode("UserFilter", pUserFilter);
+    encoder.encode("GroupFilter", pGroupFilter);
+    encoder.encode("CustomFilter", pCustomFilter);
+    encoder.encode("FilterOverride", pFilterOverride);
+    
 
     if(!pSelectedIDs.isEmpty())
       encoder.encode("SelectedIDs", pSelectedIDs);
@@ -1585,11 +2221,49 @@ class JQueueJobBrowserPanel
   ) 
     throws GlueException
   {
-    ViewFilter filter = (ViewFilter) decoder.decode("ViewFilter");
-    if(filter != null) {
-      pViewFilter = filter; 
-      pViewFilterButton.setName(pViewFilter + "Button");
+    try {
+      ViewFilter filter = (ViewFilter) decoder.decode("ViewFilter");
+      if(filter != null)
+        pViewFilter = filter; 
     }
+    catch (Exception ex) {
+    }
+    
+    StatusFilter filter = (StatusFilter) decoder.decode("StatusFilter");
+    if (filter != null)
+      pStatusFilter = filter;
+    
+    pFilterButtons.get(pStatusFilter).setSelected(true);
+    
+    pUserFilter = (String) decoder.decode("UserFilter");
+    pGroupFilter = (String) decoder.decode("GroupFilter");
+    
+    pCustomFilter = (TreeSet<String>) decoder.decode("CustomFilter");
+    pFilterOverride = (TreeSet<Long>) decoder.decode("FilterOverride");
+    
+    switch (pViewFilter) {
+    case UserJobs:
+      if (pUserFilter != null) {
+        JRadioButtonMenuItem item = pViewUserButtons.get(pUserFilter);
+        if (item != null)
+          item.setSelected(true);
+      }
+      break;
+    case GroupJobs:
+      if (pGroupFilter != null) {
+        JRadioButtonMenuItem item = pViewGroupButtons.get(pGroupFilter);
+        if (item != null)
+          item.setSelected(true);
+      }
+      break;
+    case AllJobs:
+    case Default:
+    case MyJobs:
+    case CustomJobs:
+      pFilterButtons.get(pViewFilter).setSelected(true);
+    }
+    
+    updatePanelHeader();
 
     if(UIMaster.getInstance().restoreSelections()) {
       TreeSet<Long> selected = (TreeSet<Long>) decoder.decode("SelectedIDs");
@@ -1609,24 +2283,77 @@ class JQueueJobBrowserPanel
   /**
    * The working area view filter.
    */
-  public 
+  public static
   enum ViewFilter
   {  
     /**
      * Show only job groups owned by the current view.
      */
-    SingleView, 
+    Default, 
 
     /**
      * Show job groups from any view owned by the current user.
      */ 
-    OwnedViews, 
+    MyJobs, 
 
     /**
      * Show job groups from all views.
      */ 
-    AllViews; 
+    AllJobs,
+    
+    /**
+     * Show only the job groups associated with a specific user.
+     */
+    UserJobs,
+    
+    /**
+     * Show only the job groups associated with a specific group of users. 
+     */
+    GroupJobs,
+    
+    /**
+     * Show the job groups associated with a custom list of users. 
+     */
+    CustomJobs; 
   }
+
+  /**
+   * The job group status filter
+   */
+  public static
+  enum StatusFilter 
+  {
+    /**
+     * Show all job.
+     */
+    AllGroups,
+    
+    /**
+     * Groups with at least one failed job.
+     */
+    AnyFailed,
+    
+    /**
+     * Groups with at least one limbo job.
+     */
+    AnyLimbo,
+    
+    /**
+     * Groups with at least one paused job.
+     */
+    AnyPaused,
+    
+    /**
+     * Groups with at least one running job.
+     */
+    AnyRunning,
+    
+    /**
+     * Groups where all the jobs are either Finished, Failed, or Aborted.
+     */
+    AllCompleted
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2343,23 +3070,49 @@ class JQueueJobBrowserPanel
         QueueMgrClient qclient  = master.acquireQueueMgrClient();
 	try {
 	  switch(pFilter) {
-	  case SingleView:
+	  case Default:
 	    qclient.deleteViewJobGroups(pAuthor, pView);
 	    break;
 	    
-	  case OwnedViews:
+	  case MyJobs:
+  	    {
+  	      TreeSet<String> users = new TreeSet<String>();
+  	      users.add(PackageInfo.sUser);
+              qclient.deleteUsersJobGroups(users);
+            }
+            break;
+          
+	  case UserJobs:
 	    {
-	      TreeMap<String,TreeSet<String>> all = mclient.getWorkingAreas();
-	      TreeSet<String> views = all.get(pAuthor);
-	      if(views != null) {
-		for(String view : views) 
-		  qclient.deleteViewJobGroups(pAuthor, view);
+	      if (pUserFilter != null) {
+	        TreeSet<String> users = new TreeSet<String>();
+	        users.add(pUserFilter);
+	        qclient.deleteUsersJobGroups(users);
 	      }
 	    }
 	    break;
 	    
-	  case AllViews:
+	  case GroupJobs:
+	    {
+	      if (pGroupFilter != null) {
+	        TreeSet<String> users = mclient.getWorkGroups().getUsersInGroup(pGroupFilter);
+	        if (users != null)
+	          qclient.deleteUsersJobGroups(users);
+	      }
+	    }
+	    break;
+	    
+	  case CustomJobs:
+	    {
+	      if (pCustomFilter != null) {
+	        qclient.deleteUsersJobGroups(pCustomFilter);
+	      }
+	    }
+	    break;
+	    
+	  case AllJobs:
 	    qclient.deleteAllJobGroups();
+	    break;
 	  }
 	}
 	catch(PipelineException ex) {
@@ -2387,12 +3140,34 @@ class JQueueJobBrowserPanel
   
   private static final long serialVersionUID = -507775432755443313L;
 
-  
+  private static final Icon sFilterAnchorIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("JobBrowserFilterButton.png"));
+
+  private static final Icon sFilterAnchorPressedIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("JobBrowserFilterButtonPressed.png"));
+
+  private static final Icon sViewAnchorIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("JobBrowserViewButton.png"));
+
+  private static final Icon sViewAnchorPressedIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("JobBrowserViewButtonPressed.png"));
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * The set of all current pipeline groups.
+   */
+  private Set<String> pWorkGroups;
+  
+  /**
+   * The set of all current pipeline users.
+   */
+  private Set<String> pWorkUsers;
+  
   /**
    * All job groups indexed by group ID. 
    */ 
@@ -2408,11 +3183,31 @@ class JQueueJobBrowserPanel
    * The IDs of the selected job groups. 
    */ 
   private TreeSet<Long>  pSelectedIDs; 
+  
+  private StatusFilter pStatusFilter;
 
   /**
    * The working area view filter.
    */
   private ViewFilter  pViewFilter; 
+  
+  /**
+   * The name of the user being filtered on when the viewfilter is set to 
+   * {@link ViewFilter#UserJobs}
+   */
+  private String pUserFilter;
+  
+  /**
+   * The name of the group being filtered on when the viewfilter is set to 
+   * {@link ViewFilter#GroupJobs}
+   */
+  private String pGroupFilter;
+  
+  /**
+   * The set of users being filtered on when the viewfilter is set to 
+   * {@link ViewFilter#CustomJobs}
+   */
+  private TreeSet<String> pCustomFilter;
   
   /**
    * A specific list of job groups to display in the queue job browser panel, which will take
@@ -2427,19 +3222,49 @@ class JQueueJobBrowserPanel
   private boolean pDoJobKeysNeedUpdate;
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Popup menu launched by the filter icon. 
+   */
+  private JPopupMenu pFilterPopup;
+  private TreeMap<StatusFilter, JRadioButtonMenuItem> pFilterButtons;
+  private ButtonGroup pFilterButtonGroup;
+  
+  /**
+   * Icon to lauch the filter menu.
+   */
+  private JLabel pFilterMenuLabel;
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Popup menu launched by the filter icon. 
+   */
+  private JPopupMenu pViewPopup;
+  private JMenu pViewUserMenu;
+  private JMenu pViewGroupMenu;
+  private TreeMap<ViewFilter, JRadioButtonMenuItem> pViewButtons;
+  private TreeMap<String, JRadioButtonMenuItem> pViewUserButtons;
+  private TreeMap<String, JRadioButtonMenuItem> pViewGroupButtons;
+  private ButtonGroup pViewButtonGroup;
+  
+  /**
+   * Icon to lauch the filter menu.
+   */
+  private JLabel pViewMenuLabel;
+  
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The groups popup menu.
    */ 
-  private JPopupMenu  pGroupsPopup;
+  private JPopupMenu pGroupsPopup;
   
   /**
    * The groups popup menu items.
    */ 
   private JMenuItem  pGroupsUpdateItem; 
-  private JMenuItem  pGroupsSingleViewItem; 
-  private JMenuItem  pGroupsOwnedViewsItem; 
-  private JMenuItem  pGroupsAllViewsItem; 
 
   private JMenuItem  pClearFocusItem;
   private JMenuItem  pMonitorGroupsItem;
@@ -2455,6 +3280,9 @@ class JQueueJobBrowserPanel
   private JMenuItem  pGroupsDeleteItem;
   private JMenuItem  pGroupsDeleteCompletedItem;
   private JMenuItem  pUpdateAllJobKeysItem;
+  
+  private JMenuItem  pGroupShowNodeItem;
+  private ArrayList<JMenuItem> pShowNodeChannelItems;
 
 
   /**
@@ -2467,11 +3295,6 @@ class JQueueJobBrowserPanel
    */
   private JLabel  pHeaderLabel;
   
-  /**
-   * Used to select the current view filter.
-   */ 
-  private JButton  pViewFilterButton;  
-
   /**
    * Deletes completed job groups when pressed.
    */ 

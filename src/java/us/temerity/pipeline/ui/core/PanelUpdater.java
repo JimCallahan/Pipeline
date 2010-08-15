@@ -378,21 +378,37 @@ class PanelUpdater
       pSelectedJobGroupIDs = pQueueJobBrowserPanel.getSelectedGroupIDs();
       
       pJobFilterOverride = pQueueJobBrowserPanel.getFilterOverride();
+      
+      pJobGroupAuthor = null;
+      pJobGroupView = null;
+      pJobGroupGroup = null;
+      pJobGroupCustom = null;
 
       switch(pQueueJobBrowserPanel.getViewFilter()) {
-      case SingleView:
+      
+      case Default:
         pJobGroupAuthor = pAuthor;
-        pJobGroupView   = pView; 
+        pJobGroupView   = pView;
         break;
       
-      case OwnedViews:
-        pJobGroupAuthor = pAuthor;
-        pJobGroupView   = null;
+      case MyJobs:
+        pJobGroupAuthor = PackageInfo.sUser;
+        break;
+        
+      case UserJobs:
+        pJobGroupAuthor = pQueueJobBrowserPanel.getUserFilter();
+        break;
+      
+      case GroupJobs:
+        pJobGroupGroup  = pQueueJobBrowserPanel.getGroupFilter();
+        break;
+        
+      case CustomJobs:
+        pJobGroupCustom = new TreeSet<String>(pQueueJobBrowserPanel.getCustomFilter());
         break;
 
-      case AllViews:
-        pJobGroupAuthor = null;
-        pJobGroupView   = null;
+      case AllJobs:
+        break;
       }
     }
 
@@ -726,8 +742,22 @@ class PanelUpdater
 	    /* job browser/viewer panel related */ 
 	    if((pQueueJobBrowserPanel != null) || (pQueueJobViewerPanel != null)) {
 	      master.updatePanelOp(pGroupID, "Updating Jobs...");
+	      
+	      if((pWorkGroups == null) || (pWorkUsers == null)) {
+	        if (wgroups == null)
+	          wgroups = mclient.getWorkGroups();
+	        pWorkGroups = wgroups.getGroups();
+	        pWorkUsers  = wgroups.getUsers();
+	      }
+	      
 	      if (pJobFilterOverride != null) 
 	        pJobGroups = qclient.getJobGroups(pJobFilterOverride);
+	      else if (pJobGroupCustom != null)
+	        pJobGroups = qclient.getJobGroupsByUsers(pJobGroupCustom);
+	      else if (pJobGroupGroup != null) {
+	        TreeSet<String> users = wgroups.getUsersInGroup(pJobGroupGroup);
+	        pJobGroups = qclient.getJobGroupsByUsers(users);
+	      }
 	      else
 	        pJobGroups = qclient.getJobGroups(pJobGroupAuthor, pJobGroupView); 
               if(!pJobGroups.isEmpty()) {
@@ -1067,7 +1097,8 @@ class PanelUpdater
 	  /* job browser */ 
 	  if(pQueueJobBrowserPanel != null) 
 	    pQueueJobBrowserPanel.applyPanelUpdates
-	      (pAuthor, pView, pJobGroups, pJobStateDist, pDoJobKeysNeedUpdate);
+	      (pAuthor, pView, pJobGroups, pJobStateDist, pDoJobKeysNeedUpdate, 
+	       pWorkUsers, pWorkGroups);
 	  
 	  /* job viewer */ 
 	  if(pQueueJobViewerPanel != null) 
@@ -1297,6 +1328,16 @@ class PanelUpdater
    */
   private String  pJobGroupAuthor;
   private String  pJobGroupView;
+  
+  /**
+   * The name of the pipeline group that is used to filter job groups.
+   */
+  private String  pJobGroupGroup;
+  
+  /**
+   * The set of pipeline users to filter jobs on.
+   */
+  private TreeSet<String> pJobGroupCustom;
   
   /**
    * A set of job groups whose information will be retrieved.

@@ -7040,7 +7040,54 @@ class QueueMgr
       pDatabaseLock.releaseReadLock();
     }
   }
+  
+  /**
+   * Get the job groups owned by the set of users.
+   * 
+   * @param req 
+   *   The job groups request.
+   *    
+   * @return 
+   *   <CODE>QueueGetJobGroupsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the job groups.
+   */ 
+  public Object
+  getJobGroupsByUsers
+  (
+    SimpleSetReq req  
+  )
+  {
+    TaskTimer timer = new TaskTimer();
 
+    TreeSet<String> authors = req.getSet();
+    
+    TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
+
+    if (authors.isEmpty())
+      return new QueueGetJobGroupsRsp(timer, groups);
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      synchronized(pJobGroups) {
+        timer.resume();
+        for(Long groupID : pJobGroups.keySet()) {
+          QueueJobGroup group = pJobGroups.get(groupID);
+          if(group != null) 
+            if (authors.contains(group.getNodeID().getAuthor()))
+              groups.put(groupID, group);
+        }
+        
+        return new QueueGetJobGroupsRsp(timer, groups);
+      }
+    }
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }    
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Delete the completed job groups. <P> 
    * 
@@ -7168,6 +7215,80 @@ class QueueMgr
       pDatabaseLock.releaseReadLock();
     } 
   }
+  
+  /**
+   * Delete all of the completed job groups owned by the set of users. <P> 
+   * 
+   * @param req 
+   *   The delete group request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to delete the job groups.
+   */ 
+  public Object
+  deleteUsersJobGroups
+  (
+    SimpleSetReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.deleteUsersJobGroups()");
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();
+
+      TreeSet<String> goodUsers = new TreeSet<String>();
+      TreeSet<String> badUsers = new TreeSet<String>();
+      
+      for (String user : req.getSet()) {
+        if(!pAdminPrivileges.isQueueManaged(req, user))
+          badUsers.add(user);
+        else
+          goodUsers.add(user);
+      }
+      
+      if (!goodUsers.isEmpty()) {
+        timer.aquire();
+        synchronized(pJobGroups) {
+          timer.resume();
+
+          ArrayList<QueueJobGroup> dead = new ArrayList<QueueJobGroup>();
+          {
+            for(Long groupID : pJobGroups.keySet()) {
+              QueueJobGroup group = pJobGroups.get(groupID);
+              String author = group.getNodeID().getAuthor();
+              if(goodUsers.contains(author)) 
+                dead.add(group);
+            }
+          }
+
+          String user = req.getRequestor(); 
+          for(QueueJobGroup group : dead) {
+            try {
+              deleteCompletedJobGroup(timer, user, group);
+            }
+            catch(PipelineException ex) {
+            }
+          }
+        }
+      }
+      
+      if (!badUsers.isEmpty())
+        throw new PipelineException
+          ("Not all the job groups were successfully deleted.  There were insufficient " +
+           "privileges to delete the jobs owned by " + badUsers + ".");
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }  
+    finally {
+      pDatabaseLock.releaseReadLock();
+    } 
+  }
 
   /**
    * Delete all of the completed job groups in all working areas. <P> 
@@ -7228,7 +7349,7 @@ class QueueMgr
    * @param group
    *   The completed job group.
    * 
-   * @throws PipelineExceptio
+   * @throws PipelineException
    *   If the job group is not completed.
    */ 
   private void 

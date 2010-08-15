@@ -2763,6 +2763,46 @@ class QueueMgrClient
       return null;
     }        
   }
+  
+  /**
+   * Get the job groups which match the following working area pattern.
+   * 
+   * @param author
+   *   The name of the user owning the job groups or 
+   *   <CODE>null</CODE> to match all users.
+   * 
+   * @param view 
+   *   The name of the working area view owning the job groups or 
+   *   <CODE>null</CODE> to match all working areas.
+   * 
+   * @throws PipelineException
+   *   If no job groups exist.
+   */ 
+  public synchronized TreeMap<Long,QueueJobGroup>
+  getJobGroupsByUsers
+  (
+    TreeSet<String> authors
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    if (authors == null || authors.isEmpty())
+      throw new PipelineException
+        ("Cannot make a call to getJobGroupsByUsers with a null or empty set.");
+
+    SimpleSetReq req = new SimpleSetReq(authors); 
+
+    Object obj = performTransaction(QueueRequest.GetJobGroupsByUsers, req);
+    if(obj instanceof QueueGetJobGroupsRsp) {
+      QueueGetJobGroupsRsp rsp = (QueueGetJobGroupsRsp) obj;
+      return rsp.getJobGroups();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
 
   /**
    * Delete the completed job groups. <P> 
@@ -2825,6 +2865,38 @@ class QueueMgrClient
     Object obj = performTransaction(QueueRequest.DeleteViewJobGroups, req);
     handleSimpleResponse(obj);
   }
+
+  /**
+   * Delete all of the completed job groups owned by a set of users. <P> 
+   * 
+   * This method will fail unless the current user has privileged access status for all the 
+   * users in the set.  However, the method will not terminated abruptly when such a 
+   * privilege failure occurs.  Instead it will continue iterating through the set until the 
+   * end and then report a single error.
+   * 
+   * @param users
+   *   The set of user names whose job groups will be deleted.
+   * 
+   * @throws PipelineException
+   *   If unable to delete the job groups for any user.  This command will attempt to delete
+   *   the job groups for all the specified users and will then throw an exception summing up
+   *   the failures it experienced.
+   */ 
+  public synchronized void
+  deleteUsersJobGroups
+  ( 
+    TreeSet<String> users
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    SimpleSetReq req = new SimpleSetReq(users);
+
+    Object obj = performTransaction(QueueRequest.DeleteUsersJobGroups, req);
+    handleSimpleResponse(obj);
+  }
+  
 
   /**
    * Delete all of the completed job groups in all working areas. <P> 

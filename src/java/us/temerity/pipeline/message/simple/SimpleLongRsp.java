@@ -1,12 +1,10 @@
-// $Id: MiscGetLongRsp.java,v 1.1 2009/12/19 21:14:28 jesse Exp $
-
 package us.temerity.pipeline.message.simple;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   L O N G   R S P                                                      */
+/*   S I M P L E   L O N G   R S P                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**

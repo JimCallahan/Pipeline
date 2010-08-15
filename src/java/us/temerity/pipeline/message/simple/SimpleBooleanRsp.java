@@ -1,16 +1,10 @@
-// $Id: BooleanRsp.java,v 1.1 2009/12/14 03:20:56 jim Exp $
-
 package us.temerity.pipeline.message.simple;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 
-import java.io.*;
-import java.util.*;
-
 /*------------------------------------------------------------------------------------------*/
-/*  B O O L E A N   R S P                                                                   */
+/*  S I M P L E   B O O L E A N   R S P                                                     */
 /*------------------------------------------------------------------------------------------*/
 
 /**
