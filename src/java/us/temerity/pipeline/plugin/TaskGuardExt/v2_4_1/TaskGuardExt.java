@@ -214,21 +214,29 @@ class TaskGuardExt
       }
     }
     
-    /* is the node being checked-in is part of the same project as the root node? */ 
+    /* is the node being checked-in part of the same project as the root node? */ 
     if(!rootProjectName.equals(nodeProjectName)) 
       throw new PipelineException
         ("Check-in aborted for node (" + nname + ") because it has a different " + 
          aProjectName + " (" + nodeProjectName + ") than the root node of the check-in " + 
          "operation (" + rname + ") which has a " + aProjectName + 
-         " (" + nodeProjectName + ")!");  
+         " (" + rootProjectName + ")!");  
     
-    /* is the node being checked-in is part of the same task as the root node? */ 
+    /* is the node being checked-in part of the same task as the root node? */ 
     if(!rootTaskName.equals(nodeTaskName)) 
       throw new PipelineException
         ("Check-in aborted for node (" + nname + ") because it has a different " + 
          aTaskName + " (" + nodeTaskName + ") than the root node of the check-in " + 
          "operation (" + rname + ") which has a " + aTaskName + 
-         " (" + nodeTaskName + ")!");  
+         " (" + rootTaskName + ")!");  
+    
+    /* is the node being checked-in the same type of task as the root node? */ 
+    if(!rootTaskType.equals(nodeTaskType)) 
+      throw new PipelineException
+        ("Check-in aborted for node (" + nname + ") because it has a different " + 
+         aTaskType + " (" + nodeTaskType + ") than the root node of the check-in " + 
+         "operation (" + rname + ") which has a " + aTaskType + 
+         " (" + rootTaskType + ")!");  
     
     /* compare the Purpose of the root and current node */ 
     {
@@ -243,7 +251,7 @@ class TaskGuardExt
 	       "root node of the check-in operation has a " + aPurpose + " of " + 
 	       "(" + aSubmit + ")!"); 
 	}
-	//TODO, I think this line is wrong.  Why is Approve here?
+
 	else if(purpose.equals(aPrepare)) {
 	  if(!rootAnnots.containsKey(aSubmit) && 
 	     !rootAnnots.containsKey(aApprove) && 

@@ -103,6 +103,7 @@ class TemplateManifestBuilder
            null);
       addParam(param);
     }
+    
     {
       UtilityParam param = 
         new StringUtilityParam

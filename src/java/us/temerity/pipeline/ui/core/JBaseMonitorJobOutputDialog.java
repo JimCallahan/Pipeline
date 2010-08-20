@@ -2,16 +2,15 @@
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*; 
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.*;
 import java.util.concurrent.atomic.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   M O N I T O R   J O B   O U T P U T   D I A L O G                            */
@@ -191,18 +190,21 @@ class JBaseMonitorJobOutputDialog
   /**
    * Invoked when the Window is set to be the active Window.
    */
+  @Override
   public void 
   windowActivated(WindowEvent e) {} 
 
   /**
    * Invoked when a window has been closed as the result of calling dispose on the window.
    */ 
+  @Override
   public void 	
   windowClosed(WindowEvent e) {} 
 
   /**
    * Invoked when the user attempts to close the window from the window's system menu.
    */ 
+  @Override
   public void 	
   windowClosing
   (
@@ -212,17 +214,20 @@ class JBaseMonitorJobOutputDialog
     pShouldUpdate.set(false);
     if(pMonitorTask.isAlive()) 
       pMonitorTask.interrupt();
+    setVisible(false);
   }
 
   /**
    * Invoked when a Window is no longer the active Window.
    */ 
+  @Override
   public void 	
   windowDeactivated(WindowEvent e) {}
 
   /**
    * Invoked when a window is changed from a minimized to a normal state.
    */ 
+  @Override
   public void 	
   windowDeiconified
   (
@@ -235,6 +240,7 @@ class JBaseMonitorJobOutputDialog
   /**
    * Invoked when a window is changed from a normal to a minimized state.
    */ 
+  @Override
   public void 	
   windowIconified
   (
@@ -247,6 +253,7 @@ class JBaseMonitorJobOutputDialog
   /**
    * Invoked the first time a window is made visible.	
    */ 
+  @Override
   public void     
   windowOpened
   (
@@ -265,6 +272,7 @@ class JBaseMonitorJobOutputDialog
   /**
    * Save the output to disk.
    */ 
+  @Override
   public void 
   doApply() 
   {    
@@ -285,6 +293,7 @@ class JBaseMonitorJobOutputDialog
   /**
    * Disconnect from job server and close window.
    */ 
+  @Override
   public void 
   doCancel()
   {
@@ -334,6 +343,7 @@ class JBaseMonitorJobOutputDialog
      * @return 
      *   The number of lines or <CODE>null</CODE> if unable to determine the number of lines.
      */
+    @Override
     protected Integer
     getNumLines()
     {
@@ -362,6 +372,7 @@ class JBaseMonitorJobOutputDialog
      * @return 
      *   The text or <CODE>null</CODE> if unable to retreive the text. 
      */
+    @Override
     protected String
     getLines
     (
@@ -404,10 +415,10 @@ class JBaseMonitorJobOutputDialog
       super("JBaseMonitorJobOutputDialog:MonitorTask");
     }
     
+    @Override
     public void 
     run()
     {
-      UIMaster master = UIMaster.getInstance();
       JobMgrClient client = null;
       try {
 	client = new JobMgrClient(pHostname);	
@@ -462,10 +473,10 @@ class JBaseMonitorJobOutputDialog
       pFile = file; 
     }
 
+    @Override
     public void 
     run()
     {
-      UIMaster master = UIMaster.getInstance();
       JobMgrClient client = null;
       try {
 	client = new JobMgrClient(pHostname);	
@@ -530,6 +541,7 @@ class JBaseMonitorJobOutputDialog
       super("JBaseMonitorJobOutputDialog:SaveDoneTask");
     }
 
+    @Override
     public void 
     run()
     {
@@ -537,7 +549,15 @@ class JBaseMonitorJobOutputDialog
     }
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
 
+  private static final long serialVersionUID = -7002244156860580980L;
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

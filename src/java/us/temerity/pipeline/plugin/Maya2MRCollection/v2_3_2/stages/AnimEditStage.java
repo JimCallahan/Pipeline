@@ -42,10 +42,10 @@ class AnimEditStage
       setupLink(node, namespace, getReference(), getModel());
     }
     if (cameraName != null) {
-      setupLink(cameraName, "renderCam", getReference(), getModel());;
+      setupLink(cameraName, "renderCam", getReference(), getModel());
     }
     if (cameraAnim != null)
-      setupLink(cameraAnim, "renderCam", getImport(), getAnimation());;
+      setupLink(cameraAnim, "renderCam", getImport(), getAnimation());
   }
   private static final long serialVersionUID = -7245300798400386323L;
 

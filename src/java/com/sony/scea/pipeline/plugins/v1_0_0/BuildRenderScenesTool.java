@@ -788,8 +788,8 @@ public class BuildRenderScenesTool extends BaseTool implements ActionListener
 
     String projectName = nProjectNameMap.get(name);
 
-    BaseEditor mayaNormalEditor  = getEditor(mclient, "Temerity", "Maya", toolset);;
-    BaseEditor mayaProjectEditor  = getEditor(mclient, "Temerity", "MayaProject", toolset);;
+    BaseEditor mayaNormalEditor  = getEditor(mclient, "Temerity", "Maya", toolset);
+    BaseEditor mayaProjectEditor  = getEditor(mclient, "Temerity", "MayaProject", toolset);
     Path lightingStart = nLightingNameStartMap.get(name);
     Path imagesStart = nImagesNameStartMap.get(name);
     Path vfxStart = nVfxNameStartMap.get(name);

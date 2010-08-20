@@ -1,21 +1,17 @@
-// $Id: BuilderIDAnnotationParam.java,v 1.1 2008/02/11 03:16:25 jim Exp $
-
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
+
 /*------------------------------------------------------------------------------------------*/
-/*   B U I L D E R   I D   A N N O T A T I O N   P A R A M                                  */
+/*   B U I L D E R   A C T I O N   I D   P A R A M                                          */
 /*------------------------------------------------------------------------------------------*/
 
-/**
- * An Annotation parameter with a BuilderID value. <P> 
- */
 public 
-class BuilderIDAnnotationParam
+class BuilderIDActionParam
   extends BuilderIDParam
-  implements AnnotationParam
-{  
+  implements ActionParam
+{
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -26,7 +22,7 @@ class BuilderIDAnnotationParam
    * from user code.
    */    
   public
-  BuilderIDAnnotationParam() 
+  BuilderIDActionParam() 
   {
     super();
   }
@@ -44,7 +40,7 @@ class BuilderIDAnnotationParam
    *   The default value for this parameter.
    */ 
   public
-  BuilderIDAnnotationParam
+  BuilderIDActionParam
   (
    String name,  
    String desc, 
@@ -53,16 +49,12 @@ class BuilderIDAnnotationParam
   {
     super(name, desc, value);
   }
+  
 
-
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3578989142679478108L;
-
+  private static final long serialVersionUID = 6076904540439570315L;
 }
-
-
-

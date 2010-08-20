@@ -1,0 +1,38 @@
+List of Plugins needed for v2.4.28 task system.
+
+TaskBuilder - Done
+
+DataFlow
+
+Extension to block bad check-ins
+TaskGuardExt - Done
+
+Extension to auto-run verify nodes.
+TaskAutoVerifyExt 
+
+Builder to be run by TaskAutoVerifyExt that queues the verify builder node.
+RunVerifyBuilder (TaskCollection)
+
+Basic Verify Builder.
+VerifyTaskBuilder (TaskCollection) - Done
+
+Action to run a verify or publish builder.
+TaskRunBuilderAction - Done
+
+Action to run a verify or publish template
+TaskRunTemplateAction 
+
+Builder to be run that queues the publish builder node.
+RunPublishBuilder (TaskCollection)
+
+Basic Publish Builder.
+PublishTaskBuilder (TaskCollection)
+
+Tool that can be run to publish a version.
+TaskPublishTool
+
+Tool to find the verify nodes for a task
+TaskSelectVerifyTool
+
+Tool to find the publish nodes for a task
+TaskSelectPublishTool
