@@ -3289,6 +3289,9 @@ class UIMaster
    * on the given channel.
    * <p>
    * This command will fail if any of the three panels already exist on the specified channel.
+   * <p>
+   * If all three of the panels exist and share the same top level JFrame, that JFrame will 
+   * be restored and pulled to the front.
    * 
    * @param channel
    *   The channel to make the bundle on.
@@ -3307,8 +3310,19 @@ class UIMaster
     boolean hasFiles = (pNodeFilesPanels.getPanel(channel) != null);
     boolean hasHistory = (pNodeDetailsPanels.getPanel(channel) != null);
     
-    if (hasDetails && hasFiles && hasHistory)
+    if (hasDetails && hasFiles && hasHistory) {
+      Frame detailParent = pNodeDetailsPanels.getPanel(channel).getTopFrame();
+      Frame fileParent = pNodeFilesPanels.getPanel(channel).getTopFrame();
+      Frame historyParent = pNodeHistoryPanels.getPanel(channel).getTopFrame();
+      if ((detailParent == fileParent) && (fileParent == historyParent)) {
+        detailParent.setState(JFrame.NORMAL);
+        detailParent.toFront();
+        
+        detailParent.validate();
+        detailParent.repaint();
+      }
       return true;
+    }
     else if (!hasDetails && !hasFiles && !hasHistory) {
       JPanelFrame frame = createWindow();
       frame.setSize(612, 752);

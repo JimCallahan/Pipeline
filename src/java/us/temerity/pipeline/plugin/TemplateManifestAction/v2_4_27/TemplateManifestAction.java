@@ -169,7 +169,7 @@ class TemplateManifestAction
     }
     
     addSupport(OsType.MacOS);
-    addSupport(OsType.Unix);
+    addSupport(OsType.Windows);
   }
   
   

@@ -369,6 +369,34 @@ class BaseUtil
   }
   
   /**
+   * Returns a boolean that indicates if any versions of the node exist in the repository.
+   * 
+   * @param name
+   *   The name of the node to search for.
+   *        
+   * @return 
+   *   <code>true</code> if the node exists in the repository.  <code>false</code> 
+   *   if the node does not exist or if it has never been checked-in.
+   */
+  public boolean 
+  checkedInVersionExists
+  (
+    String name
+  ) 
+    throws PipelineException
+  {
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(name, false);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
+    State state = treeComps.getState(name);
+    if ( state == State.WorkingCurrentCheckedInSome || 
+         state == State.WorkingNoneCheckedInSome ||
+         state == State.WorkingOtherCheckedInSome)
+      return true;
+    return false;
+  }
+  
+  /**
    * Returns all the paths that are located directly underneath a given path.
    * 
    * @param start

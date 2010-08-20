@@ -3183,7 +3183,6 @@ class BaseBuilder
     private static final long serialVersionUID = -8784882749410198882L;
   }
 
-
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -3198,6 +3197,13 @@ class BaseBuilder
   public final static String aActionOnExistence = "ActionOnExistence";
   public final static String aSelectionKeys = "SelectionKeys";
   public final static String aCheckinWhenDone = "CheckinWhenDone";
+  
+  public final static ParamMapping aReleaseOnErrorParam = new ParamMapping(aReleaseOnError);
+  public final static ParamMapping aReleaseViewParam = new ParamMapping(aReleaseView);
+  public final static ParamMapping aActionOnExistenceParam = 
+    new ParamMapping(aActionOnExistence);
+  public final static ParamMapping aSelectionKeysParam = new ParamMapping(aSelectionKeys);
+  public final static ParamMapping aCheckinWhenDoneParam = new ParamMapping(aCheckinWhenDone);
   
   
   private static final long serialVersionUID = 1157778379895394547L;

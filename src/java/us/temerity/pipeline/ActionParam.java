@@ -1,11 +1,6 @@
-// $Id: ActionParam.java,v 1.5 2004/11/11 00:40:09 jim Exp $
-
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A C T I O N   P A R A M                                                                */

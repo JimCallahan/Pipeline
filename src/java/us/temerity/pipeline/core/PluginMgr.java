@@ -11,6 +11,8 @@ import java.util.concurrent.locks.*;
 import java.util.jar.*;
 import java.util.zip.*;
 
+import javax.accessibility.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.glue.*;
@@ -2375,10 +2377,18 @@ class PluginMgr
           checkForPluginAliasing(pActions, cname, plg); 
 
         BaseAction action = (BaseAction) plg;
-        if(action.supportsSourceParams() && (action.getInitialSourceParams() == null))
-          throw new PipelineException
-            ("The action plugin (" + cname + ") claims to support source parameters, but " + 
-             "does not actually create any source parameters."); 
+        if(action.supportsSourceParams() ) {
+          if (action.getInitialSourceParams() == null)
+            throw new PipelineException
+              ("The action plugin (" + cname + ") claims to support source parameters, but " + 
+               "does not actually create any source parameters.");
+          for (ActionParam param : action.getInitialSourceParams().values())
+            if (param instanceof BuilderIDActionParam)
+              throw new PipelineException
+                ("The action plugin (" + cname + ") has a source parameter which is a " +
+                 "BuilderIDActionParam.  Pipeline does not support source parameters of " +
+                 "this type.");
+        }
 
 	if(isDryRun) {
 	  checkForPluginUnderDevelopment(pActions, cname, plg);

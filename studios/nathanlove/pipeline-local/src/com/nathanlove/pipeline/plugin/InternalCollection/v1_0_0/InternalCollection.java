@@ -24,6 +24,7 @@ class InternalCollection
     
     LayoutGroup group = new LayoutGroup(true);
     group.addEntry("Internal");
+    group.addEntry("NewTaskTest");
     
     
     setLayout(group);
@@ -37,6 +38,7 @@ class InternalCollection
   {
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
     toReturn.put("Internal", "com.nathanlove.pipeline.plugin.InternalCollection.v1_0_0.InternalBuilder");
+    toReturn.put("NewTaskTest", "com.nathanlove.pipeline.plugin.InternalCollection.v1_0_0.NewTaskTestBuilder");
     
     return toReturn;
   }

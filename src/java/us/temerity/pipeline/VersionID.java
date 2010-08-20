@@ -84,6 +84,10 @@ class VersionID
    * 
    * @param str 
    *   The initial version ID encoded as a <CODE>String</CODE>.
+   *   
+   * @throws IllegalArgumentException
+   *   If the string representation passed in is not valid.  This exception can be avoided 
+   *   through use of the {@link #isValidVersionID(String)} method.
    */ 
   public 
   VersionID

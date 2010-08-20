@@ -2974,6 +2974,18 @@ class JNodeDetailsPanel
 
 		    hbox.add(field);
 		  }
+		  else if (aparam instanceof BuilderIDActionParam) {
+		    /* Setting the value and Action command are handled later.*/
+		    JBuilderIDSelectionField field = 
+		      UIMaster.getInstance().createBuilderIDSelectionField(pGroupID, sVSize);
+		    pcomps[1] = field;
+		    
+		    field.addActionListener(this);
+		    
+                    field.setEnabled(!isLocked() && !pIsFrozen); 
+
+		    hbox.add(field);  
+		  }
 		}
 		else {
 		  JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
@@ -3115,6 +3127,21 @@ class JNodeDetailsPanel
 
 		    hbox.add(field);
 		  }
+                  else if(aparam instanceof BuilderIDActionParam) {
+                    /* Setting the value is handled later.*/
+                    JBuilderIDSelectionField field = 
+                      UIMaster.getInstance().createBuilderIDSelectionField(pGroupID, sVSize);
+                    pcomps[3] = field;
+                    
+                    Dimension size = new Dimension(sVSize, 19);
+                    field.setMinimumSize(size);
+                    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+                    field.setPreferredSize(size);
+                    
+                    field.setEnabled(false); 
+                      
+                    hbox.add(field);
+                  }
 		  else if(aparam instanceof TextAreaActionParam) {
                     TextAreaActionParam bparam = (TextAreaActionParam) aparam; 
                     String value = (String) aparam.getValue();
@@ -3173,7 +3200,192 @@ class JNodeDetailsPanel
 
 	      vpanel.add(hbox);
 	    }
+	    
+	    /* optional builder ID slave fields */ 
+	    if((pcomps[1] instanceof JBuilderIDSelectionField) ||
+	      (pcomps[3] instanceof JBuilderIDSelectionField)) {
 
+	      JBuilderIDSelectionField wfield = null;
+	      if(pcomps[1] instanceof JBuilderIDSelectionField)
+	        wfield = (JBuilderIDSelectionField) pcomps[1];
+
+	      JBuilderIDSelectionField cfield = null;
+	      if(pcomps[3] instanceof JBuilderIDSelectionField)
+	        cfield = (JBuilderIDSelectionField) pcomps[3];
+
+	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	      /* builder version */ 
+	      {
+	        {
+	          JLabel label = 
+	            UIFactory.createFixedLabel
+	            ("Version:", sTSize-7*level, JLabel.RIGHT, 
+	            "The revision number of the builder collection."); 
+	          tpanel.add(label); 
+	        }
+
+	        {
+	          Box hbox = new Box(BoxLayout.X_AXIS);
+
+	          if(wfield != null) 
+	            hbox.add(wfield.createVersionField(sVSize));
+	          else {
+	            JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+	            label.setName("TextFieldLabel");
+	            hbox.add(label); 
+	          }
+
+	          hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+	          if(cfield != null) 
+	            hbox.add(cfield.createVersionField(sVSize));
+	          else {
+	            JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+	            label.setName("TextFieldLabel");
+	            hbox.add(label); 
+	          }
+
+	          vpanel.add(hbox); 
+	        }
+	      }
+
+	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	      /* builder vendor */ 
+	      {
+	        {
+	          JLabel label = 
+	            UIFactory.createFixedLabel
+	            ("Vendor:", sTSize-7*level, JLabel.RIGHT, 
+	            "The vendor of the builder collection."); 
+	          tpanel.add(label); 
+	        }
+
+	        {
+	          Box hbox = new Box(BoxLayout.X_AXIS);
+
+	          if(wfield != null) 
+	            hbox.add(wfield.createVendorField(sVSize));
+	          else {
+	            JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+	            label.setName("TextFieldLabel");
+	            hbox.add(label); 
+	          }
+
+	          hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+	          if(cfield != null) 
+	            hbox.add(cfield.createVendorField(sVSize));
+	          else {
+	            JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+	            label.setName("TextFieldLabel");
+	            hbox.add(label); 
+	          }
+
+	          vpanel.add(hbox); 
+	        }
+	      }
+
+              UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+              /* builder OS support */ 
+              {
+                {
+                  JLabel label = 
+                    UIFactory.createFixedLabel
+                    ("OS Support:", sTSize-7*level, JLabel.RIGHT, 
+                    "The operating systems supported by the builer collection."); 
+                  tpanel.add(label); 
+                }
+
+                {
+                  Box hbox = new Box(BoxLayout.X_AXIS);
+
+                  if(wfield != null) 
+                    hbox.add(wfield.createOsSupportField(sVSize));
+                  else {
+                    JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                    label.setName("TextFieldLabel");
+                    hbox.add(label); 
+                  }
+
+                  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+                  if(cfield != null) 
+                    hbox.add(cfield.createOsSupportField(sVSize));
+                  else {
+                    JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                    label.setName("TextFieldLabel");
+                    hbox.add(label); 
+                  }
+
+                  vpanel.add(hbox); 
+                }
+              }
+
+              UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+              /* builder OS support */ 
+              {
+                {
+                  JLabel label = 
+                    UIFactory.createFixedLabel
+                    ("Builder Name:", sTSize-7*level, JLabel.RIGHT, 
+                    "The name of the selected builder within the builder collection."); 
+                  tpanel.add(label); 
+                }
+
+                {
+                  Box hbox = new Box(BoxLayout.X_AXIS);
+
+                  if(wfield != null) 
+                    hbox.add(wfield.createBuilderNameField(sVSize));
+                  else {
+                    JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                    label.setName("TextFieldLabel");
+                    hbox.add(label); 
+                  }
+
+                  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+                  if(cfield != null) 
+                    hbox.add(cfield.createBuilderNameField(sVSize));
+                  else {
+                    JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                    label.setName("TextFieldLabel");
+                    hbox.add(label); 
+                  }
+
+                  vpanel.add(hbox); 
+                }
+              }              
+
+              /* set the value for all fields */ 
+              if(wfield != null) {
+                ActionParam wparam = null;
+                if(waction != null) 
+                  wparam = waction.getSingleParam(pname);
+
+                if(wparam != null) { 
+                  wfield.setBuilderID((BuilderID) wparam.getValue());
+                }
+
+                wfield.setActionCommand("action-param-changed:" + pname);
+                wfield.addActionListener(this);
+              }
+
+              if (cfield != null) {
+                ActionParam cparam = null;
+                if (caction != null) 
+                  cparam = caction.getSingleParam(pname);
+
+                if (cparam != null) 
+                  cfield.setBuilderID((BuilderID) cparam.getValue()); 
+              }
+            }
+	    
+	    
 	    pActionParamComponents.put(param.getName(), pcomps);
 	  }
 	  
@@ -4017,6 +4229,12 @@ class JNodeDetailsPanel
 	  else if(aparam instanceof LinkActionParam) {
 	    JCollectionField field = (JCollectionField) pcomps[1];
 	    wtext = pWorkingLinkActionParamNodeNames.get(field.getSelectedIndex());
+	  }
+	  else if (aparam instanceof BuilderIDActionParam) {
+	    JBuilderIDSelectionField field = (JBuilderIDSelectionField) pcomps[1];
+            BuilderID builderID = field.getBuilderID();
+            if(builderID != null) 
+              wtext = builderID.toString();
 	  }
 	}
       }
@@ -4995,6 +5213,10 @@ class JNodeDetailsPanel
 	  int idx = pWorkingLinkActionParamNodeNames.indexOf(value);
 	  if(idx != -1) 
 	    field.setSelectedIndex(idx);
+	}
+	else if (wparam instanceof BuilderIDActionParam) {
+	  JBuilderIDSelectionField field = (JBuilderIDSelectionField) pcomps[1];
+          field.setBuilderID((BuilderID) value);
 	}
 
 	doActionParamChanged(pname);
@@ -6667,6 +6889,8 @@ class JNodeDetailsPanel
                         UIMaster.getInstance().createBuilderIDSelectionField(pGroupID, sVSize);
                       pcomps[1] = field;
                       
+                      field.setBuilderID(value);
+                      
                       field.setEnabled(paramEnabled); 
                       	
                       hbox.add(field);         
@@ -6886,7 +7110,7 @@ class JNodeDetailsPanel
                   {
                     JLabel label = 
                       UIFactory.createFixedLabel
-                      ("OS Support:", sVSize, JLabel.RIGHT, 
+                      ("OS Support:", sTSize-14, JLabel.RIGHT, 
                        "The operating systems supported by the builer collection."); 
                     tpanel.add(label); 
                   }
@@ -6923,7 +7147,7 @@ class JNodeDetailsPanel
                   {
                     JLabel label = 
                       UIFactory.createFixedLabel
-                      ("Builder Name:", sVSize, JLabel.RIGHT, 
+                      ("Builder Name:", sTSize-14, JLabel.RIGHT, 
                        "The name of the selected builder within the builder collection."); 
                     tpanel.add(label); 
                   }
