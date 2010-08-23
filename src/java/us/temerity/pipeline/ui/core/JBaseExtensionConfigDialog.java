@@ -10,6 +10,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -270,6 +271,16 @@ class JBaseExtensionConfigDialog
 	  JPathField field = (JPathField) comp;
 	  value = field.getPath();	  
 	}
+        else if(aparam instanceof WorkGroupExtensionParam) {
+          JCollectionField field = (JCollectionField) comp;
+          String ugname = field.getSelected(); 
+          if(ugname.equals("-") || (ugname.length() == 0))
+            value = null;
+          else if(ugname.startsWith("[") && ugname.endsWith("]"))
+            value = ugname.substring(1, ugname.length()-1);
+          else 
+            value = ugname;
+        }
 	else {
 	  assert(false) : "Unknown extension parameter type!";
 	}
@@ -383,7 +394,33 @@ class JBaseExtensionConfigDialog
       hbox.add(UIFactory.createSidebar());
 
       if((pExtension != null) && pExtension.hasParams()) {
-	updateParamsHelper(pExtension.getLayout(), hbox, 1);
+
+        /* lookup common server info... */ 
+        Set<String> workUsers  = null;
+        Set<String> workGroups = null;
+
+        UICache cache = getUICache();
+        {
+          boolean needsWorkGroups = false;
+          for(ExtensionParam aparam : pExtension.getParams()) {
+            if(aparam instanceof WorkGroupExtensionParam) 
+              needsWorkGroups = true;
+          }
+          
+          if(needsWorkGroups) {
+            try {
+              WorkGroups wgroups = cache.getCachedWorkGroups();
+              workGroups = wgroups.getGroups();
+              workUsers  = wgroups.getUsers();
+            }
+            catch(PipelineException ex) {
+              workGroups = new TreeSet<String>(); 
+              workUsers  = new TreeSet<String>(); 
+            }
+          }
+        }
+        
+	updateParamsHelper(pExtension.getLayout(), hbox, 1, workGroups, workUsers);
       }
       else {
 	Box dbox = new Box(BoxLayout.Y_AXIS);  
@@ -406,7 +443,9 @@ class JBaseExtensionConfigDialog
   (
    LayoutGroup group, 
    Box sbox, 
-   int level
+   int level, 
+   Set<String> workGroups, 
+   Set<String> workUsers
   ) 
   {
     Box dbox = new Box(BoxLayout.Y_AXIS);    
@@ -514,6 +553,37 @@ class JBaseExtensionConfigDialog
 
 	      pParamComponents.put(pname, field);	      
 	    }
+	    else if (aparam instanceof WorkGroupExtensionParam) {
+              WorkGroupExtensionParam wparam = (WorkGroupExtensionParam) aparam;
+              String value = (String) aparam.getValue();
+
+              TreeSet<String> values = new TreeSet<String>();
+              values.add("-");
+              if(wparam.allowsGroups()) {
+                for(String gname : workGroups) 
+                  values.add("[" + gname + "]"); 
+              }
+              if(wparam.allowsUsers()) 
+                values.addAll(workUsers);
+              
+              JCollectionField field = 
+                UIFactory.createTitledCollectionField
+                (tpanel, aparam.getNameUI() + ":", tsize, 
+                 vpanel, values, sVSize, 
+                 aparam.getDescription());
+              
+              if(value == null) 
+                field.setSelected("-");
+              else {                  
+                if(wparam.allowsGroups() && workGroups.contains(value))
+                  field.setSelected("[" + value + "]");
+                else if(wparam.allowsUsers() && workUsers.contains(value))
+                  field.setSelected(value);
+                else 
+                  field.setSelected("-");
+              }
+              pParamComponents.put(pname, field);
+	    }
 	    else {
 	      assert(false) : "Unknown extension parameter type!";
 	    }
@@ -535,7 +605,7 @@ class JBaseExtensionConfigDialog
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 	for(LayoutGroup sgroup : group.getSubGroups()) 
-	  updateParamsHelper(sgroup, vbox, level+1);
+	  updateParamsHelper(sgroup, vbox, level+1, workGroups, workUsers);
 
 	hbox.add(vbox);
       }

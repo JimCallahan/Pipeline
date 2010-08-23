@@ -183,6 +183,25 @@ class TaskBuilder
     return pTaskType;
   }
   
+  /**
+   * Convert the array representation of a task into a String so it can be printed in log
+   * messages.
+   * 
+   * @param taskinfo
+   *   The unique name information used to identify the task being converted. This is the same 
+   *   information returned by the {@link #lookupTaskAnnotations(String, TreeMap)} method. 
+   *   The format is [ProjectName, TaskIdent1, TaskIdent1, TaskType].
+   */
+  public static String
+  taskArrayToString
+  (
+    String taskInfo[]  
+  )
+  {
+    return taskInfo[0] + "|" + taskInfo[1] + "|" + taskInfo[2] + "|" + taskInfo[3];
+  }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  D E F A U L T   N A M E S                                                             */
@@ -394,7 +413,7 @@ class TaskBuilder
    
     Path verifyPath = 
       new Path(new Path(getDefaultTemerityPath(taskinfo), "builder"), 
-                        taskIdent1 + "_" + taskIdent2 + "_" + taskType + "_verify");   
+                        taskIdent1 + "_" + taskIdent2 + "_" + taskType + "_runVerify");   
 
     return verifyPath.toString();
   }
@@ -458,7 +477,7 @@ class TaskBuilder
     
     Path publishPath = 
       new Path(new Path(getDefaultTemerityPath(taskinfo), "builder"), 
-                        taskIdent1 + "_" + taskIdent2 + "_" + taskType + "_publish");   
+                        taskIdent1 + "_" + taskIdent2 + "_" + taskType + "_runPublish");   
 
     return publishPath.toString();
   }
@@ -572,7 +591,7 @@ class TaskBuilder
     for(String aname : annotations.keySet()) {
       if(aname.equals("Task") || aname.startsWith("AltTask")) {
         BaseAnnotation annot = annotations.get(aname);
-        if(lookupPurpose(nodeName, aname, annot).equals(purpose.toString())) { 
+        if(lookupTaskPurpose(nodeName, aname, annot).equals(purpose.toString())) { 
           String proj = lookupProjectName(nodeName, aname, annot);
           String task1 = lookupTaskIdent1(nodeName, aname, annot);
           String task2 = lookupTaskIdent2(nodeName, aname, annot);
@@ -1020,7 +1039,7 @@ class TaskBuilder
           continue;
             
         
-        NodePurpose purpose = lookupPurpose(name, aname, an); 
+        NodePurpose purpose = lookupTaskPurpose(name, aname, an); 
         if(purpose != null) {
           if(byPurpose.containsKey(purpose)) 
           throw new PipelineException
@@ -1252,7 +1271,7 @@ class TaskBuilder
    *   The annotation instance.
    */ 
   protected NodePurpose
-  lookupPurpose
+  lookupTaskPurpose
   (
     String name, 
     String aname, 
@@ -1296,10 +1315,10 @@ class TaskBuilder
         ("The setTaskInformation() method must be called before adding task annotations.");
     
     return 
-      ( (pProjectName.equals(taskinfo[1])) &&
-        (pTaskIdent1.equals(taskinfo[2])) &&
-        (pTaskIdent2.equals(taskinfo[3])) &&
-        (pTaskType.equals(taskinfo[4])) );
+      ( (pProjectName.equals(taskinfo[0])) &&
+        (pTaskIdent1.equals(taskinfo[1])) &&
+        (pTaskIdent2.equals(taskinfo[2])) &&
+        (pTaskType.equals(taskinfo[3])) );
   }
 
   

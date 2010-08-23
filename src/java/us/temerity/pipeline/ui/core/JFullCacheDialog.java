@@ -4,12 +4,10 @@ package us.temerity.pipeline.ui.core;
 
 import java.awt.*;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.ui.*;
 
 /**
- *  A version of {@link JFullCacheDialog} that has a unique channel that corresponds to a 
+ *  A version of {@link JFullDialog} that has a unique channel that corresponds to a 
  *  cache saved in {@link UIMaster}.
  *  <p>
  *  This allows the dialog access to all the same caching mechanism that the normal UI

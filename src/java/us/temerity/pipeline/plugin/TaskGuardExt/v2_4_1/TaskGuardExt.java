@@ -27,7 +27,7 @@ class TaskGuardExt
   {
     super("TaskGuard", new VersionID("2.4.1"), "Temerity",
           "Restricts access to node operations based on the SubmitTask, ApproveTask, " +
-          "Synchtask, and CommonTask annotations."); 
+          "Synch Task, and CommonTask annotations."); 
   }
   
 
@@ -328,6 +328,8 @@ class TaskGuardExt
   ) 
     throws PipelineException
   {
+    VersionID vid = new VersionID("2.4.1");
+    
     TreeMap<String, BaseAnnotation> annots = mclient.getAnnotations(name);
     String projectName = null; 
     String taskName    = null; 
@@ -342,6 +344,9 @@ class TaskGuardExt
             an.getName().equals("Task"))
           continue;
             
+        /* New code to prevent this from interfering with the task system 2.4.28 */
+        if (!an.getVersionID().equals(vid))
+          continue;
         
         String purpose = lookupPurpose(an); 
         if(purpose != null) {

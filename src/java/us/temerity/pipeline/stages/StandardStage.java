@@ -5,6 +5,10 @@ import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.*;
 
+/*------------------------------------------------------------------------------------------*/
+/*   S T A N D A R D   S T A G E                                                            */
+/*------------------------------------------------------------------------------------------*/
+
 /**
  * A branch stage designed to make building stages easy.
  */

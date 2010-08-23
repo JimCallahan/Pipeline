@@ -31,10 +31,12 @@ class TaskGuardExt
     
     {
       ExtensionParam param =
-        new StringExtensionParam
-          (aCustomPublishUser, 
-           "The name of the user who will be running publish builders, " +
+        new WorkGroupExtensionParam
+          (aCustomPublishGroup, 
+           "The name of the group of users who will be running publish builders, " +
            "if it is not the pipeline user.", 
+           false,
+           true,
            null);
       addParam(param);
     }
@@ -47,6 +49,25 @@ class TaskGuardExt
            "if it is not the pipeline user.", 
            null);
       addParam(param);
+    }
+    
+    {
+      ExtensionParam param =
+        new StringExtensionParam
+          (aProjectList, 
+           "The comma separated list of projects to run this extension on.  If this is null" +
+           "then all projects will be subject to this extension.", 
+           null);
+      addParam(param);
+    }
+    
+    {
+      LayoutGroup group = new LayoutGroup(true);
+      group.addEntry(aProjectList);
+      group.addEntry(aCustomVerifyUser);
+      group.addEntry(aCustomPublishGroup);
+      
+      setLayout(group);
     }
     
     underDevelopment();
@@ -102,10 +123,20 @@ class TaskGuardExt
     throws PipelineException
   {
     MasterMgrLightClient mclient = getMasterMgrClient();
+    
+    boolean initialRootCheckIn = mclient.getCheckedInNames(rname).isEmpty();    
+    
+    TreeSet<String> projectList = null;
+    String projectParam = (String) getParamValue(aProjectList);
+    if (projectParam != null && projectParam.equals("")) {
+      String buffer[] = projectParam.split(",");
+      projectList = new TreeSet<String>();
+      Collections.addAll(projectList, buffer);
+    }
 
     String nname  = nodeID.getName();
     String author = nodeID.getAuthor();
-
+    
     TreeMap<NodePurpose, BaseAnnotation> rootAnnots = 
       new TreeMap<NodePurpose, BaseAnnotation>(); 
     String rootProjectName = null;
@@ -141,24 +172,43 @@ class TaskGuardExt
       }
     }
     
+    /* So if the node being checked-in is part of a task, but this task is not in the task 
+     * list, we can return, since we are not going to prevent any check-ins of this node. 
+     * We do not have to care about the state of the root node's project.  There are a couple
+     * of cases ('our project' refers to the current node's project:
+     * 1.  Root project is different from our project.  If our project is monitored by this 
+     * ext, then the check-in will be blocked anyway for non-matching projects.
+     * 2. Root node has no annotations.  If our project is not in the list, then we've already
+     * short-circuited, so it doesn't matter.  Otherwise it will be blocked for being part
+     * of a non-task check-in.
+     * 3. Root project is the same as our project.  Well, we're just about to check it, and 
+     * if it is exempt, then we'll have short-circuited.  Otherwise all normal checks will
+     * apply, as they should.
+     */
+    if (!nodeAnnots.isEmpty()) {
+      if (projectList != null && !projectList.contains(nodeProjectName))
+        return;
+    }
+    
     /* validate the Task credentials of the root node of the check-in */ 
     if(rootAnnots.isEmpty()) {
       /* just ignore nodes without Task annotations when the root node is without them too */
       if(nodeAnnots.isEmpty()) 
         return;
       else {
-        throw new PipelineException
-          ("Check-in aborted for node (" + nname + ") because it has Task annotations " + 
-           "but the root node of the check-in operation (" + rname + ") does not have " + 
-           "any Task annotations.  Incidental check-in of nodes which are part of a task " + 
-           "is only allowed when the root node of check-in is also a member of the same " + 
-           "task."); 
+          throw new PipelineException
+            ("Check-in aborted for node (" + nname + ") because it has Task annotations " + 
+             "but the root node of the check-in operation (" + rname + ") does not have " + 
+             "any Task annotations.  Incidental check-in of nodes which are part of a task " + 
+             "is only allowed when the root node of check-in is also a member of the same " + 
+             "task."); 
       }
     }
     else {
       if(rootAnnots.containsKey(NodePurpose.Edit)) {
         /* This statement intentionally left empty.  May later be populated.*/ 
       }
+      /* By doing Submit before Verify, we allow for Self-Verifying task submission.*/
       else if(rootAnnots.containsKey(NodePurpose.Submit)) {
         /* This statement intentionally left empty.  May later be populated.*/
         
@@ -174,6 +224,8 @@ class TaskGuardExt
         
         if(!author.equals(PackageInfo.sPipelineUser) && 
            (verifyUser != null && !author.equals(verifyUser))) {
+          /* Allow the initial check-in, since it might be from a builder. */
+          if (!initialRootCheckIn)
             throw new PipelineException 
               ("The task (" + rootTask + ") defined by the root node of the check-in " + 
                "operation (" + rname + ") is a verify node.\n" + 
@@ -183,16 +235,22 @@ class TaskGuardExt
         }
       }
       else if(rootAnnots.containsKey(NodePurpose.Publish)) {
-        String publishUser = (String) getParamValue(aCustomPublishUser);
+        String publishGroup = (String) getParamValue(aCustomPublishGroup);
+        TreeSet<String> allowedUsers = null;
+        
+        if (publishGroup != null && publishGroup.length() > 0)
+          allowedUsers = mclient.getWorkGroups().getUsersInGroup(publishGroup);
         
         if(!author.equals(PackageInfo.sPipelineUser) && 
-           (publishUser != null && !author.equals(publishUser))) {
+           (allowedUsers != null && !allowedUsers.contains(author))) {
+          /* Allow the initial check-in, since it might be from a builder. */
+          if (!initialRootCheckIn)
             throw new PipelineException 
               ("The task (" + rootTask + ") defined by the root node of the check-in " + 
 	       "operation (" + rname + ") is a publish node.\n" + 
                "Since the user (" + author + ") attempting the check-in is not the " +
-               "pipeline user and does not match the authorized publish user " +
-               "(" + publishUser + "), this check-in will not be allowed to proceed.");
+               "pipeline user and is not in the authorized publish group" +
+               "(" + publishGroup + "), this check-in will not be allowed to proceed.");
         }
       }
       else if (rootAnnots.containsKey(NodePurpose.Execution)) {
@@ -201,11 +259,13 @@ class TaskGuardExt
             ("A node with a Purpose of Execution must be checked-in by itself with no " +
              "upstream dependencies.");
         if(!author.equals(PackageInfo.sPipelineUser))
-          throw new PipelineException 
-            ("The task (" + rootTask + ") defined by the root node of the check-in " + 
-             "operation (" + rname + ") is an execution node.\n" + 
-             "Since the user (" + author + ") attempting the check-in is not the " +
-             "pipeline user this check-in will not be allowed to proceed.");
+          /* Allow the initial check-in, since it might be from a builder. */
+          if (!initialRootCheckIn)
+            throw new PipelineException 
+              ("The task (" + rootTask + ") defined by the root node of the check-in " + 
+               "operation (" + rname + ") is an execution node.\n" + 
+               "Since the user (" + author + ") attempting the check-in is not the " +
+               "pipeline user this check-in will not be allowed to proceed.");
       }
       else {
         throw new PipelineException
@@ -280,7 +340,6 @@ class TaskGuardExt
 	  /* This statement intentionally left empty.  May later be populated.*/
 	}
       }
-
     }
   }
 
@@ -505,7 +564,7 @@ class TaskGuardExt
     
     return taskType;
   }
-
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -514,15 +573,15 @@ class TaskGuardExt
 
   private static final long serialVersionUID = -4890708392802172011L;
   
-  public static final String aCustomPublishUser = "CustomPublishUser";
-  public static final String aCustomVerifyUser  = "CustomVerifyUser";
-  public static final String aProjectList       = "ProjectList";
+  public static final String aCustomPublishGroup = "CustomPublishGroup";
+  public static final String aCustomVerifyUser   = "CustomVerifyUser";
+  public static final String aProjectList        = "ProjectList";
   
-  private static final String aProjectName     = "ProjectName";
-  private static final String aTaskIdent1      = "TaskIdent1";
-  private static final String aTaskIdent2      = "TaskIdent2";
-  private static final String aTaskType        = "TaskType";
-  private static final String aCustomTaskType  = "CustomTaskType";
+  private static final String aProjectName       = "ProjectName";
+  private static final String aTaskIdent1        = "TaskIdent1";
+  private static final String aTaskIdent2        = "TaskIdent2";
+  private static final String aTaskType          = "TaskType";
+  private static final String aCustomTaskType    = "CustomTaskType";
   
   public static final String aCUSTOM        = "[[CUSTOM]]";   
 

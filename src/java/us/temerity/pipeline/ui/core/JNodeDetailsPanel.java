@@ -2980,8 +2980,6 @@ class JNodeDetailsPanel
 		      UIMaster.getInstance().createBuilderIDSelectionField(pGroupID, sVSize);
 		    pcomps[1] = field;
 		    
-		    field.addActionListener(this);
-		    
                     field.setEnabled(!isLocked() && !pIsFrozen); 
 
 		    hbox.add(field);  
@@ -4684,6 +4682,10 @@ class JNodeDetailsPanel
 		else if(aparam instanceof LinkActionParam) {
 		  JCollectionField field = (JCollectionField) pcomps[1];
 		  value = pWorkingLinkActionParamNodeNames.get(field.getSelectedIndex());
+		}
+		else if (aparam instanceof BuilderIDActionParam) {
+		  JBuilderIDSelectionField field = (JBuilderIDSelectionField) pcomps[1];
+		  value = field.getBuilderID();
 		}
 		
 		waction.setSingleParamValue(aparam.getName(), value);

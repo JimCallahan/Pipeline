@@ -11,7 +11,7 @@ Extension to auto-run verify nodes.
 TaskAutoVerifyExt 
 
 Builder to be run by TaskAutoVerifyExt that queues the verify builder node.
-RunVerifyBuilder (TaskCollection)
+RunVerifyBuilder (TaskCollection) - Done
 
 Basic Verify Builder.
 VerifyTaskBuilder (TaskCollection) - Done
@@ -23,10 +23,10 @@ Action to run a verify or publish template
 TaskRunTemplateAction 
 
 Builder to be run that queues the publish builder node.
-RunPublishBuilder (TaskCollection)
+RunPublishBuilder (TaskCollection) - Done
 
 Basic Publish Builder.
-PublishTaskBuilder (TaskCollection)
+PublishTaskBuilder (TaskCollection) - Done
 
 Tool that can be run to publish a version.
 TaskPublishTool

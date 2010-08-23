@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_28.*;
 import us.temerity.pipeline.builder.v2_4_28.TaskBuilder;
+import us.temerity.pipeline.plugin.TaskCollection.v2_4_28.RunVerifyBuilder.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R U N   P U B L I S H   B U I L D E R                                                  */
@@ -71,6 +72,9 @@ class RunPublishBuilder
     
     /* not really applicable to this builder, so hide it from the users */ 
     disableParam(new ParamMapping(aActionOnExistence));
+    
+    addSetupPass(new ValidateParamsPass());
+    addConstructPass(new RunPublishPass());
     
     LayoutGroup layout = new LayoutGroup(true);
     layout.addEntry(aUtilContext);
@@ -217,8 +221,8 @@ class RunPublishBuilder
       int count = 0;
       
       TreeMap<String, TreeSet<String>> areas  = pClient.getWorkingAreas();
-      while (areas.get(PackageInfo.sUser) != null && 
-             areas.get(PackageInfo.sUser).contains(pPublishWorkingArea)) {
+      while (areas.get(getAuthor()) != null && 
+             areas.get(getAuthor()).contains(pPublishWorkingArea)) {
         if (count > 6)
           throw new PipelineException
             ("The working area (" + pPublishWorkingArea + ") that would be used to run the " +
@@ -233,7 +237,7 @@ class RunPublishBuilder
         count++;
         areas = pClient.getWorkingAreas();
       }
-      pClient.createWorkingArea(PackageInfo.sUser, pPublishWorkingArea);
+      pClient.createWorkingArea(getAuthor(), pPublishWorkingArea);
     }
 
     private static final long serialVersionUID = 6129199628367536599L;
@@ -275,6 +279,9 @@ class RunPublishBuilder
       
       BaseAction act = mod.getAction();
       act.setSingleParamValue("SourceNode", pVerifyNode);
+      
+      mod.setAction(act);
+      pClient.modifyProperties(getAuthor(), getView(), mod);
       
       addToQueueList(pRunPublishBuilderNode);
       addToCheckInList(pRunPublishBuilderNode);

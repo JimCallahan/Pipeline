@@ -111,10 +111,135 @@ class TaskToolUtils
   }
   
   /**
+   * Searches the set of annotations associated with the given node for Task related 
+   * annotations. 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param byPurpose
+   *   A table of those that match indexed by Purpose parameter.
+   * 
+   * @return 
+   *   The [ProjectName, TaskIdent1, TaskIdent1, TaskType] array.
+   */ 
+  protected String[] 
+  lookupTaskAnnotations
+  (
+    MasterMgrClient mclient,
+    String name, 
+    TreeMap<NodePurpose, BaseAnnotation> byPurpose
+  ) 
+    throws PipelineException
+  {
+    PluginID pid = new PluginID("Task", new VersionID("2.4.28"), "Temerity");
+    
+    TreeMap<String, BaseAnnotation> annots = getTaskAnnotation(name, mclient);
+    String projectName = null; 
+    String taskIdent1  = null; 
+    String taskIdent2  = null;
+    String taskType    = null; 
+    for(Entry<String, BaseAnnotation> entry : annots.entrySet()) {
+      String aname = entry.getKey();
+      if(aname.equals("Task") || aname.startsWith("AltTask")) {
+        BaseAnnotation an = entry.getValue();
+        
+        if (!an.getPluginID().equals(pid))
+          continue;
+            
+        
+        NodePurpose purpose = lookupTaskPurpose(name, aname, an); 
+        if(purpose != null) {
+          if(byPurpose.containsKey(purpose)) 
+          throw new PipelineException
+            ("More than one Task related annotation with a " + aPurpose + " of " + 
+             purpose + " was found on node (" + name + ")!"); 
+  
+          {
+            String pname = lookupProjectName(name, aname, an); 
+            if(pname == null) 
+              throw new PipelineException
+                ("The " + aProjectName + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+            
+            if((projectName != null) && !projectName.equals(pname)) 
+              throw new PipelineException 
+                ("The " + aProjectName + " was set in multiple Task annotations on " +
+                 "node (" + name + "), but the did not match!  Both (" + projectName + ") " +
+                 "and (" + pname + ") where given as the " + aProjectName + ".");
+  
+            projectName = pname;
+          }
+  
+          {
+            String tname = lookupTaskIdent1(name, aname, an);  
+            if(tname == null) 
+              throw new PipelineException
+                ("The " + aTaskIdent1 + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+            
+            if((taskIdent1 != null) && !taskIdent1.equals(tname)) 
+              throw new PipelineException 
+                ("The " + aTaskIdent1 + " was set in multiple Task annotations on " +
+                 "node (" + name + "), but they did not match!  Both (" + taskIdent1 + ") " +
+                 "and (" + tname + ") where given as the " + aTaskIdent1 + ".");
+  
+            taskIdent1 = tname; 
+          }
+          
+          {
+            String tname = lookupTaskIdent2(name, aname, an);  
+            if(tname == null) 
+              throw new PipelineException
+                ("The " + aTaskIdent2 + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+            
+            if((taskIdent2 != null) && !taskIdent2.equals(tname)) 
+              throw new PipelineException 
+                ("The " + aTaskIdent2 + " was set in multiple Task annotations on " +
+                 "node (" + name + "), but they did not match!  Both (" + taskIdent2 + ") " +
+                 "and (" + tname + ") where given as the " + aTaskIdent2 + ".");
+  
+            taskIdent2 = tname; 
+          }
+  
+          {
+            String ttype = lookupTaskType(name, aname, an);  
+            if(ttype == null) 
+              throw new PipelineException
+                ("The " + aTaskType + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+            
+            if((taskType != null) && !taskType.equals(ttype)) 
+              throw new PipelineException 
+                ("The " + aTaskType + " was set in multiple Task annotations on node " + 
+                 "(" + name + "), but the did not match!  Both (" + taskType + ") and " + 
+                 "(" + ttype + ") where given as the " + aTaskType + ".");
+  
+            taskType = ttype;
+          }
+  
+          byPurpose.put(purpose, an); 
+        }
+      }
+    }
+
+    if(!byPurpose.isEmpty()) {
+      String names[] = { projectName, taskIdent1, taskIdent2, taskType };
+      return names;
+    }
+
+    return null;
+  }
+  
+  /**
    * Lookup the value of the (Custom)TaskType annotation parameter.
    * 
    * @param name
    *   The fully resolved name of the node having the given annotation.
+   *   
+   * @param aname
+   *   The name of the annotation.
    * 
    * @param annot
    *   The annotation instance.
@@ -123,6 +248,7 @@ class TaskToolUtils
   lookupTaskType
   (
    String name, 
+   String aname,
    BaseAnnotation annot   
   ) 
     throws PipelineException
@@ -130,7 +256,7 @@ class TaskToolUtils
     String taskType = (String) annot.getParamValue(aTaskType);
     if(taskType == null) 
       throw new PipelineException
-        ("No " + aTaskType + " parameter was specified for the task " + 
+        ("No " + aTaskType + " parameter was specified for the (" + aname + ") task " + 
          "annotation on the node (" + name + ")!"); 
 
     if(taskType.equals(aCUSTOM)) {
@@ -150,6 +276,9 @@ class TaskToolUtils
    * 
    * @param name
    *   The fully resolved name of the node having the given annotation.
+   *   
+   * @param aname
+   *   The name of the annotation.
    * 
    * @param annot
    *   The annotation instance.
@@ -158,6 +287,7 @@ class TaskToolUtils
   lookupProjectName
   (
    String name, 
+   String aname,
    BaseAnnotation annot   
   ) 
     throws PipelineException
@@ -165,7 +295,7 @@ class TaskToolUtils
     String projectName = (String) annot.getParamValue(aProjectName);
     if(projectName == null) 
       throw new PipelineException
-        ("No " + aProjectName + " parameter was specified for the task " + 
+        ("No " + aProjectName + " parameter was specified for the (" + aname + ") task " + 
          "annotation on the node (" + name + ")!"); 
     
     return projectName;
@@ -176,6 +306,9 @@ class TaskToolUtils
    * 
    * @param name
    *   The fully resolved name of the node having the given annotation.
+   *   
+   * @param aname
+   *   The name of the annotation.
    * 
    * @param annot
    *   The annotation instance.
@@ -184,6 +317,7 @@ class TaskToolUtils
   lookupTaskIdent1
   (
    String name, 
+   String aname,
    BaseAnnotation annot   
   ) 
     throws PipelineException
@@ -191,7 +325,7 @@ class TaskToolUtils
     String taskName = (String) annot.getParamValue(aTaskIdent1);
     if(taskName == null) 
       throw new PipelineException
-        ("No " + aTaskIdent1+ " parameter was specified for the task " + 
+        ("No " + aTaskIdent1+ " parameter was specified for the (" + aname + ") task " + 
          "annotation on the node (" + name + ")!"); 
 
     return taskName;
@@ -202,6 +336,9 @@ class TaskToolUtils
    * 
    * @param name
    *   The fully resolved name of the node having the given annotation.
+   *   
+   * @param aname
+   *   The name of the annotation.
    * 
    * @param annot
    *   The annotation instance.
@@ -209,7 +346,8 @@ class TaskToolUtils
   protected String
   lookupTaskIdent2
   (
-   String name, 
+   String name,
+   String aname,
    BaseAnnotation annot   
   ) 
     throws PipelineException
@@ -217,7 +355,7 @@ class TaskToolUtils
     String taskName = (String) annot.getParamValue(aTaskIdent2);
     if(taskName == null) 
       throw new PipelineException
-        ("No " + aTaskIdent2 + " parameter was specified for the task " + 
+        ("No " + aTaskIdent2 + " parameter was specified for the (" + aname + ") task " + 
          "annotation on the node (" + name + ")!"); 
 
     return taskName;
@@ -229,24 +367,29 @@ class TaskToolUtils
    * @param name
    *   The fully resolved name of the node having the given annotation.
    * 
+   * @param aname
+   *   The name of the annotation.
+   * 
    * @param annot
    *   The annotation instance.
    */ 
-  protected String
+  protected NodePurpose
   lookupTaskPurpose
   (
    String name, 
+   String aname,
    BaseAnnotation annot   
   ) 
     throws PipelineException
   {
-    String purpose = (String) annot.getParamValue(aPurpose);
-    if(purpose == null) 
+    EnumAnnotationParam param = (EnumAnnotationParam) annot.getParam(aPurpose);
+    
+    if(param == null) 
       throw new PipelineException
-        ("No " + aPurpose + " parameter was specified for the task " + 
-         "annotation on the node (" + name + ")!"); 
-
-    return purpose;
+        ("No " + aPurpose + " parameter was specified for the (" + aname + ") task " + 
+         "annotation on the node (" + name + ")!");
+    
+    return NodePurpose.values()[param.getIndex()];
   }
   
   

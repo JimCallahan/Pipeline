@@ -3,6 +3,7 @@ package us.temerity.pipeline.plugin.TaskCollection.v2_4_28;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_28.*;
 import us.temerity.pipeline.builder.v2_4_28.TaskBuilder;
@@ -71,6 +72,9 @@ class RunVerifyBuilder
     
     /* not really applicable to this builder, so hide it from the users */ 
     disableParam(new ParamMapping(aActionOnExistence));
+    
+    addSetupPass(new ValidateParamsPass());
+    addConstructPass(new RunVerifyPass());
     
     LayoutGroup layout = new LayoutGroup(true);
     layout.addEntry(aUtilContext);
@@ -217,8 +221,8 @@ class RunVerifyBuilder
       int count = 0;
       
       TreeMap<String, TreeSet<String>> areas  = pClient.getWorkingAreas();
-      while (areas.get(PackageInfo.sUser) != null &&
-             areas.get(PackageInfo.sUser).contains(pVerifyWorkingArea)) {
+      while (areas.get(getAuthor()) != null &&
+             areas.get(getAuthor()).contains(pVerifyWorkingArea)) {
         if (count > 6)
           throw new PipelineException
             ("The working area (" + pVerifyWorkingArea + ") that would be used to run the " +
@@ -233,7 +237,7 @@ class RunVerifyBuilder
         areas = pClient.getWorkingAreas();
         count++;
       }
-      pClient.createWorkingArea(PackageInfo.sUser, pVerifyWorkingArea);
+      pClient.createWorkingArea(getAuthor(), pVerifyWorkingArea);
     }
 
     private static final long serialVersionUID = 8078082064441960846L;
@@ -263,8 +267,17 @@ class RunVerifyBuilder
       throws PipelineException
     {
       setContext(new UtilContext(getAuthor(), pVerifyWorkingArea, getToolset()));
+      
+      pLog.log
+        (Kind.Ops, Level.Fine, 
+         "Checking out the run verify builder node: " + pRunVerifyBuilderNode);
+
       checkOutLatest
         (pRunVerifyBuilderNode, CheckOutMode.OverwriteAll,CheckOutMethod.FrozenUpstream);
+      
+      pLog.log
+        (Kind.Ops, Level.Fine, 
+         "Locking submit node: " + pSubmitNode + "(v" + pSubmitVersion + ")");
       
       pClient.lock(getAuthor(), getView(), pSubmitNode, pSubmitVersion);
       
@@ -276,6 +289,11 @@ class RunVerifyBuilder
       BaseAction act = mod.getAction();
       act.setSingleParamValue("SourceNode", pSubmitNode);
       
+      mod.setAction(act);
+      pClient.modifyProperties(getAuthor(), getView(), mod);
+      
+      pClient.removeFiles(getAuthor(), getView(), pRunVerifyBuilderNode, null);
+      
       addToQueueList(pRunVerifyBuilderNode);
       addToCheckInList(pRunVerifyBuilderNode);
     }
@@ -284,6 +302,7 @@ class RunVerifyBuilder
   }
   
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/

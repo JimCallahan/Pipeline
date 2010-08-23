@@ -466,7 +466,6 @@ class ApproveTaskTool
     public void 
     run() 
     {	
-      //FIXME Should This get a connection from UIMaster?
       try {
 	runBuilder(new MasterMgrClient(), new QueueMgrClient()); 
       } 

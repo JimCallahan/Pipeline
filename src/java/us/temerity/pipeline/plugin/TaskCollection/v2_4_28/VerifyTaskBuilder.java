@@ -3,6 +3,7 @@ package us.temerity.pipeline.plugin.TaskCollection.v2_4_28;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_28.*;
 import us.temerity.pipeline.builder.v2_4_28.TaskBuilder;
@@ -181,6 +182,12 @@ class VerifyTaskBuilder
       
       pSubmitNodeVersion = submitMod.getWorkingID();
       
+      
+      pLog.log
+        (Kind.Ops, Level.Fine, 
+         "The submit node and version are: " + pSubmitNode + "(v" + pSubmitNodeVersion + ")");
+      
+      
       NodeVersion ver = pClient.getCheckedInVersion(pSubmitNode, pSubmitNodeVersion);
       pCheckInMessage = 
         "Verified the following submit version:\n" + 
@@ -207,8 +214,9 @@ class VerifyTaskBuilder
 
       if (!isSameTask(verifyTaskInfo))
         throw new PipelineException
-          ("The task " + verifyTaskInfo  + " assigned to the supposed verify node () is " +
-           "not the same as the task " + submitTaskInfo + " on the submit node.");
+          ("The task " + taskArrayToString(verifyTaskInfo) + " assigned to the supposed " +
+           "verify node (" + pVerifyNode + ") is not the same as the task " + 
+           taskArrayToString(submitTaskInfo) + " on the submit node.");
 
       pCheckInLevel = VersionID.Level.Minor;
       if (checkedInVersionExists(pVerifyNode)) {
@@ -260,10 +268,9 @@ class VerifyTaskBuilder
     {
       setContext(new UtilContext(getAuthor(), pCustomWorkingArea, getToolset()));
       
-      
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Checking Out: " + pVerifyNode);
       pClient.checkOut(getAuthor(), getView(), pVerifyNode, null, 
-                       CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+                       CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
       
       /* 
        * Checkout the submit node second, to guarantee the right versions are used.

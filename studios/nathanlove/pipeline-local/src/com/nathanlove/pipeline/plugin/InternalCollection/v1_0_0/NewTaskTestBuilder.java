@@ -1,5 +1,7 @@
 package com.nathanlove.pipeline.plugin.InternalCollection.v1_0_0;
 
+import java.util.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.*;
@@ -29,6 +31,8 @@ class NewTaskTestBuilder
     
     addSetupPass(new InfoPass());
     addConstructPass(new BuildPass());
+    addConstructPass(new FinalizePass());
+    addConstructPass(new TouchFilesPass());
 
     addCheckinWhenDoneParam();
     
@@ -69,7 +73,9 @@ class NewTaskTestBuilder
     {
       validateBuiltInParams();
       
-      setTaskInformation("newTask", "char", "bob", TaskType.Asset.toString());
+      getStageInformation().setDoAnnotations(true);
+      
+      setTaskInformation("newTask", "char", "harry", TaskType.Asset.toString());
       
       pStartPath = new Path(new Path(new Path(new Path(
         new Path("/projects"), getProjectName()), "assets"), getTaskIdent1()), 
@@ -85,7 +91,6 @@ class NewTaskTestBuilder
   /*   S E C O N D   L O O P                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  
   private
   class BuildPass
     extends ConstructPass
@@ -103,28 +108,37 @@ class NewTaskTestBuilder
       throws PipelineException
     {
       StageInformation stageInfo = getStageInformation();
+      pFinalizeStages = new LinkedList<FinalizableStage>();
+      pTouchFileStages = new LinkedList<FinalizableStage>();
       
       {
+        BuilderID bid = 
+          new BuilderID("Task", new VersionID("2.4.28"), "Temerity", "VerifyTask");
+        
         String runVerifyNode = getDefaultVerifyBuilderNodeName();
-        EmptyFileStage stage = 
-          new EmptyFileStage(stageInfo, pContext, pClient, runVerifyNode, "txt");
+        TaskRunBuilderStage stage = 
+          new TaskRunBuilderStage(stageInfo, pContext, pClient, runVerifyNode, bid);
         addTaskAnnotation(stage, NodePurpose.Execution);
         stage.build();
-        addToQueueList(runVerifyNode);
+        pTouchFileStages.add(stage);
         addToCheckInList(runVerifyNode);
       }
       
 
       {
+        BuilderID bid = 
+          new BuilderID("Task", new VersionID("2.4.28"), "Temerity", "PublishTask");
+        
         String runPublishNode = getDefaultPublishBuilderNodeName();
-        EmptyFileStage stage = 
-          new EmptyFileStage(stageInfo, pContext, pClient, runPublishNode, "txt");
+        TaskRunBuilderStage stage = 
+          new TaskRunBuilderStage(stageInfo, pContext, pClient, runPublishNode, bid);
         addTaskAnnotation(stage, NodePurpose.Execution);
         stage.build();
-        addToQueueList(runPublishNode);
+        pTouchFileStages.add(stage);
         addToCheckInList(runPublishNode);
       }
       
+      MayaContext context = new MayaContext("degrees", "centimeter", "NTSC (30 fps)");
       
       String namePrefix = getTaskIdent1() + "_" + getTaskIdent2();
       
@@ -132,9 +146,10 @@ class NewTaskTestBuilder
         new Path(new Path(pStartPath, "work"), namePrefix + "_edit").toString();
       
       {
-        EmptyFileStage stage = 
-          new EmptyFileStage(stageInfo, pContext, pClient, editNode, "ma");
+        EmptyMayaAsciiStage stage = 
+          new EmptyMayaAsciiStage(stageInfo, pContext, pClient, context, editNode);
         addTaskAnnotation(stage, NodePurpose.Edit);
+        pFinalizeStages.add(stage);
         stage.build();
       }
       
@@ -189,6 +204,84 @@ class NewTaskTestBuilder
         addToCheckInList(publishNode);
       }
     }
+    
+    private static final long serialVersionUID = 4055592570152601932L;
+  }
+
+  
+  private
+  class FinalizePass
+    extends ConstructPass
+  {
+    public 
+    FinalizePass()
+    {
+      super("Finalize Pass", 
+            "The Pass which finalizes the node networks.");
+    }
+    
+    @Override
+    public LinkedList<String> 
+    preBuildPhase()
+      throws PipelineException
+    {
+      LinkedList<String> regenerate = new LinkedList<String>();
+
+      regenerate.addAll(getDisableList());
+      for(FinalizableStage stage : pFinalizeStages) 
+        regenerate.add(stage.getNodeName());
+
+      return regenerate;
+    }
+    
+    @Override
+    public void 
+    buildPhase() 
+      throws PipelineException
+    {
+      for(FinalizableStage stage : pFinalizeStages) 
+        stage.finalizeStage();
+      disableActions();
+    }
+    
+    private static final long serialVersionUID = 8776111819162510245L;
+  }
+  
+  private
+  class TouchFilesPass
+    extends ConstructPass
+  {
+    public 
+    TouchFilesPass()
+    {
+      super("Touch Files Pass", 
+            "The Pass which restores actions and touch files for nodes that are not " +
+            "actually being run.");
+    }
+    
+    @Override
+    public LinkedList<String> 
+    preBuildPhase()
+      throws PipelineException
+    {
+      LinkedList<String> regenerate = new LinkedList<String>();
+
+      for(FinalizableStage stage : pTouchFileStages) 
+        regenerate.add(stage.getNodeName());
+
+      return regenerate;
+    }
+    
+    @Override
+    public void 
+    buildPhase() 
+      throws PipelineException
+    {
+      for(FinalizableStage stage : pTouchFileStages) 
+        stage.finalizeStage();
+      disableActions();
+    }
+    
   }
   
   
@@ -203,6 +296,10 @@ class NewTaskTestBuilder
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  private LinkedList<FinalizableStage> pFinalizeStages;
+  
+  private LinkedList<FinalizableStage> pTouchFileStages;
   
   private Path pStartPath;
 }

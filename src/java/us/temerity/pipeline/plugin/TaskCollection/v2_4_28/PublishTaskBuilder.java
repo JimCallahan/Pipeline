@@ -186,8 +186,8 @@ class PublishTaskBuilder
       pCheckInMessage = 
         "Published the following verify version:\n" + 
         "VERIFY NODE: " + pVerifyNode + " (v" + ver.getVersionID() + ")\n" +
-        "SUBMITTED BY: " + ver.getAuthor() + "\n" +
-        "SUBMISSION NOTES: " + ver.getMessage() + "\n";
+        "VERIFIED BY: " + ver.getAuthor() + "\n" +
+        "VERIFIED NOTES: " + ver.getMessage() + "\n";
         
       
       /* Deal with the verify node. */
@@ -208,8 +208,9 @@ class PublishTaskBuilder
 
       if (!isSameTask(publishTaskInfo))
         throw new PipelineException
-          ("The task " + publishTaskInfo  + " assigned to the supposed verify node () is " +
-           "not the same as the task " + verifyTaskInfo + " on the submit node.");
+          ("The task " + taskArrayToString(publishTaskInfo)  + " assigned to the supposed " +
+           "publish node (" + pPublishNode + ") is not the same as the task " + 
+           taskArrayToString(verifyTaskInfo) + " on the verify node.");
 
       pCheckInLevel = VersionID.Level.Minor;
       if (checkedInVersionExists(pPublishNode)) {
@@ -264,7 +265,7 @@ class PublishTaskBuilder
       
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Checking Out: " + pPublishNode);
       pClient.checkOut(getAuthor(), getView(), pPublishNode, null, 
-                       CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+                       CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
 
       /* 
        * Checkout the verify node second, to guarantee the right versions are used.

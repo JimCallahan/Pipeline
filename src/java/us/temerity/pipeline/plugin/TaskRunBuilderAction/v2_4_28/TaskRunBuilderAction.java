@@ -76,8 +76,6 @@ class TaskRunBuilderAction
       setSingleLayout(layout);
     }
     
-    underDevelopment();
-    
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
   }
@@ -137,7 +135,6 @@ class TaskRunBuilderAction
     args.add("--log=ops:finest,bld:finest");
     args.add("--builder="  + id.getBuilderName());
     args.add("--ReleaseOnError=true");
-    args.add("--CheckinWhenDone=true");
     
     args.add("--SourceNode=" + sourceNode);
 
