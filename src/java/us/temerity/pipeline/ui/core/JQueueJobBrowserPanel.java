@@ -206,7 +206,7 @@ class JQueueJobBrowserPanel
       {
         pStatusPopup = new JPopupMenu();
         
-        item = new JRadioButtonMenuItem("All Groups");
+        item = new JRadioButtonMenuItem("Everything");
         item.setActionCommand("filter-all-jobs");
         item.addActionListener(this);
         pStatusPopup.add(item);
@@ -216,28 +216,28 @@ class JQueueJobBrowserPanel
         
         pStatusPopup.addSeparator();
         
-        item = new JRadioButtonMenuItem("Any Failed Jobs");
+        item = new JRadioButtonMenuItem("Any Failed");
         item.setActionCommand("filter-any-failed");
         item.addActionListener(this);
         pStatusPopup.add(item);
         bgroup.add(item);
         pStatusButtons.put(StatusFilter.AnyFailed, item);
         
-        item = new JRadioButtonMenuItem("Any Limbo Jobs");
+        item = new JRadioButtonMenuItem("Any Limbo");
         item.setActionCommand("filter-any-limbo");
         item.addActionListener(this);
         pStatusPopup.add(item);
         bgroup.add(item);
         pStatusButtons.put(StatusFilter.AnyLimbo, item);
         
-        item = new JRadioButtonMenuItem("Any Running Jobs");
+        item = new JRadioButtonMenuItem("Any Running");
         item.setActionCommand("filter-any-running");
         item.addActionListener(this);
         pStatusPopup.add(item);
         bgroup.add(item);
         pStatusButtons.put(StatusFilter.AnyRunning, item);
         
-        item = new JRadioButtonMenuItem("Any Paused Jobs");
+        item = new JRadioButtonMenuItem("Any Paused");
         item.setActionCommand("filter-any-paused");
         item.addActionListener(this);
         pStatusPopup.add(item);
@@ -246,7 +246,7 @@ class JQueueJobBrowserPanel
         
         pStatusPopup.addSeparator();
         
-        item = new JRadioButtonMenuItem("All Completed Groups");
+        item = new JRadioButtonMenuItem("All Completed");
         item.setActionCommand("filter-all-completed");
         item.addActionListener(this);
         pStatusPopup.add(item);
@@ -268,7 +268,7 @@ class JQueueJobBrowserPanel
       {
         pViewPopup = new JPopupMenu();
         
-        item = new JRadioButtonMenuItem("My Groups");
+        item = new JRadioButtonMenuItem("My Views");
         item.setActionCommand("view-my-jobs");
         item.addActionListener(this);
         pViewPopup.add(item);
@@ -276,13 +276,20 @@ class JQueueJobBrowserPanel
         pViewButtons.put(NewViewFilter.MyJobs, item);
         bgroup.setSelected(item.getModel(), true);
         
-        item = new JRadioButtonMenuItem("All Groups");
+        item = new JRadioButtonMenuItem("All Views");
         item.setActionCommand("view-all-jobs");
         item.addActionListener(this);
         pViewPopup.add(item);
         bgroup.add(item);
         pViewButtons.put(NewViewFilter.AllJobs, item);
         
+        item = new JRadioButtonMenuItem("Current View");
+        item.setActionCommand("view-working-area-jobs");
+        item.addActionListener(this);
+        pViewPopup.add(item);
+        bgroup.add(item);
+        pViewButtons.put(NewViewFilter.Default, item);
+
         pViewPopup.addSeparator();
         
         pViewUserMenu = new JMenu("By User");
@@ -293,22 +300,15 @@ class JQueueJobBrowserPanel
         pViewPopup.add(pViewGroupMenu);
         pViewGroupButtons = new TreeMap<String, JRadioButtonMenuItem>();
         
-        pViewPopup.addSeparator();
+//         pViewPopup.addSeparator();
         
-        item = new JRadioButtonMenuItem("Working Area Groups");
-        item.setActionCommand("view-working-area-jobs");
-        item.addActionListener(this);
-        pViewPopup.add(item);
-        bgroup.add(item);
-        pViewButtons.put(NewViewFilter.Default, item);
-
-        item = new JRadioButtonMenuItem("Custom Users...");
-        item.setActionCommand("view-custom-jobs");
-        item.addActionListener(this);
-        item.setEnabled(false);
-        pViewPopup.add(item);
-        bgroup.add(item);
-        pViewButtons.put(NewViewFilter.CustomJobs, item);
+//         item = new JRadioButtonMenuItem("Custom Users...");
+//         item.setActionCommand("view-custom-jobs");
+//         item.addActionListener(this);
+//         item.setEnabled(false);
+//         pViewPopup.add(item);
+//         bgroup.add(item);
+//         pViewButtons.put(NewViewFilter.CustomJobs, item);
       }
 
       pViewButtonGroup = bgroup;
@@ -382,7 +382,11 @@ class JQueueJobBrowserPanel
           JButton btn = new JButton();          
           pUpdateAllJobKeysButton = btn;
           btn.setName("StaleKeyChooserButton");
-            
+          btn.setToolTipText(UIFactory.formatToolTip(
+            "Rerun the Key Chooser plugins for all existing jobs.  This is advisable after " + 
+            "modifying or adding a new Key Chooser and wish to see its effects on existing " + 
+            "job dispatch."));
+
           btn.setSelected(true);
             
           Dimension size = new Dimension(19, 19);
@@ -404,6 +408,8 @@ class JQueueJobBrowserPanel
 	  JButton btn = new JButton();		
 	  pDeleteCompletedButton = btn;
 	  btn.setName("DeleteCompletedButton");
+          btn.setToolTipText(UIFactory.formatToolTip(
+            "Remove any completed Job Groups for which you have sufficient privileges."));
 	    
 	  btn.setSelected(true);
 	    
