@@ -7,7 +7,6 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.Map.*;
 
-import javax.crypto.spec.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -242,7 +241,7 @@ class JQueueJobBrowserPanel
         item.addActionListener(this);
         pStatusPopup.add(item);
         bgroup.add(item);
-        pStatusButtons.put(StatusFilter.AnyPaused, item);;
+        pStatusButtons.put(StatusFilter.AnyPaused, item);
         
         pStatusPopup.addSeparator();
         
@@ -251,7 +250,21 @@ class JQueueJobBrowserPanel
         item.addActionListener(this);
         pStatusPopup.add(item);
         bgroup.add(item);
-        pStatusButtons.put(StatusFilter.AllCompleted, item);;
+        pStatusButtons.put(StatusFilter.AllCompleted, item);
+
+        item = new JRadioButtonMenuItem("All Waiting");
+        item.setActionCommand("filter-all-waiting");
+        item.addActionListener(this);
+        pStatusPopup.add(item);
+        bgroup.add(item);
+        pStatusButtons.put(StatusFilter.AllWaiting, item);
+        
+        item = new JRadioButtonMenuItem("All Terminated");
+        item.setActionCommand("filter-all-terminated");
+        item.addActionListener(this);
+        pStatusPopup.add(item);
+        bgroup.add(item);
+        pStatusButtons.put(StatusFilter.AllTerminated, item);
       }
       
       pStatusButtonGroup = bgroup;
@@ -993,7 +1006,28 @@ class JQueueJobBrowserPanel
           groups.put(groupID, entry.getValue());
           dists.put(groupID, dist);
         }
+        break;
+      case AllTerminated:
+        if (dist[JobState.Limbo.ordinal()] == 0 &&
+            dist[JobState.Paused.ordinal()] == 0 &&
+            dist[JobState.Preempted.ordinal()] == 0 &&
+            dist[JobState.Queued.ordinal()] == 0 &&
+            dist[JobState.Running.ordinal()] == 0 &&
+            dist[JobState.Finished.ordinal()] == 0) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
        break;
+      case AllWaiting:
+        if (dist[JobState.Limbo.ordinal()] == 0 &&
+            dist[JobState.Failed.ordinal()] == 0 &&
+            dist[JobState.Aborted.ordinal()] == 0 &&
+            dist[JobState.Finished.ordinal()] == 0 &&
+            dist[JobState.Running.ordinal()] == 0) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
+        break;
       }
     }
     
@@ -1179,6 +1213,12 @@ class JQueueJobBrowserPanel
     switch(pStatusFilter) {
     case AllCompleted:
       header.append("(Filter: All Completed) ");
+      break;
+    case AllTerminated:
+      header.append("(Filter: All Terminated) ");
+      break;
+    case AllWaiting:
+      header.append("(Filter: All Waiting) ");
       break;
     case AnyFailed:
       header.append("(Filter: Any Failed) ");
@@ -1629,6 +1669,10 @@ class JQueueJobBrowserPanel
       doFilterAnyPaused();
     else if(cmd.equals("filter-all-completed"))
       doFilterAllCompleted();
+    else if(cmd.equals("filter-all-waiting"))
+      doFilterAllWaiting();
+    else if(cmd.equals("filter-all-terminated"))
+      doFilterAllTerminated();
     
     else if(cmd.equals("clear-focus"))
       doClearFocus();
@@ -1793,6 +1837,22 @@ class JQueueJobBrowserPanel
   doFilterAllCompleted() 
   {
     pStatusFilter = StatusFilter.AllCompleted;
+    
+    filterJobs();
+  }
+  
+  public void
+  doFilterAllWaiting() 
+  {
+    pStatusFilter = StatusFilter.AllWaiting;
+    
+    filterJobs();
+  }
+  
+  public void
+  doFilterAllTerminated() 
+  {
+    pStatusFilter = StatusFilter.AllTerminated;
     
     filterJobs();
   }
@@ -2385,7 +2445,17 @@ class JQueueJobBrowserPanel
     /**
      * Groups where all the jobs are either Finished, Failed, or Aborted.
      */
-    AllCompleted
+    AllCompleted,
+    
+    /**
+     * Groups where all the jobs are either Paused, Preempted, or Queued.
+     */
+    AllWaiting,
+    
+    /**
+     * Groups where all jobs are either Failed or Aborted
+     */
+    AllTerminated
   }
   
 
