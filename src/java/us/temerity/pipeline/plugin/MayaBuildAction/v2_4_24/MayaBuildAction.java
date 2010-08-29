@@ -208,8 +208,6 @@ class MayaBuildAction
       setSourceLayout(layout);
     }
     
-    underDevelopment();
-    
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
   }
