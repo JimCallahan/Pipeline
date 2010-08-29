@@ -553,6 +553,8 @@ class StandardStage
       }
       
       setKeys();
+      
+      pRegisteredNodeMod.setIntermediate(pIsIntermediate);
 
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
     }
