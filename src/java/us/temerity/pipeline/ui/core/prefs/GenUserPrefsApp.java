@@ -1684,20 +1684,20 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
-	("Toggle the view filter between single view, owned views and all views.", 
-	 "JobBrowserToggleViewsFilter", "Toggle Views Filter:"), 
-	
-	new HotKeyPref
-	("Show only job groups owned by the current view.", 
-	 "JobBrowserSingleViewFilter", "Single View Filter:"), 
-	
-	new HotKeyPref
-	("Show job groups from any view owned by the current user.", 
-	 "JobBrowserOwnedViewsFilter", "Owned Views Filter:"), 
-	
+	("Show only job groups owned by the user running pipeline.", 
+	 "JobBrowserShowMyViews", "Show My Views:"), 
+	 
 	new HotKeyPref
 	("Show job groups from all views.", 
-	 "JobBrowserAllViewsFilter", "All Views Filter:"), 
+	 "JobBrowserShowAllViews", "Show All Views:"),
+	 
+        new HotKeyPref
+        ("Show only job groups owned by the current working area.", 
+         "JobBrowserShowCurrentView", "Show Current View:"), 
+
+        new HotKeyPref
+        ("Allow the selection of a group of custom users whose jobs will be viewed.", 
+         "JobBrowserShowCustomView", "Show Custom Views:"), 
 
 	new BasePref(),
 
@@ -1710,6 +1710,10 @@ class GenUserPrefsApp
 	  "JobBrowserClearFocus", "Clear Job Focus:"),  
 	
 	new BasePref(),
+	
+	new DuplicateHotKeyPref
+        ("Show the node which created the primary selected job in the Node Browser.", 
+         "JobBrowserShowNode", "Show Node:", "ShowNode"), 
 
 	new DuplicateHotKeyPref
 	("Resubmit aborted and failed jobs to the queue for the selected groups.",
@@ -2792,16 +2796,17 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add(update);
-	group.add("JobBrowserToggleViewsFilter");
-	group.add("JobBrowserSingleViewFilter");
-	group.add("JobBrowserOwnedViewsFilter");
-	group.add("JobBrowserAllViewsFilter");
+	group.add("JobBrowserShowMyViews");
+	group.add("JobBrowserShowAllViews");
+	group.add("JobBrowserShowCurrentView");
+	group.add("JobBrowserShowCustomView");
 	group.add("JobBrowserMonitorGroups");
 	group.add("JobBrowserClearFocus");
 	group.addAll(jobs);
 	group.addAll(jobReqs);
 	group.add("JobBrowserGroupsDelete");
 	group.add("JobBrowserGroupsDeleteCompleted");
+	group.add(showNode);
       }
     
       {

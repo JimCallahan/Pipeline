@@ -73,7 +73,7 @@ class JQueueJobBrowserPanel
       pViewFilter = NewViewFilter.MyJobs;
       pFilterOverride = null;
     }
-
+    
     /* initialize the popup menus */
     pShowNodeChannelItems = new ArrayList<JMenuItem>();
     {
@@ -192,8 +192,6 @@ class JQueueJobBrowserPanel
 	item.addActionListener(this);
 	pGroupsPopup.add(item);	
       }    
-
-      updateMenuToolTips();  
     }
     
     {
@@ -277,7 +275,6 @@ class JQueueJobBrowserPanel
       
       pViewButtons = new TreeMap<NewViewFilter, JRadioButtonMenuItem>();
       
-      //TODO morehere.
       {
         pViewPopup = new JPopupMenu();
         
@@ -313,21 +310,22 @@ class JQueueJobBrowserPanel
         pViewPopup.add(pViewGroupMenu);
         pViewGroupButtons = new TreeMap<String, JRadioButtonMenuItem>();
         
-//         pViewPopup.addSeparator();
+         pViewPopup.addSeparator();
         
-//         item = new JRadioButtonMenuItem("Custom Users...");
-//         item.setActionCommand("view-custom-jobs");
-//         item.addActionListener(this);
-//         item.setEnabled(false);
-//         pViewPopup.add(item);
-//         bgroup.add(item);
-//         pViewButtons.put(NewViewFilter.CustomJobs, item);
+         item = new JRadioButtonMenuItem("Custom Users...");
+         item.setActionCommand("view-custom-jobs");
+         item.addActionListener(this);
+         item.setEnabled(false);
+         pViewPopup.add(item);
+         bgroup.add(item);
+         pViewButtons.put(NewViewFilter.CustomJobs, item);
       }
 
       pViewButtonGroup = bgroup;
       pViewPopup.addPopupMenuListener(this);
     }
 
+    updateMenuToolTips();
     
     /* initialize the panel components */ 
     {
@@ -1372,6 +1370,25 @@ class JQueueJobBrowserPanel
   {
     UserPrefs prefs = UserPrefs.getInstance();
        
+    
+    updateMenuToolTip
+      (pGroupShowNodeItem, prefs.getShowNode(), 
+       "Show the node which created the primary selected job in the Node Browser.");
+    updateMenuToolTip
+      (pViewButtons.get(NewViewFilter.MyJobs), prefs.getJobBrowserShowMyViews(), 
+       "Show only job groups owned by the user running pipeline.");
+    updateMenuToolTip
+      (pViewButtons.get(NewViewFilter.AllJobs), prefs.getJobBrowserShowAllViews(), 
+       "Show job groups from all views.");
+    updateMenuToolTip
+      (pViewButtons.get(NewViewFilter.CustomJobs), prefs.getJobBrowserShowCustomView(), 
+       "Allow the selection of a group of custom users whose jobs will be viewed.");
+    updateMenuToolTip
+      (pViewButtons.get(NewViewFilter.Default), prefs.getJobBrowserShowCurrentView(), 
+       "Show only job groups owned by the current working area.");
+    updateMenuToolTip
+      (pClearFocusItem, prefs.getJobBrowserClearFocus(),
+       "Clear the current focus on a specific set of job groups.");
     updateMenuToolTip
       (pGroupsUpdateItem, prefs.getUpdate(),
        "Update the status of all jobs and job groups.");
@@ -1551,24 +1568,25 @@ class JQueueJobBrowserPanel
        prefs.getUpdate().wasPressed(e))
       updatePanels();
     else {
-//      if((prefs.getJobBrowserToggleViewsFilter() != null) &&
-//	 prefs.getJobBrowserToggleViewsFilter().wasPressed(e))
-//	doViewFilterChanged();
-//      else if((prefs.getJobBrowserSingleViewFilter() != null) &&
-//	      prefs.getJobBrowserSingleViewFilter().wasPressed(e))
-//	doSingleViewFilter();
-//      else if((prefs.getJobBrowserOwnedViewsFilter() != null) &&
-//	      prefs.getJobBrowserOwnedViewsFilter().wasPressed(e))
-//	doOwnedViewsFilter();
-//      else if((prefs.getJobBrowserAllViewsFilter() != null) &&
-//	      prefs.getJobBrowserAllViewsFilter().wasPressed(e))
-//	doAllViewsFilter();
       
-      if((prefs.getQueueJobs() != null) &&
-	  prefs.getQueueJobs().wasPressed(e))
+      if ((prefs.getJobBrowserShowMyViews() != null) &&
+          prefs.getJobBrowserShowMyViews().wasPressed(e))
+        doViewMyJobs();
+      else if ((prefs.getJobBrowserShowAllViews() != null) &&
+               prefs.getJobBrowserShowAllViews().wasPressed(e))
+        doViewAllJobs();
+      else if ((prefs.getJobBrowserShowCurrentView() != null) &&
+               prefs.getJobBrowserShowCurrentView().wasPressed(e))
+        doViewWorkingAreaJobs();
+      else if ((prefs.getJobBrowserShowCustomView() != null) &&
+               prefs.getJobBrowserShowCustomView().wasPressed(e))
+        doViewCustomJobs();
+      
+      else if((prefs.getQueueJobs() != null) &&
+              prefs.getQueueJobs().wasPressed(e))
 	doGroupsQueueJobs();
       else if((prefs.getQueueJobsSpecial() != null) &&
-	      prefs.getQueueJobsSpecial().wasPressed(e))
+	       prefs.getQueueJobsSpecial().wasPressed(e))
 	doGroupsQueueJobsSpecial();
       else if((prefs.getPauseJobs() != null) &&
 	      prefs.getPauseJobs().wasPressed(e))
@@ -1788,7 +1806,23 @@ class JQueueJobBrowserPanel
   private void
   doViewCustomJobs()
   {
-    //TODO
+    if (pCustomUserFilterDialog == null)
+      pCustomUserFilterDialog = 
+        new JBooleanListDialog(this.getTopFrame(), "Custom User Filter", 
+                               "Change the list of Custom Users:");
+
+    
+    pCustomUserFilterDialog.setFields(pWorkUsers);
+    pCustomUserFilterDialog.setSelected(pCustomFilter);
+    
+    pCustomUserFilterDialog.setVisible(true);
+    if (pCustomUserFilterDialog.wasConfirmed()) {
+      pCustomFilter = pCustomUserFilterDialog.getSelected();
+    }
+    
+    pViewFilter = NewViewFilter.CustomJobs;
+    
+    updatePanels();
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -3433,4 +3467,9 @@ class JQueueJobBrowserPanel
    * Whether the SHIFT/CTRL key is currently being pressed.
    */ 
   private boolean  pModifierPressed; 
+  
+  /**
+   * Dialog that allows for the selection of a custom list of users.
+   */
+  private JBooleanListDialog pCustomUserFilterDialog;
 }
