@@ -5,7 +5,7 @@ unset JAVA_JVM_VERSION
 function isUnusedPort {
   test_port=$1
   port_next=0
-  for x in `lsof -P -n -Fnt`
+  for x in `lsof -w -P -n -Fnt`
   do
   if [ $x == "tIPv4" ] 
     then

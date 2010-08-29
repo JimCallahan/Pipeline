@@ -1127,6 +1127,14 @@ class MasterMgrServer
                 }
                 break;
 
+              case SetPathHidden:
+                {
+                  NodeSetPathHiddenReq req = (NodeSetPathHiddenReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.setPathHidden(req));
+                  objOut.flush(); 
+                }
+                break;
+
               case GetNodeOwning:
                 {
                   NodeGetNodeOwningReq req = (NodeGetNodeOwningReq) objIn.readObject();

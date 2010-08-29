@@ -4340,13 +4340,16 @@ class UIFactory
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Create a popup menu which allows the user to select a channel from 0-9 for a panel to
-   * run on. <p>
+   * Adds menu items to the given menu which allows the user to select a channel from 0-9 
+   * for a panel to run on. <p>
    * 
    * The action commands for each menu item is the string passed in for the action command 
    * followed by a colon and then the number of the channel (e.g., if the actionCommand 
    * parameter is <code>group</code> then the action command for the first channel would be
    * <code>group:1</code>).
+   * 
+   * @param menu
+   *   The parent menu for the created items. 
    * 
    * @param listener
    *   The action listener which will catch entries on this menu.
@@ -4354,25 +4357,26 @@ class UIFactory
    * @param actionCommand
    *   The name of the action command to assign to each entry in the menu.
    * 
+   * @param withZeroChannel
+   *   Whether to include the zero number channel in the returned items.
+   * 
    * @return
-   *   A two item Object array, with the first element being the {@link JPopupMenu} and the 
-   *   second item being an array of {@link JMenuItem JMenuItems} for each entry in the
-   *   menu.
+   *   The created menu items. 
    */
-  public static Object[]
+  public static JMenuItem[]
   createGroupMenu
   (
-    ActionListener listener,
-    String actionCommand
+   JComponent menu, 
+   ActionListener listener,
+   String actionCommand, 
+   boolean withZeroChannel
   )
   {
-    JPopupMenu menu = new JPopupMenu();  
     JMenuItem groupItems[] = new JMenuItem[10];
-    
     JMenuItem item;
 
     int wk;
-    for(wk=0; wk<10; wk++) {
+    for(wk=(withZeroChannel ? 0 : 1); wk<10; wk++) {
       item = new JMenuItem();
       groupItems[wk] = item;
 
@@ -4384,11 +4388,7 @@ class UIFactory
       menu.add(item);  
     }
     
-    Object toReturn[] = new Object[2];
-    toReturn[0] = menu;
-    toReturn[1] = groupItems;
-    
-    return toReturn;
+    return groupItems;
   }
 
 

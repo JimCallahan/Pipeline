@@ -155,6 +155,40 @@ class NodeTree
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Set the default show/hide display policy of a node path component.
+   *
+   * @param path
+   *    A fully resolved node path or node directory prefix of such a path.
+   * 
+   * @param isHidden
+   *    Whether to hide the given path.
+   */ 
+  public synchronized void 
+  setHidden
+  (
+   String path, 
+   boolean isHidden
+  ) 
+    throws PipelineException
+  {
+    String comps[] = path.split("/"); 
+    NodeTreeEntry parent = pNodeTreeRoot;
+
+    int wk;
+    for(wk=1; wk<comps.length; wk++) {
+      NodeTreeEntry entry = parent.get(comps[wk]);
+      if(entry == null) 
+        throw new PipelineException("Unable to find the node path (" + path + "!");
+      parent = entry;
+    }
+    
+    parent.setHidden(isHidden); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
    * Get the name of the node which has already reserved the given primary sequence.
    * 
    * @param name
@@ -920,7 +954,7 @@ class NodeTree
    * Get the node tree components below the given set of paths visible in a working area.
    * 
    * @param author 
-   *   The of the user which owns the working area view.
+   *   The name of the user which owns the working area view.
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -928,6 +962,9 @@ class NodeTree
    * @param paths 
    *   Whether to update all children (true) or only the immediate children (false) of the 
    *   given fully resolved node path indices.
+   * 
+   * @param showHidden
+   *   Whether hidden nodes (or directories) should be included in the results.
    * 
    * @return 
    *   The node tree components for all updated paths.
@@ -937,7 +974,8 @@ class NodeTree
   (
    String author, 
    String view, 
-   TreeMap<String,Boolean> paths
+   TreeMap<String,Boolean> paths, 
+   boolean showHidden
   ) 
   {
     NodeTreeComp rootComp = new NodeTreeComp();
@@ -949,14 +987,14 @@ class NodeTree
       int wk;
       for(wk=1; wk<comps.length; wk++) {
 	for(NodeTreeEntry entry : parentEntry.values()) {
-	  if(!parentComp.containsKey(entry.getName())) {
+          if((showHidden || !entry.isHidden()) && !parentComp.containsKey(entry.getName())) {
 	    NodeTreeComp comp = new NodeTreeComp(entry, author, view);
 	    parentComp.put(comp.getName(), comp);
 	  }
 	}
 	
 	NodeTreeEntry entry = parentEntry.get(comps[wk]); 
-	if(entry == null) {
+	if((entry == null) || (!showHidden && entry.isHidden())) {
 	  parentEntry = null;
 	  break;
 	}
@@ -971,7 +1009,7 @@ class NodeTree
       
       if((parentEntry != null) && (parentComp != null)) {
 	boolean recursive = paths.get(path);
-	updatePathsBelow(author, view, parentEntry, parentComp, recursive);
+	updatePathsBelow(author, view, parentEntry, parentComp, recursive, showHidden);
       }
     }
 
@@ -988,15 +1026,16 @@ class NodeTree
    String view, 
    NodeTreeEntry parentEntry, 
    NodeTreeComp parentComp,
-   boolean recursive
+   boolean recursive, 
+   boolean showHidden
   ) 
   {
     for(NodeTreeEntry entry : parentEntry.values()) {
-      if(!parentComp.containsKey(entry.getName())) {
+      if((showHidden || !entry.isHidden()) && !parentComp.containsKey(entry.getName())) {
 	NodeTreeComp comp = new NodeTreeComp(entry, author, view);
 	parentComp.put(comp.getName(), comp);
 	if(recursive) 
-	  updatePathsBelow(author, view, entry, comp, true);
+	  updatePathsBelow(author, view, entry, comp, true, showHidden);
       }
     } 
   }
@@ -1400,6 +1439,157 @@ class NodeTree
     }	
     catch(GlueException ex) {
       throw new PipelineException(ex);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   *
+   */
+  private synchronized TreeSet<String>
+  readHidden() 
+    throws PipelineException
+  {
+    Path hpath = new Path(PackageInfo.sNodePath, "etc/hidden");
+    File file = hpath.toFile();
+    File backup = new File(file + ".backup");
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Updating Hidden Nodes.");
+
+    /* re-read the hidden database from disk */ 
+    TreeSet<String> hidden = new TreeSet<String>();
+    try {
+      if(file.isFile() && (file.length() > 0)) {
+        try {
+          hidden = (TreeSet<String>) GlueDecoderImpl.decodeFile("Hidden", file);
+        }
+        catch(Exception ex) {
+	  LogMgr.getInstance().logAndFlush
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+             "The hidden node file appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
+        
+	  if(backup.isFile() && (backup.length() > 0)) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	       "Reading Hidden Nodes (Backup).");
+
+            try {
+              hidden = (TreeSet<String>) GlueDecoderImpl.decodeFile("Hidden", backup);
+            }
+            catch(Exception ex2) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+                 "The backup hidden node file appears to be corrupted:\n" + 
+                 "  " + ex.getMessage());
+
+              throw ex2;
+            }
+
+	    LogMgr.getInstance().logAndFlush
+	      (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+	       "Successfully recovered the hidden nodes from the backup file " + 
+	       "(" + backup + ")\n" + 
+	       "Renaming the backup to (" + file + ")!");
+            
+	    if(!file.delete()) 
+	      throw new IOException
+		("Unable to remove the corrupted hidden nodes file (" + file + ")!");
+	    
+	    if(!backup.renameTo(file)) 
+	      throw new IOException
+		("Unable to replace the corrupted hidden nodes file (" + file + ") " + 
+		 "with the valid backup file (" + backup + ")!");
+          }
+        }
+      }
+    }	
+    catch(Exception ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to read hidden node file...\n" +
+	 "    " + ex.getMessage());
+    }
+
+    return hidden;
+  }
+
+
+  /**
+   * Initialize the hidden flags for the node tree components from the database file listing
+   * all hidden nodes and paths.
+   */
+  public synchronized void 
+  initHidden() 
+    throws PipelineException
+  {
+    TreeSet<String> hidden = readHidden();
+    for(String s : hidden) 
+      setHidden(s, true);
+  }
+
+  /**
+   * Modify the database file which records the hidden status of all node paths.
+   *
+   * @param path
+   *    A fully resolved node path or node directory prefix of such a path.
+   * 
+   * @param isHidden
+   *    Whether to hide the given path.
+   */
+  public synchronized void 
+  updateHiddenFile
+  (
+   String path, 
+   boolean isHidden   
+  ) 
+    throws PipelineException
+  {
+    Path hpath = new Path(PackageInfo.sNodePath, "etc/hidden");
+    File file = hpath.toFile();
+    File backup = new File(file + ".backup");
+
+    /* re-read the hidden database from disk */ 
+    TreeSet<String> hidden = readHidden();
+
+    /* add/remove an entry, then update the database files if that changed the contents */ 
+    if(isHidden ? hidden.add(path) : hidden.remove(path)) {
+
+      /* backup the current file */ 
+      if(file.isFile()) {
+        if(backup.exists())
+          if(!backup.delete()) 
+            throw new PipelineException
+              ("Unable to remove the backup hidden node file (" + backup + ")!");
+        
+        if(!file.renameTo(backup)) 
+          throw new PipelineException
+            ("Unable to backup the current hidden node file (" + file + ") to the " + 
+             "the file (" + backup + ")!");
+      }
+      
+      /* write the current state */ 
+      if(hidden.isEmpty()) {
+        try {
+          file.createNewFile();
+        }
+        catch(IOException ex) {
+          throw new PipelineException
+            ("Unable to write the hidden node file (" + file + ")!"); 
+        }
+      }
+      else {
+        try {
+          GlueEncoderImpl.encodeFile("Hidden", hidden, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+      }
     }
   }
 

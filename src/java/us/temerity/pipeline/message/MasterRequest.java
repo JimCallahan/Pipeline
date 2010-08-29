@@ -534,6 +534,11 @@ enum MasterRequest
    * An instance of {@link NodeUpdatePathsReq} is next.
    */
   UpdatePaths, 
+  
+  /**
+   * An instance of {@link NodeSetPathHiddenReq} is next.
+   */
+  SetPathHidden, 
 
   /**
    * An instance of {@link NodeGetNodeOwningReq} is next.

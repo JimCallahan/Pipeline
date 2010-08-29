@@ -1100,6 +1100,8 @@ class MasterMgr
       pIntermediateTrigger.release(); 
       initWorkingNodeDatabase(); 
 
+      pNodeTree.initHidden();
+
       LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "All Rebuilt"); 
     }
     else {
@@ -7023,7 +7025,7 @@ class MasterMgr
    * 
    * @return
    *   <CODE>NodeUpdatePathsRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
+   *   <CODE>FailureRsp</CODE> if unable to get the path components.
    */
   public Object
   updatePaths
@@ -7041,9 +7043,50 @@ class MasterMgr
       String author = req.getAuthor();
       String view   = req.getView();
 
-      NodeTreeComp rootComp = pNodeTree.getUpdatedPaths(author, view, req.getPaths());
+      NodeTreeComp rootComp = 
+        pNodeTree.getUpdatedPaths(author, view, req.getPaths(), req.showHidden());
       
       return new NodeUpdatePathsRsp(timer, author, view, rootComp);
+    }
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+
+  /**
+   * Set the default show/hide display policy of a node path component.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable set the hidden status.
+   */
+  public Object
+  setPathHidden
+  (
+   NodeSetPathHiddenReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();	
+
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+        throw new PipelineException
+          ("Only a user with Master Admin privileges may hide/show node paths!"); 
+      
+      pNodeTree.updateHiddenFile(req.getPath(), req.isHidden());
+      pNodeTree.setHidden(req.getPath(), req.isHidden());
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.releaseReadLock();

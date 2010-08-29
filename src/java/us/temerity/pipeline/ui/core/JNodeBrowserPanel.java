@@ -81,6 +81,8 @@ class JNodeBrowserPanel
     /* panel popup menu */ 
     {
       JMenuItem item;
+      JRadioButtonMenuItem ritem;
+      JCheckBoxMenuItem citem;
       
       pPanelPopup = new JPopupMenu(); 
       
@@ -113,7 +115,6 @@ class JNodeBrowserPanel
 	sub.setEnabled(false);
 	sub.setVisible(false);
 
-	//sub = new JMenu("Tools (Default)");
 	sub = new JMenu("Tools");
 	pDefaultToolMenu = sub;
 	pPanelPopup.add(sub);
@@ -125,18 +126,40 @@ class JNodeBrowserPanel
 
       pPanelPopup.addSeparator();
 
-      item = new JMenuItem("Node Filter...");
-      pNodeFilterItem = item;
-      item.setActionCommand("node-filter");
+      pFilterItems = new TreeMap<NodeFilter,JRadioButtonMenuItem>();
+      pFilterGroup = new ButtonGroup();
+      for(NodeFilter filter : NodeFilter.all()) {
+        ritem = new JRadioButtonMenuItem(filter.toTitle());
+        pFilterItems.put(filter, ritem);
+        ritem.setActionCommand("Filter" + filter.toString());
+        ritem.addActionListener(this);
+        pFilterGroup.add(ritem);
+        pPanelPopup.add(ritem);
+      }          
+      pFilterGroup.setSelected(pFilterItems.get(NodeFilter.AllNodes).getModel(), true);
+
+      pPanelPopup.addSeparator();
+        
+      item  = new JMenuItem("Show/Hide Path");   
+      pShowHideItem = item;
+      item.setActionCommand("show-hide");
       item.addActionListener(this);
-      pPanelPopup.add(item);  
+      pPanelPopup.add(item);
+
+      citem = new JCheckBoxMenuItem("Show Hidden");   
+      pShowHiddenItem = citem;
+      citem.setActionCommand("show-hidden");
+      citem.addActionListener(this);
+      pPanelPopup.add(citem);
+
+      pPanelPopup.addSeparator();
 
       item = new JMenuItem("Expand Selected");
       pExpandSelectedItem = item;
       item.setActionCommand("expand-selected");
       item.addActionListener(this);
       pPanelPopup.add(item);
-      
+
       updateMenuToolTips();
     }
 
@@ -415,22 +438,6 @@ class JNodeBrowserPanel
     updateNodeTree(getExpandedPaths(), null);
   }
 
-  /**
-   * Update the node filter.
-   * 
-   * @param filter
-   *   Whether to show node components with the given states.
-   */ 
-  public void 
-  updateFilter
-  (
-   TreeMap<NodeTreeComp.State, Boolean> filter
-  ) 
-  {
-    pFilter.putAll(filter);
-    updateNodeTree();
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -573,7 +580,7 @@ class JNodeBrowserPanel
               paths.put(path, false);
         }
         
-        comp = client.updatePaths(pAuthor, pView, paths); 
+        comp = client.updatePaths(pAuthor, pView, paths, pShowHiddenItem.getState()); 
       }
       catch(PipelineException ex) {
         master.showErrorDialog(ex);
@@ -667,9 +674,9 @@ class JNodeBrowserPanel
 	  tnode.add(child);
       
 	  rebuildTreeModel(cpath, comp, child, expanded, deep); 
-
-	  if((expanded.contains(cpath) || (deep != null) && cpath.startsWith(deep)) &&
-	     child.isLeaf() && (comp.getState() == NodeTreeComp.State.Branch)) {
+          
+	  if((expanded.contains(cpath) || ((deep != null) && cpath.startsWith(deep))) &&
+             child.isLeaf() && (comp.getState() == NodeTreeComp.State.Branch)) {
 	    DefaultMutableTreeNode hidden = new DefaultMutableTreeNode(null, false);
 	    child.add(hidden);
 	  }
@@ -719,9 +726,8 @@ class JNodeBrowserPanel
     if(e != null) {
       while(e.hasMoreElements()) {
 	DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) e.nextElement(); 
- 	NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
- 	if((comp != null) && !comp.isEmpty()) 
- 	  pTree.expandPath(new TreePath(tnode.getPath()));
+        if(tnode.getChildCount() > 0) 
+          pTree.expandPath(new TreePath(tnode.getPath()));
       }
     }    
   }
@@ -779,10 +785,6 @@ class JNodeBrowserPanel
   updateMenuToolTips() 
   {
     UserPrefs prefs = UserPrefs.getInstance();
-
-    updateMenuToolTip
-      (pNodeFilterItem, prefs.getNodeBrowserNodeFilter(), 
-       "Show the node filter dialog."); 
 
     updateMenuToolTip
       (pRegisterItem, null,
@@ -1147,22 +1149,28 @@ class JNodeBrowserPanel
 	    (pGroupID, sname, pViewsEditingMenu, this);
 
 	  boolean isOverNode = true;
-	  boolean isRegisterIn = false;
+	  boolean isOverPath = false;
 	  if(pPrimaryNodeComp != null) {
 	    switch(pPrimaryNodeComp.getState()) {
 	    case Branch:
 	      isOverNode = false;
 	    }
 
-	    isRegisterIn = true;
+	    isOverPath = true;
 	  }
 	  else
 	    isOverNode = false;
 
-	  if(isRegisterIn)
-	    pRegisterItem.setText("Register In...");
-	  else
-	    pRegisterItem.setText("Register...");
+          pRegisterItem.setText(isOverPath ? "Register In..." : "Register...");
+          
+          if(isOverPath) {
+            pShowHideItem.setEnabled(true);
+            pShowHideItem.setText(pPrimaryNodeComp.isHidden() ? "Show Path" : "Hide Path");
+          }
+          else {
+            pShowHideItem.setEnabled(false);
+            pShowHideItem.setText("Show/Hide Path"); 
+          }
 
 	  boolean isDefaultToolMenu = true;
 	  if(isOverNode) {
@@ -1189,6 +1197,7 @@ class JNodeBrowserPanel
 	    pToolMenu.setEnabled(true);
 	    pToolMenu.setVisible(true);
 	  }
+
 
 	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
@@ -1227,10 +1236,6 @@ class JNodeBrowserPanel
     if((prefs.getUpdate() != null) &&
        prefs.getUpdate().wasPressed(e)) 
       updatePanels(true);
-    
-    else if((prefs.getNodeBrowserNodeFilter() != null) &&
-       prefs.getNodeBrowserNodeFilter().wasPressed(e)) 
-      doNodeFilter();
 
     else {
       switch(e.getKeyCode()) {
@@ -1294,9 +1299,7 @@ class JNodeBrowserPanel
   ) 
   {
     String cmd = e.getActionCommand();
-    if(cmd.equals("node-filter"))
-      doNodeFilter();
-    else if(cmd.startsWith("expand-selected"))
+    if(cmd.startsWith("expand-selected"))
       doExpandSelected();
     else if(cmd.startsWith("author-view:")) 
       doChangeAuthorView(cmd.substring(12));
@@ -1304,6 +1307,20 @@ class JNodeBrowserPanel
       doRegister();
     else if(cmd.startsWith("clone"))
       doClone();
+
+    else if(cmd.equals("FilterAllNodes"))
+      doFilterAllNodes();
+    else if(cmd.equals("FilterCurrentView"))
+      doFilterCurrentView();
+    else if(cmd.equals("FilterAnyViews"))
+      doFilterAnyViews();
+    else if(cmd.equals("FilterNoViews"))
+      doFilterNoViews();
+
+    else if(cmd.equals("show-hide")) 
+      doShowHide();
+    else if(cmd.equals("show-hidden")) 
+      updateNodeTree();
 
     /* tool menu events */ 
     else if(cmd.startsWith("run-tool:")) 
@@ -1315,19 +1332,6 @@ class JNodeBrowserPanel
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Modify the node filter. 
-   */ 
-  public void 
-  doNodeFilter() 
-  {
-    if(pFilterDialog == null) 
-      pFilterDialog = new JNodeBrowserFilterDialog(this);
-
-    pFilterDialog.updateFilter(pFilter);
-    pFilterDialog.setVisible(true);
-  }
 
   /**
    * Expand the node browser tree to display all the selected nodes.
@@ -1524,6 +1528,96 @@ class JNodeBrowserPanel
     private NodeCommon  pNode;
     private NodeTreeComp  pWorkingSources;
     private boolean  pHasWorkingVersion;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the node filters for All Nodes.
+   */ 
+  public void 
+  doFilterAllNodes() 
+  {
+    pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInSome, true);
+    pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInSome,   true);
+    pFilter.put(NodeTreeComp.State.WorkingNoneCheckedInSome,    true);
+    pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, true);
+    pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInNone,   true);
+
+    updateNodeTree();
+  }
+
+  /**
+   * Set the node filters for Current View.
+   */ 
+  public void 
+  doFilterCurrentView() 
+  {
+    pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInSome, true);
+    pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInSome,   false);
+    pFilter.put(NodeTreeComp.State.WorkingNoneCheckedInSome,    false);
+    pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, true);
+    pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInNone,   false);
+
+    updateNodeTree();
+  }
+
+  /**
+   * Set the node filters for Any Views.
+   */ 
+  public void 
+  doFilterAnyViews() 
+  {
+    pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInSome, true);
+    pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInSome,   true);
+    pFilter.put(NodeTreeComp.State.WorkingNoneCheckedInSome,    false);
+    pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, true);
+    pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInNone,   true);
+
+    updateNodeTree();
+  }
+
+  /**
+   * Set the node filters for No Views.
+   */ 
+  public void 
+  doFilterNoViews() 
+  {
+    pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInSome, false);
+    pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInSome,   false);
+    pFilter.put(NodeTreeComp.State.WorkingNoneCheckedInSome,    true);
+    pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, false);
+    pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInNone,   false);
+
+    updateNodeTree();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * 
+   */ 
+  public void 
+  doShowHide() 
+  {
+    if((pPrimaryNodePath != null) && (pPrimaryNodeComp != null)) {
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try { 
+        client.setPathHidden(pPrimaryNodePath, !pPrimaryNodeComp.isHidden());
+      }
+      catch(PipelineException ex) {
+        master.showErrorDialog(ex);
+        return;
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+      }
+    }
+
+    updateNodeTree();
   }
 
 
@@ -1887,8 +1981,6 @@ class JNodeBrowserPanel
     TreeSet<String> expanded = getExpandedPaths();
     if(!expanded.isEmpty()) 
       encoder.encode("ExpandedPaths", expanded);
-
-    encoder.encode("Filter", pFilter);
   }
 
   @Override
@@ -1904,13 +1996,46 @@ class JNodeBrowserPanel
     TreeSet<String> expanded = (TreeSet<String>) decoder.decode("ExpandedPaths");
     if(expanded != null) 
       updateNodeTree(expanded, null);
-
-    TreeMap<NodeTreeComp.State, Boolean> filter = 
-      (TreeMap<NodeTreeComp.State, Boolean>) decoder.decode("Filter");
-    if(filter != null) 
-      pFilter.putAll(filter);
   }
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The 
+   */
+  public static
+  enum NodeFilter
+  {
+    AllNodes, CurrentView, AnyViews, NoViews;
+    
+    public String
+    toTitle() 
+    {
+      return sTitles[ordinal()];
+    }
+
+    public static ArrayList<NodeFilter>
+    all() 
+    {
+      NodeFilter values[] = values();
+      ArrayList<NodeFilter> all = new ArrayList<NodeFilter>(values.length);
+      int wk;
+      for(wk=0; wk<values.length; wk++)
+        all.add(values[wk]);
+      return all;
+    }
+    
+    private static String sTitles[] = {
+      "All Nodes", "Current View", "Any Views", "No Views"
+    };
+  }
+
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -1959,23 +2084,23 @@ class JNodeBrowserPanel
   private JMenu  pViewsEditingMenu;
 
   /**
-   * The panel layout popup menu items.
+   * The panel popup menu items.
    */ 
-  private JMenuItem  pNodeFilterItem;
-  private JMenuItem  pExpandSelectedItem;
   private JMenuItem  pRegisterItem;
   private JMenuItem  pCloneItem;
+  private JMenuItem  pShowHideItem;
+  private JMenuItem  pExpandSelectedItem; 
+
+  private TreeMap<NodeFilter,JRadioButtonMenuItem>  pFilterItems; 
+  private ButtonGroup pFilterGroup;
+
+  private JCheckBoxMenuItem pShowHiddenItem; 
 
   /**
    * The tool plugin menu.
    */
   private JMenu  pToolMenu;
   private JMenu  pDefaultToolMenu;
-
-  /**
-   * The editor dialog for node filters.
-   */ 
-  private JNodeBrowserFilterDialog  pFilterDialog; 
 
   /**
    * The register node dialog.

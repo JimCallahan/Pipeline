@@ -177,49 +177,41 @@ class JManagerPanel
         pPopup.add(sub);  
         
         {
-          JMenu subsub = new JMenu("Node Panel Bundle");
-          for (int i = 1; i < 10; i++) {
-            item = new JMenuItem("Channel " + i);
-            item.setActionCommand("node-bundle-" + i);
-            item.addActionListener(this);
-            subsub.add(item);
-            pNodePanelBundleItems.add(item);
+          JMenu subsub = new JMenu("Node Panels");
+          for(JMenuItem mi : 
+                UIFactory.createGroupMenu(subsub, this, "node-bundle", false)) {
+            if(mi != null) 
+              pNodePanelBundleItems.add(mi);
           }
           sub.add(subsub);
         }
         
         {
-          JMenu subsub = new JMenu("Details Panel Bundle");
-          for (int i = 1; i < 10; i++) {
-            item = new JMenuItem("Channel " + i);
-            item.setActionCommand("details-bundle-" + i);
-            item.addActionListener(this);
-            subsub.add(item);
-            pDetailsPanelBundleItems.add(item);
+          JMenu subsub = new JMenu("Details Panels");
+          for(JMenuItem mi : 
+                UIFactory.createGroupMenu(subsub, this, "details-bundle", false)) {
+            if(mi != null) 
+              pDetailsPanelBundleItems.add(mi);
           }
           sub.add(subsub);
         }
-        
+
         {
-          JMenu subsub = new JMenu("Queue Panel Bundle");
-          for (int i = 1; i < 10; i++) {
-            item = new JMenuItem("Channel " + i);
-            item.setActionCommand("queue-bundle-" + i);
-            item.addActionListener(this);
-            subsub.add(item);
-            pQueuePanelBundleItems.add(item);
+          JMenu subsub = new JMenu("Queue Panels");
+          for(JMenuItem mi : 
+                UIFactory.createGroupMenu(subsub, this, "queue-bundle", false)) {
+            if(mi != null) 
+              pQueuePanelBundleItems.add(mi);
           }
           sub.add(subsub);
         }
-        
+
         {
-          JMenu subsub = new JMenu("Job Panel Bundle");
-          for (int i = 1; i < 10; i++) {
-            item = new JMenuItem("Channel " + i);
-            item.setActionCommand("job-bundle-" + i);
-            item.addActionListener(this);
-            subsub.add(item);
-            pJobPanelBundleItems.add(item);
+          JMenu subsub = new JMenu("Job Panels");
+          for(JMenuItem mi : 
+                UIFactory.createGroupMenu(subsub, this, "job-bundle", false)) {
+            if(mi != null) 
+              pJobPanelBundleItems.add(mi);
           }
           sub.add(subsub);
         }
@@ -632,10 +624,8 @@ class JManagerPanel
 
     /* group popup menu */ 
     {
-      Object[] groupMenu = UIFactory.createGroupMenu(this, "group");
-      
-      pGroupPopup = (JPopupMenu) groupMenu[0];  
-      pGroupItems = (JMenuItem[]) groupMenu[1];
+      pGroupPopup = new JPopupMenu(); 
+      pGroupItems = UIFactory.createGroupMenu(pGroupPopup, this, "group", true);
     }
     
     /* set the initial tool tips */ 

@@ -748,12 +748,14 @@ class MasterMgrDirectLightClient
     for(String path : paths) 
       ipaths.put(path, false);
 
-    return updatePaths(author, view, ipaths);
+    return updatePaths(author, view, ipaths, true);
   }
 
   /** 
    * Update the children of all node path components along the given paths
    * which are visible within a working area view owned by the given user. <P> 
+   * 
+   * All hidden nodes (and directories) are always included in the results from this method.
    * 
    * @param author 
    *   The of the user which owns the working version.
@@ -777,7 +779,42 @@ class MasterMgrDirectLightClient
   ) 
     throws PipelineException
   {
-    NodeUpdatePathsReq req = new NodeUpdatePathsReq(author, view, paths);
+    return updatePaths(author, view, paths, true);
+  }
+
+  /** 
+   * Update the children of all node path components along the given paths
+   * which are visible within a working area view owned by the given user. <P> 
+   * 
+   * All hidden nodes (and directories) are always included in the results from this method.
+   * 
+   * @param author 
+   *   The of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param paths 
+   *   Whether to update all children (true) or only the immediate children (false) of the 
+   *   given fully resolved node path indices.
+   * 
+   * @param showHidden
+   *   Whether hidden nodes (or directories) should be included in the results.
+   * 
+   * @throws PipelineException
+   *   If unable to update the node paths.
+   */
+  public NodeTreeComp
+  updatePaths
+  (
+   String author, 
+   String view, 
+   TreeMap<String,Boolean> paths, 
+   boolean showHidden
+  ) 
+    throws PipelineException
+  {
+    NodeUpdatePathsReq req = new NodeUpdatePathsReq(author, view, paths, showHidden);
 
     Object obj = pMasterMgr.updatePaths(req);
     if(obj instanceof NodeUpdatePathsRsp) {

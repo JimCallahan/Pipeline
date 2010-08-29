@@ -77,13 +77,15 @@ class JNodeBrowserTreeCellRenderer
            comp.getPrimarySuffix() != null)
           suffix = "." + comp.getPrimarySuffix();
       }
-      
-      setText(comp.getName() + suffix);
+
+      setText(comp.getName() + suffix); 
       setIcon(selected ? sSelectedIcons[idx] : sIcons[idx]);
       
+      Color normal = comp.isHidden() ? new Color(1.0f, 0.5f, 0.0f): Color.white;
+
       switch(comp.getState()) {
       case Branch:
-	setForeground(Color.white);
+	setForeground(normal);
 	break;
 	
       case WorkingOtherCheckedInNone:
@@ -91,7 +93,7 @@ class JNodeBrowserTreeCellRenderer
 	break;
 	
       default:
-	setForeground(selected ? Color.yellow : Color.white);
+	setForeground(selected ? Color.yellow : normal);
 	break;
       }
     }

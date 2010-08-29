@@ -685,12 +685,6 @@ class GenUserPrefsApp
 	("Update the status of the node tree and selected nodes.", 
 	 "Update", "Update Nodes:",
 	 false, false, false, 32),  /* Space */ 
-
-	new BasePref(),
-
-	new HotKeyPref
-	("Show the node filter dialog.", 
-	 "NodeBrowserNodeFilter", "Node Filter:")	
       };
 
       pPrefs.put("Panels|Node Browser|Hot Keys", prefs);
@@ -1698,8 +1692,8 @@ class GenUserPrefsApp
         new HotKeyPref
         ("Allow the selection of a group of custom users whose jobs will be viewed.", 
          "JobBrowserShowCustomView", "Show Custom Views:"), 
-
-	new BasePref(),
+ 	
+         new BasePref(),
 
 	new HotKeyPref
 	("Add the selected job groups to the job monitor panel.", 
@@ -2617,7 +2611,6 @@ class GenUserPrefsApp
 
 	group.addAll(manager);
 	group.add(update);
-	group.add("NodeBrowserNodeFilter");
       }
     
       {
@@ -2796,6 +2789,7 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add(update);
+
 	group.add("JobBrowserShowMyViews");
 	group.add("JobBrowserShowAllViews");
 	group.add("JobBrowserShowCurrentView");
