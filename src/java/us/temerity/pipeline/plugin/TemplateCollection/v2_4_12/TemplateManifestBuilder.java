@@ -55,61 +55,62 @@ class TemplateManifestBuilder
     {
       UtilityParam param = 
         new BooleanUtilityParam
-          (aAllowZeroContexts,
-           "Allow contexts to have no replacements.",
-           false);
+        (aAllowZeroContexts,
+         "Allow contexts to have no replacements.",
+         false);
       addParam(param);
     }
     
     {
       UtilityParam param = 
         new BooleanUtilityParam
-          (aInhibitFileCopy,
-           "Inhibit the CopyFile flag on all nodes in the template.",
-           false);
+        (aInhibitFileCopy,
+         "Inhibit the CopyFile flag on all nodes in the template.",
+         false);
       addParam(param);
     }
     
     {
       UtilityParam param = 
         new PathUtilityParam
-          (aParamManifest,
-           "The node name of the manifest that contains all the replacement values.",
-           null);
+        (aParamManifest,
+         "The node name of the manifest that contains all the replacement values.",
+         null);
       addParam(param);
     }
     {
       UtilityParam param = 
         new PathUtilityParam
-          (aDescManifest,
-           "The node name of the manifest that contains the description of where the " +
-           "template is stored.",
-           null);
+        (aDescManifest,
+         "The node name of the manifest that contains the description of where the " +
+         "template is stored.",
+         null);
+      addParam(param);
+    } 
+    
+    {
+      UtilityParam param = 
+        new StringUtilityParam
+        (aAOEMode,
+         "The Action on Existence mode to use in the template.",
+         null);
       addParam(param);
     }
     {
       UtilityParam param = 
         new StringUtilityParam
-          (aAOEMode,
-           "The Action on Existence mode to use in the template.",
-           null);
-      addParam(param);
-    }
-    {
-      UtilityParam param = 
-        new StringUtilityParam
-          (aCheckInMessage,
-           "The check-in message to use.",
-           null);
+        (aCheckInMessage,
+         "The check-in message to use.",
+         null);
       addParam(param);
     }
     
     {
       UtilityParam param = 
         new StringUtilityParam
-          (aCustomWorkingArea,
-           "The name of the custom working area to run this builder in.",
-           null);
+        (aCustomWorkingArea,
+         "The name of the custom working area to run this builder in.",
+         null);
       addParam(param);
     }
     
@@ -118,10 +119,10 @@ class TemplateManifestBuilder
       Collections.addAll(values, "Major", "Minor", "Micro");
       UtilityParam param = 
         new EnumUtilityParam
-          (aCheckInLevel,
-           "The check-in level to use.",
-           "Minor",
-           values);
+        (aCheckInLevel,
+         "The check-in level to use.",
+         "Minor",
+         values);
       addParam(param);
     }
     
@@ -292,8 +293,6 @@ class TemplateManifestBuilder
           throw new IllegalStateException("This should never happen");
       }
  
-      pTemplateBuilder = templateBuilder;
-      
       templateBuilder.setParamValue(aActionOnExistence, pAOEMode);
       
       addSubBuilder(templateBuilder, false, 100);
@@ -312,8 +311,6 @@ class TemplateManifestBuilder
         templateBuilder.setParamValue(aUtilContextToolsetParam, getToolset());
         templateBuilder.disableParam(new ParamMapping(aUtilContext));
       }
-      
-      
     }
     
 
@@ -359,7 +356,4 @@ class TemplateManifestBuilder
   /*----------------------------------------------------------------------------------------*/
 
   private String pCustomWorkingArea;
-  
-  private BaseBuilder pTemplateBuilder;
-  
 }

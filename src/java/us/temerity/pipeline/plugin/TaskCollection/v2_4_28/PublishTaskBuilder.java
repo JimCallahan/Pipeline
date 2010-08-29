@@ -88,7 +88,7 @@ class PublishTaskBuilder
     
     setParamValue(aReleaseView, ReleaseView.OnSuccess.toString());
     disableParam(aReleaseViewParam);
-
+    
     PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
     setLayout(finalLayout);
   }
@@ -267,6 +267,18 @@ class PublishTaskBuilder
       pClient.checkOut(getAuthor(), getView(), pPublishNode, null, 
                        CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
 
+      /* 
+       * Quick hack to prevent timestamp issues on super fast checkouts.  Most likely not 
+       * needed in production environments, but why take the chance at the cost of a single
+       * second? 
+       */
+      try {
+        Thread.sleep(1000l);
+      }
+      catch (InterruptedException ex) {
+        ex.printStackTrace();
+      }
+      
       /* 
        * Checkout the verify node second, to guarantee the right versions are used.
        * Otherwise, the checkout of the publish node could bring out newer versions of

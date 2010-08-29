@@ -1802,7 +1802,7 @@ class BaseBuilder
 	total++;
 	long jobID = status.getJobID();
 	String nodeName = status.getNodeID().getName();
-	pLog.log(Kind.Ops, Level.Finest, 
+	pLog.log(Kind.Ops, Level.Detail, 
 	  "Checking the status of Job (" + jobID + ") " +
 	  "for node (" + nodeName + ").");
 	JobState state = status.getState();
@@ -1816,12 +1816,12 @@ class BaseBuilder
 	case Paused:
 	case Preempted:
 	case Queued:
-	  pLog.log(Kind.Ops, Level.Finest, "\tThe Job has not started running."); 
+	  pLog.log(Kind.Ops, Level.Detail, "\tThe Job has not started running."); 
 	  done = false;
 	  waiting++;
 	  break;
 	case Running:
-	  pLog.log(Kind.Ops, Level.Finest, "\tThe Job is still running."); 
+	  pLog.log(Kind.Ops, Level.Detail, "\tThe Job is still running."); 
 	  done = false;
 	  running++;
 	  break;

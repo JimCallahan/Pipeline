@@ -125,6 +125,7 @@ class VerifyTaskBuilder
   }
   
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S E T U P   P A S S E S                                                              */
   /*----------------------------------------------------------------------------------------*/
@@ -271,6 +272,18 @@ class VerifyTaskBuilder
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Checking Out: " + pVerifyNode);
       pClient.checkOut(getAuthor(), getView(), pVerifyNode, null, 
                        CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
+      
+      /* 
+       * Quick hack to prevent timestamp issues on super fast checkouts.  Most likely not 
+       * needed in production environments, but why take the chance at the cost of a single
+       * second? 
+       */
+      try {
+        Thread.sleep(1000l);
+      }
+      catch (InterruptedException ex) {
+        ex.printStackTrace();
+      }
       
       /* 
        * Checkout the submit node second, to guarantee the right versions are used.

@@ -116,7 +116,7 @@ class PublishTaskTool
       pProjectName = taskInfo[0];
       pTaskIdent1  = taskInfo[1];
       pTaskIdent2  = taskInfo[2];
-      pTaskType    = taskInfo[2];
+      pTaskType    = taskInfo[3];
       pTaskInfo    = taskInfo;
  
       String verifyNode = null;
@@ -130,7 +130,7 @@ class PublishTaskTool
       pVerifyNode = verifyNode;
       
       TreeSet<VersionID> alreadyPublished = new TreeSet<VersionID>();
-      String publishNode = TaskBuilder.getDefaultPublishBuilderNodeName(taskInfo);
+      String publishNode = TaskBuilder.getDefaultPublishNodeName(taskInfo);
       {
         TreeMap<VersionID, NodeVersion> versions = 
           mclient.getAllCheckedInVersions(publishNode);
@@ -226,7 +226,7 @@ class PublishTaskTool
             model.addElement(ver);
 
           {
-            Dimension size = new Dimension(sTSize + sVSize, 400);
+            Dimension size = new Dimension(sTSize + sVSize + 65, 400);
 
             JScrollPane scroll = 
               UIFactory.createScrollPane

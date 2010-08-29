@@ -1109,6 +1109,7 @@ class QueueMgrServer
                   objOut.writeObject(pQueueMgr.deleteUsersJobGroups(req));
                   objOut.flush();
                 }
+                break;
 	    
               case DeleteAllJobGroups:
                 {

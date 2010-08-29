@@ -283,6 +283,8 @@ class RunPublishBuilder
       mod.setAction(act);
       pClient.modifyProperties(getAuthor(), getView(), mod);
       
+      pClient.removeFiles(getAuthor(), getView(), pRunPublishBuilderNode, null);
+      
       addToQueueList(pRunPublishBuilderNode);
       addToCheckInList(pRunPublishBuilderNode);
     }

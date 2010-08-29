@@ -127,7 +127,7 @@ class JVersionListCellRenderer
       JPanel spanel = new JPanel();
       spanel.setName("Spacer");
       
-      spanel.setMinimumSize(new Dimension(450, 7));
+      spanel.setMinimumSize(new Dimension(4, 7));
       spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 7));
       spanel.setPreferredSize(new Dimension(4, 7));
       
@@ -192,7 +192,12 @@ class JVersionListCellRenderer
     pMessageArea.setText(ver.getMessage());
     pMessageArea.setRows(pMessageArea.getLineCount());
     
-    this.validate();
+    Dimension dim = pMessageArea.getPreferredSize();
+    pMessageArea.setMaximumSize(dim);
+    pMessageArea.setMinimumSize(dim);
+    pMessageArea.revalidate();
+    
+//    this.revalidate();
     
     return this;
   }

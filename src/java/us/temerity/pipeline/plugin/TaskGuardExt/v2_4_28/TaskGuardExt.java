@@ -128,7 +128,7 @@ class TaskGuardExt
     
     TreeSet<String> projectList = null;
     String projectParam = (String) getParamValue(aProjectList);
-    if (projectParam != null && projectParam.equals("")) {
+    if (projectParam != null && projectParam.length() > 0) {
       String buffer[] = projectParam.split(",");
       projectList = new TreeSet<String>();
       Collections.addAll(projectList, buffer);
@@ -189,6 +189,9 @@ class TaskGuardExt
       if (projectList != null && !projectList.contains(nodeProjectName))
         return;
     }
+    /* If there are no annotations on the node, then we don't care if it gets checked in.*/
+    else
+      return;
     
     /* validate the Task credentials of the root node of the check-in */ 
     if(rootAnnots.isEmpty()) {
@@ -223,7 +226,7 @@ class TaskGuardExt
         String verifyUser = (String) getParamValue(aCustomVerifyUser);
         
         if(!author.equals(PackageInfo.sPipelineUser) && 
-           (verifyUser != null && !author.equals(verifyUser))) {
+           (verifyUser == null || !author.equals(verifyUser))) {
           /* Allow the initial check-in, since it might be from a builder. */
           if (!initialRootCheckIn)
             throw new PipelineException 
@@ -242,7 +245,7 @@ class TaskGuardExt
           allowedUsers = mclient.getWorkGroups().getUsersInGroup(publishGroup);
         
         if(!author.equals(PackageInfo.sPipelineUser) && 
-           (allowedUsers != null && !allowedUsers.contains(author))) {
+           (allowedUsers == null || !allowedUsers.contains(author))) {
           /* Allow the initial check-in, since it might be from a builder. */
           if (!initialRootCheckIn)
             throw new PipelineException 
@@ -258,7 +261,23 @@ class TaskGuardExt
           throw new PipelineException
             ("A node with a Purpose of Execution must be checked-in by itself with no " +
              "upstream dependencies.");
-        if(!author.equals(PackageInfo.sPipelineUser))
+        
+        String verifyUser = (String) getParamValue(aCustomVerifyUser);
+        
+        String publishGroup = (String) getParamValue(aCustomPublishGroup);
+        TreeSet<String> allowedUsers = null;
+        
+        if (publishGroup != null && publishGroup.length() > 0)
+          allowedUsers = mclient.getWorkGroups().getUsersInGroup(publishGroup);
+        
+        /* 
+         * Check-in restricted to pipeline, the auto-verify user, and users who have publish
+         * privileges.  We may also want to add a more general class that can check in 
+         * execute nodes, since they may well be modified while conforming the submit network.
+         */
+        if(!author.equals(PackageInfo.sPipelineUser) && 
+          (verifyUser == null || !author.equals(verifyUser)) &&
+          (allowedUsers == null || !allowedUsers.contains(author)))
           /* Allow the initial check-in, since it might be from a builder. */
           if (!initialRootCheckIn)
             throw new PipelineException 
@@ -283,7 +302,7 @@ class TaskGuardExt
         ("Check-in aborted for node (" + nname + ") because it has a different " + 
          aProjectName + " (" + nodeProjectName + ") than the root node of the check-in " + 
          "operation (" + rname + ") which has a " + aProjectName + 
-         " (" + nodeProjectName + ")!");  
+         " (" + rootProjectName + ")!");  
     
     /* is the node being checked-in is part of the same task as the root node? */ 
     if(!rootTaskIdent1.equals(nodeTaskIdent1) || !rootTaskIdent2.equals(nodeTaskIdent2)) 
