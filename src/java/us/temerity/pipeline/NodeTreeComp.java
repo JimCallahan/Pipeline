@@ -79,6 +79,8 @@ class NodeTreeComp
     else {
       pState = State.Branch;
     }
+
+    pIsHidden = entry.isHidden();
   }
 
 
@@ -150,6 +152,16 @@ class NodeTreeComp
     if(dest != null)
       toReturn = dest.getState();
     return toReturn;
+  }
+  
+  /**
+   * Whether this node path component and everything below it in the hierarchy should be 
+   * normally hidden from users.
+   */ 
+  public boolean 
+  isHidden() 
+  {
+    return pIsHidden;
   }
 
   
@@ -245,4 +257,9 @@ class NodeTreeComp
    */   
   private State  pState;
 
+  /**
+   * Whether this node path component and everything below it in the hierarchy should be 
+   * normally hidden from users.
+   */ 
+  private boolean  pIsHidden;
 }

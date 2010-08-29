@@ -38,13 +38,17 @@ class NodeUpdatePathsReq
    * @param paths 
    *   Whether to update all children (true) or only the immediate children (false) of the 
    *   given fully resolved node path indices.
+   *
+   * @param showHidden
+   *   Whether hidden nodes (or directories) should be included in the results.
    */
   public
   NodeUpdatePathsReq
   (
    String author, 
    String view, 
-   TreeMap<String,Boolean> paths
+   TreeMap<String,Boolean> paths, 
+   boolean showHidden
   )
   { 
     if(author == null) 
@@ -58,6 +62,8 @@ class NodeUpdatePathsReq
     if(paths == null) 
       throw new IllegalArgumentException("The paths cannot be (null)!");
     pPaths = paths;
+
+    pShowHidden = showHidden;
   }
 
 
@@ -94,6 +100,15 @@ class NodeUpdatePathsReq
     return pPaths;
   }
 
+  /**
+   * Whether hidden nodes (or directories) should be included in the results.
+   */ 
+  public boolean
+  showHidden() 
+  {
+    return pShowHidden;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -123,6 +138,11 @@ class NodeUpdatePathsReq
    * fully resolved node path indices.
    */ 
   private TreeMap<String,Boolean>  pPaths;
+
+  /**
+   * Whether hidden nodes (or directories) should be included in the results.
+   */ 
+  private boolean  pShowHidden;
 
 }
   

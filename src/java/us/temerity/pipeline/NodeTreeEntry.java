@@ -416,6 +416,32 @@ class NodeTreeEntry
   } 
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether this node path component and everything below it in the hierarchy should be 
+   * normally hidden from users.
+   */ 
+  public boolean 
+  isHidden() 
+  {
+    return pIsHidden;
+  }
+  
+  /**
+   * Set whether this node path component and everything below it in the hierarchy should be 
+   * normally hidden from users.
+   */ 
+  public void
+  setHidden
+  (
+   boolean isHidden
+  ) 
+  {
+    pIsHidden = isHidden;
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -444,6 +470,8 @@ class NodeTreeEntry
 
     if(pPrimarySuffix != null)
       encoder.encode("PrimarySuffix", pPrimarySuffix);
+
+    encoder.encode("IsHidden", pIsHidden);
   }
   
   public void 
@@ -486,6 +514,9 @@ class NodeTreeEntry
     String primarySuffix = (String) decoder.decode("PrimarySuffix");
     if(primarySuffix != null)
       pPrimarySuffix = primarySuffix;
+
+    Boolean isHidden = (Boolean) decoder.decode("IsHidden"); 
+    pIsHidden = (isHidden != null) && isHidden; 
   }
 
 
@@ -535,5 +566,11 @@ class NodeTreeEntry
    * sequences associated with the leaf components. 
    */ 
   private RefCountTable<String>  pFileSeqRefs;
+
+  /**
+   * Whether this node path component and everything below it in the hierarchy should be 
+   * normally hidden from users.
+   */ 
+  private boolean  pIsHidden;
 
 }

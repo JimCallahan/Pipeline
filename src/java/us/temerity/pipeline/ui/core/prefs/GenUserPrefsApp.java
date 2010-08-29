@@ -685,12 +685,6 @@ class GenUserPrefsApp
 	("Update the status of the node tree and selected nodes.", 
 	 "Update", "Update Nodes:",
 	 false, false, false, 32),  /* Space */ 
-
-	new BasePref(),
-
-	new HotKeyPref
-	("Show the node filter dialog.", 
-	 "NodeBrowserNodeFilter", "Node Filter:")	
       };
 
       pPrefs.put("Panels|Node Browser|Hot Keys", prefs);
@@ -1683,23 +1677,23 @@ class GenUserPrefsApp
 	
 	new BasePref(),
 
-	new HotKeyPref
-	("Toggle the view filter between single view, owned views and all views.", 
-	 "JobBrowserToggleViewsFilter", "Toggle Views Filter:"), 
+// 	new HotKeyPref
+// 	("Toggle the view filter between single view, owned views and all views.", 
+// 	 "JobBrowserToggleViewsFilter", "Toggle Views Filter:"), 
 	
-	new HotKeyPref
-	("Show only job groups owned by the current view.", 
-	 "JobBrowserSingleViewFilter", "Single View Filter:"), 
+// 	new HotKeyPref
+// 	("Show only job groups owned by the current view.", 
+// 	 "JobBrowserSingleViewFilter", "Single View Filter:"), 
 	
-	new HotKeyPref
-	("Show job groups from any view owned by the current user.", 
-	 "JobBrowserOwnedViewsFilter", "Owned Views Filter:"), 
+// 	new HotKeyPref
+// 	("Show job groups from any view owned by the current user.", 
+// 	 "JobBrowserOwnedViewsFilter", "Owned Views Filter:"), 
 	
-	new HotKeyPref
-	("Show job groups from all views.", 
-	 "JobBrowserAllViewsFilter", "All Views Filter:"), 
+// 	new HotKeyPref
+// 	("Show job groups from all views.", 
+// 	 "JobBrowserAllViewsFilter", "All Views Filter:"), 
 
-	new BasePref(),
+// 	new BasePref(),
 
 	new HotKeyPref
 	("Add the selected job groups to the job monitor panel.", 
@@ -2613,7 +2607,6 @@ class GenUserPrefsApp
 
 	group.addAll(manager);
 	group.add(update);
-	group.add("NodeBrowserNodeFilter");
       }
     
       {
@@ -2792,10 +2785,10 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add(update);
-	group.add("JobBrowserToggleViewsFilter");
-	group.add("JobBrowserSingleViewFilter");
-	group.add("JobBrowserOwnedViewsFilter");
-	group.add("JobBrowserAllViewsFilter");
+// 	group.add("JobBrowserToggleViewsFilter");
+// 	group.add("JobBrowserSingleViewFilter");
+// 	group.add("JobBrowserOwnedViewsFilter");
+// 	group.add("JobBrowserAllViewsFilter");
 	group.add("JobBrowserMonitorGroups");
 	group.add("JobBrowserClearFocus");
 	group.addAll(jobs);
