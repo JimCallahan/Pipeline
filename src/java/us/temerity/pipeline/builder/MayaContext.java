@@ -167,6 +167,7 @@ class MayaContext
   private static ArrayList<String> sAngularUnits = new ArrayList<String>();
   private static ArrayList<String> sLinearUnits = new ArrayList<String>();
   private static ArrayList<String> sTimeUnits = new ArrayList<String>();
+  static
   {
     sAngularUnits.add("degrees");
     sAngularUnits.add("radians");
