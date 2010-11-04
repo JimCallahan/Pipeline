@@ -38,6 +38,22 @@ class NukeConvertEXRAction
       addSingleParam(param);
     }
     
+    {
+      ActionParam param = 
+        new BooleanActionParam
+        (aAutoCrop, 
+         "Should autocrop be turned on for this node.", 
+         true);
+      addSingleParam(param);
+    }
+    
+    {
+      LayoutGroup layout = new LayoutGroup(true);
+      layout.addEntry(aImageSequence);
+      layout.addSeparator();
+      layout.addEntry(aAutoCrop);
+    }
+    
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
   }
@@ -70,6 +86,7 @@ class NukeConvertEXRAction
     
     FileSeq srcSeq = agenda.getPrimarySource(srcName);
     
+    boolean autoCrop = getSingleBooleanParamValue(aAutoCrop);
     
     if  (srcSeq.hasFrameNumbers() && targetSeq.hasFrameNumbers() &&
         (!targetSeq.getFrameRange().equals(srcSeq.getFrameRange())))
@@ -99,8 +116,13 @@ class NukeConvertEXRAction
         out.write("Write {\n" + 
         	  " file " + targetPath.getParent() + "/" + toNukeFilePattern(fpat) + "\n" + 
         	  " file_type exr\n" + 
-        	  " datatype \"32 bit float\"\n" + 
-        	  " name Write1\n" + 
+        	  " datatype \"32 bit float\"\n" +
+        	  " channels all\n");
+        
+        if (autoCrop)
+          out.write(" autocrop true\n");
+        
+        out.write(" name Write1\n" + 
         	  "}");
       }
       
@@ -132,4 +154,5 @@ class NukeConvertEXRAction
   private static final long serialVersionUID = 8465357022558672092L;
 
   public static final String aImageSequence = "ImageSequence";
+  public static final String aAutoCrop      = "AutoCrop";
 }
