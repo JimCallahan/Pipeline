@@ -135,6 +135,17 @@ class NukeConvertEXRAction
          ex.getMessage());
     }
     
+    TreeMap<String, String> newEnv = new TreeMap<String, String>();
+    newEnv.putAll(agenda.getEnvironment());
+
+    {
+      String user = agenda.getNodeID().getAuthor();
+      Path diskCache = new Path(new Path(PackageInfo.sTempPath, user), "nuke/diskCache") ;
+      Path tempCache = new Path(new Path(PackageInfo.sTempPath, user), "nuke") ;
+      newEnv.put("NUKE_DISK_CACHE", diskCache.toOsString());
+      newEnv.put("NUKE_TEMP_DIR", tempCache.toOsString());
+    }
+    
     /* create the process to run the action */ 
     {
       ArrayList<String> args = new ArrayList<String>();
@@ -142,7 +153,7 @@ class NukeConvertEXRAction
       args.add(script.toString()); 
       args.add(toNukeFrameRange(srcSeq.getFrameRange()));
 
-      return createSubProcess(agenda, getNukeProgram(agenda), args, agenda.getEnvironment(), 
+      return createSubProcess(agenda, getNukeProgram(agenda), args, newEnv, 
                               agenda.getTargetPath().toFile(), outFile, errFile);
     }
   }
