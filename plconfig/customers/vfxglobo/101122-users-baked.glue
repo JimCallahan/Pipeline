@@ -1,0 +1,28 @@
+Daily <TripleMap> #1 {
+  {
+    Key <Integer> #2 { 2010 }
+    Val <TreeMap> #3 {
+      {
+        Key <Integer> #4 { 10 }
+        Val <TreeMap> #5 {
+          {
+            Key <Integer> #6 { 18 }
+            Val <Integer> #7 { 2 }
+          }
+          {
+            Key <Integer> #8 { 19 }
+            Val <Integer> #9 { 0 }
+          }
+          {
+            Key <Integer> #10 { 20 }
+            Val <REF> #9
+          }
+          {
+            Key <Integer> #11 { 21 }
+            Val <Integer> #12 { 5 }
+          }
+        }
+      }
+    }
+  }
+}
