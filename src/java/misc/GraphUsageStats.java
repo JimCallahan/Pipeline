@@ -29,12 +29,23 @@ class GraphUsageStats
   )
   {
     try {
-      if(args.length != 2) {
-	System.out.print("usage: GraphUsageStats *-users.glue *-days.glue\n\n"); 
+      if(args.length != 3) {
+	System.out.print("usage: GraphUsageStats *-users.glue *-days.glue dd.mm.yyyy\n\n"); 
 	System.exit(1);
       }
 
-      new GraphUsageStats(new File(args[0]), new File(args[1])); 
+      long stamp = 0L; 
+      try {
+        SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.yyyy");
+        Date date = fmt.parse(args[2]);
+        stamp = date.getTime();
+      }
+      catch(ParseException ex2) {
+        System.out.print("Bad License Date!\n  " + ex2.getMessage() + "\n");
+        System.exit(1);
+      }
+
+      new GraphUsageStats(new File(args[0]), new File(args[1]), stamp); 
     }
     catch(Exception ex) {
       System.out.print("INTERNAL-ERROR:\n");
@@ -52,7 +63,8 @@ class GraphUsageStats
   GraphUsageStats
   (
    File ufile, 
-   File dfile
+   File dfile, 
+   long licStamp
   ) 
     throws GlueException, IOException 
   {
@@ -64,22 +76,53 @@ class GraphUsageStats
 
       TripleMap<Integer,Integer,Integer,Integer> dailyUsers = 
         new TripleMap<Integer,Integer,Integer,Integer>();
-      Integer lastYear  = null; 
-      Integer lastMonth = null; 
-      Integer lastDay   = null;
-      {
-        Long firstStamp = table.firstKey(); 
-        Long lastStamp  = table.lastKey(); 
-          
-        cal.setTimeInMillis(firstStamp); 
-        while(cal.getTimeInMillis() <= lastStamp) {
-          lastYear  = cal.get(Calendar.YEAR);
-          lastMonth = cal.get(Calendar.MONTH); 
-          lastDay   = cal.get(Calendar.DAY_OF_MONTH);             
-          dailyUsers.put(lastYear, lastMonth, lastDay, 0); 
-          cal.add(Calendar.DAY_OF_MONTH, 1);
+      TreeSet<Long> quarters = new TreeSet<Long>();
+      Long firstStamp = table.firstKey(); 
+      Long lastStamp  = table.lastKey(); 
+      {          
+        {
+          cal.setTimeInMillis(licStamp);  
+          int year  = cal.get(Calendar.YEAR);
+          int month = cal.get(Calendar.MONTH); 
+          int day   = cal.get(Calendar.DAY_OF_MONTH);   
+
+          cal.setTimeInMillis(firstStamp);  
+          cal.set(Calendar.YEAR, year);
+          cal.set(Calendar.MONTH, month); 
+          cal.set(Calendar.DAY_OF_MONTH, day);   
         }
 
+        Long firstLicStamp = cal.getTimeInMillis();
+        while(firstLicStamp > firstStamp) {
+          cal.add(Calendar.YEAR, -1);
+          firstLicStamp = cal.getTimeInMillis();
+        } 
+        
+        Long lastLicStamp = firstLicStamp;
+        while(lastLicStamp < lastStamp) {
+          cal.add(Calendar.YEAR, 1);
+          lastLicStamp = cal.getTimeInMillis();
+        }
+
+        {
+          long stamp = firstLicStamp; 
+          while(stamp < lastLicStamp) {
+            quarters.add(stamp);
+            cal.setTimeInMillis(stamp);  
+            cal.add(Calendar.MONTH, 3);
+            stamp = cal.getTimeInMillis();
+          }
+          quarters.add(lastLicStamp);
+
+          for(long s : quarters) {
+            cal.setTimeInMillis(s); 
+            int year  = cal.get(Calendar.YEAR);
+            int month = cal.get(Calendar.MONTH); 
+            int day   = cal.get(Calendar.DAY_OF_MONTH);   
+            
+            dailyUsers.put(year, month, day, 0); 
+          }
+        }
 
         for(Long stamp : table.keySet()) {
           Integer numUsers = table.get(stamp); 
@@ -94,44 +137,56 @@ class GraphUsageStats
       }
 
       TripleMap<Integer,Integer,Integer,Double> weeklyUsers = 
-        rollingAverage(dailyUsers, 7); 
+        rollingAverage(dailyUsers, 5, firstStamp, lastStamp); 
 
       TripleMap<Integer,Integer,Integer,Double> monthlyUsers = 
-        rollingAverage(dailyUsers, 30); 
+        rollingAverage(dailyUsers, 21, firstStamp, lastStamp); 
 
       TripleMap<Integer,Integer,Integer,Double> quarterlyUsers = 
-        rollingAverage(dailyUsers, 90); 
+        rollingAverage(dailyUsers, 64, firstStamp, lastStamp); 
 
       {
-        FileWriter out = new FileWriter("./daily-users.raw"); 
-        
-        boolean first = true;
-        for(Integer year : dailyUsers.keySet()) {
-          for(Integer month : dailyUsers.keySet(year)) {
-            for(Integer day : dailyUsers.keySet(year, month)) {
-              Integer numUsers = dailyUsers.get(year, month, day); 
-              Double wavg = weeklyUsers.get(year, month, day); 
-              Double mavg = monthlyUsers.get(year, month, day); 
-              Double qavg = quarterlyUsers.get(year, month, day); 
-              
-              cal.set(year, month, day); 
-              Long stamp = cal.getTimeInMillis(); 
-              
-              out.write(stamp + "\t" + numUsers + "\t" + wavg + "\t" + mavg + "\t" + qavg); 
-              
-              if(first || 
-                 (day == 1) || 
-                 (lastYear.equals(year) && lastMonth.equals(month) && lastDay.equals(day))) {
-                out.write("\t\"" + (month+1) + "-" + day + "-" + year + "\"");
-                first = false;
+        SimpleDateFormat fmt = new SimpleDateFormat("dd-MM-yyyy");
+
+        long graphStart = quarters.first();
+        while(graphStart < quarters.last()) {
+          cal.setTimeInMillis(graphStart);        
+          cal.add(Calendar.YEAR, 1);
+          long graphEnd = cal.getTimeInMillis();
+
+          FileWriter out = 
+            new FileWriter("./daily-users." + 
+                           fmt.format(new Date(graphStart)) + "." +
+                           fmt.format(new Date(graphEnd)) + ".raw"); 
+
+          for(Integer year : dailyUsers.keySet()) {
+            for(Integer month : dailyUsers.keySet(year)) {
+              for(Integer day : dailyUsers.keySet(year, month)) {
+
+                cal.set(year, month, day); 
+                Long stamp = cal.getTimeInMillis(); 
+
+                if((graphStart <= stamp) && (stamp <= graphEnd)) {
+                  Integer numUsers = dailyUsers.get(year, month, day); 
+                  Double wavg = weeklyUsers.get(year, month, day); 
+                  Double mavg = monthlyUsers.get(year, month, day); 
+                  Double qavg = quarterlyUsers.get(year, month, day); 
+                  
+                  out.write(stamp + "\t" + numUsers + "\t" + wavg + "\t" + 
+                            mavg + "\t" + qavg); 
+                
+                  if(quarters.contains(stamp)) 
+                    out.write("\t\"" + (month+1) + "-" + day + "-" + year + "\"");
+                
+                  out.write("\n"); 
+                }
               }
-              
-              out.write("\n"); 
             }
           }
+          out.close(); 
+
+          graphStart = graphEnd;
         }
-        
-        out.close(); 
       }
       
       GlueEncoderImpl.encodeFile
@@ -140,44 +195,15 @@ class GraphUsageStats
       GlueEncoderImpl.encodeFile
         ("Average", quarterlyUsers, new File("./users-avg.glue")); 
     }
-
-    {
-      TreeMap<String,Integer> table = 
-        (TreeMap<String,Integer>) GlueDecoderImpl.decodeFile("UserDays", dfile);
-
-      UserDays[] userDays = new UserDays[table.size()]; 
-      {
-        int i = 0;
-        for(String uname : table.keySet()) {
-          userDays[i] = new UserDays(uname, table.get(uname));
-          i++;
-        }
-
-        Arrays.sort(userDays); 
-      }
-
-      FileWriter out = new FileWriter("./user-days.raw"); 
-
-      int i = 0; 
-      out.write(i + "\t0\t\"\"\t\n"); 
-      i++;
-
-      for(UserDays ud : userDays) {
-        out.write(i + "\t" + ud + "\n"); 
-        i++;
-      }
-
-      out.write(i + "\t0\t\"\"\t\n"); 
-
-      out.close(); 
-    }      
   }
 
   private TripleMap<Integer,Integer,Integer,Double>
   rollingAverage
   (
    TripleMap<Integer,Integer,Integer,Integer> dailyUsers, 
-   int window
+   int window, 
+   long firstStamp, 
+   long lastStamp
   ) 
   {
     GregorianCalendar cal = new GregorianCalendar();
@@ -194,9 +220,18 @@ class GraphUsageStats
         for(Integer day : dailyUsers.keySet(year, month)) {
           Integer numUsers = dailyUsers.get(year, month, day); 
 
-          fifo.addLast(numUsers); 
-          while(fifo.size() > window) 
-            fifo.removeFirst(); 
+          cal.set(year, month, day);   
+          switch(cal.get(Calendar.DAY_OF_WEEK)) {
+          case Calendar.SATURDAY:
+          case Calendar.SUNDAY:
+            /* don't consider non-work days */
+            break; 
+
+          default:
+            fifo.addLast(numUsers); 
+            while(fifo.size() > window) 
+              fifo.removeFirst(); 
+          }
 
           Integer counts[] = fifo.toArray(new Integer[0]);
           Arrays.sort(counts);
@@ -221,11 +256,11 @@ class GraphUsageStats
             median = counts[idx];
           }
 
-          if(avg == null) 
-            avg = (double) median;
-          else
-            avg = 0.75*avg + 0.25*median;
-          averageUsers.put(year, month, day, avg); 
+          avg = (double) median;
+
+          Long stamp = cal.getTimeInMillis(); 
+          if((firstStamp <= stamp) && (stamp <= lastStamp))           
+            averageUsers.put(year, month, day, avg); 
 
           cnt++;
         }

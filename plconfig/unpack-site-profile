@@ -2,19 +2,21 @@
 
 function usage
 {
-  echo "usage: unpack-site-profile [--git] site-profile"
+  echo "usage: unpack-site-profile [--git] site-profile dd.mm.yyyy"
   exit 1
 }
 
 git=0
 case $# in 
-  (1) 
-    profile=$1;;
-
   (2) 
+    profile=$1;
+    stamp=$2;;
+
+  (3) 
     if [ $1 != "--git" ]; then usage; fi;
     git=1;
-    profile=$2;;
+    profile=$2;
+    stamp=$3;;
 
   (*) 
     usage;;
@@ -26,7 +28,7 @@ java -cp ../../CryptoApp.jar CryptoApp $profile --usage-stats
 if [ -f daily-users.glue -a -f user-days.glue ]
 then
   echo "Generating Raw Data for Plots..."
-  java -cp ../../../../../build/pipeline/debug/src/java/us/temerity/pipeline/api.jar:../../../../../build/pipeline/debug/src/java/misc/GraphUsageStats.jar GraphUsageStats daily-users.glue user-days.glue 
+  java -cp ../../../../../build/pipeline/debug/src/java/us/temerity/pipeline/api.jar:../../../../../build/pipeline/debug/src/java/misc/GraphUsageStats.jar GraphUsageStats daily-users.glue user-days.glue $stamp
   
   mv daily-users.glue $profile-users.glue
   mv user-days.glue $profile-days.glue
@@ -35,14 +37,14 @@ then
   mv users-avg.glue $profile-users-avg.glue
 
   echo "Plotting Users..."
-  gnuplot ../../users.gnuplot
-  mv usage.jpg $profile-users.jpg
-  rm daily-users.raw 
-
-  echo "Plotting Days..."
-  gnuplot ../../days.gnuplot
-  mv days.jpg $profile-days.jpg
-  rm user-days.raw 
+  for x in daily-users.*.raw
+  do
+    range=`echo $x | awk -F. '{ print $2 "." $3 }'`
+    mv $x daily-users.raw
+    gnuplot ../../users.gnuplot
+    mv usage.jpg $profile.$range.jpg
+    rm daily-users.raw 
+  done
 fi 
 
 echo "Saving Parameter Values in Plain Text..."
