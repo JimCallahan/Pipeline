@@ -29,7 +29,6 @@ if [ -f daily-users.glue -a -f user-days.glue ]
 then
   echo "Generating Raw Data for Plots..."
   java -cp ../../../../../build/pipeline/debug/src/java/us/temerity/pipeline/api.jar:../../../../../build/pipeline/debug/src/java/misc/GraphUsageStats.jar GraphUsageStats daily-users.glue user-days.glue $stamp
-  
   mv daily-users.glue $profile-users.glue
   mv user-days.glue $profile-days.glue
 
@@ -70,20 +69,15 @@ then
     git add $profile-users-avg.glue
   fi
 
-  if [ -f $profile-users.jpg ]
-  then
-    git add $profile-users.jpg
-  fi
-
   if [ -f $profile-days.glue ]
   then
     git add $profile-days.glue
   fi
 
-  if [ -f $profile-days.jpg ]
-  then
-    git add $profile-days.jpg
-  fi
+  for x in $profile.*.jpg
+  do
+    git add $x
+  done
 fi
 
 echo "ALL DONE."
