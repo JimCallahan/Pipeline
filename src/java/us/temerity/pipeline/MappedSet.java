@@ -79,6 +79,30 @@ public class MappedSet<K, V>
 
   
   /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to mapped set contains the given key/value pair.
+   * 
+   * @param key
+   *   The first key.
+   *
+   * @param value
+   *   The value to match. 
+   */
+  public boolean
+  contains
+  (
+   K key,
+   V value  
+  ) 
+  {
+    return (super.containsKey(key) && super.get(key).contains(value));
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
