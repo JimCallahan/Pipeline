@@ -4616,6 +4616,19 @@ class UIMaster
     pResourceUsageHistoryDialog.updateSamples(channel, hosts);
   } 
 
+  /**
+   * Show a dialog allow viewing/editing of the notes associated with given queue servers.
+   */ 
+  public void 
+  showServerNotesDialog
+  (
+   TreeSet<String> hosts
+  )
+  {
+    pServerNotesDialog.update(hosts, null);
+    pServerNotesDialog.setVisible(true);
+  } 
+
   
  
   /*----------------------------------------------------------------------------------------*/
@@ -5683,6 +5696,7 @@ class UIMaster
 	}
 
 	pResourceUsageHistoryDialog = new JResourceUsageHistoryDialog();
+	pServerNotesDialog = new JServerNotesDialog();
 
         pWorkingSelectDialog = new JWorkingSelectDialog(pFrame);
         
@@ -8215,6 +8229,11 @@ class UIMaster
    * The server resource usage history dialog.
    */
   private JResourceUsageHistoryDialog  pResourceUsageHistoryDialog;
+
+  /**
+   * The job server operational notes dialog.
+   */
+  private JServerNotesDialog  pServerNotesDialog;
 
   /**
    * The remote working node selection dialog.

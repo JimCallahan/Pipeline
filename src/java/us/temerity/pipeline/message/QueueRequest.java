@@ -147,6 +147,7 @@ enum QueueRequest
    * An instance {@link QueueEditSelectionGroupsReq} is next.
    */
   EditSelectionGroups, 
+
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -175,6 +176,7 @@ enum QueueRequest
    * is next.
    */
   EditSelectionSchedules, 
+
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -203,6 +205,7 @@ enum QueueRequest
    */
   RemoveHardwareKey, 
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -229,6 +232,7 @@ enum QueueRequest
    * An instance {@link QueueEditHardwareGroupsReq} is next.
    */
   EditHardwareGroups, 
+
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -256,6 +260,7 @@ enum QueueRequest
    * An instance {@link QueueEditDispatchControlsReq} is next.
    */
   EditDispatchControls, 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -319,6 +324,29 @@ enum QueueRequest
    * An instance of {@link QueueSetQueueExtensionReq} is next.
    */
   SetQueueExtension, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the hosts for which there are current notes.  
+   */ 
+  GetHostsWithNotes, 
+
+  /**
+   * An instance of {@link QueueGetHostNoteReq} is next.
+   */ 
+  GetHostNote, 
+
+  /**
+   * An instance of {@link QueueGetHostNotesReq} is next.
+   */ 
+  GetHostNotes, 
+
+  /**
+   * An instance of {@link QueueSetHostNoteReq} is next.
+   */ 
+  AddHostNote, 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -46,16 +46,6 @@ class JTopLevelDialog
     super(title); 
   }
   
-  /**
-   * Construct a new top-level frame. 
-   * 
-   * @param title
-   *   The title of the dialog window.
-   *   
-   * @param acquireCache
-   *   
-   */ 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**

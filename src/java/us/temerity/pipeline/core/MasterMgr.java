@@ -10933,6 +10933,9 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
+    if(!pAdminPrivileges.isMasterAdmin(req)) 
+      return new FailureRsp(timer, "Only a user with Master Admin privileges may delete nodes!"); 
+
     timer.aquire();
     if(!pDatabaseLock.tryWriteLock(sDeleteTimeout)) {
       return new FailureRsp
@@ -10944,10 +10947,6 @@ class MasterMgr
     }
     try {
       timer.resume();	
-
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
-	throw new PipelineException
-	  ("Only a user with Master Admin privileges may delete nodes!"); 
 
       /* get the checked-in versions  */ 
       TreeMap<VersionID,CheckedInBundle> checkedIn = null;

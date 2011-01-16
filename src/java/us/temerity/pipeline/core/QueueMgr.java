@@ -172,6 +172,7 @@ class QueueMgr
       pHosts              = new TreeMap<String,QueueHost>(); 
       pHostsInfo          = new TreeMap<String,QueueHostInfo>();
       pOrderedHosts       = new QueueHost[128];
+      pHostNotes          = new MappedSet<String,Long>(); 
 
       pLastSampleWritten = new AtomicLong(0L);
       pSamples           = new TreeMap<String,ResourceSampleCache>();
@@ -314,6 +315,7 @@ class QueueMgr
     dirs.add(new File(pQueueDir, "queue/job-info-bak"));
     dirs.add(new File(pQueueDir, "queue/job-groups"));
     dirs.add(new File(pQueueDir, "queue/job-groups-bak"));
+    dirs.add(new File(pQueueDir, "queue/job-servers/notes"));
     dirs.add(new File(pQueueDir, "queue/job-servers/samples"));
 
     synchronized(pMakeDirLock) {
@@ -389,7 +391,8 @@ class QueueMgr
       LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Loading Job Servers Info...");   
 
     readHosts();
-    
+    readHostNotes();
+
     LogMgr.getInstance().taskEnd(timer, LogMgr.Kind.Ops, "Loaded"); 
   }
 
@@ -3555,12 +3558,163 @@ class QueueMgr
   }
   
 
-
      
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   M A N A G E R   H O S T S                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Get the names of the hosts for which there are current notes.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get hosts with notes.
+   */ 
+  public Object
+  getHostsWithNotes()
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      synchronized(pHostNotes) {
+        return new QueueGetHostsWithNotesRsp(timer, pHostNotes); 
+      }
+    }
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+
+  /**
+   * Get the note (if any) associated with the given host. 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the host note.
+   */ 
+  public Object
+  getHostNote
+  (
+   QueueGetHostNoteReq req
+  ) 
+  {
+    String hname = req.getName();
+    Long stamp = req.getStamp(); 
+    TaskTimer timer = new TaskTimer("QueueMgr.getHostNote(): " + hname + " " + stamp);
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      synchronized(pHostNotes) {
+        SimpleLogMessage note = null;
+        if(pHostNotes.contains(hname, stamp)) 
+          note = readHostNote(hname, stamp); 
+        
+        return new QueueGetHostNoteRsp(timer, note); 
+      }
+    } 
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+
+  /**
+   * Get all of the notes (if any) associated with the given host. 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the host note.
+   */ 
+  public Object
+  getHostNotes
+  (
+   QueueGetHostNotesReq req
+  ) 
+  {
+    String hname = req.getName();
+    TaskTimer timer = new TaskTimer("QueueMgr.getHostNotes(): " + hname);
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      TreeMap<Long,SimpleLogMessage> notes = new TreeMap<Long,SimpleLogMessage>();
+      synchronized(pHostNotes) {
+        TreeSet<Long> stamps = pHostNotes.get(hname);
+        if(stamps != null) {
+          for(Long stamp : stamps) {
+            SimpleLogMessage note = readHostNote(hname, stamp); 
+            if(note != null) 
+              notes.put(stamp, note);
+          }
+        }
+      }
+        
+      return new QueueGetHostNotesRsp(timer, notes); 
+    } 
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+
+  /**
+   * Set the note for the given host.      
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the host note.
+   */ 
+  public Object
+  addHostNote
+  (
+   QueueAddHostNoteReq req
+  ) 
+  {
+    String hname = req.getHostName();
+    SimpleLogMessage note = req.getHostNote();
+    TaskTimer timer = new TaskTimer("QueueMgr.setHostNote(): " + hname);
+    
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add/remove server notes!"); 
+      
+      synchronized(pHostNotes) {
+        writeHostNote(hname, note);
+        pHostNotes.put(hname, note.getTimeStamp());
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+  
+                                                                                             
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Get the current state of the hosts capable of executing jobs for the Pipeline queue.
    * 
@@ -11524,6 +11678,164 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write a job server host note to disk. <P> 
+   * 
+   * @param hname
+   *   The fully qualified job server hostname.
+   * 
+   * @param note
+   *   The note to write.
+   * 
+   * @throws PipelineException
+   *   If unable to write the hosts file.
+   */ 
+  private void 
+  writeHostNote
+  (
+   String hname, 
+   SimpleLogMessage note 
+  ) 
+    throws PipelineException
+  {
+    synchronized(pHostNotes) {
+      long stamp = note.getTimeStamp();
+      File file = new File(pQueueDir, "queue/job-servers/notes/" + hname + "/" + stamp);
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove an existing notes file (" + file + ")!");
+      }
+
+      File dir = file.getParentFile();
+      if(!dir.isDirectory() && !dir.mkdirs()) 
+        throw new PipelineException
+          ("Unable to create server notes directory (" + dir + ")!");
+      
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+         "Writing Host Note: " + hname + " " + stamp);
+
+      try {
+        GlueEncoderImpl.encodeFile("HostNote", note, file);
+      }
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
+      }
+    }
+  }
+  
+  /**
+   * Read the per-host note from disk. <P> 
+   * 
+   * @param hname
+   *   The fully qualified job server hostname.
+   * 
+   * @param stamp
+   *   The timestamp of the note.
+   * 
+   * @return 
+   *   The note or <CODE>null</CODE> if none exists.
+   * 
+   * @throws PipelineException
+   *   If unable to read the hosts file.
+   */ 
+  private SimpleLogMessage
+  readHostNote
+  (
+   String hname, 
+   long stamp
+  ) 
+    throws PipelineException
+  {
+    synchronized(pHostNotes) {
+      File file = new File(pQueueDir, "queue/job-servers/notes/" + hname + "/" + stamp);
+      if(file.isFile()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Host Note: " + hname + " " + stamp);
+
+        try {
+          return (SimpleLogMessage) GlueDecoderImpl.decodeFile("HostNote", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+      }
+      else {
+        return null;
+      }
+    }
+  }
+
+  /**
+   * Read the per-host notes from disk to populate the index. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the hosts file.
+   */ 
+  private void 
+  readHostNotes() 
+    throws PipelineException
+  {
+    synchronized(pHostNotes) {
+      pHostNotes.clear();
+
+      File dir = new File(pQueueDir, "queue/job-servers/notes");
+      File dirs[] = dir.listFiles();
+      if(dirs != null) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+           "Reading Host Notes.");
+
+        int dk;
+        for(dk=0; dk<dirs.length; dk++) {
+          if(dirs[dk].isDirectory()) {
+            String hname = dirs[dk].getName();
+
+            File files[] = dirs[dk].listFiles();
+            if(files != null) {
+              int wk;
+              for(wk=0; wk<files.length; wk++) {
+                if(files[wk].isFile()) {
+                  try {
+                    Long stamp = new Long(files[wk].getName());
+
+                    try {
+                      SimpleLogMessage note = readHostNote(hname, stamp);
+                      if(stamp == note.getTimeStamp()) {
+                        pHostNotes.put(hname, stamp); 
+                      }
+                      else {
+                        LogMgr.getInstance().log
+                          (LogMgr.Kind.Glu, LogMgr.Level.Warning, 
+                           "Job server note file (" + files[wk] + ") is illegally named!"); 
+                      }
+                    }
+                    catch(PipelineException ex2) {
+                      LogMgr.getInstance().log
+                        (LogMgr.Kind.Glu, LogMgr.Level.Warning, 
+                         "Unable to read job server note file (" + files[wk] + "):\n\n" + 
+                         ex2.getMessage());
+                    }
+                  }
+                  catch(NumberFormatException ex) {
+                    LogMgr.getInstance().log
+                      (LogMgr.Kind.Glu, LogMgr.Level.Warning, 
+                       "Job server note file (" + files[wk] + ") is illegally named!"); 
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write per-host information to disk. <P> 
    * 
    * @throws PipelineException
@@ -14851,6 +15163,16 @@ class QueueMgr
    */
   private TreeMap<String,QueueHostInfo>  pHostsInfo; 
   
+  /**
+   * An index of the hostnames and timestamps of all operational notes about the status of 
+   * individual servers.<P> 
+   * 
+   * The actual notes are only read/written on-demand an never cached.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private MappedSet<String,Long>  pHostNotes;
+
 
   /*----------------------------------------------------------------------------------------*/
  

@@ -1621,6 +1621,10 @@ class GenUserPrefsApp
 	("Show the resource usage history for the selected servers.", 
 	 "JobServersHistory", "History:"), 
 
+	new HotKeyPref
+	("Show the operational notes associated with the selected servers.", 
+	 "JobServersNotes", "Notes:"), 
+
 	new DuplicateHotKeyPref
 	("Apply the changes to job server properties.", 
 	 "JobServersApply", "Apply Changes:", "ApplyChanges"), 
@@ -2766,6 +2770,7 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(update);
 	group.add("JobServersHistory");
+	group.add("JobServersNotes");
 	group.add(applyChanges);
 	group.add("JobServersAdd");
 	group.add("JobServersRemove");

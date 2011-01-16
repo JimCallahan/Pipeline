@@ -796,6 +796,37 @@ class QueueMgrServer
                 }
                 break;
 
+              /*-- JOB MANAGER NOTES ------------------------------------------------------*/
+              case GetHostsWithNotes:
+                {
+                  objOut.writeObject(pQueueMgr.getHostsWithNotes());
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetHostNote:
+                {
+                  QueueGetHostNoteReq req = (QueueGetHostNoteReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.getHostNote(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetHostNotes:
+                {
+                  QueueGetHostNotesReq req = (QueueGetHostNotesReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.getHostNotes(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case AddHostNote:
+                {
+                  QueueAddHostNoteReq req = (QueueAddHostNoteReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.addHostNote(req));
+                  objOut.flush(); 
+                }
+                break;
 
               /*-- JOB MANAGER DATA -------------------------------------------------------*/
               case GetHosts:

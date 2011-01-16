@@ -1797,6 +1797,134 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the host names and timestamps of all existing job server notes. 
+   * 
+   * @return 
+   *   The set of timestamps for each note indexed by fully resolved host names.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the host notes information.
+   */
+  public synchronized MappedSet<String,Long>
+  getHostsWithNotes()
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetHostsWithNotes, null);
+    if(obj instanceof QueueGetHostsWithNotesRsp) {
+      QueueGetHostsWithNotesRsp rsp = (QueueGetHostsWithNotesRsp) obj;
+      return rsp.getNoteIndex();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get all notes (if any) associated with the given host.
+   * 
+   * @param hname
+   *   The fully resolved name of the host.
+   * 
+   * @return 
+   *   The note message or <CODE>null</CODE> if no note matches.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the host notes information.
+   */
+  public synchronized TreeMap<Long,SimpleLogMessage>
+  getHostNotes
+  (
+   String hname 
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetHostNotesReq req = new QueueGetHostNotesReq(hname);
+
+    Object obj = performTransaction(QueueRequest.GetHostNotes, req);
+    if(obj instanceof QueueGetHostNotesRsp) {
+      QueueGetHostNotesRsp rsp = (QueueGetHostNotesRsp) obj;
+      return rsp.getHostNotes();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the note (if any) associated with the given host and timestamp.
+   * 
+   * @param hname
+   *   The fully resolved name of the host.
+   * 
+   * @param stamp
+   *   The timestamp of when the note was written.
+   * 
+   * @return 
+   *   The note message or <CODE>null</CODE> if no note matches.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the host notes information.
+   */
+  public synchronized SimpleLogMessage
+  getHostNote
+  (
+   String hname, 
+   long stamp
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetHostNoteReq req = new QueueGetHostNoteReq(hname, stamp);
+
+    Object obj = performTransaction(QueueRequest.GetHostNote, req);
+    if(obj instanceof QueueGetHostNoteRsp) {
+      QueueGetHostNoteRsp rsp = (QueueGetHostNoteRsp) obj;
+      return rsp.getHostNote();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Add a note to the given host. 
+   *
+   * @param hname
+   *   The fully resolved name of the host.
+   * 
+   * @param text
+   *   The text of the note.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the host notes information.
+   */
+  public synchronized void
+  addHostNote
+  (
+   String hname, 
+   String text
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueAddHostNoteReq req = new QueueAddHostNoteReq(hname, new SimpleLogMessage(text));
+    Object obj = performTransaction(QueueRequest.AddHostNote, req);
+    handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the dynamic resource sample history of the given host.<P> 
    * 
    * If the <CODE>runtimeOnly</CODE> argument is <CODE>true</CODE> then only samples already

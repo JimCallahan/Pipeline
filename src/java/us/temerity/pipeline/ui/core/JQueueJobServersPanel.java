@@ -101,6 +101,12 @@ class JQueueJobServersPanel
 	item.addActionListener(this);
 	pHostsPopup.add(item);
 	
+	item = new JMenuItem("Notes");
+	pHostsNotesItem = item;
+	item.setActionCommand("hosts-notes");
+	item.addActionListener(this);
+	pHostsPopup.add(item);
+	
 	pHostsPopup.addSeparator();
 	
 	item = new JMenuItem("Apply Changes");
@@ -576,6 +582,7 @@ class JQueueJobServersPanel
   {
     boolean selected = (pHostsTablePanel.getTable().getSelectedRowCount() > 0);
     pHostsHistoryItem.setEnabled(selected);
+    pHostsNotesItem.setEnabled(selected);
     pHostsAddItem.setEnabled(pPrivilegeDetails.isQueueAdmin()); 
     pHostsRemoveItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && selected); 
   }
@@ -628,6 +635,9 @@ class JQueueJobServersPanel
     updateMenuToolTip
       (pHostsHistoryItem, prefs.getJobServersHistory(),
        "Show the resource usage history for the selected servers.");
+    updateMenuToolTip
+      (pHostsNotesItem, prefs.getJobServersNotes(),
+       "Show the operational notes for the selected servers.");
     updateMenuToolTip
       (pApplyItem, prefs.getApplyChanges(),
        "Apply the changes to job server properties.");
@@ -795,6 +805,8 @@ class JQueueJobServersPanel
 
     else if(cmd.equals("hosts-history")) 
       doHostsHistory();
+    else if(cmd.equals("hosts-notes")) 
+      doHostsNotes();
     else if(cmd.equals("hosts-apply")) 
       doApply();
     else if(cmd.equals("hosts-add")) 
@@ -819,6 +831,18 @@ class JQueueJobServersPanel
 
     UIMaster master = UIMaster.getInstance();
     master.showResourceUsageHistoryDialog(pGroupID, getSelectedHostnames());
+  }
+
+  /**
+   * Show the operational notes for the selected hosts.
+   */ 
+  public void   
+  doHostsNotes()
+  {
+    pHostsTablePanel.cancelEditing();
+
+    UIMaster master = UIMaster.getInstance();
+    master.showServerNotesDialog(getSelectedHostnames());
   }
 
   /**
@@ -1149,6 +1173,7 @@ class JQueueJobServersPanel
    */ 
   private JMenuItem  pHostsUpdateItem;
   private JMenuItem  pHostsHistoryItem;
+  private JMenuItem  pHostsNotesItem;
   private JMenuItem  pApplyItem;
   private JMenuItem  pHostsAddItem;
   private JMenuItem  pHostsRemoveItem;
