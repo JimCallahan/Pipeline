@@ -1294,35 +1294,38 @@ class JQueueJobBrowserPanel
   )
   {
     ArrayList<TreeSet<String>> toReturn = new ArrayList<TreeSet<String>>();
-    
-    int numEntries = values.size();
-    int maxPerMenu = 12;
-    if(numEntries > maxPerMenu) {
-      int numMenus = Math.max(numEntries / maxPerMenu, 2);
-      int perMenu  = numEntries / numMenus;
-      int extra    = numEntries % perMenu;
-      
-      int cnt = 0;
-      int max = 0;
-      TreeSet<String> egroup = null;
-      for(String entry : values) {
-        if(cnt == 0) {
-          egroup = new TreeSet<String>();
-          toReturn.add(egroup);
-          
-          max = perMenu - 1;
-          if(extra > 0) 
-            max++;
-          extra--;
-        }
-          
-        egroup.add(entry);
-        cnt++;
+
+    if(values != null) {
+      int numEntries = values.size();
+      int maxPerMenu = 12;
+      if(numEntries > maxPerMenu) {
+        int numMenus = Math.max(numEntries / maxPerMenu, 2);
+        int perMenu  = numEntries / numMenus;
+        int extra    = numEntries % perMenu;
         
-        if(cnt > max) 
-          cnt = 0;
+        int cnt = 0;
+        int max = 0;
+        TreeSet<String> egroup = null;
+        for(String entry : values) {
+          if(cnt == 0) {
+            egroup = new TreeSet<String>();
+            toReturn.add(egroup);
+            
+            max = perMenu - 1;
+            if(extra > 0) 
+              max++;
+            extra--;
+          }
+          
+          egroup.add(entry);
+          cnt++;
+          
+          if(cnt > max) 
+            cnt = 0;
+        }
       }
     }
+
     return toReturn;
   }
 
