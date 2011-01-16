@@ -37,6 +37,7 @@ class JServerNotesDialog
 
     /* init fields */
     {
+      pPrivilegeDetails = new PrivilegeDetails();
       pTextAreas = new ArrayList<JTextArea>();
       pHosts = new TreeMap<String,String>();
     }
@@ -122,7 +123,12 @@ class JServerNotesDialog
         { "Update",  "update" }
       };
 
-      super.initUI("Queue Server Notes:", vbox, null, null, extra, "Close", null);
+      JButton[] btns = 
+        super.initUI("Queue Server Notes:", vbox, null, null, extra, "Close", null);
+
+      pNewNoteButton = btns[0];
+
+      setSize(sSize, sSize);
     }
 
     pCreateNoteDialog = new JCreateNoteDialog(this);  
@@ -141,38 +147,56 @@ class JServerNotesDialog
    String selected
   )
   {
-    if(hosts != null) {
-      pHosts = new TreeMap<String,String>();
-
-      for(String hname : hosts) {
-        Matcher n = sNumericHostPattern.matcher(hname);
-        Matcher s = sShortHostPattern.matcher(hname);
-        String sname = hname; 
-        if(!n.matches() && s.find() && (s.group().length() > 0))
-          sname = s.group();
-
-        pHosts.put(sname, hname);
-      }
+    /* update privileges */ 
+    UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.acquireMasterMgrClient();
+    try {
+      pPrivilegeDetails = client.getPrivilegeDetails();
     }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+    finally {
+      master.releaseMasterMgrClient(client);
+    }  
+    pNewNoteButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
 
-    ArrayList<String> values = new ArrayList<String>();
-    if(pHosts.isEmpty()) 
-      values.add("-"); 
-    else 
-      values.addAll(pHosts.keySet()); 
-    
-    String current = pHostsField.getSelected(); 
-    if(selected != null) 
-      current = selected;
-    if(!values.contains(current)) 
-      current = null;
-
-    pHostsField.setValues(values);
-    
-    if(current == null) 
-      current = !pHosts.isEmpty() ? pHosts.firstKey() : "-";
-    
-    pHostsField.setSelected(current); 
+    /* update selected hosts */ 
+    {
+      if(hosts != null) {
+        pHosts = new TreeMap<String,String>();
+        
+        for(String hname : hosts) {
+          Matcher n = sNumericHostPattern.matcher(hname);
+          Matcher s = sShortHostPattern.matcher(hname);
+          String sname = hname; 
+          if(!n.matches() && s.find() && (s.group().length() > 0))
+            sname = s.group();
+          
+          pHosts.put(sname, hname);
+        }
+      }
+      
+      ArrayList<String> values = new ArrayList<String>();
+      if(pHosts.isEmpty()) 
+        values.add("-"); 
+      else 
+        values.addAll(pHosts.keySet()); 
+      
+      String current = pHostsField.getSelected(); 
+      if(selected != null) 
+        current = selected;
+      if(!values.contains(current)) 
+        current = null;
+      
+      pHostsField.setValues(values);
+      
+      if(current == null) 
+        current = !pHosts.isEmpty() ? pHosts.firstKey() : "-";
+      
+      pHostsField.setSelected(current); 
+    }
   }
 
 
@@ -203,6 +227,8 @@ class JServerNotesDialog
       doNewNote();
     else if(cmd.equals("update"))
       doUpdate();
+    else if(cmd.startsWith("remove:")) 
+      doRemoveNote(cmd.substring(7)); 
     else 
       super.actionPerformed(e);
   }
@@ -225,11 +251,12 @@ class JServerNotesDialog
       pMessageBox.removeAll();
       pTextAreas.clear();  
 
+      String lname = null;
       TreeMap<Long,SimpleLogMessage> notes = null;
       {
         String hname = pHostsField.getSelected(); 
         if((hname != null) && !hname.equals("-")) {
-          String lname = pHosts.get(hname);
+          lname = pHosts.get(hname);
           if(lname != null) 
             notes = qclient.getHostNotes(lname); 
         }
@@ -254,7 +281,27 @@ class JServerNotesDialog
 	      {
 		Box hbox2 = new Box(BoxLayout.X_AXIS);
 		hbox2.add(Box.createRigidArea(new Dimension(10, 0)));
+
+                {
+                  JButton btn = new JButton();
+                  btn.setName("CloseButton");
 		
+                  Dimension size = new Dimension(15, 19);
+                  btn.setMinimumSize(size);
+                  btn.setMaximumSize(size);
+                  btn.setPreferredSize(size);
+
+                  btn.setActionCommand("remove:" + lname + ":" + stamp);
+                  btn.addActionListener(this);
+                  btn.setToolTipText(UIFactory.formatToolTip("Remove the host note."));
+
+                  btn.setEnabled(pPrivilegeDetails.isQueueAdmin());
+                  
+                  hbox2.add(btn);
+                }
+
+		hbox2.add(Box.createRigidArea(new Dimension(10, 0)));
+
 		{
 		  JLabel label = new JLabel(note.getAuthor());
 		  label.setToolTipText(UIFactory.formatToolTip
@@ -262,8 +309,9 @@ class JServerNotesDialog
 		  hbox2.add(label);
 		}
 		
+		hbox2.add(Box.createRigidArea(new Dimension(10, 0)));
 		hbox2.add(Box.createHorizontalGlue());
-		
+
 		{
 		  JLabel label = new JLabel(TimeStamps.format(note.getTimeStamp()));
 		  label.setToolTipText(UIFactory.formatToolTip
@@ -426,7 +474,42 @@ class JServerNotesDialog
     update(null, null);
   }
   
+  /**
+   * Remove a host note.
+   */ 
+  private void
+  doRemoveNote
+  (
+   String value
+  )
+  {
+    String parts[] = value.split(":");
+    if(parts.length != 2) 
+      return;
+    
+    String hname = parts[0];
+    Long stamp = new Long(parts[1]);
 
+    JConfirmDialog diag = new JConfirmDialog(this, "Delete Host Note?");
+    diag.setVisible(true);
+    if(diag.wasConfirmed()) {
+      UIMaster master = UIMaster.getInstance();
+      QueueMgrClient qclient = master.acquireQueueMgrClient();
+      try {
+        qclient.removeHostNote(hname, stamp); 
+      }
+      catch(PipelineException ex) {
+        showErrorDialog(ex);
+      }
+      finally {
+        master.releaseQueueMgrClient(qclient);
+      }    
+      
+      doUpdate();
+    }
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -488,9 +571,14 @@ class JServerNotesDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The details of the administrative privileges granted to the current user. 
+   */ 
+  private PrivilegeDetails  pPrivilegeDetails; 
+
+  /**
    * The fully resolved names of the selected hosts indexed by the short hostnames.
    */
-  private TreeMap<String,String> pHosts;
+  private TreeMap<String,String>  pHosts;
 
   /**
    * The notes for the currently selected host.
@@ -527,8 +615,13 @@ class JServerNotesDialog
   private JScrollPane  pScroll; 
 
   /**
+   * The displays the note creation dialog.
+   */ 
+  private JButton  pNewNoteButton; 
+
+  /**
    * Dialog for writing new note text.
    */ 
-  private JCreateNoteDialog pCreateNoteDialog; 
+  private JCreateNoteDialog  pCreateNoteDialog; 
 }
 

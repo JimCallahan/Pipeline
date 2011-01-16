@@ -153,8 +153,8 @@ class JCreateNoteDialog
 
   private static final long serialVersionUID = 6502894548607381010L;
 
-  private static final int sTSize = 100;
-  private static final int sVSize = 400;
+  private static final int sTSize = 70;
+  private static final int sVSize = 350;
 
   
 

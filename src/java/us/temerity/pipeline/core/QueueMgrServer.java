@@ -806,7 +806,7 @@ class QueueMgrServer
 
               case GetHostNote:
                 {
-                  QueueGetHostNoteReq req = (QueueGetHostNoteReq) objIn.readObject();
+                  QueueByHostNoteReq req = (QueueByHostNoteReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.getHostNote(req));
                   objOut.flush(); 
                 }
@@ -814,7 +814,7 @@ class QueueMgrServer
 
               case GetHostNotes:
                 {
-                  QueueGetHostNotesReq req = (QueueGetHostNotesReq) objIn.readObject();
+                  QueueByHostNotesReq req = (QueueByHostNotesReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.getHostNotes(req));
                   objOut.flush(); 
                 }
@@ -824,6 +824,22 @@ class QueueMgrServer
                 {
                   QueueAddHostNoteReq req = (QueueAddHostNoteReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.addHostNote(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case RemoveHostNote:
+                {
+                  QueueByHostNoteReq req = (QueueByHostNoteReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.removeHostNote(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case RemoveHostNotes:
+                {
+                  QueueByHostNotesReq req = (QueueByHostNotesReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.removeHostNotes(req));
                   objOut.flush(); 
                 }
                 break;

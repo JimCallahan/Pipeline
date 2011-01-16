@@ -18,7 +18,7 @@ import javax.swing.event.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Queries the user for the name and description of a new license key.
+ * Queries the user for the name and description of a new key.
  */ 
 public 
 class JBaseCreateKeyDialog

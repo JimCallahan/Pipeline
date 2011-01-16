@@ -2,17 +2,19 @@
 
 package us.temerity.pipeline.message.queue;
 
+import us.temerity.pipeline.message.PrivilegedReq;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   H O S T   N O T E S   R E Q                                        */
+/*   Q U E U E   B Y   H O S T   N O T E S   R E Q                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get all of the notes (if any) associated with the given host. 
+ * A request which requires the host name for a set of server notes.
  */
 public 
-class QueueGetHostNotesReq
+class QueueByHostNotesReq
+  extends PrivilegedReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -22,18 +24,18 @@ class QueueGetHostNotesReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param name
+   * @param hname
    *   The hostname. 
    */
   public
-  QueueGetHostNotesReq
+  QueueByHostNotesReq
   (
-   String name
+   String hname
   )
   {
-    if(name == null) 
+    if(hname == null) 
       throw new IllegalArgumentException("The hostname cannot be (null)!");
-    pName = name;
+    pHostName = hname;
   }
 
 
@@ -46,9 +48,9 @@ class QueueGetHostNotesReq
    * Get the hostname. 
    */
   public String
-  getName()
+  getHostName()
   {
-    return pName;
+    return pHostName;
   }
 
   
@@ -68,6 +70,6 @@ class QueueGetHostNotesReq
   /**
    * The hostname. 
    */
-  private String pName;
+  private String pHostName;
 
 }

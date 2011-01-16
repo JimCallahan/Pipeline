@@ -3600,10 +3600,10 @@ class QueueMgr
   public Object
   getHostNote
   (
-   QueueGetHostNoteReq req
+   QueueByHostNoteReq req
   ) 
   {
-    String hname = req.getName();
+    String hname = req.getHostName();
     Long stamp = req.getStamp(); 
     TaskTimer timer = new TaskTimer("QueueMgr.getHostNote(): " + hname + " " + stamp);
 
@@ -3639,10 +3639,10 @@ class QueueMgr
   public Object
   getHostNotes
   (
-   QueueGetHostNotesReq req
+   QueueByHostNotesReq req
   ) 
   {
-    String hname = req.getName();
+    String hname = req.getHostName();
     TaskTimer timer = new TaskTimer("QueueMgr.getHostNotes(): " + hname);
 
     timer.aquire();
@@ -3695,7 +3695,7 @@ class QueueMgr
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
-	  ("Only a user with Queue Admin privileges may add/remove server notes!"); 
+	  ("Only a user with Queue Admin privileges may add server notes!"); 
       
       synchronized(pHostNotes) {
         writeHostNote(hname, note);
@@ -3712,7 +3712,97 @@ class QueueMgr
     }
   }
   
-                                                                                             
+  /**
+   * Remove all notes (if any) associated with the given host. 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the host note.
+   */ 
+  public Object
+  removeHostNotes
+  (
+   QueueByHostNotesReq req
+  ) 
+  {
+    String hname = req.getHostName();
+    TaskTimer timer = new TaskTimer("QueueMgr.removeHostNotes(): " + hname);
+    
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove server notes!"); 
+      
+      synchronized(pHostNotes) {
+        TreeSet<Long> stamps = pHostNotes.get(hname);
+        if(stamps != null) {
+          for(Long stamp : stamps) {
+            deleteHostNote(hname, stamp);
+            pHostNotes.remove(hname, stamp); 
+          }
+        }
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+           
+  /**
+   * Remove the note (if any) associated with the given host and timestamp.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the host note.
+   */ 
+  public Object
+  removeHostNote
+  (
+   QueueByHostNoteReq req
+  ) 
+  {
+    String hname = req.getHostName();
+    Long stamp = req.getStamp(); 
+    TaskTimer timer = new TaskTimer("QueueMgr.removeHostNote(): " + hname + " " + stamp);
+    
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove server notes!"); 
+      
+      synchronized(pHostNotes) {
+        if(pHostNotes.contains(hname, stamp)) {
+          deleteHostNote(hname, stamp);
+          pHostNotes.remove(hname, stamp); 
+        }
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+  
+                                                                                              
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -11832,6 +11922,46 @@ class QueueMgr
     }
   }
 
+  /**
+   * Remove a job server host note from disk. <P> 
+   * 
+   * @param hname
+   *   The fully qualified job server hostname.
+   * 
+   * @param stamp
+   *   The timestamp of the note.
+   * 
+   * @throws PipelineException
+   *   If unable to write the hosts file.
+   */ 
+  private void 
+  deleteHostNote
+  (
+   String hname, 
+   long stamp
+  ) 
+    throws PipelineException
+  {
+    synchronized(pHostNotes) {
+      File file = new File(pQueueDir, "queue/job-servers/notes/" + hname + "/" + stamp);
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the notes file (" + file + ")!");
+      }
+
+      File dir = file.getParentFile();
+      if(dir.isDirectory() && (dir.listFiles().length == 0)) 
+        if(!dir.delete())
+	  throw new PipelineException
+	    ("Unable to remove the empty host notes directory (" + dir + ")!");
+      
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+         "Removed Host Note: " + hname + " " + stamp);
+    }
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 

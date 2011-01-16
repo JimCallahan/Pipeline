@@ -334,12 +334,12 @@ enum QueueRequest
   GetHostsWithNotes, 
 
   /**
-   * An instance of {@link QueueGetHostNoteReq} is next.
+   * Get all notes (if any) associated with the given host.
    */ 
   GetHostNote, 
 
   /**
-   * An instance of {@link QueueGetHostNotesReq} is next.
+   * Get the note (if any) associated with the given host and timestamp.
    */ 
   GetHostNotes, 
 
@@ -347,6 +347,16 @@ enum QueueRequest
    * An instance of {@link QueueSetHostNoteReq} is next.
    */ 
   AddHostNote, 
+
+  /**
+   * Remove all notes (if any) associated with the given host.
+   */ 
+  RemoveHostNote, 
+
+  /**
+   * Remove the note (if any) associated with the given host and timestamp.
+   */ 
+  RemoveHostNotes, 
 
 
   /*----------------------------------------------------------------------------------------*/

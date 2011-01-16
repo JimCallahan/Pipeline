@@ -1843,7 +1843,7 @@ class QueueMgrClient
   {
     verifyConnection();
 
-    QueueGetHostNotesReq req = new QueueGetHostNotesReq(hname);
+    QueueByHostNotesReq req = new QueueByHostNotesReq(hname);
 
     Object obj = performTransaction(QueueRequest.GetHostNotes, req);
     if(obj instanceof QueueGetHostNotesRsp) {
@@ -1881,7 +1881,7 @@ class QueueMgrClient
   {
     verifyConnection();
 
-    QueueGetHostNoteReq req = new QueueGetHostNoteReq(hname, stamp);
+    QueueByHostNoteReq req = new QueueByHostNoteReq(hname, stamp);
 
     Object obj = performTransaction(QueueRequest.GetHostNote, req);
     if(obj instanceof QueueGetHostNoteRsp) {
@@ -1918,6 +1918,56 @@ class QueueMgrClient
     
     QueueAddHostNoteReq req = new QueueAddHostNoteReq(hname, new SimpleLogMessage(text));
     Object obj = performTransaction(QueueRequest.AddHostNote, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove all notes (if any) associated with the given host.
+   * 
+   * @param hname
+   *   The fully resolved name of the host.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the host notes.
+   */
+  public synchronized void 
+  removeHostNotes
+  (
+   String hname 
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueByHostNotesReq req = new QueueByHostNotesReq(hname);
+    Object obj = performTransaction(QueueRequest.RemoveHostNotes, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the note (if any) associated with the given host and timestamp.
+   * 
+   * @param hname
+   *   The fully resolved name of the host.
+   * 
+   * @param stamp
+   *   The timestamp of when the note was written.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the host note.
+   */
+  public synchronized void
+  removeHostNote
+  (
+   String hname, 
+   long stamp
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueByHostNoteReq req = new QueueByHostNoteReq(hname, stamp);
+    Object obj = performTransaction(QueueRequest.RemoveHostNote, req);
     handleSimpleResponse(obj);
   }
 

@@ -2,17 +2,19 @@
 
 package us.temerity.pipeline.message.queue;
 
+import us.temerity.pipeline.message.PrivilegedReq;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   H O S T   N O T E   R E Q                                          */
+/*   Q U E U E   B Y   H O S T   N O T E   R E Q                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get the note (if any) associated with the given host and timestamp.  
+ * A request which requires the host name and timestamp of a server note.
  */
 public 
-class QueueGetHostNoteReq
+class QueueByHostNoteReq
+  extends PrivilegedReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -22,22 +24,22 @@ class QueueGetHostNoteReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param name
+   * @param hname
    *   The hostname. 
    *
    * @param stamp
    *   The timestamp of when the note was written.      
    */
   public
-  QueueGetHostNoteReq
+  QueueByHostNoteReq
   (
-   String name, 
+   String hname, 
    long stamp
   )
   {
-    if(name == null) 
+    if(hname == null) 
       throw new IllegalArgumentException("The hostname cannot be (null)!");
-    pName = name;
+    pHostName = hname;
 
     pStamp = stamp; 
   }
@@ -52,9 +54,9 @@ class QueueGetHostNoteReq
    * Get the hostname. 
    */
   public String
-  getName()
+  getHostName()
   {
-    return pName;
+    return pHostName;
   }
                                                                                          
   /**
@@ -83,7 +85,7 @@ class QueueGetHostNoteReq
   /**
    * The hostname. 
    */
-  private String pName;
+  private String pHostName;
 
   /**
    * The timestamp of when the note was written.
