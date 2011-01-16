@@ -1,0 +1,32 @@
+Average <TripleMap> #1 {
+  {
+    Key <Integer> #2 { 2010 }
+    Val <TreeMap> #3 {
+      {
+        Key <Integer> #4 { 10 }
+        Val <TreeMap> #5 {
+          {
+            Key <Integer> #6 { 18 }
+            Val <Double> #7 { 2.00000 }
+          }
+          {
+            Key <Integer> #8 { 19 }
+            Val <Double> #9 { 2.00000 }
+          }
+          {
+            Key <Integer> #10 { 20 }
+            Val <Double> #11 { 2.00000 }
+          }
+          {
+            Key <Integer> #12 { 21 }
+            Val <Double> #13 { 2.00000 }
+          }
+          {
+            Key <Integer> #14 { 22 }
+            Val <Double> #15 { 2.00000 }
+          }
+        }
+      }
+    }
+  }
+}
