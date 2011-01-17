@@ -838,8 +838,10 @@ class JNodeViewerPanel
       pAutoframeOnUpdate = true;
 
     pRoots.clear();
-    for(String name : names) 
-      pRoots.put(name, null);
+    for(String name : names) {
+      if(name != null) 
+        pRoots.put(name, null);
+    }
   
     if(pGroupID != 0) {
       PanelUpdater pu = new PanelUpdater(this, postUpdateSelected);
@@ -903,7 +905,8 @@ class JNodeViewerPanel
   )
   {
     TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.add(name);
+    if(name != null) 
+      roots.add(name);
     
     setRoots(roots, postUpdateSelected);
   }
@@ -938,7 +941,10 @@ class JNodeViewerPanel
   )
   {    
     TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.addAll(names);
+    for(String name : names) {
+      if(name != null) 
+        roots.addAll(names);
+    }
 
     setRoots(roots);
   }
@@ -960,8 +966,10 @@ class JNodeViewerPanel
     if(UserPrefs.getInstance().getAutoFrameRoots()) 
       pAutoframeOnUpdate = true; 
 
-    for(String name : names) 
-      pRoots.remove(name);
+    for(String name : names) {
+      if(name != null) 
+        pRoots.remove(name);
+    }
     
     JNodeBrowserPanel browser = 
       UIMaster.getInstance().getNodeBrowserPanels().getPanel(getGroupID());
@@ -990,7 +998,8 @@ class JNodeViewerPanel
     TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
     if(pRoots.containsKey(oldName)) {
       roots.remove(oldName);
-      roots.add(newName);
+      if(newName != null) 
+        roots.add(newName);
     }
 
     setRoots(roots);
@@ -5848,8 +5857,10 @@ class JNodeViewerPanel
     if(UIMaster.getInstance().restoreSelections()) {
       TreeSet<String> roots = (TreeSet<String>) decoder.decode("Roots");
       if(roots != null) {
-	for(String name : roots) 
-	  pRoots.put(name, null);
+	for(String name : roots) {
+          if(name != null) 
+            pRoots.put(name, null);
+        }
       }
     }
 
