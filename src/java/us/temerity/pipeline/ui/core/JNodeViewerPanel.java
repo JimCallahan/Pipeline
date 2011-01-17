@@ -5713,8 +5713,10 @@ class JNodeViewerPanel
     pDownstreamMode = dmode; 
     switch(pDownstreamMode) {
     case None:
-      for(NodeStatus status : pRoots.values()) 
-        status.clearTargets();
+      for(NodeStatus status : pRoots.values()) {
+        if(status != null) 
+          status.clearTargets();
+      }
       updateUniverse();
       break;
 
