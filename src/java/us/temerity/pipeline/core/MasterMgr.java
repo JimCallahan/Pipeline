@@ -6100,16 +6100,16 @@ class MasterMgr
   ) 
   {
     String name = req.getExtensionName();
-
     TaskTimer timer = new TaskTimer("MasterMgr.removeMasterExtension(): " + name); 
+
+    if(!pAdminPrivileges.isMasterAdmin(req))
+     return new FailureRsp
+       (timer, "Only a user with Master Admin privileges may remove a " + 
+        "master extension configuration!");
+
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     try {
-      if(!pAdminPrivileges.isMasterAdmin(req))
-	throw new PipelineException
-	  ("Only a user with Master Admin privileges may remove a " + 
-	   "master extension configuration!");
-
       synchronized(pMasterExtensions) {
 	timer.resume();
 	
@@ -6149,14 +6149,15 @@ class MasterMgr
     String name = config.getName();
 
     TaskTimer timer = new TaskTimer("MasterMgr.setMasterExtension(): " + name); 
+    
+    if(!pAdminPrivileges.isMasterAdmin(req))
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may add or modify " + 
+         "master extension configuration!");
+
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     try {
-      if(!pAdminPrivileges.isMasterAdmin(req))
-	throw new PipelineException
-	  ("Only a user with Master Admin privileges may add or modify " + 
-	   "master extension configuration!");
-
       synchronized(pMasterExtensions) {
 	timer.resume();
 	
@@ -7071,15 +7072,15 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
+    if(!pAdminPrivileges.isMasterAdmin(req))
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may hide/show node paths!"); 
+      
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
-        throw new PipelineException
-          ("Only a user with Master Admin privileges may hide/show node paths!"); 
-      
       pNodeTree.updateHiddenFile(req.getPath(), req.isHidden());
       pNodeTree.setHidden(req.getPath(), req.isHidden());
       
@@ -8202,16 +8203,16 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setCTimeUpdate(): " + nodeID + " [" + stamp + "]");
     
+    if(!pAdminPrivileges.isMasterAdmin(req)) 
+      return new FailureRsp
+        (timer, "Only a user with Master Manager privileges may set the LastCTimeUpdate!"); 
+
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock workingLock = getWorkingLock(nodeID);
     workingLock.acquireWriteLock();
     try {
       timer.resume();
-
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
-	throw new PipelineException
-	  ("Only a user with Master Manager privileges may set the LastCTimeUpdate!"); 
 
       /* get the working version */ 
       WorkingBundle bundle = getWorkingBundle(nodeID);
@@ -10934,7 +10935,8 @@ class MasterMgr
     }
 
     if(!pAdminPrivileges.isMasterAdmin(req)) 
-      return new FailureRsp(timer, "Only a user with Master Admin privileges may delete nodes!"); 
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may delete nodes!"); 
 
     timer.aquire();
     if(!pDatabaseLock.tryWriteLock(sDeleteTimeout)) {
@@ -10980,7 +10982,7 @@ class MasterMgr
 	if(failed) {
 	  throw new PipelineException
 	    ("Cannot delete node (" + name + ") because links to the following " +
-	     "checked-in versions exist in the repository:\n" + 
+	     "checked-in versions exit in the repository:\n" + 
 	     buf.toString());
 	}
       } 
@@ -13882,16 +13884,16 @@ class MasterMgr
     String creator = req.getRequestor();
 
     TaskTimer timer = new TaskTimer(); 
+    
+    if(!pAdminPrivileges.isMasterAdmin(req)) 
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may extract site versions!"); 
 
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
  
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
-	throw new PipelineException
-	  ("Only a user with Master Admin privileges may extract site versions!"); 
-
       /* lookup the node version */ 
       NodeVersion ovsn = null;
       {
@@ -14195,14 +14197,14 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer(); 
 
+    if(!pAdminPrivileges.isMasterAdmin(req)) 
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may insert site versions!"); 
+
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
-
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
-	throw new PipelineException
-	  ("Only a user with Master Admin privileges may insert site versions!"); 
 
       /* get the node version from the TAR archive */ 
       NodeVersion vsn = null;
@@ -16944,6 +16946,11 @@ class MasterMgr
       }
     }
 
+    if(!pAdminPrivileges.isMasterAdmin(req))
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may create archives of " + 
+         "checked-in versions!"); 
+
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     try {
@@ -16953,11 +16960,6 @@ class MasterMgr
         throw new PipelineException 
           ("The Archive operation will not be available until the offlined node " +
            "version cache has finished being rebuilt.");
-
-      if(!pAdminPrivileges.isMasterAdmin(req))
-	throw new PipelineException
-	  ("Only a user with Master Admin privileges may create archives of checked-in " +
-	   "versions!"); 
 
       /* the archiver plugin to use */ 
       BaseArchiver archiver = req.getArchiver();
@@ -17687,6 +17689,10 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
+    if(!pAdminPrivileges.isMasterAdmin(req))
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may offline checked-in versions!"); 
+  
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     try {
@@ -17699,10 +17705,6 @@ class MasterMgr
             ("The Offline operation will not be available until the offlined node " +
              "version cache has finished being rebuilt.");
 
-        if(!pAdminPrivileges.isMasterAdmin(req))
-          throw new PipelineException
-            ("Only a user with Master Admin privileges may offline checked-in versions!"); 
-  
         /* write lock online/offline status */ 
         timer.aquire();
         List<LoggedLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
@@ -18433,6 +18435,10 @@ class MasterMgr
       }
     }
 
+    if(!pAdminPrivileges.isMasterAdmin(req))
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may restore checked-in versions!"); 
+
     timer.aquire();
     pDatabaseLock.acquireReadLock();
     try {
@@ -18444,10 +18450,6 @@ class MasterMgr
           throw new PipelineException 
             ("The Restore operation will not be available until the offlined node " +
              "version cache has finished being rebuilt.");
-
-        if(!pAdminPrivileges.isMasterAdmin(req))
-          throw new PipelineException 
-            ("Only a user with Master Admin privileges may restore checked-in versions!"); 
 
         /* get the archive volume manifest */ 
         ArchiveVolume vol = readArchive(archiveName);
