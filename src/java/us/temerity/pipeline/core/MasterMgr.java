@@ -7081,8 +7081,8 @@ class MasterMgr
     try {
       timer.resume();	
 
-      pNodeTree.updateHiddenFile(req.getPath(), req.isHidden());
-      pNodeTree.setHidden(req.getPath(), req.isHidden());
+      if(pNodeTree.setHidden(req.getPath(), req.isHidden()))
+        pNodeTree.updateHiddenFile(req.getPath(), req.isHidden());
       
       return new SuccessRsp(timer);
     }

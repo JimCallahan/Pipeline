@@ -162,8 +162,11 @@ class NodeTree
    * 
    * @param isHidden
    *    Whether to hide the given path.
+   * 
+   * @return 
+   *    Whether the path given is a legitimate node path.
    */ 
-  public synchronized void 
+  public synchronized boolean 
   setHidden
   (
    String path, 
@@ -178,11 +181,12 @@ class NodeTree
     for(wk=1; wk<comps.length; wk++) {
       NodeTreeEntry entry = parent.get(comps[wk]);
       if(entry == null) 
-        throw new PipelineException("Unable to find the node path (" + path + "!");
+        return false; 
       parent = entry;
     }
     
     parent.setHidden(isHidden); 
+    return true;
   }
 
 
@@ -1446,7 +1450,49 @@ class NodeTree
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Initialize the hidden flags for the node tree components from the database file listing
+   * all hidden nodes and paths.  Filter out any references to non-existent nodes.
+   */
+  public synchronized void 
+  initHidden() 
+    throws PipelineException
+  {
+    TreeSet<String> hidden = readHidden();    
+    TreeSet<String> validated = new TreeSet<String>();
+    for(String path : hidden) {
+      if(setHidden(path, true)) 
+        validated.add(path);
+    }
+    writeHidden(validated); 
+  }
+
+  /**
+   * Modify the database file which records the hidden status of all node paths.
    *
+   * @param path
+   *    A fully resolved node path or node directory prefix of such a path.
+   * 
+   * @param isHidden
+   *    Whether to hide the given path.
+   */
+  public synchronized void 
+  updateHiddenFile
+  (
+   String path, 
+   boolean isHidden   
+  ) 
+    throws PipelineException
+  {
+    /* re-read the hidden database from disk */ 
+    TreeSet<String> hidden = readHidden();
+
+    /* add/remove an entry, then update the database files if that changed the contents */ 
+    if(isHidden ? hidden.add(path) : hidden.remove(path)) 
+      writeHidden(hidden); 
+  }
+
+  /**
+   * Read the hidden node database file and return the table of hidden node paths.
    */
   private synchronized TreeSet<String>
   readHidden() 
@@ -1518,34 +1564,16 @@ class NodeTree
     return hidden;
   }
 
-
   /**
-   * Initialize the hidden flags for the node tree components from the database file listing
-   * all hidden nodes and paths.
-   */
-  public synchronized void 
-  initHidden() 
-    throws PipelineException
-  {
-    TreeSet<String> hidden = readHidden();
-    for(String s : hidden) 
-      setHidden(s, true);
-  }
-
-  /**
-   * Modify the database file which records the hidden status of all node paths.
+   * Write the given database file recording the hidden status of all node paths.
    *
-   * @param path
-   *    A fully resolved node path or node directory prefix of such a path.
-   * 
-   * @param isHidden
-   *    Whether to hide the given path.
+   * @param hidden
+   *    The paths of all hidden nodes.
    */
-  public synchronized void 
-  updateHiddenFile
+  private synchronized void 
+  writeHidden
   (
-   String path, 
-   boolean isHidden   
+   TreeSet<String> hidden
   ) 
     throws PipelineException
   {
@@ -1553,42 +1581,35 @@ class NodeTree
     File file = hpath.toFile();
     File backup = new File(file + ".backup");
 
-    /* re-read the hidden database from disk */ 
-    TreeSet<String> hidden = readHidden();
-
-    /* add/remove an entry, then update the database files if that changed the contents */ 
-    if(isHidden ? hidden.add(path) : hidden.remove(path)) {
-
-      /* backup the current file */ 
-      if(file.isFile()) {
-        if(backup.exists())
-          if(!backup.delete()) 
-            throw new PipelineException
-              ("Unable to remove the backup hidden node file (" + backup + ")!");
-        
-        if(!file.renameTo(backup)) 
+    /* backup the current file */ 
+    if(file.isFile()) {
+      if(backup.exists())
+        if(!backup.delete()) 
           throw new PipelineException
-            ("Unable to backup the current hidden node file (" + file + ") to the " + 
-             "the file (" + backup + ")!");
-      }
+            ("Unable to remove the backup hidden node file (" + backup + ")!");
       
-      /* write the current state */ 
-      if(hidden.isEmpty()) {
-        try {
-          file.createNewFile();
-        }
-        catch(IOException ex) {
-          throw new PipelineException
-            ("Unable to write the hidden node file (" + file + ")!"); 
-        }
+      if(!file.renameTo(backup)) 
+        throw new PipelineException
+          ("Unable to backup the current hidden node file (" + file + ") to the " + 
+           "the file (" + backup + ")!");
+    }
+    
+    /* write the current state */ 
+    if(hidden.isEmpty()) {
+      try {
+        file.createNewFile();
       }
-      else {
-        try {
-          GlueEncoderImpl.encodeFile("Hidden", hidden, file);
-        }
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
-        }
+      catch(IOException ex) {
+        throw new PipelineException
+          ("Unable to write the hidden node file (" + file + ")!"); 
+      }
+    }
+    else {
+      try {
+        GlueEncoderImpl.encodeFile("Hidden", hidden, file);
+      }
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
