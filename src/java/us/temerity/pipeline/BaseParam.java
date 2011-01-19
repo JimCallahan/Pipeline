@@ -81,15 +81,17 @@ class BaseParam
     char c[] = getName().toCharArray();
     int wk;
     buf.append(c[0]);
-    for(wk=1; wk<(c.length-1); wk++) {
-      if(Character.isUpperCase(c[wk]) && 
-	 (Character.isLowerCase(c[wk-1]) ||
-	  Character.isLowerCase(c[wk+1])))
+    if(c.length > 1) {
+      for(wk=1; wk<(c.length-1); wk++) {
+        if(Character.isUpperCase(c[wk]) && 
+           (Character.isLowerCase(c[wk-1]) ||
+            Character.isLowerCase(c[wk+1])))
 	  buf.append(" ");
-
+        
+        buf.append(c[wk]);
+      }
       buf.append(c[wk]);
     }
-    buf.append(c[wk]);
 
     return (buf.toString());
   }
