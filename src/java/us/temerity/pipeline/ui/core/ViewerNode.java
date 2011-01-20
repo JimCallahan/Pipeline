@@ -286,12 +286,16 @@ class ViewerNode
       NodeMod mod = details.getWorkingVersion();
       if((mod != null) && mod.isFrozen()) {
         switch(details.getOverallQueueState()) {
-        case Finished: 
-          iconColor = prefs.getFrozenFinishedColor(); 
-          break;
-          
         case Stale: 
           iconColor = prefs.getFrozenStaleColor(); 
+          break; 
+
+        case Dubious:
+          iconColor = prefs.getFrozenDubiousColor();
+          break;
+
+        default:
+          iconColor = prefs.getFrozenFinishedColor(); 
         }
       }
     }

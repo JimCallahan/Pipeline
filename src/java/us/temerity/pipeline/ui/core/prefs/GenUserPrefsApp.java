@@ -737,6 +737,11 @@ class GenUserPrefsApp
          "also Stale.", 
 	 "FrozenStaleColor", "Frozen Stale Color:", new Color(0.9f, 0.4f, 0.9f)), 
 
+	new ColorPref
+	("The color to use for the Node State symbols of Frozen/Locked nodes which are " + 
+         "also Dubious.", 
+	 "FrozenDubiousColor", "Frozen Dubious Color:", new Color(0.3f, 0.3f, 0.3f)), 
+
 	new BasePref(),
 
 	new ChoicePref

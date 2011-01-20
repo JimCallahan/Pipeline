@@ -656,7 +656,9 @@ class TextureMgr
        (pFrozenFinishedColor != null) && 
        pFrozenFinishedColor.equiv(prefs.getFrozenFinishedColor()) && 
        (pFrozenStaleColor != null) && 
-       pFrozenStaleColor.equiv(prefs.getFrozenStaleColor()))
+       pFrozenStaleColor.equiv(prefs.getFrozenStaleColor()) &&
+       (pFrozenDubiousColor != null) && 
+       pFrozenDubiousColor.equiv(prefs.getFrozenDubiousColor()))
       return; 
 
     cacheIconColors(); 
@@ -696,6 +698,7 @@ class TextureMgr
     pModifiableColor      = prefs.getModifiableColor();      
     pFrozenFinishedColor  = prefs.getFrozenFinishedColor();          
     pFrozenStaleColor     = prefs.getFrozenStaleColor();          
+    pFrozenDubiousColor   = prefs.getFrozenDubiousColor();          
   }
 
   /**
@@ -784,10 +787,16 @@ class TextureMgr
                         (LogMgr.Kind.Tex, LogMgr.Level.Fine,
                          "Building Icon: " + name + " " + size + "x" + size);
                       
-                      {
-                        Color3d frozen = pFrozenFinishedColor; 
-                        if(qstate == QueueState.Stale)
+                      { 
+                        Color3d frozen = pFrozenFinishedColor;
+                        switch(qstate) {
+                        case Stale:
                           frozen = pFrozenStaleColor; 
+                          break;
+
+                        case Dubious: 
+                          frozen = pFrozenDubiousColor; 
+                        }
 
                         BufferedImage result = 
                           compositeNodeImages(ringImgs[idx], ringColor, 
@@ -1793,6 +1802,7 @@ class TextureMgr
   private Color3d  pFrozenColor;      
   private Color3d  pFrozenFinishedColor; 
   private Color3d  pFrozenStaleColor;     
+  private Color3d  pFrozenDubiousColor;     
   
 }
 
