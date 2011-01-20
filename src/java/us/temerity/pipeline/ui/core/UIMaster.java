@@ -1962,26 +1962,22 @@ class UIMaster
    boolean enabled
   ) 
   {
-    JMenuItem item = null;
+    JMenu sub = new JMenu(layout.getTitle());
     if(layout.isMenuItem()) {
-      JMenu sub = new JMenu(layout.getName());
       LayoutGroup group = 
         builderLayouts.get(layout.getVendor(), layout.getName(), layout.getVersionID());
       if (group != null)
         rebuildMenuFromLayoutGroup(topmenu, sub, prefix + ":" + layout.getName() + ":" + 
                                    layout.getVersionID() + ":" + layout.getVendor(), group, 
                                    listener, enabled);
-      item = sub;
     }
     else {
-      JMenu sub = new JMenu(layout.getTitle()); 
       for(PluginMenuLayout pml : layout) 
         sub.add(rebuildCollectionPluginMenuHelper(topmenu, pml, prefix, plugins, 
           builderLayouts, listener, enabled));
-      item = sub;
     }
 
-    return item;
+    return (JMenuItem) sub;
   }
   
   private void
