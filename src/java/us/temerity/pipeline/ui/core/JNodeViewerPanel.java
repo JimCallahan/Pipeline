@@ -327,6 +327,8 @@ class JNodeViewerPanel
       pRecentMenuItems      = new ArrayList<LinkedList<String>>(numMenus);
       pRecentActionCommands = new ArrayList<TreeMap<String,String>>(numMenus);
 
+      pCloneItems           = new JPopupMenuItem[numMenus - 2];
+      pExportItems          = new JPopupMenuItem[numMenus - 3];
       pUpdateDetailsItems   = new JPopupMenuItem[numMenus];
       pUpdateBranchItems    = new JPopupMenuItem[numMenus - 1];
       pMakeRootItems        = new JPopupMenuItem[numMenus];
@@ -427,16 +429,24 @@ class JNodeViewerPanel
 	  menus[wk].addSeparator();
 	}
 
-	/* Add clone to Checked In and Frozen node menus. */
-	if((wk == 2) || (wk == 3)) {
+	/* add clone to CheckedIn and Frozen node menus. */
+	if((wk == 2) || (wk == 3) || (wk == 5)) {
 	  JMenu sub = new JMenu("Modify");
           menus[wk].add(sub);
 
 	  item = new JPopupMenuItem(menus[wk], "Clone...");
-          pCloneItem = item;
+          pCloneItems[wk-2] = item;
           item.setActionCommand("clone");
           item.addActionListener(this);
           sub.add(item);
+          
+          if(wk != 2) {
+            item = new JPopupMenuItem(menus[wk], "Export...");
+            pExportItems[wk-3] = item;
+            item.setActionCommand("export");
+            item.addActionListener(this);
+            sub.add(item);
+          }
 	}
 
         if(wk == 4) {
@@ -471,13 +481,13 @@ class JNodeViewerPanel
           sub.addSeparator();
 
           item = new JPopupMenuItem(menus[wk], "Clone...");
-          pCloneItem = item;
+          pCloneItems[wk-2] = item;
           item.setActionCommand("clone");
           item.addActionListener(this);
           sub.add(item);
           
           item = new JPopupMenuItem(menus[wk], "Export...");
-          pExportItem = item;
+          pExportItems[wk-3] = item;
           item.setActionCommand("export");
           item.addActionListener(this);
           sub.add(item);
@@ -1295,6 +1305,10 @@ class JNodeViewerPanel
 	(pEditWithDefaultItems[wk], prefs.getEditWithDefault(), 
 	 "Edit primary file sequences of the current primary selection using the default" + 
 	 "editor for the file type.");
+
+      updateMenuToolTip
+        (pCloneItems[wk], prefs.getNodeViewerClone(), 
+         "Register a new node which is a clone of the current primary selection.");
     }
 
     updateMenuToolTip
@@ -1314,6 +1328,10 @@ class JNodeViewerPanel
       updateMenuToolTip
 	(pRestoreItems[wk], prefs.getNodeViewerCheckOut(), 
 	 "Submit requests to restore offline checked-in versions of the selected ndoes.");
+
+      updateMenuToolTip
+        (pExportItems[wk], prefs.getNodeViewerExport(), 
+         "Export the node properties from the primary selection to the selected nodes."); 
     }
 
     for(wk=0; wk<2; wk++) {
@@ -1367,15 +1385,9 @@ class JNodeViewerPanel
        "Create a new node bundle (JAR archive) by packing up tree of nodes rooted at the " + 
        "current primary selection.");
     updateMenuToolTip
-      (pCloneItem, prefs.getNodeViewerClone(), 
-       "Register a new node which is a clone of the current primary selection.");
-    updateMenuToolTip
       (pRemoveFilesItem, prefs.getRemoveFiles(), 
        "Remove all the primary/secondary files associated with the selected nodes.");
-    updateMenuToolTip
-      (pExportItem, prefs.getNodeViewerExport(), 
-       "Export the node properties from the primary selection to the selected nodes.");
-    updateMenuToolTip
+     updateMenuToolTip
       (pRenameItem, prefs.getNodeViewerRename(), 
        "Rename the current primary selection.");
     updateMenuToolTip
@@ -1470,6 +1482,14 @@ class JNodeViewerPanel
     UserPrefs prefs = UserPrefs.getInstance();
     pUpdateBranchItems[0].setEnabled(!prefs.getHeavyweightUpdates());
 
+    boolean nodePrivileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isNodeManaged(pAuthor));
+
+    boolean multiple = (getSelectedNames().size() >= 2);
+
+    pCloneItems[3].setEnabled(nodePrivileged);
+    pExportItems[2].setEnabled(multiple && nodePrivileged);
+
     updateEditorMenus();
   }
 
@@ -1482,6 +1502,11 @@ class JNodeViewerPanel
     UserPrefs prefs = UserPrefs.getInstance();
     pUpdateBranchItems[1].setEnabled(!prefs.getHeavyweightUpdates());
 
+    boolean nodePrivileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isNodeManaged(pAuthor));
+
+    pCloneItems[0].setEnabled(nodePrivileged);
+
     updateEditorMenus();
   }
 
@@ -1493,6 +1518,14 @@ class JNodeViewerPanel
   {
     UserPrefs prefs = UserPrefs.getInstance();
     pUpdateBranchItems[2].setEnabled(!prefs.getHeavyweightUpdates());
+
+    boolean nodePrivileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isNodeManaged(pAuthor));
+
+    boolean multiple = (getSelectedNames().size() >= 2);
+
+    pCloneItems[1].setEnabled(nodePrivileged);
+    pExportItems[0].setEnabled(multiple && nodePrivileged);
 
     updateEditorMenus();
   }
@@ -1567,9 +1600,10 @@ class JNodeViewerPanel
 
     pEvolveItem.setEnabled(hasCheckedIn && nodePrivileged);
     pPackBundleItem.setEnabled(nodePrivileged);
-    pCloneItem.setEnabled(nodePrivileged);
 
-    pExportItem.setEnabled(multiple && nodePrivileged);
+    pCloneItems[2].setEnabled(nodePrivileged);
+    pExportItems[1].setEnabled(multiple && nodePrivileged);
+
     pRenameItem.setEnabled(!hasCheckedIn && nodePrivileged);
     pRenumberItem.setEnabled(mod.getPrimarySequence().hasFrameNumbers() && nodePrivileged);
 
@@ -8382,6 +8416,8 @@ class JNodeViewerPanel
   private JPopupMenuItem[]  pLockItems;
   private JPopupMenuItem[]  pRestoreItems;
   private JPopupMenuItem[]  pReleaseItems;
+  private JPopupMenuItem[]  pCloneItems;
+  private JPopupMenuItem[]  pExportItems;
 
   private JPopupMenuItem  pLinkItem;
   private JPopupMenuItem  pUnlinkItem;
@@ -8396,9 +8432,7 @@ class JNodeViewerPanel
   private JPopupMenuItem  pCheckInItem;
   private JPopupMenuItem  pEvolveItem;
   private JPopupMenuItem  pPackBundleItem;
-  private JPopupMenuItem  pCloneItem;
   private JPopupMenuItem  pRemoveFilesItem;
-  private JPopupMenuItem  pExportItem;
   private JPopupMenuItem  pRenameItem;
   private JPopupMenuItem  pRenumberItem;
   private JPopupMenuItem  pDeleteItem;
