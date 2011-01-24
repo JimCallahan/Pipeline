@@ -178,9 +178,10 @@ class FilePattern
     if(path == null) 
       throw new IllegalArgumentException("The prepend path cannot be (null)!");
 
-    pPrefix  = path + "/" + pattern.getPrefix();
+    Path p = new Path(new Path(path), pattern.getPrefix());
+    pPrefix = p.toString();
     pPadding = pattern.getPadding();
-    pSuffix  = pattern.getSuffix();
+    pSuffix = pattern.getSuffix();
 
     buildCache();
   }
