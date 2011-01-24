@@ -11803,7 +11803,8 @@ class MasterMgr
 
 	      default:
 		throw new IllegalStateException
-		  ("The " + details.getOverallNodeState() + " should not be possible here!");
+		  ("The " + details.getOverallNodeState() + " OverallNodeState should " + 
+                   "not be possible here!");
 	      }
 	    }
 
