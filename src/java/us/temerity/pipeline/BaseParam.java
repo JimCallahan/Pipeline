@@ -53,6 +53,10 @@ class BaseParam
   {
     super(name, desc);
 
+    if(pName.length() == 0) 
+      throw new IllegalArgumentException
+        ("Parameter names cannot be the empty string!");
+    
     if(!isValidName(pName)) 
       throw new IllegalArgumentException
 	("The parameter name (" + name + ") may contain only alphanumeric characters " + 
