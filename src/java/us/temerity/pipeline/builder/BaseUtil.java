@@ -331,6 +331,10 @@ class BaseUtil
   ) 
     throws PipelineException
   {
+    if(name == null) 
+      throw new PipelineException
+        ("The node name cannot be (null)!");
+    
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(name, false);
     NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
