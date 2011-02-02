@@ -61,8 +61,18 @@ class NodeUpdatePathsReq
 
     if(paths == null) 
       throw new IllegalArgumentException("The paths cannot be (null)!");
+    for(String name : paths.keySet()) {
+      if(name == null) 
+        throw new IllegalArgumentException("The paths table contained a (null) key!");
+      if(paths.get(name) == null)
+        throw new IllegalArgumentException
+          ("The paths table contained a (null) value for key (" + name + ")!");
+    }
+
     pPaths = paths;
 
+    
+    
     pShowHidden = showHidden;
   }
 
@@ -73,7 +83,7 @@ class NodeUpdatePathsReq
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the name of user which owens the working area view.
+   * Get the name of user which owns the working area view.
    */ 
   public String
   getAuthor() 
