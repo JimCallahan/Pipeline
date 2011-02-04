@@ -90,7 +90,7 @@ class QueueMgr
 
     LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Initializing [MasterMgr]...");
+       "Initializing [QueueMgr]...");
 
     init(jobReaderThreads);
   }
@@ -9603,8 +9603,8 @@ class QueueMgr
                 Integer score = selProfile.getScore(selGroup); 
                 if(score != null) {
 
-                  /* make sure the host provides the type of operating system, reservation and 
-                     dynamic resources required by the job */                
+                  /* make sure the host provides the type of operating system, reservation 
+                     and dynamic resources required by the job */                
                   if(profile.isEligible(sample, os, reservation, pAdminPrivileges, 
                                         usersOverMax, isMaxLoadEnabled)) {
                     
@@ -9634,9 +9634,10 @@ class QueueMgr
                     
                     String author = profile.getAuthor();
                     double balanceGroupShare = Double.MAX_VALUE;
-                    if (balanceGroupName != null)
+                    if(balanceGroupName != null) {
                       balanceGroupShare = 
                         pDispUserUsage.getCalculatedShare(balanceGroupName, author);
+                    }
                     
                     /* create a new rank entry for the job */ 
                     {
@@ -9661,8 +9662,8 @@ class QueueMgr
                 else if(selFiner) {
                   lmgr.logAndFlush
                     (LogMgr.Kind.Sel, LogMgr.Level.Finer, 
-                     jobMsg + "Selection group (" + selGroup + ") did not provide required " + 
-                     "keys.");
+                     jobMsg + "Selection group (" + selGroup + ") did not provide " + 
+                     "required keys.");
                 }
               }
               else if(selFiner) {
