@@ -2380,8 +2380,8 @@ class PluginMgr
         if(action.supportsSourceParams() ) {
           if (action.getInitialSourceParams() == null)
             throw new PipelineException
-              ("The action plugin (" + cname + ") claims to support source parameters, but " + 
-               "does not actually create any source parameters.");
+              ("The action plugin (" + cname + ") claims to support source parameters, " + 
+               "but does not actually create any source parameters.");
           for (ActionParam param : action.getInitialSourceParams().values())
             if (param instanceof BuilderIDActionParam)
               throw new PipelineException
