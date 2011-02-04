@@ -1,0 +1,2233 @@
+Daily <TripleMap> #1 {
+  {
+    Key <Integer> #2 { 2006 }
+    Val <TreeMap> #3 {
+      {
+        Key <Integer> #4 { 3 }
+        Val <TreeMap> #5 {
+          {
+            Key <Integer> #6 { 18 }
+            Val <Integer> #7 { 0 }
+          }
+        }
+      }
+      {
+        Key <Integer> #8 { 6 }
+        Val <TreeMap> #9 {
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+        }
+      }
+      {
+        Key <Integer> #10 { 9 }
+        Val <TreeMap> #11 {
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+        }
+      }
+      {
+        Key <Integer> #12 { 11 }
+        Val <TreeMap> #13 {
+          {
+            Key <Integer> #14 { 22 }
+            Val <Integer> #15 { 1 }
+          }
+          {
+            Key <Integer> #16 { 23 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #17 { 29 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #18 { 31 }
+            Val <REF> #15
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #19 { 2007 }
+    Val <TreeMap> #20 {
+      {
+        Key <REF> #7
+        Val <TreeMap> #21 {
+          {
+            Key <Integer> #22 { 1 }
+            Val <Integer> #23 { 3 }
+          }
+          {
+            Key <Integer> #24 { 2 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #25 { 4 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #26 { 13 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+          {
+            Key <Integer> #27 { 27 }
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #22
+        Val <TreeMap> #28 {
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #29 { 5 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <Integer> #30 { 2 }
+          }
+          {
+            Key <Integer> #31 { 7 }
+            Val <REF> #30
+          }
+          {
+            Key <Integer> #32 { 8 }
+            Val <REF> #30
+          }
+          {
+            Key <REF> #10
+            Val <REF> #30
+          }
+          {
+            Key <Integer> #33 { 10 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #34 { 12 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #35 { 14 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #36 { 15 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #37 { 16 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #38 { 17 }
+            Val <REF> #23
+          }
+          {
+            Key <REF> #6
+            Val <REF> #30
+          }
+          {
+            Key <Integer> #39 { 19 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #40 { 20 }
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #24
+        Val <TreeMap> #41 {
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #30
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #42 { 21 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #43 { 24 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #44 { 25 }
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #45 { 26 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #46 { 28 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+          {
+            Key <Integer> #47 { 30 }
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #30
+          }
+        }
+      }
+      {
+        Key <REF> #4
+        Val <TreeMap> #48 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #30
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #43
+            Val <REF> #23
+          }
+          {
+            Key <REF> #44
+            Val <REF> #23
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #30
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #25
+        Val <TreeMap> #49 {
+          {
+            Key <REF> #22
+            Val <REF> #30
+          }
+          {
+            Key <REF> #24
+            Val <REF> #30
+          }
+          {
+            Key <REF> #4
+            Val <REF> #30
+          }
+          {
+            Key <REF> #25
+            Val <REF> #30
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #30
+          }
+          {
+            Key <REF> #35
+            Val <REF> #30
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #23
+          }
+          {
+            Key <REF> #38
+            Val <REF> #23
+          }
+          {
+            Key <REF> #6
+            Val <REF> #30
+          }
+          {
+            Key <REF> #39
+            Val <REF> #30
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #30
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #30
+          }
+          {
+            Key <REF> #43
+            Val <REF> #30
+          }
+          {
+            Key <REF> #44
+            Val <REF> #30
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #29
+        Val <TreeMap> #50 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #30
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #8
+        Val <TreeMap> #51 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #30
+          }
+          {
+            Key <REF> #32
+            Val <REF> #30
+          }
+          {
+            Key <REF> #10
+            Val <REF> #30
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #30
+          }
+          {
+            Key <REF> #16
+            Val <REF> #30
+          }
+          {
+            Key <REF> #43
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #30
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #31
+        Val <TreeMap> #52 {
+          {
+            Key <REF> #22
+            Val <REF> #30
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #23
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #23
+          }
+          {
+            Key <REF> #10
+            Val <REF> #30
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #32
+        Val <TreeMap> #53 {
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #43
+            Val <REF> #30
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #30
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #10
+        Val <TreeMap> #54 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #30
+          }
+          {
+            Key <REF> #33
+            Val <REF> #23
+          }
+          {
+            Key <REF> #12
+            Val <REF> #30
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #30
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #43
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #33
+        Val <TreeMap> #55 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #12
+        Val <TreeMap> #56 {
+          {
+            Key <REF> #10
+            Val <REF> #30
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #30
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #57 { 2008 }
+    Val <TreeMap> #58 {
+      {
+        Key <REF> #7
+        Val <TreeMap> #59 {
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #30
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #30
+          }
+          {
+            Key <REF> #14
+            Val <REF> #30
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #22
+        Val <TreeMap> #60 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #24
+        Val <TreeMap> #61 {
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #30
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #30
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #43
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #4
+        Val <TreeMap> #62 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #30
+          }
+          {
+            Key <REF> #42
+            Val <REF> #30
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #43
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #25
+        Val <TreeMap> #63 {
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #30
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #30
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #29
+        Val <TreeMap> #64 {
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #8
+        Val <TreeMap> #65 {
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #31
+        Val <TreeMap> #66 {
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #30
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #32
+        Val <TreeMap> #67 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #43
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #10
+        Val <TreeMap> #68 {
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #69 { 2009 }
+    Val <TreeMap> #70 {
+      {
+        Key <REF> #7
+        Val <TreeMap> #71 {
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #22
+        Val <TreeMap> #72 {
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #24
+        Val <TreeMap> #73 {
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #4
+        Val <TreeMap> #74 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+        }
+      }
+      {
+        Key <REF> #25
+        Val <TreeMap> #75 {
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #30
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #29
+        Val <TreeMap> #76 {
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #8
+        Val <TreeMap> #77 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #31
+        Val <TreeMap> #78 {
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #30
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+          {
+            Key <REF> #18
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #32
+        Val <TreeMap> #79 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #42
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #10
+        Val <TreeMap> #80 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #33
+        Val <TreeMap> #81 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #12
+        Val <TreeMap> #82 {
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #83 { 2010 }
+    Val <TreeMap> #84 {
+      {
+        Key <REF> #7
+        Val <TreeMap> #85 {
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #36
+            Val <REF> #15
+          }
+          {
+            Key <REF> #37
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+          {
+            Key <REF> #40
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #43
+            Val <REF> #15
+          }
+          {
+            Key <REF> #45
+            Val <REF> #15
+          }
+          {
+            Key <REF> #27
+            Val <REF> #15
+          }
+          {
+            Key <REF> #46
+            Val <REF> #15
+          }
+          {
+            Key <REF> #17
+            Val <REF> #15
+          }
+          {
+            Key <REF> #47
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #22
+        Val <TreeMap> #86 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #8
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+          {
+            Key <REF> #10
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #12
+            Val <REF> #15
+          }
+          {
+            Key <REF> #34
+            Val <REF> #15
+          }
+          {
+            Key <REF> #26
+            Val <REF> #15
+          }
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #24
+        Val <TreeMap> #87 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #4
+            Val <REF> #15
+          }
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #14
+            Val <REF> #15
+          }
+          {
+            Key <REF> #44
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #4
+        Val <TreeMap> #88 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+        }
+      }
+      {
+        Key <REF> #29
+        Val <TreeMap> #89 {
+          {
+            Key <REF> #25
+            Val <REF> #15
+          }
+          {
+            Key <REF> #38
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #8
+        Val <TreeMap> #90 {
+          {
+            Key <REF> #22
+            Val <REF> #15
+          }
+          {
+            Key <REF> #24
+            Val <REF> #15
+          }
+          {
+            Key <REF> #29
+            Val <REF> #15
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+        }
+      }
+      {
+        Key <REF> #31
+        Val <TreeMap> #91 {
+          {
+            Key <REF> #24
+            Val <REF> #30
+          }
+          {
+            Key <REF> #31
+            Val <REF> #15
+          }
+          {
+            Key <REF> #32
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #10
+        Val <TreeMap> #92 {
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+        }
+      }
+      {
+        Key <REF> #33
+        Val <TreeMap> #93 {
+          {
+            Key <REF> #32
+            Val <REF> #30
+          }
+          {
+            Key <REF> #10
+            Val <REF> #30
+          }
+          {
+            Key <REF> #33
+            Val <REF> #15
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #94 { 2011 }
+    Val <TreeMap> #95 {
+      {
+        Key <REF> #7
+        Val <TreeMap> #96 {
+          {
+            Key <REF> #35
+            Val <REF> #15
+          }
+          {
+            Key <REF> #6
+            Val <REF> #15
+          }
+          {
+            Key <REF> #39
+            Val <REF> #15
+          }
+          {
+            Key <REF> #16
+            Val <REF> #15
+          }
+          {
+            Key <REF> #43
+            Val <REF> #15
+          }
+        }
+      }
+      {
+        Key <REF> #4
+        Val <TreeMap> #97 {
+          {
+            Key <REF> #6
+            Val <REF> #7
+          }
+        }
+      }
+    }
+  }
+}
