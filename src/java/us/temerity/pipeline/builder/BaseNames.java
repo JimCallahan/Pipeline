@@ -63,7 +63,7 @@ class BaseNames
   ) 
     throws PipelineException
   {
-    super(name, desc, mclient, qclient, info.getLoggerName());
+    super(name, desc, mclient, qclient, (info == null) ? null : info.getLoggerName());
     pGenerated = false;
   }
   
