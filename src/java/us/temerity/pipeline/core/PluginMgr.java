@@ -730,26 +730,50 @@ class PluginMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the work groups and administrative privileges from the MasterMgr.
+   * Set the work groups and administrative privileges from the MasterMgr.
    * 
    * @param req 
    *   The request.
    * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to update the privileges.
+   *   <CODE>FailureRsp</CODE> if unable to set the privileges.
    */ 
   public Object
-  updateAdminPrivileges
+  pushAdminPrivileges
   (
-   MiscUpdateAdminPrivilegesReq req
+   MiscPushAdminPrivilegesReq req
   ) 
   {
-    TaskTimer timer = new TaskTimer("PluginMgr.updateAdminPrivileges()");
+    TaskTimer timer = new TaskTimer("PluginMgr.pushAdminPrivileges()");
 
     timer.aquire();
-    pAdminPrivileges.updateAdminPrivileges(timer, req);
+    pAdminPrivileges.pushAdminPrivileges(timer, req);
     return new SuccessRsp(timer);
+  }
+
+  /**
+   * Pull the work groups and administrative privileges from the MasterMgr.
+   */ 
+  private void 
+  pullAdminPrivileges() 
+    throws PipelineException
+  {
+    MasterMgrControlClient mclient = new MasterMgrControlClient();
+    try {
+      try {
+        mclient.pullAdminPrivileges(pAdminPrivileges);
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
+           "Unable to contact the Master Manager to obtain user privileges at this time. " + 
+           "Only the (" + PackageInfo.sPipelineUser + ") user is currently privileged."); 
+      }
+    }
+    finally {
+      mclient.disconnect();
+    }
   }
 
 
@@ -799,7 +823,8 @@ class PluginMgr
     TaskTimer timer = new TaskTimer("Database Backup Archive Created: " + backupTarget); 
 
     try {
-      if(!pAdminPrivileges.isMasterAdmin(req))
+      pullAdminPrivileges();
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
         throw new PipelineException
           ("Only a user with Master Admin privileges may backup the database!"); 
 
@@ -981,6 +1006,7 @@ class PluginMgr
       try {
         timer.resume();
 
+        pullAdminPrivileges();
         if(!pAdminPrivileges.isDeveloper(req))
           throw new PipelineException
             ("Only a user with Developer privileges may install plugins!");
@@ -1326,7 +1352,8 @@ class PluginMgr
     timer.aquire();
     try {
       timer.resume();
-
+      
+      pullAdminPrivileges();
       if(!pAdminPrivileges.isDeveloper(req))
 	throw new PipelineException
 	  ("Only a user with Developer privileges may install plugins!");
@@ -1633,6 +1660,7 @@ class PluginMgr
     try {
       timer.resume();
 
+      pullAdminPrivileges();
       if(!pAdminPrivileges.isDeveloper(req))
 	throw new PipelineException
 	  ("Only a user with Developer privileges may install plugins!");
@@ -2626,8 +2654,8 @@ class PluginMgr
         ("There already exists a plugin identified by the same Name, VersionID and Vendor " + 
          "(" + plg.getName() + ", v" + plg.getVersionID() + ", " + plg.getVendor() + ") " +
          "as the plugin being installed, but it is implemented with a different Java " + 
-         "class! The existing plugin's Java class is (" + plugin.getClassName() + ") while " + 
-         "the new plugin is implemented by the (" + cname + ") Java class. This may " + 
+         "class! The existing plugin's Java class is (" + plugin.getClassName() + ") " +
+         "while the new plugin is implemented by the (" + cname + ") Java class. This may " + 
          "be due to copying the source code from another plugin and forgetting to " + 
          "update the Name, VersionID and Vendor properties of the new plugin.\n" +
          "\n" + 

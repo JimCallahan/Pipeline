@@ -486,7 +486,7 @@ class MasterMgr
   {
     QueueMgrControlClient qclient = acquireQueueMgrClient();
     try {
-      qclient.updateAdminPrivileges(pAdminPrivileges);    
+      qclient.pushAdminPrivileges(pAdminPrivileges);    
     }
     finally {
       releaseQueueMgrClient(qclient);
@@ -494,7 +494,7 @@ class MasterMgr
 
     PluginMgrControlClient pclient = new PluginMgrControlClient();
     try {
-      pclient.updateAdminPrivileges(pAdminPrivileges);
+      pclient.pushAdminPrivileges(pAdminPrivileges);
     }
     finally {
       pclient.disconnect();
@@ -1609,6 +1609,28 @@ class MasterMgr
   /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Get the work groups used to determine the scope of administrative privileges.
+   * 
+   * @return
+   *   <CODE>MiscGetWorkGroupsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the work groups.
+   */ 
+  public Object
+  pullAdminPrivileges()
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.pullAdminPrivileges()");
+    
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      return pAdminPrivileges.getPullResponse(timer);
+    }
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }
+  }
+  
   /**
    * Get the work groups used to determine the scope of administrative privileges.
    * 

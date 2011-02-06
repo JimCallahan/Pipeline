@@ -735,15 +735,27 @@ class QueueMgr
   {
     MasterMgrControlClient mclient = acquireMasterMgrClient();
     try {
-      mclient.waitForConnection(15000);
-    }
-    catch(PipelineException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 "Unable to (re)connect to the Master Manager daemon!\n" + 
-	 "  " + ex.getMessage());
-      
-      pServer.shutdown();
+      try {
+        mclient.waitForConnection(15000);
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "Unable to (re)connect to the Master Manager daemon!\n" + 
+           "  " + ex.getMessage());
+        
+        pServer.shutdown();
+      }
+
+      try {
+        mclient.pullAdminPrivileges(pAdminPrivileges);
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
+           "Unable to contact the Master Manager to obtain user privileges at this time. " + 
+           "Only the (" + PackageInfo.sPipelineUser + ") user is currently privileged.");
+      }
     }
     finally {
       releaseMasterMgrClient(mclient);
@@ -865,22 +877,22 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the work groups and administrative privileges from the MasterMgr.
+   * Set the work groups and administrative privileges from the MasterMgr.
    * 
    * @param req 
    *   The request.
    * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to update the privileges.
+   *   <CODE>FailureRsp</CODE> if unable to set the privileges.
    */ 
   public Object
-  updateAdminPrivileges
+  pushAdminPrivileges
   (
-   MiscUpdateAdminPrivilegesReq req
+   MiscPushAdminPrivilegesReq req
   ) 
   {
-    TaskTimer timer = new TaskTimer("QueueMgr.updateAdminPrivileges()");
+    TaskTimer timer = new TaskTimer("QueueMgr.pushAdminPrivileges()");
     timer.aquire();
     try {
       synchronized(pHosts) {
@@ -888,7 +900,7 @@ class QueueMgr
 
 	{
 	  timer.aquire();
-	  pAdminPrivileges.updateAdminPrivileges(timer, req);
+	  pAdminPrivileges.pushAdminPrivileges(timer, req);
 	}
 	
 	boolean modified = false;

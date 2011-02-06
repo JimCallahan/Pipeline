@@ -75,16 +75,16 @@ class PluginMgrControlClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the work groups and administrative privileges from the MasterMgr.
+   * Push the work groups and administrative privileges from the MasterMgr.
    * 
    * @param privs
    *   The privileges. 
    * 
    * @throws PipelineException
-   *   If unable to update the privileges.
+   *   If unable to push the privileges.
    */ 
   public synchronized void 
-  updateAdminPrivileges
+  pushAdminPrivileges
   (
    AdminPrivileges privs
   ) 
@@ -92,10 +92,11 @@ class PluginMgrControlClient
   {
     verifyConnection();
 
-    MiscUpdateAdminPrivilegesReq req = privs.getUpdateRequest();
-    Object obj = performTransaction(PluginRequest.UpdateAdminPrivileges, req); 
+    MiscPushAdminPrivilegesReq req = privs.getPushRequest();
+    Object obj = performTransaction(PluginRequest.PushAdminPrivileges, req); 
     handleSimpleResponse(obj);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

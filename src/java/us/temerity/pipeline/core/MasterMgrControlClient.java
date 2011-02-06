@@ -8,6 +8,7 @@ import java.util.Map.*;
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.message.*; 
 import us.temerity.pipeline.message.node.*;
+import us.temerity.pipeline.message.misc.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R    M G R   C O N T R O L   C L I E N T                                     */
@@ -51,6 +52,40 @@ class MasterMgrControlClient
   }
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Pull the work groups and administrative privileges from the MasterMgr.
+   * 
+   * @param privs
+   *   The privileges to update. 
+   * 
+   * @throws PipelineException
+   *   If unable to pull the privileges.
+   */ 
+  public synchronized void 
+  pullAdminPrivileges
+  (
+   AdminPrivileges privs
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.PullAdminPrivileges, null); 
+    if(obj instanceof MiscPullAdminPrivilegesRsp) {
+      MiscPullAdminPrivilegesRsp rsp = (MiscPullAdminPrivilegesRsp) obj;
+      privs.pullAdminPrivileges(rsp);
+    }
+    else {
+      handleFailure(obj);
+    }        
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*  C H E C K S U M S                                                                     */

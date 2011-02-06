@@ -388,18 +388,18 @@ class AdminPrivileges
   /*----------------------------------------------------------------------------------------*/
    
   /**
-   * Get the request to update the administrative privileges.
+   * Get the request to push the administrative privileges.
    */ 
-  public synchronized MiscUpdateAdminPrivilegesReq
-  getUpdateRequest() 
+  public synchronized MiscPushAdminPrivilegesReq
+  getPushRequest() 
   {
-    return new MiscUpdateAdminPrivilegesReq(pWorkGroups, pPrivileges);
+    return new MiscPushAdminPrivilegesReq(pWorkGroups, pPrivileges);
   }
 
   /**
-   * Set the work groups and adminstrative privileges. <P> 
+   * Push the work groups and adminstrative privileges. <P> 
    * 
-   * Used to update the QueueMgr privileges by cloning the MasterMgr privileges.
+   * Used to push the QueueMgr/PluginMgr privileges by cloning the MasterMgr privileges.
    * 
    * @param timer
    *   The task timer.
@@ -408,16 +408,50 @@ class AdminPrivileges
    *   The request.
    */ 
   public synchronized void
-  updateAdminPrivileges
+  pushAdminPrivileges
   (
    TaskTimer timer, 
-   MiscUpdateAdminPrivilegesReq req
+   MiscPushAdminPrivilegesReq req
   ) 
   {
     timer.resume();
     
     pWorkGroups = req.getWorkGroups(); 
     pPrivileges = req.getPrivileges();
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the response to pull the administrative privileges.
+   */ 
+  public synchronized MiscPullAdminPrivilegesRsp
+  getPullResponse
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.resume();
+    return new MiscPullAdminPrivilegesRsp(timer, pWorkGroups, pPrivileges);
+  }
+
+  /**
+   * Pull the work groups and adminstrative privileges. <P> 
+   * 
+   * Used to pull a copy of the privileges from the MasterMgr by the QueueMgr/PluginMgr.
+   * 
+   * @param rsp
+   *   The response.
+   */ 
+  public synchronized void
+  pullAdminPrivileges
+  (
+   MiscPullAdminPrivilegesRsp rsp
+  ) 
+  {
+    pWorkGroups = rsp.getWorkGroups(); 
+    pPrivileges = rsp.getPrivileges();
   } 
 
 

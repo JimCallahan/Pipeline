@@ -18,7 +18,15 @@ package us.temerity.pipeline.message;
  */
 public
 enum MasterRequest
-{ 
+{   
+  /**
+   * Pull the work groups and adminstrative privileges. <P> 
+   */
+  PullAdminPrivileges,
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the work groups used to determine the scope of administrative privileges.
    */

@@ -24,9 +24,9 @@ public
 enum QueueRequest
 {
   /**
-   * An instance of {@link MiscUpdateAdminPrivilegesReq MiscUpdateAdminPrivilegesReq} is next.
+   * An instance of {@link MiscPushAdminPrivilegesReq MiscPushAdminPrivilegesReq} is next.
    */
-  UpdateAdminPrivileges, 
+  PushAdminPrivileges, 
   
   /**
    * An instance of {@link MiscPluginIDReq} is next.

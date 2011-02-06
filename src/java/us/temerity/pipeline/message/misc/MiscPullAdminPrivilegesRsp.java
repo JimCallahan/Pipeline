@@ -1,30 +1,34 @@
-// $Id: MiscUpdateAdminPrivilegesReq.java,v 1.1 2006/01/15 06:29:25 jim Exp $
+// $Id: MiscGetSizesRsp.java,v 1.5 2009/11/02 03:44:11 jim Exp $
 
 package us.temerity.pipeline.message.misc;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.message.*;
 
 import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   U P D A T E   A D M I N   P R I V I L E G E S   R E Q                        */
+/*   M I S C   P U L L   A D M I N   P R I V I L E G E S   R E Q                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to update the work groups and administrative privileges from the MasterMgr.
+ * Pull the work groups and administrative privileges from the MasterMgr.
  */
 public
-class MiscUpdateAdminPrivilegesReq
-  implements Serializable
+class MiscPullAdminPrivilegesRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new response. <P> 
+   * 
+   * @param timer 
+   *   The timing statistics for a task.
    * 
    * @param groups
    *   The work groups used to determine the scope of administrative privileges.
@@ -33,12 +37,15 @@ class MiscUpdateAdminPrivilegesReq
    *   The administrative privileges for each user indexed by user name. 
    */
   public
-  MiscUpdateAdminPrivilegesReq
+  MiscPullAdminPrivilegesRsp
   (
+   TaskTimer timer,
    WorkGroups groups, 
-   TreeMap<String,Privileges> privs
+   TreeMap<String,Privileges> privs 
   )
-  {
+  { 
+    super(timer);
+
     if(groups == null) 
       throw new IllegalArgumentException
 	("The privileges cannot be (null)!");
@@ -48,6 +55,10 @@ class MiscUpdateAdminPrivilegesReq
       throw new IllegalArgumentException
 	("The privileges cannot be (null)!");
     pPrivileges = privs;
+
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "MasterMgr.pullAdminPrivileges(): \n  " + getTimer());
   }
 
 
@@ -75,12 +86,12 @@ class MiscUpdateAdminPrivilegesReq
   }
  
 
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -9005292794718765767L;
+  private static final long serialVersionUID = 5817628438945855122L;
 
   
 
@@ -97,7 +108,7 @@ class MiscUpdateAdminPrivilegesReq
    * The administrative privileges for each user indexed by user name. 
    */ 
   private TreeMap<String,Privileges>  pPrivileges; 
-  
+
 
 }
   

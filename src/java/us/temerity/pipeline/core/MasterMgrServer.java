@@ -328,6 +328,13 @@ class MasterMgrServer
             try {
               switch(kind) {
               /*-- ADMINISTRATIVE PRIVILEGES ---------------------------------------------*/
+              case PullAdminPrivileges:
+                {
+                  objOut.writeObject(pMasterMgr.pullAdminPrivileges());
+                  objOut.flush(); 
+                }
+                break;
+
               case GetWorkGroups:
                 {
                   objOut.writeObject(pMasterMgr.getWorkGroups());

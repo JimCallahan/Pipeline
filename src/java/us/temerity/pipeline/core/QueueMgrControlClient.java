@@ -86,16 +86,16 @@ class QueueMgrControlClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the work groups and administrative privileges from the MasterMgr.
+   * Push the work groups and administrative privileges.
    * 
    * @param privs
    *   The privileges. 
    * 
    * @throws PipelineException
-   *   If unable to update the privileges.
+   *   If unable to push the privileges.
    */ 
   public synchronized void 
-  updateAdminPrivileges
+  pushAdminPrivileges
   (
    AdminPrivileges privs
   ) 
@@ -103,8 +103,8 @@ class QueueMgrControlClient
   {
     verifyConnection();
 
-    MiscUpdateAdminPrivilegesReq req = privs.getUpdateRequest();
-    Object obj = performTransaction(QueueRequest.UpdateAdminPrivileges, req); 
+    MiscPushAdminPrivilegesReq req = privs.getPushRequest();
+    Object obj = performTransaction(QueueRequest.PushAdminPrivileges, req); 
     handleSimpleResponse(obj);
   }
 

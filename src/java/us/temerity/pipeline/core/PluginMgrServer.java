@@ -268,11 +268,11 @@ class PluginMgrServer
             try {
               switch(kind) {
               /*-- ADMINISTRATIVE PRIVILEGES -----------------------------------------------*/
-              case UpdateAdminPrivileges: 
+              case PushAdminPrivileges: 
                 {
-                  MiscUpdateAdminPrivilegesReq req = 
-                    (MiscUpdateAdminPrivilegesReq) objIn.readObject();
-                  objOut.writeObject(pPluginMgr.updateAdminPrivileges(req));
+                  MiscPushAdminPrivilegesReq req = 
+                    (MiscPushAdminPrivilegesReq) objIn.readObject();
+                  objOut.writeObject(pPluginMgr.pushAdminPrivileges(req));
                   objOut.flush(); 
                 }
                 break;

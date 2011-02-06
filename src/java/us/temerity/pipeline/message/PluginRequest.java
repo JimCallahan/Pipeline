@@ -20,9 +20,9 @@ public
 enum PluginRequest
 {
   /**
-   * An instance of {@link MiscUpdateAdminPrivilegesReq} is next.
+   * An instance of {@link MiscPushAdminPrivilegesReq} is next.
    */
-  UpdateAdminPrivileges, 
+  PushAdminPrivileges, 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -244,8 +244,7 @@ class WorkGroups
    *   The unique name of the group.
    *   
    * @return
-   *   A set of the users in the current group or <code>null</code> if there is not a group
-   *   with the given name.
+   *   A set of the users in the current group, may be empty if group does not exist.
    */
   public TreeSet<String>
   getUsersInGroup
@@ -257,15 +256,16 @@ class WorkGroups
 
     Integer gid = pGroupIDs.get(gname);
     if(gid == null) 
-      return null; 
-
-   TreeSet<Integer> uids = pGroupUsers.get(gid);
-   for (Integer uid : uids) {
-     if (uid < 0)
-       uid *= -1;
-     
-     toReturn.add(pUserNames.get(uid));
-   }
+      return toReturn; 
+    
+    TreeSet<Integer> uids = pGroupUsers.get(gid);
+    for(Integer uid : uids) {
+      if(uid < 0)
+        uid *= -1;
+      
+      toReturn.add(pUserNames.get(uid));
+    }
+    
     return toReturn;
   }
 

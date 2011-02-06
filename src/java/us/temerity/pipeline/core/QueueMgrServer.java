@@ -94,9 +94,11 @@ class QueueMgrServer
       BalancerTask balancer = new BalancerTask();
       BackupSyncTask backupSync = new BackupSyncTask();
 
-      MasterConnectTask connector = 
-	new MasterConnectTask(collector, dispatcher, scheduler, writer, balancer, backupSync); 
-      connector.start();
+      {
+        MasterConnectTask task = new MasterConnectTask
+          (collector, dispatcher, scheduler, writer, balancer, backupSync); 
+        task.start();
+      }
 
       HeapStatsTask heapStats = new HeapStatsTask();
       heapStats.start();
@@ -329,11 +331,11 @@ class QueueMgrServer
             try {
               switch(kind) {
               /*-- ADMINISTRATIVE PRIVILEGES -----------------------------------------------*/
-              case UpdateAdminPrivileges: 
+              case PushAdminPrivileges: 
                 {
-                  MiscUpdateAdminPrivilegesReq req = 
-                    (MiscUpdateAdminPrivilegesReq) objIn.readObject();
-                  objOut.writeObject(pQueueMgr.updateAdminPrivileges(req));
+                  MiscPushAdminPrivilegesReq req = 
+                    (MiscPushAdminPrivilegesReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.pushAdminPrivileges(req));
                   objOut.flush(); 
                 }
                 break;
