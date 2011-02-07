@@ -234,6 +234,13 @@ class JQueueJobBrowserPanel
         bgroup.add(item);
         pStatusButtons.put(StatusFilter.AnyRunning, item);
         
+        item = new JRadioButtonMenuItem("Any Active");
+        item.setActionCommand("filter-any-active");
+        item.addActionListener(this);
+        pStatusPopup.add(item);
+        bgroup.add(item);
+        pStatusButtons.put(StatusFilter.AnyActive, item);
+        
         item = new JRadioButtonMenuItem("Any Paused");
         item.setActionCommand("filter-any-paused");
         item.addActionListener(this);
@@ -967,61 +974,81 @@ class JQueueJobBrowserPanel
       Long groupID = entry.getKey();
       double dist[] = pJobStateDist.get(groupID);
       switch (pStatusFilter) {
-      case AllGroups:
-        groups.put(groupID, entry.getValue());
-        dists.put(groupID, dist);
-        break;
       case AnyFailed:
-        if (dist[JobState.Failed.ordinal()] > 0) {
+        if(dist[JobState.Failed.ordinal()] > 0) {
           groups.put(groupID, entry.getValue());
           dists.put(groupID, dist);
         }
         break;
+
       case AnyLimbo:
-        if (dist[JobState.Limbo.ordinal()] > 0) {
+        if(dist[JobState.Limbo.ordinal()] > 0) {
           groups.put(groupID, entry.getValue());
           dists.put(groupID, dist);
         }
         break;
+
       case AnyPaused:
-        if (dist[JobState.Paused.ordinal()] > 0) {
+        if(dist[JobState.Paused.ordinal()] > 0) {
           groups.put(groupID, entry.getValue());
           dists.put(groupID, dist);
         }
         break;
+
       case AnyRunning:
-        if (dist[JobState.Running.ordinal()] > 0) {
+        if(dist[JobState.Running.ordinal()] > 0) {
           groups.put(groupID, entry.getValue());
           dists.put(groupID, dist);
         }
         break;
+
+      case AnyActive:
+        if((dist[JobState.Limbo.ordinal()] > 0) ||
+           (dist[JobState.Paused.ordinal()] > 0) ||
+           (dist[JobState.Preempted.ordinal()] > 0) ||
+           (dist[JobState.Queued.ordinal()] > 0) ||
+           (dist[JobState.Running.ordinal()] > 0)) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
+        break;
+
       case AllCompleted:
-        if (dist[JobState.Limbo.ordinal()] == 0 &&
-            dist[JobState.Paused.ordinal()] == 0 &&
-            dist[JobState.Preempted.ordinal()] == 0 &&
-            dist[JobState.Queued.ordinal()] == 0 &&
-            dist[JobState.Running.ordinal()] == 0) {
+        if((dist[JobState.Limbo.ordinal()] == 0) &&
+           (dist[JobState.Paused.ordinal()] == 0) &&
+           (dist[JobState.Preempted.ordinal()] == 0) &&
+           (dist[JobState.Queued.ordinal()] == 0) &&
+           (dist[JobState.Running.ordinal()] == 0)) {
           groups.put(groupID, entry.getValue());
           dists.put(groupID, dist);
         }
         break;
+
+      case AllWaiting:
+        if((dist[JobState.Limbo.ordinal()] == 0) &&
+           (dist[JobState.Failed.ordinal()] == 0) &&
+           (dist[JobState.Aborted.ordinal()] == 0) &&
+           (dist[JobState.Finished.ordinal()] == 0) &&
+           (dist[JobState.Running.ordinal()] == 0)) {
+          groups.put(groupID, entry.getValue());
+          dists.put(groupID, dist);
+        }
+        break;
+
       case AllTerminated:
-        if (dist[JobState.Limbo.ordinal()] == 0 &&
-            dist[JobState.Paused.ordinal()] == 0 &&
-            dist[JobState.Preempted.ordinal()] == 0 &&
-            dist[JobState.Queued.ordinal()] == 0 &&
-            dist[JobState.Running.ordinal()] == 0 &&
-            dist[JobState.Finished.ordinal()] == 0) {
+        if((dist[JobState.Limbo.ordinal()] == 0) &&
+           (dist[JobState.Paused.ordinal()] == 0) &&
+           (dist[JobState.Preempted.ordinal()] == 0) &&
+           (dist[JobState.Queued.ordinal()] == 0) &&
+           (dist[JobState.Running.ordinal()] == 0) &&
+           (dist[JobState.Finished.ordinal()] == 0)) {
           groups.put(groupID, entry.getValue());
           dists.put(groupID, dist);
         }
        break;
-      case AllWaiting:
-        if (dist[JobState.Limbo.ordinal()] == 0 &&
-            dist[JobState.Failed.ordinal()] == 0 &&
-            dist[JobState.Aborted.ordinal()] == 0 &&
-            dist[JobState.Finished.ordinal()] == 0 &&
-            dist[JobState.Running.ordinal()] == 0) {
+
+      case AllGroups:
+        {
           groups.put(groupID, entry.getValue());
           dists.put(groupID, dist);
         }
@@ -1189,19 +1216,24 @@ class JQueueJobBrowserPanel
       case AllJobs:
         header.append("(View: All Jobs) ");
         break;
+
       case MyJobs:
         header.append("(View: My Jobs) ");
         break;
+
       case UserJobs:
         if (pUserFilter != null)
           header.append("(View: " + pUserFilter + "'s Jobs) ");
         break;
+
       case GroupJobs:
         if (pGroupFilter != null)
           header.append("(View: [[" + pGroupFilter + "]]'s Jobs) ");
         break;
+
       case Default:
         break;
+
       case CustomJobs:
         header.append("(View: Custom) ");
         break;
@@ -1209,28 +1241,40 @@ class JQueueJobBrowserPanel
     }
     
     switch(pStatusFilter) {
-    case AllCompleted:
-      header.append("(Filter: All Completed) ");
-      break;
-    case AllTerminated:
-      header.append("(Filter: All Terminated) ");
-      break;
-    case AllWaiting:
-      header.append("(Filter: All Waiting) ");
-      break;
     case AnyFailed:
       header.append("(Filter: Any Failed) ");
       break;
+
     case AnyLimbo:
       header.append("(Filter: Any Limbo) ");
       break;
+
     case AnyPaused:
       header.append("(Filter: Any Paused) ");
       break;
+
     case AnyRunning:
       header.append("(Filter: Any Running) ");
       break;
+
+    case AnyActive:
+      header.append("(Filter: Any Active) ");
+      break;
+
+    case AllCompleted:
+      header.append("(Filter: All Completed) ");
+      break;
+
+    case AllWaiting:
+      header.append("(Filter: All Waiting) ");
+      break;
+
+    case AllTerminated:
+      header.append("(Filter: All Terminated) ");
+      break;
+
     case AllGroups:
+      // nothing... 
       break;
     }
     
@@ -1686,6 +1730,8 @@ class JQueueJobBrowserPanel
       doFilterAnyLimbo();
     else if(cmd.equals("filter-any-running"))
       doFilterAnyRunning();
+    else if(cmd.equals("filter-any-active"))
+      doFilterAnyActive();
     else if(cmd.equals("filter-any-paused"))
       doFilterAnyPaused();
     else if(cmd.equals("filter-all-completed"))
@@ -1850,6 +1896,14 @@ class JQueueJobBrowserPanel
   doFilterAnyRunning() 
   {
     pStatusFilter = StatusFilter.AnyRunning;
+    
+    filterJobs();
+  }
+  
+  public void
+  doFilterAnyActive() 
+  {
+    pStatusFilter = StatusFilter.AnyActive;
     
     filterJobs();
   }
@@ -2455,44 +2509,49 @@ class JQueueJobBrowserPanel
   enum StatusFilter 
   {
     /**
-     * Show all job.
-     */
-    AllGroups,
-    
-    /**
-     * Groups with at least one failed job.
+     * Groups with at least one Failed job.
      */
     AnyFailed,
     
     /**
-     * Groups with at least one limbo job.
+     * Groups with at least one Limbo job.
      */
     AnyLimbo,
     
     /**
-     * Groups with at least one paused job.
+     * Groups with at least one Paused job.
      */
     AnyPaused,
     
     /**
-     * Groups with at least one running job.
+     * Groups with at least one Running job.
      */
     AnyRunning,
     
     /**
-     * Groups where all the jobs are either Finished, Failed, or Aborted.
+     * Groups with at least one Paused, Queued, Preempted, Limbo or Running job.
+     */
+    AnyActive,
+    
+    /**
+     * Groups where all the jobs are either Finished, Failed or Aborted.
      */
     AllCompleted,
     
     /**
-     * Groups where all the jobs are either Paused, Preempted, or Queued.
+     * Groups where all the jobs are either Paused, Preempted or Queued.
      */
     AllWaiting,
     
     /**
      * Groups where all jobs are either Failed or Aborted
      */
-    AllTerminated
+    AllTerminated, 
+
+    /**
+     * Show all job.
+     */
+    AllGroups;    
   }
   
 
