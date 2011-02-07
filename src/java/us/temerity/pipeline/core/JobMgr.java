@@ -1220,15 +1220,18 @@ class JobMgr
         /* if successful, make sure all target files of the job exist */ 
         int exitCode = pProc.getExitCode();
         if(exitCode == BaseSubProcess.SUCCESS) {
-          if(!targetsExist(agenda)) {
+          TreeSet<Path> missing = missingTargets(agenda);
+          if(!missing.isEmpty()) {
             exitCode = 667;
 
             try {
               FileWriter out = new FileWriter(errFile, true);
               out.write
-                ("The job completed normally with a successful exit code, but some or\n" + 
-                 "all of the target files of the job are missing!\n\n" + 
-                 "Marking the job as Failed.");
+                ("The job completed normally with a successful exit code, but the\n" + 
+                 "following target files where not created by the job:\n\n");
+              for(Path p : missing) 
+                out.write("  " + p + "\n");
+              out.write("\nMarking the job as Failed.");
               out.flush();
               out.close();
             }
@@ -1260,22 +1263,23 @@ class JobMgr
       }
     }
 
-    private synchronized boolean 
-    targetsExist
+    private synchronized TreeSet<Path>
+    missingTargets
     (
       ActionAgenda agenda
     ) 
     {
+      TreeSet<Path> missing = new TreeSet<Path>();
       Path wpath = agenda.getTargetPath();
       for(FileSeq fseq : agenda.getTargetSequences()) {
         for(Path fpath : fseq.getPaths()) {
           Path path = new Path(wpath, fpath); 
           if(!path.toFile().exists()) 
-            return false;
+            missing.add(path);
         }
       }
 
-      return true;
+      return missing;
     }
 
     private synchronized CheckSumCache
