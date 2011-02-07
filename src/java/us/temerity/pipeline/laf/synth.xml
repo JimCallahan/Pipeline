@@ -2305,96 +2305,96 @@
   <style id="Menu">
     <state>
       <imagePainter path="MenuItem.png"
-                    sourceInsets="4 8 4 0"/>
+                    sourceInsets="4 12 4 0"/>
     </state>
     <state value="SELECTED">
       <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="MenuItemSelected.png"
-                    sourceInsets="4 8 4 0"/>
+                    sourceInsets="4 12 4 0"/>
     </state>
     <state value="DISABLED">
       <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
       <imagePainter path="MenuItemDisabled.png"
-                    sourceInsets="4 8 4 0"/>
+                    sourceInsets="4 12 4 0"/>
     </state>    
     <imageIcon id="MenuIcon" path="MenuIcon.png"/>
     <property key="Menu.arrowIcon" value="MenuIcon"/>
-    <insets top="4" bottom="4" right="2" left="8"/>
+    <insets top="4" bottom="4" right="0" left="12"/>
   </style>
   <bind style="Menu" type="region" key="Menu"/>
 
   <style id="MenuItem">
     <state>
       <imagePainter path="MenuItem.png"
-                    sourceInsets="4 8 4 0"/>
+                    sourceInsets="4 12 4 0"/>
     </state>
     <state value="MOUSE_OVER">
       <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="MenuItemSelected.png"
-                    sourceInsets="4 8 4 0"/>
+                    sourceInsets="4 12 4 0"/>
     </state>
     <state value="DISABLED">
       <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
       <imagePainter path="MenuItemDisabled.png"
-                    sourceInsets="4 8 4 0"/>
+                    sourceInsets="4 12 4 0"/>
     </state>    
-    <insets top="4" bottom="4" right="2" left="8"/>
+    <insets top="4" bottom="4" right="0" left="12"/>
   </style>
   <bind style="MenuItem" type="region" key="MenuItem"/>
 
   <style id="CheckBoxMenuItem">
     <state>
       <imagePainter path="CheckBoxMenuItem.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>
     <state value="MOUSE_OVER">
       <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="CheckBoxMenuItem.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>
     <state value="SELECTED AND MOUSE_OVER">
       <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="CheckBoxMenuItemSelected.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>
     <state value="SELECTED">
       <imagePainter path="CheckBoxMenuItemSelected.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>
     <state value="DISABLED">
       <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
       <imagePainter path="CheckBoxMenuItemDisabled.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>    
-    <insets top="4" bottom="4" right="2" left="8"/>
+    <insets top="4" bottom="4" right="0" left="14"/>
   </style>
   <bind style="CheckBoxMenuItem" type="region" key="CheckBoxMenuItem"/>
   
   <style id="RadioButtonMenuItem">
     <state>
       <imagePainter path="CheckBoxMenuItem.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>
     <state value="MOUSE_OVER">
       <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="CheckBoxMenuItem.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>
     <state value="SELECTED AND MOUSE_OVER">
       <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="CheckBoxMenuItemSelected.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>
     <state value="SELECTED">
       <imagePainter path="CheckBoxMenuItemSelected.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>
     <state value="DISABLED">
       <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
       <imagePainter path="CheckBoxMenuItemDisabled.png"
-                    sourceInsets="17 12 0 0"/>
+                    sourceInsets="17 14 0 0"/>
     </state>    
-    <insets top="4" bottom="4" right="2" left="8"/>
+    <insets top="4" bottom="4" right="0" left="14"/>
   </style>
   <bind style="RadioButtonMenuItem" type="region" key="RadioButtonMenuItem"/>  
 
