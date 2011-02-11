@@ -1198,7 +1198,6 @@ class JNodeBrowserPanel
 	    pToolMenu.setVisible(true);
 	  }
 
-
 	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
 	else {
@@ -1353,6 +1352,8 @@ class JNodeBrowserPanel
   {
     String parts[] = workingArea.split(":");
     assert(parts.length == 2);
+
+    pSelected.add(pPrimaryNodePath); 
 
     String author = parts[0];
     String view   = parts[1];
@@ -1597,7 +1598,7 @@ class JNodeBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * 
+   * Show or hide the given node or path from being displayed in the browser.
    */ 
   public void 
   doShowHide() 
