@@ -457,6 +457,12 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item);  
 
+	item = new JMenuItem("Release User...");
+	pReleaseUserItem = item;
+	item.setActionCommand("release-user"); 
+	item.addActionListener(this);
+	sub.add(item);  
+
 	item = new JMenuItem("Toolsets...");
 	pManageToolsetsItem = item;
 	item.setActionCommand("manage-toolsets");
@@ -1277,6 +1283,9 @@ class JManagerPanel
       (pManagePrivilegesItem, prefs.getShowManagePrivileges(), 
        "Manage the user privileges.");
     updateMenuToolTip
+      (pReleaseUserItem, prefs.getShowReleaseUser(), 
+       "Release all nodes and working areas for a user.");
+    updateMenuToolTip
       (pManageToolsetsItem, prefs.getShowManageToolsets(), 
        "Manage the toolset environments.");
 
@@ -2023,6 +2032,11 @@ class JManagerPanel
         master.showManagePrivilegesDialog();
         return true;
       }
+      else if((prefs.getShowReleaseUser() != null) &&
+              prefs.getShowReleaseUser().wasPressed(e)) {
+        master.showReleaseUserDialog();
+        return true;
+      }
       else if((prefs.getShowManageToolsets() != null) &&
               prefs.getShowManageToolsets().wasPressed(e)) {
         master.showManageToolsetsDialog();
@@ -2282,6 +2296,8 @@ class JManagerPanel
 
       else if(cmd.equals("manage-privileges"))
         master.showManagePrivilegesDialog();
+      else if(cmd.equals("release-user"))
+        master.showReleaseUserDialog();
       else if(cmd.equals("manage-toolsets"))
         master.showManageToolsetsDialog();
 
@@ -4125,6 +4141,7 @@ class JManagerPanel
   private JMenuItem  pJobMonitorItem;
 
   private JMenuItem  pManagePrivilegesItem;
+  private JMenuItem  pReleaseUserItem;
   private JMenuItem  pManageToolsetsItem;
   private JMenuItem  pLicenseKeysItem;
   private JMenuItem  pSelectionKeysItem;

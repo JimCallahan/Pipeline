@@ -4289,6 +4289,16 @@ class UIMaster
   }
 
   /**
+   * Show the release users dialog.
+   */ 
+  public void 
+  showReleaseUserDialog()
+  {
+    pReleaseUsersDialog.updateAll();
+    pReleaseUsersDialog.setVisible(true);
+  }
+
+  /**
    * Show the manage toolsets dialog.
    */ 
   public void 
@@ -5656,13 +5666,14 @@ class UIMaster
 
 	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
 
-	pManagePrivilegesDialog    = new JManagePrivilegesDialog();
-	pManageToolsetsDialog      = new JManageToolsetsDialog();
-	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
-	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
-	pManageHardwareKeysDialog  = new JManageHardwareKeysDialog();
+	pManagePrivilegesDialog       = new JManagePrivilegesDialog();
+	pReleaseUsersDialog           = new JReleaseUsersDialog();
+	pManageToolsetsDialog         = new JManageToolsetsDialog();
+	pManageLicenseKeysDialog      = new JManageLicenseKeysDialog();
+	pManageSelectionKeysDialog    = new JManageSelectionKeysDialog();
+	pManageHardwareKeysDialog     = new JManageHardwareKeysDialog();
 	pManageDispatchControlsDialog = new JManageDispatchControlsDialog();
-	pManageBalanceGroupsDialog = new JManageBalanceGroupsDialog();
+	pManageBalanceGroupsDialog    = new JManageBalanceGroupsDialog();
 
 	pQueueJobsDialog = new JQueueJobsDialog(pFrame);
 	pChangeJobReqsDialog = new JChangeJobReqsDialog(pFrame);
@@ -8140,6 +8151,11 @@ class UIMaster
    * The manage privileges dialog.
    */ 
   private JManagePrivilegesDialog  pManagePrivilegesDialog;
+
+  /**
+   * The release user dialog.
+   */ 
+  private JReleaseUsersDialog  pReleaseUsersDialog;
 
   /**
    * The manage toolsets dialog.

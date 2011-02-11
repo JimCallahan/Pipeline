@@ -116,8 +116,12 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("Manage the user privileges.", 
+	("Release all nodes and working areas for a user.", 
 	 "ShowManagePrivileges", "User Privileges:"),    
+
+	new HotKeyPref
+	("Manage the user privileges.", 
+	 "ShowReleaseUser", "Release User:"),    
 
 	new HotKeyPref
 	("Manage the toolset environments.", 
@@ -2540,6 +2544,7 @@ class GenUserPrefsApp
 	manager.add("UpdatePlugins");
 	manager.add("LaunchBuilders");
 	manager.add("ShowManagePrivileges");
+	manager.add("ShowReleaseUser");
 	manager.add("ShowManageToolsets");
 	manager.add("ShowManageLicenseKeys");
 	manager.add("ShowManageSelectionKeys");
