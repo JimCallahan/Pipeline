@@ -1,0 +1,4282 @@
+Average <TripleMap> #1 {
+  {
+    Key <Integer> #2 { 2007 }
+    Val <TreeMap> #3 {
+      {
+        Key <Integer> #4 { 3 }
+        Val <TreeMap> #5 {
+          {
+            Key <Integer> #6 { 12 }
+            Val <Double> #7 { 2.00000 }
+          }
+          {
+            Key <Integer> #8 { 13 }
+            Val <Double> #9 { 1.00000 }
+          }
+          {
+            Key <Integer> #10 { 16 }
+            Val <Double> #11 { 1.00000 }
+          }
+          {
+            Key <Integer> #12 { 17 }
+            Val <Double> #13 { 1.00000 }
+          }
+          {
+            Key <Integer> #14 { 20 }
+            Val <Double> #15 { 1.00000 }
+          }
+          {
+            Key <Integer> #16 { 26 }
+            Val <Double> #17 { 1.00000 }
+          }
+          {
+            Key <Integer> #18 { 27 }
+            Val <Double> #19 { 1.00000 }
+          }
+          {
+            Key <Integer> #20 { 30 }
+            Val <Double> #21 { 1.00000 }
+          }
+        }
+      }
+      {
+        Key <Integer> #22 { 4 }
+        Val <TreeMap> #23 {
+          {
+            Key <Integer> #24 { 1 }
+            Val <Double> #25 { 1.00000 }
+          }
+          {
+            Key <Integer> #26 { 7 }
+            Val <Double> #27 { 1.00000 }
+          }
+          {
+            Key <Integer> #28 { 10 }
+            Val <Double> #29 { 1.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #30 { 1.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #31 { 1.00000 }
+          }
+          {
+            Key <Integer> #32 { 18 }
+            Val <Double> #33 { 1.00000 }
+          }
+          {
+            Key <Integer> #34 { 21 }
+            Val <Double> #35 { 1.00000 }
+          }
+          {
+            Key <Integer> #36 { 22 }
+            Val <Double> #37 { 1.00000 }
+          }
+          {
+            Key <Integer> #38 { 23 }
+            Val <Double> #39 { 1.00000 }
+          }
+          {
+            Key <Integer> #40 { 24 }
+            Val <Double> #41 { 1.00000 }
+          }
+          {
+            Key <Integer> #42 { 25 }
+            Val <Double> #43 { 1.00000 }
+          }
+          {
+            Key <Integer> #44 { 29 }
+            Val <Double> #45 { 1.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #46 { 2.00000 }
+          }
+          {
+            Key <Integer> #47 { 31 }
+            Val <Double> #48 { 2.00000 }
+          }
+        }
+      }
+      {
+        Key <Integer> #49 { 5 }
+        Val <TreeMap> #50 {
+          {
+            Key <REF> #24
+            Val <Double> #51 { 2.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #52 { 2.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #53 { 2.00000 }
+          }
+          {
+            Key <Integer> #54 { 6 }
+            Val <Double> #55 { 2.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #56 { 2.00000 }
+          }
+          {
+            Key <Integer> #57 { 8 }
+            Val <Double> #58 { 2.00000 }
+          }
+          {
+            Key <Integer> #59 { 11 }
+            Val <Double> #60 { 2.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #61 { 2.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #62 { 2.00000 }
+          }
+          {
+            Key <Integer> #63 { 14 }
+            Val <Double> #64 { 2.00000 }
+          }
+          {
+            Key <Integer> #65 { 15 }
+            Val <Double> #66 { 2.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #67 { 2.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #68 { 1.00000 }
+          }
+          {
+            Key <Integer> #69 { 19 }
+            Val <Double> #70 { 1.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #71 { 1.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #72 { 1.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #73 { 1.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #74 { 1.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #75 { 1.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #76 { 1.00000 }
+          }
+          {
+            Key <Integer> #77 { 28 }
+            Val <Double> #78 { 1.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #79 { 2.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #54
+        Val <TreeMap> #80 {
+          {
+            Key <Integer> #81 { 2 }
+            Val <Double> #82 { 2.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #83 { 2.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #84 { 2.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #85 { 2.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #86 { 2.00000 }
+          }
+          {
+            Key <Integer> #87 { 9 }
+            Val <Double> #88 { 2.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #89 { 2.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #90 { 2.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #91 { 2.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #92 { 2.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #93 { 2.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #94 { 2.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #95 { 2.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #96 { 2.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #97 { 2.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #98 { 2.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #99 { 2.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #100 { 2.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #101 { 2.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #102 { 2.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #103 { 2.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #104 { 3.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #26
+        Val <TreeMap> #105 {
+          {
+            Key <REF> #24
+            Val <Double> #106 { 3.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #107 { 3.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #108 { 3.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #109 { 3.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #110 { 3.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #111 { 3.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #112 { 3.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #113 { 4.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #114 { 4.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #115 { 4.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #116 { 4.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #117 { 4.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #118 { 4.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #119 { 4.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #120 { 4.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #121 { 4.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #122 { 4.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #123 { 4.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #124 { 5.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #125 { 5.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #126 { 5.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #127 { 5.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #128 { 5.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #129 { 5.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #130 { 5.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #57
+        Val <TreeMap> #131 {
+          {
+            Key <REF> #24
+            Val <Double> #132 { 5.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #133 { 5.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #134 { 5.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #135 { 5.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #136 { 6.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #137 { 6.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #138 { 6.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #139 { 6.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #140 { 7.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #141 { 7.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #142 { 7.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #143 { 7.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #144 { 7.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #145 { 8.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #146 { 8.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #147 { 8.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #148 { 8.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #149 { 8.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #150 { 8.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #151 { 8.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #152 { 8.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #153 { 9.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #154 { 9.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #155 { 9.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #87
+        Val <TreeMap> #156 {
+          {
+            Key <REF> #24
+            Val <Double> #157 { 9.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #158 { 9.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #159 { 9.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #160 { 9.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #161 { 9.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #162 { 9.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #163 { 9.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #164 { 9.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #165 { 9.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #166 { 9.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #167 { 9.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #168 { 9.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #169 { 9.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #170 { 9.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #171 { 9.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #172 { 9.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #173 { 9.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #174 { 9.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #175 { 9.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #176 { 9.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #177 { 9.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #178 { 9.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #179 { 10.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #180 { 10.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #28
+        Val <TreeMap> #181 {
+          {
+            Key <REF> #24
+            Val <Double> #182 { 10.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #183 { 10.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #184 { 10.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #185 { 10.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #186 { 10.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #187 { 10.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #188 { 10.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #189 { 10.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #190 { 10.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #191 { 10.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #192 { 10.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #193 { 10.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #194 { 10.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #195 { 10.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #196 { 10.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #197 { 10.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #198 { 10.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #199 { 9.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #200 { 9.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #201 { 9.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #202 { 9.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #203 { 9.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #204 { 9.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #59
+        Val <TreeMap> #205 {
+          {
+            Key <REF> #24
+            Val <Double> #206 { 9.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #207 { 9.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #208 { 9.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #209 { 9.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #210 { 9.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #211 { 9.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #212 { 9.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #213 { 9.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #214 { 9.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #215 { 9.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #216 { 9.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #217 { 9.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #218 { 9.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #219 { 9.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #220 { 9.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #221 { 9.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #222 { 9.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #223 { 9.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #224 { 9.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #225 { 9.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #226 { 9.00000 }
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #227 { 2008 }
+    Val <TreeMap> #228 {
+      {
+        Key <Integer> #229 { 0 }
+        Val <TreeMap> #230 {
+          {
+            Key <REF> #4
+            Val <Double> #231 { 8.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #232 { 8.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #233 { 8.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #234 { 8.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #235 { 8.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #236 { 8.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #237 { 8.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #238 { 8.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #239 { 8.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #240 { 8.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #241 { 8.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #242 { 8.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #243 { 8.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #244 { 8.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #245 { 8.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #246 { 8.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #247 { 7.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #248 { 7.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #249 { 7.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #250 { 7.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #251 { 7.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #252 { 7.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #253 { 7.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #24
+        Val <TreeMap> #254 {
+          {
+            Key <REF> #24
+            Val <Double> #255 { 7.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #256 { 7.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #257 { 7.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #258 { 7.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #259 { 7.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #260 { 7.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #261 { 7.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #262 { 7.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #263 { 7.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #264 { 7.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #265 { 7.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #266 { 7.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #267 { 7.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #268 { 7.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #269 { 7.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #270 { 7.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #271 { 7.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #272 { 7.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #273 { 7.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #274 { 7.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #275 { 7.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #276 { 7.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #277 { 7.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #278 { 7.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #81
+        Val <TreeMap> #279 {
+          {
+            Key <REF> #24
+            Val <Double> #280 { 7.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #281 { 7.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #282 { 7.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #283 { 7.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #284 { 7.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #285 { 7.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #286 { 7.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #287 { 8.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #288 { 8.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #289 { 8.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #290 { 8.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #291 { 8.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #292 { 8.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #293 { 8.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #294 { 8.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #295 { 8.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #296 { 9.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #297 { 10.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #298 { 10.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #299 { 11.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #300 { 11.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #301 { 11.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #302 { 11.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #303 { 11.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #304 { 11.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #305 { 11.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #4
+        Val <TreeMap> #306 {
+          {
+            Key <REF> #24
+            Val <Double> #307 { 11.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #308 { 11.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #309 { 11.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #310 { 11.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #311 { 11.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #312 { 11.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #313 { 11.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #314 { 11.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #315 { 11.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #316 { 11.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #317 { 11.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #318 { 11.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #319 { 11.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #320 { 11.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #321 { 11.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #322 { 11.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #323 { 11.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #324 { 11.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #325 { 11.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #326 { 11.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #327 { 11.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #328 { 11.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #329 { 11.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #330 { 11.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #331 { 11.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #332 { 11.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #22
+        Val <TreeMap> #333 {
+          {
+            Key <REF> #24
+            Val <Double> #334 { 11.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #335 { 11.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #336 { 11.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #337 { 11.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #338 { 11.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #339 { 11.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #340 { 11.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #341 { 11.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #342 { 11.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #343 { 11.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #344 { 11.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #345 { 10.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #346 { 10.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #347 { 10.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #348 { 10.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #349 { 10.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #350 { 10.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #351 { 10.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #352 { 10.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #353 { 10.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #354 { 10.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #355 { 10.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #356 { 9.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #49
+        Val <TreeMap> #357 {
+          {
+            Key <REF> #81
+            Val <Double> #358 { 9.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #359 { 9.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #360 { 9.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #361 { 9.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #362 { 9.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #363 { 9.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #364 { 8.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #365 { 8.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #366 { 8.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #367 { 8.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #368 { 8.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #369 { 8.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #370 { 8.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #371 { 8.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #372 { 8.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #373 { 7.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #374 { 7.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #375 { 7.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #376 { 7.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #377 { 7.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #378 { 7.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #54
+        Val <TreeMap> #379 {
+          {
+            Key <REF> #24
+            Val <Double> #380 { 7.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #381 { 7.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #382 { 7.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #383 { 7.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #384 { 7.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #385 { 6.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #386 { 6.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #387 { 6.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #388 { 6.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #389 { 6.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #390 { 6.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #391 { 6.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #392 { 6.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #393 { 5.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #394 { 5.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #395 { 5.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #396 { 5.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #397 { 5.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #398 { 5.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #399 { 5.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #400 { 5.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #401 { 5.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #402 { 5.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #403 { 5.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #26
+        Val <TreeMap> #404 {
+          {
+            Key <REF> #24
+            Val <Double> #405 { 5.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #406 { 5.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #407 { 5.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #408 { 5.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #409 { 5.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #410 { 5.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #411 { 5.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #412 { 5.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #413 { 5.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #414 { 5.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #415 { 5.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #416 { 5.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #417 { 5.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #418 { 5.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #419 { 5.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #420 { 5.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #421 { 5.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #422 { 5.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #423 { 5.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #424 { 5.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #425 { 5.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #426 { 5.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #427 { 5.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #428 { 5.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #429 { 5.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #57
+        Val <TreeMap> #430 {
+          {
+            Key <REF> #24
+            Val <Double> #431 { 5.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #432 { 5.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #433 { 5.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #434 { 6.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #435 { 6.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #436 { 6.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #437 { 6.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #438 { 6.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #439 { 6.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #440 { 6.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #441 { 6.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #442 { 6.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #443 { 6.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #444 { 6.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #445 { 6.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #446 { 6.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #447 { 6.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #448 { 6.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #449 { 6.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #450 { 7.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #451 { 8.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #452 { 8.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #87
+        Val <TreeMap> #453 {
+          {
+            Key <REF> #24
+            Val <Double> #454 { 8.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #455 { 8.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #456 { 8.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #457 { 8.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #458 { 8.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #459 { 9.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #460 { 9.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #461 { 9.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #462 { 9.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #463 { 9.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #464 { 10.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #465 { 10.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #466 { 10.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #467 { 11.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #468 { 12.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #469 { 12.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #470 { 12.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #471 { 12.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #472 { 12.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #473 { 13.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #474 { 13.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #475 { 14.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #476 { 14.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #477 { 14.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #478 { 14.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #479 { 14.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #480 { 14.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #481 { 14.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #482 { 14.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #28
+        Val <TreeMap> #483 {
+          {
+            Key <REF> #24
+            Val <Double> #484 { 14.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #485 { 14.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #486 { 14.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #487 { 15.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #488 { 15.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #489 { 15.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #490 { 15.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #491 { 15.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #492 { 15.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #493 { 15.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #494 { 15.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #495 { 15.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #496 { 15.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #497 { 15.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #498 { 15.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #499 { 15.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #500 { 15.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #501 { 15.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #502 { 15.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #59
+        Val <TreeMap> #503 {
+          {
+            Key <REF> #24
+            Val <Double> #504 { 15.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #505 { 15.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #506 { 15.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #507 { 15.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #508 { 15.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #509 { 15.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #510 { 15.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #511 { 15.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #512 { 15.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #513 { 15.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #514 { 15.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #515 { 15.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #516 { 15.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #517 { 15.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #518 { 15.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #519 { 15.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #520 { 14.00000 }
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #521 { 2009 }
+    Val <TreeMap> #522 {
+      {
+        Key <REF> #229
+        Val <TreeMap> #523 {
+          {
+            Key <REF> #49
+            Val <Double> #524 { 14.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #525 { 14.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #526 { 14.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #527 { 14.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #528 { 14.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #529 { 13.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #530 { 13.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #531 { 13.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #532 { 13.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #533 { 13.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #534 { 13.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #535 { 13.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #536 { 13.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #537 { 13.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #538 { 13.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #539 { 13.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #540 { 12.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #541 { 12.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #542 { 12.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #543 { 12.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #544 { 12.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #24
+        Val <TreeMap> #545 {
+          {
+            Key <REF> #81
+            Val <Double> #546 { 12.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #547 { 12.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #548 { 12.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #549 { 12.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #550 { 11.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #551 { 11.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #552 { 11.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #553 { 11.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #554 { 11.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #555 { 11.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #556 { 11.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #557 { 11.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #558 { 11.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #559 { 11.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #560 { 11.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #561 { 10.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #562 { 10.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #563 { 10.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #81
+        Val <TreeMap> #564 {
+          {
+            Key <REF> #81
+            Val <Double> #565 { 10.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #566 { 10.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #567 { 10.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #568 { 10.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #569 { 10.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #570 { 10.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #571 { 10.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #572 { 10.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #573 { 10.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #574 { 10.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #575 { 10.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #576 { 10.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #577 { 9.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #578 { 9.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #579 { 9.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #580 { 8.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #581 { 8.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #582 { 8.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #583 { 8.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #4
+        Val <TreeMap> #584 {
+          {
+            Key <REF> #24
+            Val <Double> #585 { 7.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #586 { 7.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #587 { 7.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #588 { 7.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #589 { 7.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #590 { 6.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #591 { 6.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #592 { 6.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #593 { 6.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #594 { 6.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #595 { 6.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #596 { 6.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #597 { 6.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #598 { 6.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #599 { 6.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #600 { 6.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #601 { 6.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #602 { 6.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #603 { 6.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #604 { 6.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #605 { 6.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #606 { 6.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #22
+        Val <TreeMap> #607 {
+          {
+            Key <REF> #24
+            Val <Double> #608 { 6.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #609 { 6.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #610 { 6.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #611 { 6.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #612 { 6.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #613 { 6.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #614 { 6.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #615 { 6.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #616 { 6.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #617 { 6.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #618 { 6.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #619 { 6.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #620 { 6.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #621 { 6.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #622 { 6.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #623 { 6.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #624 { 6.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #625 { 6.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #626 { 6.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #627 { 6.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #628 { 6.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #629 { 6.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #630 { 6.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #49
+        Val <TreeMap> #631 {
+          {
+            Key <REF> #24
+            Val <Double> #632 { 6.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #633 { 6.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #634 { 6.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #635 { 6.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #636 { 6.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #637 { 6.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #638 { 6.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #639 { 6.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #640 { 6.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #641 { 6.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #642 { 6.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #643 { 6.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #644 { 6.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #645 { 6.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #646 { 7.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #647 { 7.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #648 { 7.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #649 { 7.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #650 { 7.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #651 { 7.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #652 { 7.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #653 { 6.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #54
+        Val <TreeMap> #654 {
+          {
+            Key <REF> #24
+            Val <Double> #655 { 6.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #656 { 6.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #657 { 6.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #658 { 6.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #659 { 6.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #660 { 6.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #661 { 6.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #662 { 6.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #663 { 6.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #664 { 6.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #665 { 6.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #666 { 6.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #667 { 6.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #668 { 6.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #669 { 6.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #670 { 6.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #671 { 6.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #672 { 5.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #673 { 5.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #674 { 5.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #675 { 5.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #676 { 5.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #677 { 5.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #678 { 5.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #26
+        Val <TreeMap> #679 {
+          {
+            Key <REF> #4
+            Val <Double> #680 { 5.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #681 { 5.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #682 { 5.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #683 { 5.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #684 { 5.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #685 { 5.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #686 { 5.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #687 { 5.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #688 { 5.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #689 { 5.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #690 { 5.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #691 { 5.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #692 { 5.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #693 { 5.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #694 { 5.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #695 { 5.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #696 { 5.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #697 { 5.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #698 { 5.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #699 { 5.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #700 { 5.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #57
+        Val <TreeMap> #701 {
+          {
+            Key <REF> #24
+            Val <Double> #702 { 5.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #703 { 5.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #704 { 5.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #705 { 4.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #706 { 4.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #707 { 4.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #708 { 4.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #709 { 4.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #710 { 4.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #711 { 4.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #712 { 4.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #713 { 4.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #714 { 4.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #715 { 4.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #716 { 4.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #717 { 4.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #718 { 4.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #719 { 4.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #720 { 5.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #721 { 5.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #87
+        Val <TreeMap> #722 {
+          {
+            Key <REF> #24
+            Val <Double> #723 { 4.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #724 { 4.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #725 { 5.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #726 { 5.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #727 { 5.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #728 { 5.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #729 { 5.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #730 { 5.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #731 { 5.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #732 { 5.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #733 { 5.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #734 { 5.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #735 { 5.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #736 { 5.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #737 { 5.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #738 { 5.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #739 { 5.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #740 { 5.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #741 { 6.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #742 { 6.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #743 { 6.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #744 { 6.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #745 { 6.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #28
+        Val <TreeMap> #746 {
+          {
+            Key <REF> #81
+            Val <Double> #747 { 6.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #748 { 6.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #749 { 6.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #750 { 7.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #751 { 7.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #752 { 7.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #753 { 7.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #754 { 7.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #755 { 7.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #756 { 7.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #757 { 7.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #758 { 7.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #759 { 7.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #760 { 7.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #761 { 7.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #762 { 7.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #763 { 8.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #764 { 9.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #765 { 9.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #766 { 10.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #59
+        Val <TreeMap> #767 {
+          {
+            Key <REF> #24
+            Val <Double> #768 { 11.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #769 { 11.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #770 { 12.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #771 { 12.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #772 { 12.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #773 { 12.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #774 { 12.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #775 { 12.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #776 { 12.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #777 { 12.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #778 { 12.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #779 { 12.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #780 { 12.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #781 { 12.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #782 { 12.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #783 { 12.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #784 { 12.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #785 { 12.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #786 { 12.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #787 { 12.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #788 { 12.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #789 { 12.00000 }
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #790 { 2010 }
+    Val <TreeMap> #791 {
+      {
+        Key <REF> #229
+        Val <TreeMap> #792 {
+          {
+            Key <REF> #22
+            Val <Double> #793 { 12.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #794 { 12.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #795 { 12.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #796 { 12.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #797 { 12.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #798 { 12.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #799 { 12.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #800 { 12.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #801 { 12.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #802 { 12.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #803 { 12.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #804 { 12.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #805 { 12.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #806 { 12.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #807 { 12.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #808 { 12.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #809 { 12.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #810 { 12.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #811 { 12.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #812 { 12.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #813 { 12.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #24
+        Val <TreeMap> #814 {
+          {
+            Key <REF> #24
+            Val <Double> #815 { 12.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #816 { 11.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #817 { 11.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #818 { 11.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #819 { 10.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #820 { 10.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #821 { 10.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #822 { 10.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #823 { 10.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #824 { 10.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #825 { 10.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #826 { 10.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #827 { 10.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #828 { 10.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #829 { 10.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #830 { 9.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #831 { 9.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #832 { 9.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #833 { 9.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #834 { 8.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #835 { 8.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #81
+        Val <TreeMap> #836 {
+          {
+            Key <REF> #24
+            Val <Double> #837 { 8.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #838 { 8.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #839 { 8.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #840 { 8.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #841 { 8.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #842 { 8.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #843 { 8.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #844 { 8.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #845 { 8.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #846 { 8.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #847 { 7.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #848 { 7.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #849 { 7.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #850 { 7.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #851 { 7.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #852 { 7.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #853 { 7.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #854 { 7.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #855 { 7.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #856 { 7.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #857 { 7.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #858 { 7.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #859 { 7.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #4
+        Val <TreeMap> #860 {
+          {
+            Key <REF> #24
+            Val <Double> #861 { 7.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #862 { 7.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #863 { 7.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #864 { 7.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #865 { 7.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #866 { 7.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #867 { 7.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #868 { 7.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #869 { 7.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #870 { 7.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #871 { 7.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #872 { 7.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #873 { 7.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #874 { 7.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #875 { 7.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #876 { 7.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #877 { 7.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #878 { 7.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #879 { 7.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #880 { 7.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #881 { 7.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #882 { 7.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #883 { 7.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #884 { 7.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #885 { 7.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #22
+        Val <TreeMap> #886 {
+          {
+            Key <REF> #24
+            Val <Double> #887 { 7.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #888 { 7.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #889 { 8.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #890 { 8.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #891 { 8.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #892 { 8.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #893 { 8.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #894 { 8.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #895 { 9.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #896 { 9.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #897 { 9.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #898 { 9.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #899 { 9.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #900 { 9.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #901 { 9.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #902 { 9.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #903 { 9.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #904 { 9.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #905 { 9.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #906 { 9.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #907 { 9.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #908 { 10.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #909 { 11.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #910 { 11.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #911 { 12.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #49
+        Val <TreeMap> #912 {
+          {
+            Key <REF> #24
+            Val <Double> #913 { 12.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #914 { 12.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #915 { 12.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #916 { 13.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #917 { 13.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #918 { 13.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #919 { 13.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #920 { 13.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #921 { 13.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #922 { 13.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #923 { 13.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #924 { 13.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #925 { 14.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #926 { 14.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #927 { 14.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #928 { 14.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #929 { 14.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #930 { 14.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #931 { 14.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #932 { 14.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #933 { 14.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #934 { 14.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #935 { 14.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #936 { 14.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #54
+        Val <TreeMap> #937 {
+          {
+            Key <REF> #24
+            Val <Double> #938 { 14.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #939 { 14.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #940 { 14.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #941 { 14.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #942 { 14.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #943 { 14.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #944 { 14.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #945 { 14.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #946 { 14.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #947 { 14.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #948 { 14.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #949 { 14.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #950 { 14.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #951 { 13.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #952 { 13.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #953 { 13.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #954 { 13.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #955 { 13.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #956 { 13.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #957 { 13.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #958 { 13.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #26
+        Val <TreeMap> #959 {
+          {
+            Key <REF> #81
+            Val <Double> #960 { 12.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #961 { 12.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #962 { 12.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #963 { 11.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #964 { 11.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #965 { 11.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #966 { 11.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #967 { 11.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #968 { 11.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #969 { 11.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #970 { 11.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #971 { 11.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #972 { 11.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #973 { 11.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #974 { 11.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #975 { 11.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #976 { 11.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #977 { 11.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #978 { 10.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #979 { 10.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #980 { 10.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #981 { 10.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #57
+        Val <TreeMap> #982 {
+          {
+            Key <REF> #24
+            Val <Double> #983 { 10.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #984 { 10.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #985 { 10.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #986 { 10.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #987 { 10.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #988 { 9.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #989 { 9.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #990 { 9.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #991 { 9.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #992 { 9.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #993 { 9.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #994 { 9.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #995 { 9.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #996 { 9.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #997 { 9.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #998 { 9.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #999 { 9.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #1000 { 9.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #1001 { 9.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #1002 { 9.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #1003 { 9.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #1004 { 10.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #1005 { 10.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #1006 { 10.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #1007 { 10.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #1008 { 10.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #87
+        Val <TreeMap> #1009 {
+          {
+            Key <REF> #24
+            Val <Double> #1010 { 10.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #1011 { 11.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #1012 { 11.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #1013 { 11.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #1014 { 11.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #1015 { 11.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #1016 { 11.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #1017 { 11.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #1018 { 11.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #1019 { 11.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #1020 { 11.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #1021 { 11.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #1022 { 11.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #1023 { 11.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #1024 { 12.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #1025 { 12.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #1026 { 12.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #1027 { 12.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #1028 { 12.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #1029 { 12.00000 }
+          }
+          {
+            Key <REF> #42
+            Val <Double> #1030 { 12.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #1031 { 13.00000 }
+          }
+          {
+            Key <REF> #18
+            Val <Double> #1032 { 13.00000 }
+          }
+          {
+            Key <REF> #77
+            Val <Double> #1033 { 13.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #28
+        Val <TreeMap> #1034 {
+          {
+            Key <REF> #24
+            Val <Double> #1035 { 13.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #1036 { 13.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #1037 { 13.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #1038 { 13.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #1039 { 13.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #1040 { 13.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #1041 { 13.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #1042 { 13.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #1043 { 13.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #1044 { 13.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #1045 { 13.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #1046 { 13.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #1047 { 13.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #1048 { 13.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #1049 { 13.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #1050 { 13.00000 }
+          }
+          {
+            Key <REF> #38
+            Val <Double> #1051 { 13.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #1052 { 13.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #1053 { 13.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #1054 { 13.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #59
+        Val <TreeMap> #1055 {
+          {
+            Key <REF> #24
+            Val <Double> #1056 { 13.00000 }
+          }
+          {
+            Key <REF> #81
+            Val <Double> #1057 { 13.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #1058 { 13.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #1059 { 13.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #1060 { 13.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #1061 { 13.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #1062 { 13.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #1063 { 13.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #1064 { 13.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #1065 { 13.00000 }
+          }
+          {
+            Key <REF> #63
+            Val <Double> #1066 { 12.00000 }
+          }
+          {
+            Key <REF> #65
+            Val <Double> #1067 { 12.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #1068 { 12.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #1069 { 8.00000 }
+          }
+          {
+            Key <REF> #34
+            Val <Double> #1070 { 8.00000 }
+          }
+          {
+            Key <REF> #36
+            Val <Double> #1071 { 7.00000 }
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #1072 { 2011 }
+    Val <TreeMap> #1073 {
+      {
+        Key <REF> #229
+        Val <TreeMap> #1074 {
+          {
+            Key <REF> #4
+            Val <Double> #1075 { 7.00000 }
+          }
+          {
+            Key <REF> #22
+            Val <Double> #1076 { 7.00000 }
+          }
+          {
+            Key <REF> #49
+            Val <Double> #1077 { 7.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #1078 { 6.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #1079 { 6.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #1080 { 6.00000 }
+          }
+          {
+            Key <REF> #59
+            Val <Double> #1081 { 6.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #1082 { 5.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #1083 { 4.00000 }
+          }
+          {
+            Key <REF> #12
+            Val <Double> #1084 { 4.00000 }
+          }
+          {
+            Key <REF> #32
+            Val <Double> #1085 { 4.00000 }
+          }
+          {
+            Key <REF> #69
+            Val <Double> #1086 { 4.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #1087 { 4.00000 }
+          }
+          {
+            Key <REF> #47
+            Val <Double> #1088 { 4.00000 }
+          }
+        }
+      }
+      {
+        Key <REF> #24
+        Val <TreeMap> #1089 {
+          {
+            Key <REF> #4
+            Val <Double> #1090 { 4.00000 }
+          }
+          {
+            Key <REF> #54
+            Val <Double> #1091 { 4.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #1092 { 4.00000 }
+          }
+          {
+            Key <REF> #57
+            Val <Double> #1093 { 4.00000 }
+          }
+          {
+            Key <REF> #87
+            Val <Double> #1094 { 3.00000 }
+          }
+          {
+            Key <REF> #28
+            Val <Double> #1095 { 3.00000 }
+          }
+        }
+      }
+    }
+  }
+}
