@@ -82,6 +82,9 @@ class GlueDecoderImpl
       catch(ParseException ex) {
         throw new GlueException(ex);
       }
+      catch(TokenMgrError ex) {
+        throw new GlueException(ex);        
+      }
       finally {
         in.close();
       }
@@ -133,6 +136,9 @@ class GlueDecoderImpl
       }
       catch(ParseException ex) {
         throw new GlueException(ex);
+      }
+      catch(TokenMgrError ex) {
+        throw new GlueException(ex);        
       }
       finally {
         in.close();
@@ -200,6 +206,9 @@ class GlueDecoderImpl
       }
       catch(ParseException ex) {
         throw new GlueException(ex);
+      }
+      catch(TokenMgrError ex) {
+        throw new GlueException(ex);        
       }
       finally {
         in.close(); 

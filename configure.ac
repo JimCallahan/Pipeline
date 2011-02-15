@@ -2157,6 +2157,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plbrowse
   src/java/scripts/plbuilder
   src/java/scripts/plfilemgr  
+  src/java/scripts/plfixbackslash
   src/java/scripts/pljava
   src/java/scripts/pljobmgr
   src/java/scripts/plmaster
@@ -2164,16 +2165,16 @@ AC_CONFIG_FILES([
   src/java/scripts/plping
   src/java/scripts/plplugin
   src/java/scripts/plpluginmgr
+  src/java/scripts/plpython
   src/java/scripts/plqueuemgr
   src/java/scripts/plremote
+  src/java/scripts/plrestoreA
+  src/java/scripts/plrestoreB
   src/java/scripts/plscript
   src/java/scripts/plscript-splash
-  src/java/scripts/plpython
   src/java/scripts/plui
   src/java/scripts/plui-j2dgl
   src/java/scripts/plversion
-  src/java/scripts/plrestoreA
-  src/java/scripts/plrestoreB
   src/java/scripts/upgrade-hosts-file
 
   src/java/scripts/debug/Makefile
@@ -2186,16 +2187,16 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plmine
   src/java/scripts/debug/plplugin
   src/java/scripts/debug/plpluginmgr
+  src/java/scripts/debug/plpython
   src/java/scripts/debug/plqueuemgr
   src/java/scripts/debug/plremote
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plscript-splash
-  src/java/scripts/debug/plpython
+  src/java/scripts/debug/pltestheavy
+  src/java/scripts/debug/pltestlight
+  src/java/scripts/debug/pltestnative
   src/java/scripts/debug/plui
   src/java/scripts/debug/plui-j2dgl
-  src/java/scripts/debug/pltestnative
-  src/java/scripts/debug/pltestlight
-  src/java/scripts/debug/pltestheavy
   src/java/scripts/debug/plversion
 
   src/java/scripts/profile/Makefile
@@ -2207,11 +2208,11 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plmaster
   src/java/scripts/profile/plplugin
   src/java/scripts/profile/plpluginmgr
+  src/java/scripts/profile/plpython
   src/java/scripts/profile/plqueuemgr
   src/java/scripts/profile/plremote
   src/java/scripts/profile/plscript
   src/java/scripts/profile/plscript-splash
-  src/java/scripts/profile/plpython
   src/java/scripts/profile/plui
   src/java/scripts/profile/plui-j2dgl
   src/java/scripts/profile/plversion

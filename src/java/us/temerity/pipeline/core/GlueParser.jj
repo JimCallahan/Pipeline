@@ -184,7 +184,7 @@ TOKEN :
 <STRING_STATE>
 MORE :
 {
-  <(~["\""]) | ("\\\"") | ["\u0000"-"\uFFFF"]> 
+  <("\\" "\\") | ("\\" "\"") | (~["\""])>
 }
 
 
@@ -754,16 +754,34 @@ StringLiteral() :
 {
   t=<STRING_LITERAL>
   {
-    char cs[] = t.image.toCharArray();
-
-    StringBuffer buf = new StringBuffer();
-    int wk;
-    for(wk=1; wk<cs.length-1; wk++) {
-      if((cs[wk] != '\\') || ((wk+1) > cs.length) || (cs[wk+1] != '"'))
-	buf.append(cs[wk]);
+    char cs[] = t.image.substring(1, t.image.length()-1).toCharArray();
+    
+    StringBuilder buf = new StringBuilder();
+    boolean escaped = false;
+    for(char c : cs) {
+      if(escaped) {
+        switch(c) {
+        case '\\':
+        case '\"':
+          buf.append(c);
+          break;
+        default:
+          buf.append("?");
+        }
+        escaped = false;
+      }
+      else {
+        switch(c) {
+        case '\\':
+          escaped = true;
+          break;
+        default:
+          buf.append(c);
+        }
+      }
     }
 
-    return buf.toString();
+    return buf.toString(); 
   }
 }
 

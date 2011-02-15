@@ -442,6 +442,7 @@ PLG_BUILD_UTIL_SOURCES = $(shell ls $(srcdir)/build/*.java)
     CORE_PARSERS = BatchParser \
                    BuilderOptsParser \
                    FileMgrOptsParser \
+                   FixBackslashOptsParser \
                    GlueParser \
                    GraphicalOptsParser \
                    JobMgrOptsParser \

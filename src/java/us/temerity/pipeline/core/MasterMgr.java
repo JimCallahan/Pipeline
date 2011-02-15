@@ -280,6 +280,17 @@ class MasterMgr
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
 
+    /* BUG 2422 - Trailing Slash Breaks GLUE Parser */
+    {
+      Path p = new Path(new Path(PackageInfo.sNodePath, "etc"), "plfixbackslash.lock");
+      File f = p.toFile();
+      if(!f.exists()) 
+        throw new PipelineException
+          ("It appears that you have not yet run the \"plfixbackslash\" program to " + 
+           "properly escape backslashes in existing GLUE format database files. " + 
+           "See <http://temerity.us/community/forums/viewtopic.php?t=2422>."); 
+    }
+
     LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Establishing Network Connections [PluginMgr FileMgr QueueMgr]...");
@@ -650,7 +661,7 @@ class MasterMgr
       /* scan restore output files */ 
       {
         TaskTimer timer = 
-          LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Rebuilding RestoredOn Cache...");   
+          LogMgr.getInstance().taskBegin(LogMgr.Kind.Ops, "Rebuilding RestoredOn Cache...");
 
 	{
 	  File dir = new File(pNodeDir, "archives/output/restore");

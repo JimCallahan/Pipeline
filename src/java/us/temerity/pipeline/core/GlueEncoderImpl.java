@@ -78,7 +78,7 @@ class GlueEncoderImpl
     throws GlueException
   {
     try {
-      Writer writer = new StringWriter();  
+      Writer writer = new StringWriter();
       GlueEncoderImpl ge = new GlueEncoderImpl(writer); 
       ge.encode(title, obj);
       return writer.toString();
@@ -128,7 +128,8 @@ class GlueEncoderImpl
     try {
       Writer writer = null;
       try {
-        writer = new BufferedWriter(new FileWriter(file));
+        writer = new BufferedWriter
+          (new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
       }
       catch(IOException ex) {
         String msg = 
@@ -306,11 +307,15 @@ class GlueEncoderImpl
       char cs[] = ((String) obj).toCharArray();
       int wk;
       for(wk=0; wk<cs.length; wk++) {
-	if(cs[wk] == '"') 
+	switch(cs[wk]) {
+        case '"':
+        case '\\':
 	  pWriter.append("\\");
+        }
+
 	pWriter.append(cs[wk]);
       }
-
+      
       pWriter.append("\" }\n");
     }
     else if(cls.isEnum()) {

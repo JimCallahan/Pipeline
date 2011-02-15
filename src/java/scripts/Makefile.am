@@ -25,7 +25,8 @@ admin_scripts = \
   plmine \
   plpluginmgr \
   plqueuemgr \
-  plrestore
+  plrestore \
+  plfixbackslash 
 endif IS_UNIX
 
 
