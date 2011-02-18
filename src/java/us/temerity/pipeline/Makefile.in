@@ -726,7 +726,7 @@ web-icons: laf/scripts/build-web-icons textures
 
 #--------------------------------------------------------------------------------------------#
 
-install: all installdirs install-jar install-plugins install-plugin-sources
+install: all installdirs install-jar install-plugins install-example-sources
 
 install-jar: $(API_JAR) $(VAULT)
 	$(INSTALL) -m 444 $(API_JAR) $(VAULT) $(DESTDIR)$(ROOT_INST_DIR)/lib
@@ -766,8 +766,8 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/target
 	$(mkinstalldirs) $(DESTDIR)/plugins/required
 
-install-plugin-sources: $(JAVA_SOURCES)
-	@for p in `find $(srcdir)/plugin -type f -name "*.java"`; do \
+install-example-sources: $(JAVA_SOURCES)
+	@for p in `find $(srcdir)/plugin $(srcdir)/stages -type f -name "*.java"`; do \
           f=`echo $$p | sed -e 's:$(srcdir)/::g'`; \
           if [[ $$f != plugin/TemplateCollection/* ]]; then  \
             dir=$(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/`dirname $$f`; \
