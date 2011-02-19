@@ -276,6 +276,12 @@ class JQueueJobViewerPanel
       item.addActionListener(this);
       pJobPopup.add(item);
 
+      item = new JMenuItem("Preempt/Pause Jobs");
+      pJobPreemptAndPauseJobsItem = item;
+      item.setActionCommand("preempt-pause-jobs");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+
       item = new JMenuItem("Kill Jobs");
       pJobKillJobsItem = item;
       item.setActionCommand("kill-jobs");
@@ -367,6 +373,12 @@ class JQueueJobViewerPanel
       item = new JMenuItem("Preempt Jobs");
       pGroupPreemptJobsItem = item;
       item.setActionCommand("preempt-jobs");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+      
+      item = new JMenuItem("Preempt/Pause Jobs");
+      pGroupPreemptAndPauseJobsItem = item;
+      item.setActionCommand("preempt-pause-jobs");
       item.addActionListener(this);
       pGroupPopup.add(item);
       
@@ -673,6 +685,7 @@ class JQueueJobViewerPanel
     pJobPauseJobsItem.setEnabled(!isLocked());
     pJobResumeJobsItem.setEnabled(!isLocked());
     pJobPreemptJobsItem.setEnabled(!isLocked());
+    pJobPreemptAndPauseJobsItem.setEnabled(!isLocked());
     pJobKillJobsItem.setEnabled(!isLocked());
     pChangeJobReqsItem.setEnabled(!isLocked());
     pUpdateJobKeysItem.setEnabled(!isLocked());
@@ -692,6 +705,7 @@ class JQueueJobViewerPanel
     pGroupPauseJobsItem.setEnabled(!isLocked());
     pGroupResumeJobsItem.setEnabled(!isLocked());
     pGroupPreemptJobsItem.setEnabled(!isLocked());
+    pGroupPreemptAndPauseJobsItem.setEnabled(!isLocked());
     pGroupKillJobsItem.setEnabled(!isLocked());
     pGroupChangeJobReqs.setEnabled(!isLocked());
     pGroupUpdateJobKeys.setEnabled(!isLocked());
@@ -871,6 +885,9 @@ class JQueueJobViewerPanel
       (pJobPreemptJobsItem, prefs.getPreemptJobs(), 
        "Preempt all jobs associated with the selected jobs."); 
     updateMenuToolTip
+      (pJobPreemptAndPauseJobsItem, prefs.getPreemptAndPauseJobs(), 
+       "Preempt and Pause all jobs associated with the selected jobs."); 
+    updateMenuToolTip
       (pJobKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
     updateMenuToolTip
@@ -905,6 +922,9 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pGroupPreemptJobsItem, prefs.getPreemptJobs(), 
        "Preempt all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pGroupPreemptAndPauseJobsItem, prefs.getPreemptAndPauseJobs(), 
+       "Preempt and Pause all jobs associated with the selected jobs.");
     updateMenuToolTip
       (pGroupKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
@@ -2141,6 +2161,9 @@ class JQueueJobViewerPanel
       else if((prefs.getPreemptJobs() != null) &&
 	      prefs.getPreemptJobs().wasPressed(e))
 	doPreemptJobs();
+      else if((prefs.getPreemptAndPauseJobs() != null) &&
+	      prefs.getPreemptAndPauseJobs().wasPressed(e))
+	doPreemptAndPauseJobs();
       else if((prefs.getKillJobs() != null) &&
 	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
@@ -2190,6 +2213,9 @@ class JQueueJobViewerPanel
       else if((prefs.getPreemptJobs() != null) &&
 	      prefs.getPreemptJobs().wasPressed(e))
 	doPreemptJobs();
+      else if((prefs.getPreemptAndPauseJobs() != null) &&
+	      prefs.getPreemptAndPauseJobs().wasPressed(e))
+	doPreemptAndPauseJobs();
       else if((prefs.getKillJobs() != null) &&
 	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
@@ -2419,6 +2445,8 @@ class JQueueJobViewerPanel
       doResumeJobs();
     else if(cmd.equals("preempt-jobs"))
       doPreemptJobs();
+    else if(cmd.equals("preempt-pause-jobs"))
+      doPreemptAndPauseJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
     else if(cmd.equals("hide-groups"))
@@ -2996,6 +3024,27 @@ class JQueueJobViewerPanel
 
     if(!preempt.isEmpty()) {
       PreemptJobsTask task = new PreemptJobsTask(preempt);
+      task.start();
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+  
+  /**
+   * Preempt and Pause all jobs associated with the selected nodes.
+   */ 
+  private synchronized void 
+  doPreemptAndPauseJobs() 
+  {
+    TreeSet<Long> preempt = new TreeSet<Long>();
+    for(ViewerJob vjob : pSelected.values()) {
+      JobStatus status = vjob.getJobStatus();
+      preempt.add(status.getJobID());
+    }
+
+    if(!preempt.isEmpty()) {
+      PreemptAndPauseJobsTask task = new PreemptAndPauseJobsTask(preempt);
       task.start();
     }
 
@@ -3724,6 +3773,50 @@ class JQueueJobViewerPanel
   }
 
   /** 
+   * Preempt and Pause the given jobs.
+   */ 
+  private
+  class PreemptAndPauseJobsTask
+    extends Thread
+  {
+    public 
+    PreemptAndPauseJobsTask
+    (   
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JQueueJobsViewerPanel:PreemptAndPauseJobsTask");
+
+      pJobIDs = jobIDs;
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Preempting/Pausing Jobs...")) {
+        QueueMgrClient client = master.acquireQueueMgrClient();
+	try {
+	  client.preemptAndPauseJobs(pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.releaseQueueMgrClient(client);
+	  master.endPanelOp(pGroupID, "Done.");
+	}
+
+	updatePanels();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs;
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -4063,6 +4156,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pJobPauseJobsItem;
   private JMenuItem  pJobResumeJobsItem;
   private JMenuItem  pJobPreemptJobsItem;
+  private JMenuItem  pJobPreemptAndPauseJobsItem;
   private JMenuItem  pJobKillJobsItem;
   private JMenuItem  pChangeJobReqsItem;
   private JMenuItem  pUpdateJobKeysItem;
@@ -4091,6 +4185,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pGroupPauseJobsItem;
   private JMenuItem  pGroupResumeJobsItem;
   private JMenuItem  pGroupPreemptJobsItem;
+  private JMenuItem  pGroupPreemptAndPauseJobsItem;
   private JMenuItem  pGroupKillJobsItem;
   private JMenuItem  pGroupHideGroupsItem;
   private JMenuItem  pGroupDeleteGroupsItem;

@@ -152,6 +152,12 @@ class JQueueJobBrowserPanel
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
 	
+	item = new JMenuItem("Preempt/Pause Jobs");
+	pGroupsPreemptAndPauseItem = item;
+	item.setActionCommand("groups-preempt-pause-jobs");
+	item.addActionListener(this);
+	pGroupsPopup.add(item);
+	
 	item = new JMenuItem("Kill Jobs");
 	pGroupsKillItem = item;
 	item.setActionCommand("groups-kill-jobs");
@@ -1099,6 +1105,7 @@ class JQueueJobBrowserPanel
       pGroupsPauseItem.setEnabled(selected && !isLocked()); 
       pGroupsResumeItem.setEnabled(selected && !isLocked());
       pGroupsPreemptItem.setEnabled(selected && !isLocked());
+      pGroupsPreemptAndPauseItem.setEnabled(selected && !isLocked());
       pGroupsKillItem.setEnabled(selected && !isLocked());
       pGroupsChangeJobReqsItem.setEnabled(selected && !isLocked());
       pGroupsUpdateJobKeysItem.setEnabled(selected && !isLocked());
@@ -1112,6 +1119,7 @@ class JQueueJobBrowserPanel
       pGroupsPauseItem.setEnabled(selected); 
       pGroupsResumeItem.setEnabled(selected);
       pGroupsPreemptItem.setEnabled(selected);
+      pGroupsPreemptAndPauseItem.setEnabled(selected);
       pGroupsKillItem.setEnabled(selected);
       pGroupsChangeJobReqsItem.setEnabled(selected);
       pGroupsUpdateJobKeysItem.setEnabled(selected);
@@ -1462,6 +1470,9 @@ class JQueueJobBrowserPanel
       (pGroupsPreemptItem, prefs.getPreemptJobs(), 
        "Preempt all jobs associated with the selected groups.");
     updateMenuToolTip
+      (pGroupsPreemptAndPauseItem, prefs.getPreemptAndPauseJobs(), 
+       "Preempt and Pause all jobs associated with the selected groups.");
+    updateMenuToolTip
       (pGroupsChangeJobReqsItem, prefs.getChangeJobReqs(), 
        "Changes the job requirements for all jobs associated with the selected groups.");
     updateMenuToolTip
@@ -1758,6 +1769,8 @@ class JQueueJobBrowserPanel
       doGroupsResumeJobs();
     else if(cmd.equals("groups-preempt-jobs")) 
       doGroupsPreemptJobs();
+    else if(cmd.equals("groups-preempt-pause-jobs")) 
+      doGroupsPreemptAndPauseJobs();
     else if(cmd.equals("groups-kill-jobs")) 
       doGroupsKillJobs();
     else if(cmd.equals("groups-change-job-reqs"))
@@ -2121,6 +2134,19 @@ class JQueueJobBrowserPanel
     TreeSet<Long> jobs = getSelectedModifiableJobIDs(); 
     if(!jobs.isEmpty()) {
       PreemptJobsTask task = new PreemptJobsTask(jobs);
+      task.start();
+    }
+  }
+
+  /**
+   * Preempt and Pause all jobs associated with the selected groups.
+   */ 
+  public void 
+  doGroupsPreemptAndPauseJobs()
+  {
+    TreeSet<Long> jobs = getSelectedModifiableJobIDs(); 
+    if(!jobs.isEmpty()) {
+      PreemptAndPauseJobsTask task = new PreemptAndPauseJobsTask(jobs);
       task.start();
     }
   }
@@ -3036,6 +3062,50 @@ class JQueueJobBrowserPanel
   }
 
   /** 
+   * Preempt and Pause the given jobs.
+   */ 
+  private
+  class PreemptAndPauseJobsTask
+    extends Thread
+  {
+    public 
+    PreemptAndPauseJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JQueueJobsBrowserPanel:PreemptAndPauseJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Preempt/Pausing Jobs...")) {
+        QueueMgrClient client = master.acquireQueueMgrClient();
+	try {
+	  client.preemptAndPauseJobs(pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.releaseQueueMgrClient(client);
+	  master.endPanelOp(pGroupID, "Done.");
+	}
+
+	updatePanels();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs;
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -3474,6 +3544,7 @@ class JQueueJobBrowserPanel
   private JMenuItem  pGroupsPauseItem; 
   private JMenuItem  pGroupsResumeItem; 
   private JMenuItem  pGroupsPreemptItem;
+  private JMenuItem  pGroupsPreemptAndPauseItem;
   private JMenuItem  pGroupsKillItem;
   private JMenuItem  pGroupsChangeJobReqsItem;
   private JMenuItem  pGroupsUpdateJobKeysItem;

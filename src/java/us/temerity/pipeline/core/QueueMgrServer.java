@@ -999,6 +999,14 @@ class QueueMgrServer
                 }
                 break;
 
+              case PreemptAndPauseJobs:
+                {
+                  QueueJobsReq req = (QueueJobsReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.preemptAndPauseJobs(req));
+                  objOut.flush(); 
+                }
+                break;
+
               case KillJobs:
                 {
                   QueueJobsReq req = (QueueJobsReq) objIn.readObject();
@@ -1073,6 +1081,14 @@ class QueueMgrServer
                 {
                   QueueNodeJobsReq req = (QueueNodeJobsReq) objIn.readObject();
                   objOut.writeObject(pQueueMgr.preemptNodeJobs(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case PreemptAndPauseNodeJobs:
+                {
+                  QueueNodeJobsReq req = (QueueNodeJobsReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.preemptAndPauseNodeJobs(req));
                   objOut.flush(); 
                 }
                 break;

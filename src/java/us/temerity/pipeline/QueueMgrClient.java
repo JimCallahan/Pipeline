@@ -2353,6 +2353,35 @@ class QueueMgrClient
   }
 
   /**
+   * Kill, requeue and pause the jobs with the given IDs. <P> 
+   * 
+   * If successful, the jobs will be killed but instead of failing, the jobs will be
+   * automatically requeued and then paused.<P> 
+   * 
+   * If the owner of the jobs are different than the current user, this method 
+   * will fail unless the current user has QueueAdmin privileges. 
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to preempt/pause the jobs.
+   */  
+  public synchronized void
+  preemptAndPauseJobs
+  (
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueJobsReq req = new QueueJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.PreemptAndPauseJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
    * Kill the jobs with the given IDs. <P> 
    * 
    * If the owner of the jobs are different than the current user, this method 
@@ -2604,6 +2633,35 @@ class QueueMgrClient
 
     QueueNodeJobsReq req = new QueueNodeJobsReq(nodeID);
     Object obj = performTransaction(QueueRequest.PreemptNodeJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Kill, requeue and pause all jobs associated with the given working version.<P> 
+   * 
+   * If successful, the jobs will be killed but instead of failing, the jobs will be
+   * automatically requeued and paused. <P> 
+   * 
+   * If the owner of the jobs are different than the current user, this method 
+   * will fail unless the current user has QueueAdmin privileges. 
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException 
+   *   If unable to preempt/pause the jobs.
+   */  
+  public synchronized void
+  preemptAndPauseJobs
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueNodeJobsReq req = new QueueNodeJobsReq(nodeID);
+    Object obj = performTransaction(QueueRequest.PreemptAndPauseNodeJobs, req); 
     handleSimpleResponse(obj);
   }
 

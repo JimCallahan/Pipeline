@@ -7379,6 +7379,53 @@ class UIMaster
   }
  
   /** 
+   * Preempt and Pause the given jobs.
+   */ 
+  public
+  class PreemptAndPauseJobsTask
+    extends BaseModifyJobsTask
+  {
+    public 
+    PreemptAndPauseJobsTask
+    (
+     String panelTitle, 
+     int channel, 
+     TreeSet<NodeID> nodeIDs, 
+     TreeSet<Long> jobIDs,
+     String author, 
+     String view
+    ) 
+    {
+      super(panelTitle + ":PreemptAndPauseJobsTask", "Preempting/Pausing", 
+            channel, nodeIDs, jobIDs, author, view);
+    }
+
+    @Override
+    protected void 
+    performNodeOp
+    (
+     QueueMgrClient qclient, 
+     NodeID nodeID
+    )
+      throws PipelineException
+    {
+      qclient.preemptAndPauseJobs(nodeID); 
+    }
+
+    @Override
+    protected void 
+    performJobOps
+    (
+     QueueMgrClient qclient, 
+     TreeSet<Long> jobIDs
+    )
+      throws PipelineException
+    {
+      qclient.preemptAndPauseJobs(jobIDs);
+    }
+  }
+ 
+  /** 
    * Kill the given jobs.
    */ 
   public

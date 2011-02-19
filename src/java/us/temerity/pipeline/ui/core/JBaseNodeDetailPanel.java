@@ -252,6 +252,12 @@ class JBaseNodeDetailPanel
       item.addActionListener(this);
       pWorkingPopup.add(item);
 
+      item = new JMenuItem("Preempt/Pause Jobs");
+      pPreemptAndPauseJobsItem = item;
+      item.setActionCommand("preempt-pause-jobs");
+      item.addActionListener(this);
+      pWorkingPopup.add(item);
+
       item = new JMenuItem("Kill Jobs");
       pKillJobsItem = item;
       item.setActionCommand("kill-jobs");
@@ -500,6 +506,7 @@ class JBaseNodeDetailPanel
     pPauseJobsItem.setEnabled(queuePrivileged);
     pResumeJobsItem.setEnabled(queuePrivileged);
     pPreemptJobsItem.setEnabled(queuePrivileged);
+    pPreemptAndPauseJobsItem.setEnabled(queuePrivileged);
     pKillJobsItem.setEnabled(queuePrivileged);
 
     pRemoveFilesItem.setEnabled(nodePrivileged);  
@@ -607,6 +614,9 @@ class JBaseNodeDetailPanel
     updateMenuToolTip
       (pPreemptJobsItem, prefs.getPreemptJobs(), 
        "Preempt all jobs associated with the selected nodes.");
+    updateMenuToolTip
+      (pPreemptAndPauseJobsItem, prefs.getPreemptAndPauseJobs(), 
+       "Preempt and Pause all jobs associated with the selected nodes.");
     updateMenuToolTip
       (pKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected nodes.");
@@ -939,6 +949,8 @@ class JBaseNodeDetailPanel
       doResumeJobs();
     else if(cmd.equals("preempt-jobs"))
       doPreemptJobs();
+    else if(cmd.equals("preempt-pause-jobs"))
+      doPreemptAndPauseJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
 
@@ -1319,6 +1331,38 @@ class JBaseNodeDetailPanel
   }
 
   /**
+   * Preempt and Pause all jobs associated with the current node.
+   */ 
+  private void 
+  doPreemptAndPauseJobs() 
+  {
+    if(pIsFrozen) 
+      return;
+
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupNodeJobsPending(nodeIDs, jobIDs); 
+
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty())
+      runPreemptAndPauseJobsTask(nodeIDs, jobIDs);
+  }
+
+  /**
+   * Create and start a task to Preempt and Pause all running jobs associated with the given 
+   * nodes or jobs.
+   */ 
+  public void 
+  runPreemptAndPauseJobsTask
+  (
+   TreeSet<NodeID> nodeIDs,
+   TreeSet<Long> jobIDs
+  ) 
+  {
+    PreemptAndPauseJobsTask task = new PreemptAndPauseJobsTask(nodeIDs, jobIDs);
+    task.start();
+  }
+
+  /**
    * Kill all jobs associated with the current node.
    */ 
   private void 
@@ -1573,6 +1617,31 @@ class JBaseNodeDetailPanel
   }
 
   /** 
+   * Preempt and Pause the given jobs.
+   */ 
+  private
+  class PreemptAndPauseJobsTask
+    extends UIMaster.PreemptAndPauseJobsTask
+  {
+    public 
+    PreemptAndPauseJobsTask
+    (
+     TreeSet<NodeID> nodeIDs, 
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      UIMaster.getInstance().super("JBaseNodeDetailPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
+    }
+
+    protected void
+    postOp() 
+    {
+      updatePanels(); 
+    }
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -1709,6 +1778,7 @@ class JBaseNodeDetailPanel
   protected JMenuItem  pPauseJobsItem;
   protected JMenuItem  pResumeJobsItem;
   protected JMenuItem  pPreemptJobsItem;
+  protected JMenuItem  pPreemptAndPauseJobsItem;
   protected JMenuItem  pKillJobsItem;
   protected JMenuItem  pRemoveFilesItem;  
 

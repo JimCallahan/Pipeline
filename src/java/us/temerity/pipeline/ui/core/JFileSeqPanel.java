@@ -220,6 +220,12 @@ class JFileSeqPanel
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 
+	item = new JMenuItem("Preempt/Pause Jobs");
+	pPreemptAndPauseJobsItem = item;
+	item.setActionCommand("preempt-pause-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+
 	item = new JMenuItem("Kill Jobs");
 	pKillJobsItem = item;
 	item.setActionCommand("kill-jobs");
@@ -391,6 +397,7 @@ class JFileSeqPanel
     pPauseJobsItem.setEnabled(queueOps); 
     pResumeJobsItem.setEnabled(queueOps); 
     pPreemptJobsItem.setEnabled(queueOps); 
+    pPreemptAndPauseJobsItem.setEnabled(queueOps); 
     pKillJobsItem.setEnabled(queueOps); 
 
     pRemoveFilesItem.setEnabled(nodePrivileged);  
@@ -667,6 +674,8 @@ class JFileSeqPanel
       doResumeJobs();
     else if(cmd.equals("preempt-jobs"))
       doPreemptJobs();
+    else if(cmd.equals("preempt-pause-jobs"))
+      doPreemptAndPauseJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
 
@@ -929,6 +938,20 @@ class JFileSeqPanel
       
     if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) 
       pParent.runPreemptJobsTask(nodeIDs, jobIDs);
+  }
+
+  /**
+   * Preempt and Pause all jobs associated with the current node.
+   */ 
+  private void 
+  doPreemptAndPauseJobs() 
+  {
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupTargetJobs(nodeIDs, jobIDs);
+      
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) 
+      pParent.runPreemptAndPauseJobsTask(nodeIDs, jobIDs);
   }
 
   /**
@@ -1476,6 +1499,7 @@ class JFileSeqPanel
   private JMenuItem  pPauseJobsItem;
   private JMenuItem  pResumeJobsItem;
   private JMenuItem  pPreemptJobsItem;
+  private JMenuItem  pPreemptAndPauseJobsItem;
   private JMenuItem  pKillJobsItem;
   private JMenuItem  pRemoveFilesItem;
 

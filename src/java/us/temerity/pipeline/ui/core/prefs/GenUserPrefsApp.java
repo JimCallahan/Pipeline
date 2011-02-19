@@ -886,6 +886,10 @@ class GenUserPrefsApp
 	 "PreemptJobs", "Preempt Jobs:"), 
 
 	new HotKeyPref
+	("Preempt and Pause all jobs associated with the selected nodes.",
+	 "PreemptAndPauseJobs", "Preempt/Pause Jobs:"), 
+
+	new HotKeyPref
 	("Kill all jobs associated with the selected nodes.",
 	 "KillJobs", "Kill Jobs:", 
 	 false, false, false, 8),  /* Backspace */ 
@@ -1405,6 +1409,10 @@ class GenUserPrefsApp
 	 "NodeDetailsPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
 
 	new DuplicateHotKeyPref
+	("Preempt and Pause all jobs associated with the current node.",
+	 "NodeDetailsPreemptAndPauseJobs", "Preempt/Pause Jobs:", "PreemptAndPauseJobs"), 
+
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
 	 "NodeDetailsKillJobs", "Kill Jobs:", "KillJobs"), 
 
@@ -1465,6 +1473,10 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Preempt all jobs associated with the current node.",
 	 "NodeFilesPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
+
+	new DuplicateHotKeyPref
+	("Preempt and Pause all jobs associated with the current node.",
+	 "NodeFilesPreemptAndPauseJobs", "Preempt/Pause Jobs:", "PreemptAndPauseJobs"), 
 
 	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
@@ -1529,6 +1541,10 @@ class GenUserPrefsApp
 	 "NodeLinksPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
 
 	new DuplicateHotKeyPref
+	("Preempt and Pause all jobs associated with the current node.",
+	 "NodeLinksPreemptAndPauseJobs", "Preempt/Pause Jobs:", "PreemptAndPauseJobs"), 
+
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
 	 "NodeLinksKillJobs", "Kill Jobs:", "KillJobs"), 
 
@@ -1583,6 +1599,10 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Preempt all jobs associated with the current node.",
 	 "NodeHistoryPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
+
+	new DuplicateHotKeyPref
+	("Preempt and Pause all jobs associated with the current node.",
+	 "NodeHistoryPreemptAndPauseJobs", "Preempt/Pause Jobs:", "PreemptAndPauseJobs"), 
 
 	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
@@ -1661,6 +1681,10 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Preempt the jobs running on the selected job server slots.", 
 	 "JobSlotsPreemptJobs", "Preempt Slot Jobs:", "PreemptJobs"), 
+
+	new DuplicateHotKeyPref
+	("Preempt and Pause the jobs running on the selected job server slots.", 
+	 "JobSlotsPreemptAndPauseJobs", "Preempt/Pause Slot Jobs:", "PreemptAndPauseJobs"), 
 	
 	new DuplicateHotKeyPref
 	("Kill the jobs running on the selected job server slots.", 
@@ -1744,6 +1768,11 @@ class GenUserPrefsApp
 	 "JobBrowserGroupsPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
 
 	new DuplicateHotKeyPref
+	("Preempt and Pause all jobs associated with the selected groups.",
+	 "JobBrowserGroupsPreemptAndPauseJobs", "Preempt/Pause Jobs:", 
+         "PreemptAndPauseJobs"), 
+
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the selected groups.",
 	 "JobBrowserGroupsKillJobs", "Kill Jobs:", "KillJobs"),
 	 
@@ -1807,6 +1836,10 @@ class GenUserPrefsApp
 	 "JobPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
 
 	new DuplicateHotKeyPref
+	("Preempt and Pause all selected jobs.", 
+	 "JobPreemptAndPauseJobs", "Preempt/Pause Jobs:", "PreemptAndPauseJobs"), 
+
+	new DuplicateHotKeyPref
 	("Kill all selected jobs.", 
 	 "JobKillJobs", "Kill Jobs:", "KillJobs"),
 	 
@@ -1861,6 +1894,10 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Preempt all selected jobs.", 
 	 "JobGroupPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
+
+	new DuplicateHotKeyPref
+	("Preempt and Pause all selected jobs.", 
+	 "JobGroupPreemptAndPauseJobs", "Preempt/Pause Jobs:", "PreemptAndPauseJobs"), 
 
 	new DuplicateHotKeyPref
 	("Kill all selected jobs.", 
@@ -2576,6 +2613,7 @@ class GenUserPrefsApp
 	jobs.add("PauseJobs");
 	jobs.add("ResumeJobs");
 	jobs.add("PreemptJobs");
+	jobs.add("PreemptAndPauseJobs");
 	jobs.add("KillJobs");
       }
       
@@ -2795,6 +2833,7 @@ class GenUserPrefsApp
 	group.add("JobSlotsView");
 	group.add("JobSlotsViewWithDefault");
 	group.add("JobSlotsPreemptJobs");
+	group.add("JobSlotsPreemptAndPauseJobs");
 	group.add("JobSlotsKillJobs");
       }
     

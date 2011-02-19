@@ -549,6 +549,12 @@ class JNodeViewerPanel
           item.addActionListener(this);
           sub.add(item);
 
+          item = new JPopupMenuItem(menus[wk], "Preempt/Pause Jobs");
+          pPreemptAndPauseJobsItem = item;
+          item.setActionCommand("preempt-pause-jobs");
+          item.addActionListener(this);
+          sub.add(item);
+
           item = new JPopupMenuItem(menus[wk], "Kill Jobs");
           pKillJobsItem = item;
           item.setActionCommand("kill-jobs");
@@ -1371,6 +1377,9 @@ class JNodeViewerPanel
       (pPreemptJobsItem, prefs.getPreemptJobs(), 
        "Preempt all jobs associated with the selected nodes.");
     updateMenuToolTip
+      (pPreemptAndPauseJobsItem, prefs.getPreemptAndPauseJobs(), 
+       "Preempt and Pause all jobs associated with the selected nodes.");
+    updateMenuToolTip
       (pKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected nodes.");
 
@@ -1588,6 +1597,7 @@ class JNodeViewerPanel
     pPauseJobsItem.setEnabled(queuePrivileged);
     pResumeJobsItem.setEnabled(queuePrivileged);
     pPreemptJobsItem.setEnabled(queuePrivileged);
+    pPreemptAndPauseJobsItem.setEnabled(queuePrivileged);
     pKillJobsItem.setEnabled(queuePrivileged);
 
     pRemoveFilesItem.setEnabled(nodePrivileged); 
@@ -3777,6 +3787,8 @@ class JNodeViewerPanel
       doResumeJobs();
     else if(cmd.equals("preempt-jobs"))
       doPreemptJobs();
+    else if(cmd.equals("preempt-pause-jobs"))
+      doPreemptAndPauseJobs();  
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
 
@@ -4989,6 +5001,28 @@ class JNodeViewerPanel
 
     if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
       PreemptJobsTask task = new PreemptJobsTask(nodeIDs, jobIDs);
+      task.start();
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+    
+  /**
+   * Preempt and Pause all jobs associated with the selected nodes.
+   */ 
+  private synchronized void 
+  doPreemptAndPauseJobs() 
+  {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Preempt/Pause Jobs")) 
+      return;
+
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupSelectedNodeJobsPending(nodeIDs, jobIDs);
+
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      PreemptAndPauseJobsTask task = new PreemptAndPauseJobsTask(nodeIDs, jobIDs);
       task.start();
     }
 
@@ -7244,6 +7278,32 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Preempt and Pause the given jobs.
+   */ 
+  private
+  class PreemptAndPauseJobsTask
+    extends UIMaster.PreemptAndPauseJobsTask
+  {
+    public 
+    PreemptAndPauseJobsTask
+    (
+     TreeSet<NodeID> nodeIDs, 
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      UIMaster.getInstance().super("JNodeViewerPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
+    }
+
+    @Override
+    protected void
+    postOp() 
+    {
+      updateRoots();
+    }
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -8428,6 +8488,7 @@ class JNodeViewerPanel
   private JPopupMenuItem  pPauseJobsItem;
   private JPopupMenuItem  pResumeJobsItem;
   private JPopupMenuItem  pPreemptJobsItem;
+  private JPopupMenuItem  pPreemptAndPauseJobsItem;
   private JPopupMenuItem  pKillJobsItem;
   private JPopupMenuItem  pCheckInItem;
   private JPopupMenuItem  pEvolveItem;

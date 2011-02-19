@@ -461,6 +461,11 @@ enum QueueRequest
   PreemptJobs, 
 
   /**
+   * Kill, requeue and pause the jobs with the given IDs. <P> 
+   */
+  PreemptAndPauseJobs, 
+
+  /**
    * Kill the jobs with the given IDs. <P> 
    */
   KillJobs, 
@@ -510,6 +515,11 @@ enum QueueRequest
    * Kill and requeue all jobs associated with the given working version.<P> 
    */
   PreemptNodeJobs, 
+
+  /**
+   * Kill, requeue and pause all jobs associated with the given working version.<P> 
+   */
+  PreemptAndPauseNodeJobs, 
 
   /**
    * Kill all jobs associated with the given working version.<P> 

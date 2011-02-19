@@ -125,6 +125,12 @@ class JQueueJobSlotsPanel
 	item.addActionListener(this);
 	pSlotsPopup.add(item);
 
+	item = new JMenuItem("Preempt/Pause Jobs");
+	pSlotsPreemptAndPauseItem = item;
+	item.setActionCommand("slots-preempt-pause-jobs");
+	item.addActionListener(this);
+	pSlotsPopup.add(item);
+
 	item = new JMenuItem("Kill Jobs");
 	pSlotsKillItem = item;
 	item.setActionCommand("slots-kill-jobs");
@@ -525,6 +531,7 @@ class JQueueJobSlotsPanel
 
     boolean selected = (!getSelectedSlotJobIDs().isEmpty()); 
     pSlotsPreemptItem.setEnabled(selected);
+    pSlotsPreemptAndPauseItem.setEnabled(selected);
     pSlotsKillItem.setEnabled(selected);
   }
 
@@ -592,6 +599,9 @@ class JQueueJobSlotsPanel
     updateMenuToolTip
       (pSlotsPreemptItem, prefs.getPreemptJobs(), 
        "Preempt all jobs associated with the selected groups.");
+    updateMenuToolTip
+      (pSlotsPreemptAndPauseItem, prefs.getPreemptJobs(), 
+       "Preempt and Pause all jobs associated with the selected groups.");
     updateMenuToolTip
       (pSlotsKillItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected groups.");
@@ -764,6 +774,8 @@ class JQueueJobSlotsPanel
 
     else if(cmd.equals("slots-preempt-jobs")) 
       doSlotsPreemptJobs();
+    else if(cmd.equals("slots-preempt-pause-jobs")) 
+      doSlotsPreemptAndPauseJobs();
 
     else if(cmd.equals("slots-edit"))
       doSlotsView();
@@ -814,6 +826,20 @@ class JQueueJobSlotsPanel
       task.start();
     }
   }
+
+  /**
+   * Preempt and Pause the jobs running on the selected job server slots.
+   */ 
+  public void 
+  doSlotsPreemptAndPauseJobs()
+  {
+    TreeSet<Long> jobs = getSelectedSlotJobIDs(); 
+    if(!jobs.isEmpty()) {
+      PreemptAndPauseJobsTask task = new PreemptAndPauseJobsTask(jobs);
+      task.start();
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1176,6 +1202,50 @@ class JQueueJobSlotsPanel
   }
 
   /** 
+   * Preempt and Pause the given jobs.
+   */ 
+  private
+  class PreemptAndPauseJobsTask
+    extends Thread
+  {
+    public 
+    PreemptAndPauseJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JQueueJobsBrowserPanel:PreemptAndPauseJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Preempting/Pausing Jobs...")) {
+        QueueMgrClient client = master.acquireQueueMgrClient();
+	try {
+	  client.preemptAndPauseJobs(pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.releaseQueueMgrClient(client);
+	  master.endPanelOp(pGroupID, "Done.");
+	}
+
+	updatePanels();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs;
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -1262,6 +1332,7 @@ class JQueueJobSlotsPanel
   private JMenuItem  pSlotsViewItem;
   private JMenuItem  pSlotsViewWithDefaultItem;
   private JMenuItem  pSlotsPreemptItem;
+  private JMenuItem  pSlotsPreemptAndPauseItem;
   private JMenuItem  pSlotsKillItem;
 
   /**

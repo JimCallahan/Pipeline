@@ -6048,6 +6048,66 @@ class QueueMgr
   }
 
   /**
+   * Preempt and immediately pause the jobs with the given IDs. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable preempt the jobs. 
+   */ 
+  public Object
+  preemptAndPauseJobs
+  (
+   QueueJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.preemptAndPauseJobs()");
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      boolean unprivileged = false; 
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : req.getJobIDs()) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) {
+	    String author = job.getActionAgenda().getNodeID().getAuthor();
+	    if(pAdminPrivileges.isQueueManaged(req, author)) {
+	      pPreemptList.add(jobID);
+              synchronized(pPause) {
+                pPause.add(jobID);
+              }
+              synchronized(pResume) {
+                pResume.remove(jobID);
+              }
+            }
+	    else {
+	      unprivileged = true;
+            }
+	  }
+	}
+      }
+
+      if(unprivileged)
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may preempt/pause jobs owned " +
+	   "by another user!");
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+    finally {
+      pDatabaseLock.releaseReadLock();
+    } 
+  }
+
+  /**
    * Kill the jobs with the given IDs. <P> 
    * 
    * @param req 
@@ -6902,6 +6962,99 @@ class QueueMgr
 	  QueueJob job = pJobs.get(jobID);
 	  if(job != null) 
             pPreemptList.add(jobID);
+	}
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }  
+    finally {
+      pDatabaseLock.releaseReadLock();
+    }   
+  }
+
+  /**
+   * Preempt and pause all jobs associated with the given working version.
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable preempt the jobs. 
+   */ 
+  public Object
+  preemptAndPauseNodeJobs
+  (
+   QueueNodeJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.preemptAndPauseNodeJobs()");
+
+    timer.aquire();
+    pDatabaseLock.acquireReadLock();
+    try {
+      timer.resume();
+
+      NodeID nodeID = req.getNodeID();
+
+      if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may preempt/pause jobs owned by " + 
+           "another user!");
+
+      /* lookup the jobs which create the node's primary files */ 
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      {
+        timer.aquire();
+        synchronized(pNodeJobIDs) {
+          timer.resume();
+          
+          TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+          if(table != null)
+            jobIDs.addAll(table.values());
+        }
+      }
+
+      /* see which ones are currently running or just about to run */ 
+      TreeSet<Long> running = new TreeSet<Long>();
+      {
+        timer.aquire();  
+        synchronized(pJobInfo) {
+          timer.resume();
+          
+          for(Long jobID : jobIDs) {
+            QueueJobInfo info = pJobInfo.get(jobID);	   
+            if(info != null) {
+              switch(info.getState()) {
+              case Queued:
+              case Paused:
+              case Running:
+                running.add(jobID);
+              }
+            }
+          }
+        }
+      }
+
+      /* mark them for preemption */ 
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : running) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) {
+            pPreemptList.add(jobID);
+            synchronized(pPause) {
+              pPause.add(jobID);
+            }
+            synchronized(pResume) {
+              pResume.remove(jobID);
+            }
+          }
 	}
       }
 
