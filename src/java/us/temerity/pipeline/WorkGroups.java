@@ -112,6 +112,9 @@ class WorkGroups
    String uname
   )
   {
+    if(PackageInfo.sPipelineUser.equals(uname)) 
+      return;
+
     if(pUserIDs.containsKey(uname)) 
       return;
     
@@ -134,6 +137,9 @@ class WorkGroups
    String uname
   )
   {
+    if(PackageInfo.sPipelineUser.equals(uname)) 
+      return;
+
     Integer uid = pUserIDs.remove(uname);
     if(uid == null) 
       return;
@@ -291,6 +297,9 @@ class WorkGroups
    String gname
   )
   {
+    if(PackageInfo.sPipelineUser.equals(uname))
+      return null;
+
     Integer uid = pUserIDs.get(uname);
     if(uid == null) 
       return null; 
@@ -331,6 +340,9 @@ class WorkGroups
    Boolean isMemberOrManager
   )
   {
+    if(PackageInfo.sPipelineUser.equals(uname)) 
+      return;
+
     Integer uid = pUserIDs.get(uname);
     if(uid == null) 
       return;
@@ -412,6 +424,10 @@ class WorkGroups
    String member
   ) 
   {
+    if(PackageInfo.sPipelineUser.equals(manager) || 
+       PackageInfo.sPipelineUser.equals(member))
+      return false;
+
     if(manager.equals(member)) 
       return true;
 
@@ -505,12 +521,14 @@ class WorkGroups
   ) 
     throws GlueException
   {
+    Integer pipelineUserID = null;
     {
       TreeMap<String,Integer> ids = (TreeMap<String,Integer>) decoder.decode("UserIDs"); 
       if(ids != null) {
         pUserIDs = ids;
+        pipelineUserID = pUserIDs.remove(PackageInfo.sPipelineUser);
 
-        for(String uname : pUserIDs.keySet())
+        for(String uname : pUserIDs.keySet()) 
           pUserNames.put(pUserIDs.get(uname), uname);
 
         pNextUserID = pUserNames.lastKey() + 1;
@@ -534,17 +552,19 @@ class WorkGroups
         (TreeMap<Integer,TreeSet<Integer>>) decoder.decode("UserGroups");
       if(ugs != null) {
         pUserGroups = ugs;
+        if(pipelineUserID != null) 
+          pUserGroups.remove(pipelineUserID);
 
         for(Integer uid : pUserGroups.keySet()) {
           for(Integer gid : pUserGroups.get(uid)) {
             int sign = (gid > 0) ? 1 : -1; 
-
+            
             TreeSet<Integer> uids = pGroupUsers.get(sign * gid); 
             if(uids == null) {
               uids = new TreeSet<Integer>();
               pGroupUsers.put(sign * gid, uids);
             }
-
+            
             uids.add(sign * uid);
           }
         }

@@ -626,21 +626,28 @@ class  JManagePrivilegesDialog
  	String uname = pUsersNewDialog.getName();
  	if((uname != null) && (uname.length() > 0)) {
           
- 	  UIMaster master = UIMaster.getInstance();
- 	  MasterMgrClient client = master.acquireMasterMgrClient();
- 	  try {
- 	    pWorkGroups.addUser(uname);
- 	    client.setWorkGroups(pWorkGroups);
- 	    master.invalidateAllCachedWorkGroups();
- 	    modified = true;
- 	  }
- 	  catch(PipelineException ex) {
- 	    showErrorDialog(ex);
- 	  }
- 	  finally {
- 	    master.releaseMasterMgrClient(client);
- 	  }
- 	}
+          if(PackageInfo.sPipelineUser.equals(uname)) {
+            showErrorDialog
+              ("Warning:", "The admin user (" + PackageInfo.sPipelineUser + ") cannot " +
+               "be manually added!");
+          }
+          else {
+            UIMaster master = UIMaster.getInstance();
+            MasterMgrClient client = master.acquireMasterMgrClient();
+            try {
+              pWorkGroups.addUser(uname);
+              client.setWorkGroups(pWorkGroups);
+              master.invalidateAllCachedWorkGroups();
+              modified = true;
+            }
+            catch(PipelineException ex) {
+              showErrorDialog(ex);
+            }
+            finally {
+              master.releaseMasterMgrClient(client);
+            }
+          }
+        }
       }
     }
 

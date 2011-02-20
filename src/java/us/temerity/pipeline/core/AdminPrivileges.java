@@ -579,16 +579,18 @@ class AdminPrivileges
 
     TreeMap<String,Privileges> table = req.getTable();
     for(String uname : table.keySet()) {
-      if(pWorkGroups.isUser(uname)) {
-        Privileges privs = table.get(uname);
-        if(privs.hasAnyPrivileges()) 
-          pPrivileges.put(uname, privs);
-        else
+      if(!PackageInfo.sPipelineUser.equals(uname)) {
+        if(pWorkGroups.isUser(uname)) {
+          Privileges privs = table.get(uname);
+          if(privs.hasAnyPrivileges()) 
+            pPrivileges.put(uname, privs);
+          else
+            pPrivileges.remove(uname);
+        }
+        else {
+          unknown.add(uname);
           pPrivileges.remove(uname);
-      }
-      else {
-        unknown.add(uname);
-        pPrivileges.remove(uname);
+        }
       }
     }
 
@@ -687,8 +689,6 @@ class AdminPrivileges
   writeWorkGroups() 
     throws PipelineException
   {
-    enforcePipelineWorkGroups();
-    
     Path path = new Path(PackageInfo.sNodePath, "etc/work-groups");
     File file = path.toFile();
     if(file.exists()) {
@@ -733,8 +733,6 @@ class AdminPrivileges
         throw new PipelineException(ex);
       }
     }
-
-    enforcePipelineWorkGroups();
   }
 
 
@@ -750,8 +748,6 @@ class AdminPrivileges
   writePrivileges() 
     throws PipelineException
   {
-    enforcePipelinePrivileges();
-
     Path path = new Path(PackageInfo.sNodePath, "etc/privileges");
     File file = path.toFile();
     if(file.exists()) {
@@ -798,38 +794,11 @@ class AdminPrivileges
       catch(GlueException ex) {
         throw new PipelineException(ex);
       }
+
+      pPrivileges.remove(PackageInfo.sPipelineUser);
     }
-    
-    enforcePipelinePrivileges();
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Make sure the "pipeline" user always exists and is a Manager of every group.
-   */ 
-  private synchronized void 
-  enforcePipelineWorkGroups() 
-  {
-    pWorkGroups.addUser(PackageInfo.sPipelineUser);
-    for(String gname : pWorkGroups.getGroups()) 
-      pWorkGroups.setMemberOrManager(PackageInfo.sPipelineUser, gname, new Boolean(true));    
-  }
-
-  /**
-   * Make sure the ipeline" user has Master Admin privileges. 
-   */ 
-  private synchronized void 
-  enforcePipelinePrivileges() 
-  {
-    Privileges privs = new Privileges();
-    privs.setMasterAdmin(true);
-    pPrivileges.put(PackageInfo.sPipelineUser, privs);
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
