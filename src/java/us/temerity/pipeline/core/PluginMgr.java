@@ -2778,43 +2778,101 @@ class PluginMgr
   readRequiredPlugins()
     throws PipelineException
   {
-    File[] requiredPlugins = pRequiredPluginsPath.toFile().listFiles();
-
-    if(requiredPlugins == null || requiredPlugins.length == 0)
+    File[] files = pRequiredPluginsPath.toFile().listFiles();
+    if(files == null || files.length == 0)
       throw new PipelineException
-	(pRequiredPluginsPath + " does not contain any required plugins GLUE files");
+	("The installed plugins directory (" + pRequiredPluginsPath + ") does not contain " + 
+         "any files!");
 
-    for(int i = 0 ; i < requiredPlugins.length ; i++) {
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-        "Reading " + requiredPlugins[i]);
-
-      if(requiredPlugins[i].isFile()) {
-	MappedSet<PluginType,PluginID> plugins = null;
-
-        try {
-	  plugins = (MappedSet<PluginType,PluginID>)
-	    GlueDecoderImpl.decodeFile("RequredPlugins", requiredPlugins[i]);
-
-	  for(PluginType ptype : plugins.keySet()) {
-	    for(PluginID pid : plugins.get(ptype)) {
-	      String vendor = pid.getVendor();
-
-	      /* All plugins loaded from required plugins GLUE files are initially 
-	         set to a status of Missing. */
-	      pPluginStatus.put(ptype, pid, PluginStatus.Missing);
-
-	      pRequiredCount++;
-	      pMissingCount++;
-
-	      pVendorPlugins.addPlugin(ptype, pid);
-	    }
-	  }
-        }
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
+    try {
+      TreeSet<String> required = new TreeSet<String>();
+      for(File f : files) {
+        if(f.isFile()) {
+          String str = f.toString();
+          if(str.endsWith(".backup"))
+            required.add(str.substring(0, str.length()-7));
+          else
+            required.add(str);
         }
       }
+        
+      for(String fname : required) {
+        File file = new File(fname);
+        File backup = new File(fname + ".backup");
+        
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Finer, 
+           "Reading Required Plugins: " + file);
+        
+        MappedSet<PluginType,PluginID> plugins = null;
+        try {
+          plugins = (MappedSet<PluginType,PluginID>)
+            GlueDecoderImpl.decodeFile("RequredPlugins", file);
+        }
+        catch(Exception ex) { 
+          if(backup.isFile()) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Plg, LogMgr.Level.Finer, 
+               "Reading Required Plugins: " + backup);
+            
+            try {
+              plugins = (MappedSet<PluginType,PluginID>)
+                GlueDecoderImpl.decodeFile("RequredPlugins", backup);
+            }
+            catch(Exception ex2) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Plg, LogMgr.Level.Severe,
+                 "The backup required plugins file (" + backup + ") appears to be " + 
+                 "corrupted:\n" +
+                 "  " + ex.getMessage());
+            }
+	    
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+               "Successfully recovered the required plugins from the backup file " + 
+               "(" + backup + ")\n" + 
+               "Renaming the backup to (" + file + ")!");
+	    
+            if(file.isFile()) 
+              if(!file.delete()) 
+                throw new IOException
+                  ("Unable to remove the corrupted required plugins file (" + file + ")!");
+	    
+            if(!backup.renameTo(file)) 
+              throw new IOException
+                ("Unable to replace the corrupted required plugins file (" + file + ") " + 
+                 "with the valid backup file (" + backup + ")!");
+          }
+          else {
+            LogMgr.getInstance().logAndFlush
+              (LogMgr.Kind.Plg, LogMgr.Level.Severe,
+               "The backup working version file (" + backup + ") does not exist!");
+            
+            throw ex;
+          }
+        }
+
+        if(plugins != null) {
+          for(PluginType ptype : plugins.keySet()) {
+            for(PluginID pid : plugins.get(ptype)) {
+              String vendor = pid.getVendor();
+              
+              pPluginStatus.put(ptype, pid, PluginStatus.Missing);
+              
+              pRequiredCount++;
+              pMissingCount++;
+            
+              pVendorPlugins.addPlugin(ptype, pid);
+            }
+          }
+        }
+      }
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to read required plugins file...\n" +
+	 "    " + ex.getMessage());
     }
   }
 
@@ -2837,23 +2895,29 @@ class PluginMgr
   )
     throws PipelineException
   {
-    Path requiredPluginsPath = 
-      new Path(pRequiredPluginsPath, vendor);
+    Path path = new Path(pRequiredPluginsPath, vendor);
+    File file = path.toFile();
+    File backup = new File(file + ".backup");
 
-    {
-      File requiredPluginsFile = requiredPluginsPath.toFile();
-
-      if(requiredPluginsFile.exists()) {
-	if(!requiredPluginsFile.delete())
+    if(file.exists())  {
+      if(backup.exists())
+        if(!backup.delete()) 
           throw new PipelineException
-            ("Unable to remove the old installed plugins file " + 
-	     "(" + requiredPluginsFile + ")!");
-      }
+            ("Unable to remove the backup installed plugins file (" + backup + ")!");
+      
+      if(!file.renameTo(backup)) 
+        throw new PipelineException 
+          ("Unable to backup the current installed plugins file (" + file + ") to the " + 
+           "the file (" + backup + ")!");
     }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Plg, LogMgr.Level.Finer, 
+       "Writing Required Plugins: " + file);
 
     try {
       GlueEncoderImpl.encodeFile
-	("RequiredPlugins", plugins, requiredPluginsPath.toFile());
+	("RequiredPlugins", plugins, file);
     }
     catch(GlueException ex) {
       LogMgr.getInstance().log
