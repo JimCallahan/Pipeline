@@ -165,19 +165,21 @@ class FixBackslashApp
       fixDir(dryRun, p.toFile());
     }
 
-    try {
-      Writer out = new BufferedWriter(new FileWriter(lockFile));
-      out.write("Database files modified:\n");
+    if(!dryRun) {
       try {
-        for(File file : pFixedFiles) 
-          out.write("  " + file + "\n");
+        Writer out = new BufferedWriter(new FileWriter(lockFile));
+        out.write("Database files modified:\n");
+        try {
+          for(File file : pFixedFiles) 
+            out.write("  " + file + "\n");
+        }
+        finally {
+          out.close();
+        }
       }
-      finally {
-        out.close();
+      catch(IOException ex) {
+        throw new PipelineException ("Unable to update lock file!");
       }
-    }
-    catch(IOException ex) {
-      throw new PipelineException ("Unable to update lock file!");
     }
 
     LogMgr.getInstance().logAndFlush
