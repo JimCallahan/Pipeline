@@ -1,0 +1,26 @@
+UserDays <TreeMap> #1 {
+  {
+    Key <String> #2 { "jesse" }
+    Val <Integer> #3 { 23 }
+  }
+  {
+    Key <String> #4 { "jim" }
+    Val <Integer> #5 { 455 }
+  }
+  {
+    Key <String> #6 { "mereale" }
+    Val <Integer> #7 { 1 }
+  }
+  {
+    Key <String> #8 { "pipeline" }
+    Val <Integer> #9 { 50 }
+  }
+  {
+    Key <String> #10 { "pltest" }
+    Val <Integer> #11 { 13 }
+  }
+  {
+    Key <String> #12 { "unixy" }
+    Val <Integer> #13 { 7 }
+  }
+}
