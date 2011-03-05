@@ -410,6 +410,54 @@ class MasterMgrServer
                 break;
 
 
+              /*-- LOCKS ------------------------------------------------------------------*/
+              case AcquireLock:
+                {
+                  MiscLockByNameReq req = (MiscLockByNameReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.acquireLock(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case TryLock:
+                {
+                  MiscLockByNameReq req = (MiscLockByNameReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.tryLock(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case ReleaseLock:
+                {
+                  MiscReleaseLockReq req = (MiscReleaseLockReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.releaseLock(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case BreakLock:
+                {
+                  MiscBreakLockReq req = (MiscBreakLockReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.breakLock(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case IsLocked:
+                {
+                  MiscLockByNameReq req = (MiscLockByNameReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.isLocked(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetLockInfo:
+                {
+                  objOut.writeObject(pMasterMgr.getLockInfo());
+                  objOut.flush(); 
+                }
+                break;
+
               /*-- TOOLSETS --------------------------------------------------------------*/
               case GetDefaultToolsetName:
                 {

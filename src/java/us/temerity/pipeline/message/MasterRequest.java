@@ -82,6 +82,39 @@ enum MasterRequest
   
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Block until able to acquire a lock with the given name. 
+   */
+  AcquireLock, 
+
+  /**
+   * Attempt to acquire a lock with the given name, returns immediately. 
+   */
+  TryLock, 
+
+  /**
+   * Release a lock with the given name. 
+   */
+  ReleaseLock, 
+
+  /**
+   * Force the release of a lock with the given name. 
+   */
+  BreakLock, 
+
+  /**
+   * Return whether the given lock is currently held.
+   */
+  IsLocked, 
+
+  /**
+   * Return detailed information about the holders of all currently existing locks.
+   */
+  GetLockInfo, 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the name of the default toolset.

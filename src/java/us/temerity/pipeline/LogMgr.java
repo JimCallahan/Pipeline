@@ -889,9 +889,14 @@ class LogMgr
     Bak, 
 
     /**
-     * Activity of thread locking.
+     * Activity of internal thread locking.
      */
-    Lck;
+    Lck,
+
+    /**
+     * Activity of network client based user locks.
+     */
+    Nlk;
 
     /**
      * Get the list of all possible states.
@@ -999,7 +1004,8 @@ class LogMgr
     "WRI",
     "USR",
     "BAK",
-    "LCK"
+    "LCK",
+    "NLK"
   };
 
 

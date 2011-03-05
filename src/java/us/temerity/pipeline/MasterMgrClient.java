@@ -383,6 +383,180 @@ class MasterMgrClient
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   L O C K S                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Block until able to acquire a lock with the given name. <P> 
+   * 
+   * @name
+   *   The unique name of the lock to acquire.
+   * 
+   * @return 
+   *  The unique ID required to release the lock. 
+   */ 
+  public Long 
+  acquireLock
+  (
+   String name
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscLockByNameReq req = new MiscLockByNameReq(name);
+
+    Object obj = performLongTransaction(MasterRequest.AcquireLock, req, 15000, 60000);
+    if(obj instanceof MiscGetLockRsp) {
+      MiscGetLockRsp rsp = (MiscGetLockRsp) obj;
+      return rsp.getLockID();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /** 
+   * Attempt to acquire a lock with the given name, returns immediately. 
+   * 
+   * @name
+   *   The unique name of the lock to acquire.
+   * 
+   * @return 
+   *  The unique ID required to release the lock or 
+   *  <CODE>null</CODE> if unable to immediately acquire the lock. 
+   */ 
+  public Long 
+  tryLock
+  (
+   String name  
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscLockByNameReq req = new MiscLockByNameReq(name);
+
+    Object obj = performLongTransaction(MasterRequest.TryLock, req, 15000, 60000);
+    if(obj instanceof MiscGetLockRsp) {
+      MiscGetLockRsp rsp = (MiscGetLockRsp) obj;
+      return rsp.getLockID();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /** 
+   * Release a lock with the given name. 
+   * 
+   * @param name
+   *   The unique name of the lock to release.
+   * 
+   * @param lockID 
+   *  The unique ID of the lock obtained when it was acquired. 
+   */ 
+  public void 
+  releaseLock
+  (
+   String name, 
+   Long lockID
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscReleaseLockReq req = new MiscReleaseLockReq(name, lockID);
+
+    Object obj = performTransaction(MasterRequest.ReleaseLock, req);
+    handleSimpleResponse(obj);
+  }
+  
+  /** 
+   * Force the release of a lock with the given name. <P> 
+   * 
+   * This should only be used to end a deadlock by a user with MasterAdmin privileges.
+   * 
+   * @param name
+   *   The unique name of the lock to release.
+   */ 
+  public void
+  breakLock
+  (
+   String name
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscBreakLockReq req = new MiscBreakLockReq(name);
+
+    Object obj = performTransaction(MasterRequest.BreakLock, req);
+    handleSimpleResponse(obj);
+  }
+
+  /** 
+   * Return whether the given lock is currently held. <P>
+   * 
+   * This method is provided for debugging purposes only and should not be used for flow
+   * control.  Use {@link #acquireLock}, {@link #tryLock} and {@link #releaseLock} instead.
+   * 
+   * @param name
+   *   The unique name of the lock to test.
+   */ 
+  public boolean 
+  isLocked
+  (
+   String name
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscLockByNameReq req = new MiscLockByNameReq(name);
+
+    Object obj = performTransaction(MasterRequest.IsLocked, req); 
+    if(obj instanceof MiscIsLockedRsp) {
+      MiscIsLockedRsp rsp = (MiscIsLockedRsp) obj;
+      return rsp.isLocked();
+    }
+    else {
+      handleFailure(obj);
+      return false;
+    }
+  }
+
+  /** 
+   * Return detailed information about the holders of all currently held locks. <P>
+   * 
+   * This method is provided for debugging purposes only and should not be used for flow
+   * control.  Use {@link #acquireLock}, {@link #tryLock} and {@link #releaseLock} instead.
+   * 
+   * @return
+   *   The request info for locks currently held along indexed by the names of the locks.
+   */ 
+  public TreeMap<String,RequestInfo> 
+  getLockInfo() 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetLockInfo, null); 
+    if(obj instanceof MiscGetLockInfoRsp) {
+      MiscGetLockInfoRsp rsp = (MiscGetLockInfoRsp) obj;
+      return rsp.getInfo(); 
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   T O O L S E T S                                                                      */
   /*----------------------------------------------------------------------------------------*/
 

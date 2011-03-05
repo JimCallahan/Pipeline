@@ -370,6 +370,8 @@ class MasterMgr
 
       pAdminPrivileges = new AdminPrivileges();
 
+      pNetworkLocks = new TreeMap<String,TrackedLock>();
+
       pArchiveFileLock    = new Object();
       pArchivedIn         = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
       pArchivedOn         = new TreeMap<String,Long>();
@@ -2077,6 +2079,255 @@ class MasterMgr
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O C K S                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Block until able to acquire a lock with the given name. <P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to acquire the lock.
+   */
+  public Object
+  acquireLock
+  (
+   MiscLockByNameReq req 
+  ) 
+  {   
+    String name = req.getName();
+        
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.acquireLock(): " + name);
+
+    try {
+      TrackedLock lock = null;
+      timer.aquire();
+      synchronized(pNetworkLocks) {
+        timer.resume();	
+        
+        lock = pNetworkLocks.get(name);
+        if(lock == null) {
+          lock = new TrackedLock(name);
+          pNetworkLocks.put(name, lock);
+        }
+      }
+      
+      return new MiscGetLockRsp(timer, lock.acquireLock(req));
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /** 
+   * Attempt to acquire a lock with the given name, returns immediately. 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to acquire the lock.
+   */
+  public Object
+  tryLock
+  (
+   MiscLockByNameReq req 
+  ) 
+  {   
+    String name = req.getName();
+        
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.tryLock(): " + name);
+
+    TrackedLock lock = null;
+    timer.aquire();
+    synchronized(pNetworkLocks) {
+      timer.resume();	
+      
+      lock = pNetworkLocks.get(name);
+      if(lock == null) {
+        lock = new TrackedLock(name);
+        pNetworkLocks.put(name, lock);
+      }
+    }
+    
+    return new MiscGetLockRsp(timer, lock.tryLock(req));
+  }
+
+  /** 
+   * Release a lock with the given name. 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to release the lock.
+   */
+  public Object
+  releaseLock
+  (
+   MiscReleaseLockReq req 
+  ) 
+  {   
+    String name = req.getName();
+    Long lockID = req.getLockID();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.releaseLock(): " + name);
+
+    try {
+      TrackedLock lock = null;
+      timer.aquire();
+      synchronized(pNetworkLocks) {
+        timer.resume();	
+        
+        lock = pNetworkLocks.get(name);
+        if(lock == null) 
+          throw new PipelineException
+            ("No lock named (" + name + ") exists to be released!");
+      }
+
+      lock.releaseLock(req, lockID);  
+
+      return new SuccessRsp(timer); 
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /** 
+   * Force the release of a lock with the given name.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to release the lock.
+   */
+  public Object
+  breakLock
+  (
+   MiscBreakLockReq req 
+  ) 
+  {   
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.breakLock(): " + name);
+
+    if(!pAdminPrivileges.isMasterAdmin(req))
+      return new FailureRsp
+        (timer, "Only a user with Master Admin privileges may break locks!"); 
+      
+    try {
+      TrackedLock lock = null;
+      timer.aquire();
+      synchronized(pNetworkLocks) {
+        timer.resume();	
+        
+        lock = pNetworkLocks.get(name);
+        if(lock == null) 
+          throw new PipelineException
+            ("No lock named (" + name + ") exists to be released!");
+      }
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ext, LogMgr.Level.Warning,
+         "The lock (" + name + ") was forcibly released by the user " + 
+         "(" + req.getRequestor() + ")!");
+
+      lock.breakLock(req); 
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /** 
+   * Return whether the given lock is currently held.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine if the lock is held.
+   */
+  public Object
+  isLocked
+  (
+   MiscLockByNameReq req 
+  ) 
+  {   
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.isLocked(): " + name);
+
+    try {
+      TrackedLock lock = null;
+      timer.aquire();
+      synchronized(pNetworkLocks) {
+        timer.resume();	
+        
+        lock = pNetworkLocks.get(name);
+        if(lock == null) 
+          throw new PipelineException
+            ("No lock named (" + name + ") exists!");
+      }
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ext, LogMgr.Level.Warning,
+         "The lock (" + name + ") was forcibly released by the user " + 
+         "(" + req.getRequestor() + ")!");
+
+      return new MiscIsLockedRsp(timer, lock.isLocked());
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /** 
+   * Return the names of all currently existing locks. <P>
+   * 
+   * @return
+   *   <CODE>MiscGetLockNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the locking state.
+   */
+  public Object
+  getLockInfo() 
+  {   
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pNetworkLocks) {
+      timer.resume();	
+      TreeMap<String,RequestInfo> result = new TreeMap<String,RequestInfo>();
+      for(TrackedLock lock : pNetworkLocks.values()) {
+        if((lock != null) && lock.isLocked()) {
+          RequestInfo info = lock.getLockerInfo(); 
+          if(info != null) 
+            result.put(lock.getName(), info);
+        }
+      }
+
+      return new MiscGetLockInfoRsp(timer, result);
+    }
   }
 
 
@@ -26787,6 +27038,16 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Table of locks provided for arbitrary user purposes, indexed by lock name.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeMap<String,TrackedLock>  pNetworkLocks;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The maximum age of a resolved (Restored or Denied) restore request before it 
    * is deleted (in milliseconds).
    */ 
@@ -27212,8 +27473,8 @@ class MasterMgr
   private CacheCounters  pCheckSumCounters;
 
   /**
-   * The workig version IDs of the working version checksums read from disk and placed into the
-   * cache in the order they were read. <P> 
+   * The workig version IDs of the working version checksums read from disk and placed 
+   * into the cache in the order they were read. <P> 
    * 
    * When looking to reduce the size of the cache, the garbage collector will free 
    * entries from this FIFO in the order they were originally read.

@@ -322,12 +322,12 @@ class LoggedLock
           
           int wk;
           for(wk=level; wk<stack.length; wk++) 
-            buf.append("\n  at " + stack[wk].toString());
+            buf.append("\n  at " + stack[wk]);
           
           callInfo = buf.toString();
         }
         else {
-          callInfo = ("\n  at " + stack[level].toString());
+          callInfo = ("\n  at " + stack[level]);
         }
       }
       else {
