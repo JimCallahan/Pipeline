@@ -62,7 +62,7 @@ enum NodePurpose
    * most important, which can be done by specifying it as a master focus node in its 
    * annotation.
    * 
-   * @see {@link TaskAnnotation}
+   * @see TaskAnnotation
    */ 
   Focus, 
 

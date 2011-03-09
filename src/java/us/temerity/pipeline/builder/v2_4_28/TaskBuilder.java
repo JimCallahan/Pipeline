@@ -170,8 +170,6 @@ class TaskBuilder
   
   /**
    * Get the type of the task. <p>
-   * 
-   * @return
    */
   protected String
   getTaskType()
@@ -187,10 +185,10 @@ class TaskBuilder
    * Convert the array representation of a task into a String so it can be printed in log
    * messages.
    * 
-   * @param taskinfo
-   *   The unique name information used to identify the task being converted. This is the same 
-   *   information returned by the {@link #lookupTaskAnnotations(String, TreeMap)} method. 
-   *   The format is [ProjectName, TaskIdent1, TaskIdent1, TaskType].
+   * @param taskInfo
+   *   The unique name information used to identify the task being converted. This is the 
+   *   same information returned by the {@link #lookupTaskAnnotations(String, TreeMap)} 
+   *   method. The format is [ProjectName, TaskIdent1, TaskIdent1, TaskType].
    */
   public static String
   taskArrayToString
