@@ -389,7 +389,7 @@ class MasterMgrClient
   /** 
    * Block until able to acquire a lock with the given name. <P> 
    * 
-   * @name
+   * @param name
    *   The unique name of the lock to acquire.
    * 
    * @return 
@@ -420,7 +420,7 @@ class MasterMgrClient
   /** 
    * Attempt to acquire a lock with the given name, returns immediately. 
    * 
-   * @name
+   * @param name
    *   The unique name of the lock to acquire.
    * 
    * @return 

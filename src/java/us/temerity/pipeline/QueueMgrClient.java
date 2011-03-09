@@ -3001,15 +3001,11 @@ class QueueMgrClient
   }
   
   /**
-   * Get the job groups which match the following working area pattern.
+   * Get the job groups owned by one of the given users.
    * 
-   * @param author
-   *   The name of the user owning the job groups or 
+   * @param authors
+   *   The names of the users owning the job groups or 
    *   <CODE>null</CODE> to match all users.
-   * 
-   * @param view 
-   *   The name of the working area view owning the job groups or 
-   *   <CODE>null</CODE> to match all working areas.
    * 
    * @throws PipelineException
    *   If no job groups exist.
@@ -3023,9 +3019,9 @@ class QueueMgrClient
   {
     verifyConnection();
     
-    if (authors == null || authors.isEmpty())
+    if((authors == null) || authors.isEmpty())
       throw new PipelineException
-        ("Cannot make a call to getJobGroupsByUsers with a null or empty set.");
+        ("The authors cannot be (null)!"); 
 
     SimpleSetReq req = new SimpleSetReq(authors); 
 
