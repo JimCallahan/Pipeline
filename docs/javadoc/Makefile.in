@@ -370,6 +370,7 @@ PLUGIN_PACKAGES = $(MODERN_PACKAGES) $(BUILD_LEGACY_PLUGINS_FALSE) $(LEGACY_PACK
 
   MAIN_PACKAGES = us.temerity.pipeline \
                   us.temerity.pipeline.builder \
+                  us.temerity.pipeline.builder.execution \
                   us.temerity.pipeline.builder.ui \
                   us.temerity.pipeline.event \
                   us.temerity.pipeline.glue \

@@ -701,9 +701,7 @@ class BaseBuilderExecution
   }
 
   
-  
-  
-  protected
+  public
   class SetupPassBundle
   {
     /**
@@ -726,13 +724,13 @@ class BaseBuilderExecution
       pOwningBuilder = builder;
     }
     
-    protected SetupPass 
+    public SetupPass 
     getPass()
     {
       return pPass;
     }
     
-    protected BaseBuilder 
+    public BaseBuilder 
     getOwningBuilder()
     {
       return pOwningBuilder;
