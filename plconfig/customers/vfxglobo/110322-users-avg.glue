@@ -1,0 +1,189 @@
+Average <TripleMap> #1 {
+  {
+    Key <Integer> #2 { 2010 }
+    Val <TreeMap> #3 {
+      {
+        Key <Integer> #4 { 10 }
+        Val <TreeMap> #5 {
+          {
+            Key <Integer> #6 { 21 }
+            Val <Double> #7 { 2.00000 }
+          }
+          {
+            Key <Integer> #8 { 22 }
+            Val <Double> #9 { 2.00000 }
+          }
+          {
+            Key <Integer> #10 { 23 }
+            Val <Double> #11 { 2.00000 }
+          }
+          {
+            Key <Integer> #12 { 24 }
+            Val <Double> #13 { 2.00000 }
+          }
+          {
+            Key <Integer> #14 { 25 }
+            Val <Double> #15 { 2.00000 }
+          }
+        }
+      }
+      {
+        Key <Integer> #16 { 11 }
+        Val <TreeMap> #17 {
+          {
+            Key <Integer> #18 { 5 }
+            Val <Double> #19 { 2.00000 }
+          }
+          {
+            Key <Integer> #20 { 6 }
+            Val <Double> #21 { 2.00000 }
+          }
+          {
+            Key <Integer> #22 { 7 }
+            Val <Double> #23 { 2.00000 }
+          }
+          {
+            Key <Integer> #24 { 8 }
+            Val <Double> #25 { 1.00000 }
+          }
+          {
+            Key <Integer> #26 { 9 }
+            Val <Double> #27 { 1.00000 }
+          }
+          {
+            Key <Integer> #28 { 12 }
+            Val <Double> #29 { 1.00000 }
+          }
+          {
+            Key <Integer> #30 { 13 }
+            Val <Double> #31 { 1.00000 }
+          }
+          {
+            Key <Integer> #32 { 14 }
+            Val <Double> #33 { 1.00000 }
+          }
+          {
+            Key <Integer> #34 { 15 }
+            Val <Double> #35 { 1.00000 }
+          }
+          {
+            Key <Integer> #36 { 16 }
+            Val <Double> #37 { 1.00000 }
+          }
+          {
+            Key <Integer> #38 { 17 }
+            Val <Double> #39 { 1.00000 }
+          }
+          {
+            Key <Integer> #40 { 19 }
+            Val <Double> #41 { 1.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #42 { 1.00000 }
+          }
+          {
+            Key <REF> #8
+            Val <Double> #43 { 1.00000 }
+          }
+          {
+            Key <Integer> #44 { 27 }
+            Val <Double> #45 { 1.00000 }
+          }
+          {
+            Key <Integer> #46 { 28 }
+            Val <Double> #47 { 1.00000 }
+          }
+        }
+      }
+    }
+  }
+  {
+    Key <Integer> #48 { 2011 }
+    Val <TreeMap> #49 {
+      {
+        Key <Integer> #50 { 0 }
+        Val <TreeMap> #51 {
+          {
+            Key <REF> #18
+            Val <Double> #52 { 1.00000 }
+          }
+          {
+            Key <REF> #20
+            Val <Double> #53 { 1.00000 }
+          }
+          {
+            Key <REF> #26
+            Val <Double> #54 { 1.00000 }
+          }
+          {
+            Key <REF> #4
+            Val <Double> #55 { 1.00000 }
+          }
+          {
+            Key <REF> #16
+            Val <Double> #56 { 1.00000 }
+          }
+          {
+            Key <REF> #30
+            Val <Double> #57 { 1.00000 }
+          }
+          {
+            Key <Integer> #58 { 18 }
+            Val <Double> #59 { 1.00000 }
+          }
+          {
+            Key <REF> #40
+            Val <Double> #60 { 1.00000 }
+          }
+          {
+            Key <Integer> #61 { 20 }
+            Val <Double> #62 { 1.00000 }
+          }
+          {
+            Key <REF> #10
+            Val <Double> #63 { 1.00000 }
+          }
+          {
+            Key <REF> #14
+            Val <Double> #64 { 1.00000 }
+          }
+          {
+            Key <Integer> #65 { 26 }
+            Val <Double> #66 { 1.00000 }
+          }
+          {
+            Key <REF> #44
+            Val <Double> #67 { 1.00000 }
+          }
+        }
+      }
+      {
+        Key <Integer> #68 { 1 }
+        Val <TreeMap> #69 {
+          {
+            Key <REF> #58
+            Val <Double> #70 { 1.00000 }
+          }
+        }
+      }
+      {
+        Key <Integer> #71 { 2 }
+        Val <TreeMap> #72 {
+          {
+            Key <REF> #26
+            Val <Double> #73 { 1.00000 }
+          }
+          {
+            Key <REF> #61
+            Val <Double> #74 { 1.00000 }
+          }
+          {
+            Key <REF> #6
+            Val <Double> #75 { 1.00000 }
+          }
+        }
+      }
+    }
+  }
+}
