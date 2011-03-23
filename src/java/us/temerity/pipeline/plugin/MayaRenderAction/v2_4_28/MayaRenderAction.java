@@ -49,8 +49,8 @@ import us.temerity.pipeline.plugin.PythonActionUtils;
  *   Maya Workspace<BR>
  *   <DIV style="margin-left: 40px;">
  *     A place to link in a workspace.mel file which will allow for caches and other
-       objects to be included in the render.  When this is set, the maya project will be
-       set to point to the directory which contains the workspace.mel file.
+ *     objects to be included in the render.  When this is set, the maya project will be
+ *     set to point to the directory which contains the workspace.mel file.
  *   </DIV> <BR>
  *   <P> 
  *   
@@ -285,8 +285,6 @@ class MayaRenderAction
       
       setSingleLayout(layout);
     }
-    
-    underDevelopment();
     
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
