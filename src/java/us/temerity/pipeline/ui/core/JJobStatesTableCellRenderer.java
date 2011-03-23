@@ -3,6 +3,7 @@
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.math.*;
 
 import java.awt.*;
