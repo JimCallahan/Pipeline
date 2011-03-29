@@ -293,8 +293,6 @@ class MayaExportAction
       if (tempScene)
 	actualTarget = newScene;
       
-      
-      
       out.write("if (`objExists $export`) \n" +
       	        "{\n" +
       	        "  select -r $export;\n");
