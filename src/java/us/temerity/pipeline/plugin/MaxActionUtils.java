@@ -95,7 +95,7 @@ class MaxActionUtils
 
     StringBuilder buf = new StringBuilder(); 
     {
-      Path mxpPath = new Path(projPath, projPath.getName() + ".mxp");
+      Path mxpPath = new Path(projPath, scenePath.getName() + ".mxp");
       if(mxpPath.toFile().isFile()) 
         buf.append("pathConfig.load(\"" + escPath(mxpPath) + "\")\n");
 
