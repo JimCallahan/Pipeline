@@ -13788,10 +13788,12 @@ class QueueMgr
             
             String header = 
               ("Lost contact with the Job Manager (" + hname + ") while attempting " + 
-               "to collect resource samples."); 
-            String msg = header;
-            if(!(ex instanceof PipelineException))
-            msg = Exceptions.getFullMessage(header, ex);
+               "to collect resource samples"); 
+            String msg = null;
+            if(ex instanceof PipelineException)
+              msg = header + ":\n  " + ex.getMessage();
+            else
+              msg = Exceptions.getFullMessage(header + ".", ex);
             LogMgr.getInstance().log(LogMgr.Kind.Net, LogMgr.Level.Warning, msg); 
           }
           finally { 
