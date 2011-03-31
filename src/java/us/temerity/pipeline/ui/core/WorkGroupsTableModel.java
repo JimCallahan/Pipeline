@@ -130,7 +130,11 @@ class WorkGroupsTableModel
 	break;
 
       default:
-	value = pGroupMemberships.get(idx).get(pSortColumn-1);
+        {
+          ArrayList<Boolean> flags = pGroupMemberships.get(idx);
+          if((flags != null) && (flags.size() > pSortColumn))
+            value = flags.get(pSortColumn-1);
+        }
       }
       
       cells[idx] = new IndexValue(idx, value); 
