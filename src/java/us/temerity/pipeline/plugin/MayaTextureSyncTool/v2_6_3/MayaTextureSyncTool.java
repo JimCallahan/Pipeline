@@ -1092,7 +1092,7 @@ class MayaTextureSyncTool
 	    String fields[] = lines[lk].split(" ");
 	    if(fields.length != 2)  
 	        throw new PipelineException("The texture information file (" + info
-		  + ") contained invalide data!");
+		  + ") contained invalid data!");
 
 	    if (fields[0].startsWith("Shader=") && fields[1].startsWith("Texture=")) {
 	      String shader = fields[0].substring(7);
