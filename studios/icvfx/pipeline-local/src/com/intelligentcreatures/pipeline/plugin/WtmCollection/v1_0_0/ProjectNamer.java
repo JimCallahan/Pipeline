@@ -58,7 +58,7 @@ class ProjectNamer
       UtilityParam param =
         new StringUtilityParam
         (StudioDefinitions.aProjectName,
-         "The Name of the Project the asset should live in",
+         "The Name of the project.",
          null);
       addParam(param);
     }
