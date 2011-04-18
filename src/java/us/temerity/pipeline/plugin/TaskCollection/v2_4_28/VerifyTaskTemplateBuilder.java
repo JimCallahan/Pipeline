@@ -19,8 +19,7 @@ import us.temerity.pipeline.plugin.TemplateCollection.v2_4_12.*;
 
 /**
  * Verify builder for version 2.4.28 of the task system that runs a template to perform the 
- * verification.  Designed to be run from a node using the 
- * {@link TaskRunTemplateBuilderAction}.
+ * verification.
  */
 public 
 class VerifyTaskTemplateBuilder

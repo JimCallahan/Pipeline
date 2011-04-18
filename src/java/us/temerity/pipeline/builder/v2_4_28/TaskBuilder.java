@@ -423,11 +423,6 @@ class TaskBuilder
    * All the Temerity Task plugins that wish to run the verify builder will look for this 
    * node. Changing this node will involve modifying the tools and server-side extensions 
    * which interact with the task system.
-   * 
-   * @param taskinfo
-   *   The unique name information used to identify the task.  This is the same information
-   *   returned by the {@link #lookupTaskAnnotations(String, TreeMap)} method.  The format is
-   *   [ProjectName, TaskIdent1, TaskIdent1, TaskType].
    */
   protected String
   getDefaultVerifyBuilderNodeName()
@@ -488,11 +483,6 @@ class TaskBuilder
    * All the Temerity Task plugins that wish to run the publish builder will look for this 
    * node. Changing this node will involve modifying the tools and server-side extensions 
    * which interact with the task system.
-   * 
-   * @param taskinfo
-   *   The unique name information used to identify the task.  This is the same information
-   *   returned by the {@link #lookupTaskAnnotations(String, TreeMap)} method.  The format is
-   *   [ProjectName, TaskIdent1, TaskIdent1, TaskType].
    */
   protected String
   getDefaultPublishBuilderNodeName()
