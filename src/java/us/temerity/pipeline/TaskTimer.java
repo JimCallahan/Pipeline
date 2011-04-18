@@ -212,7 +212,7 @@ class TaskTimer
 
 
   /**
-   * The timestamp of the start of the most recent wait interval..
+   * The timestamp of the start of the most recent wait interval.
    */
   private long  pStartWait;
 
