@@ -12370,30 +12370,27 @@ class MasterMgr
 	timer.resume();	
       
         /* make sure version being checked-out is online */ 
-        {
-          TreeSet<VersionID> offline = getOfflinedVersions(timer, name);
-          if((offline != null) && offline.contains(vid)) {
-            StringBuilder buf = new StringBuilder();
-
-            buf.append
-              ("Unable to perform check-out because the checked-in version (" + vid + ") " + 
-               "is currently offline.\n\n");
-
-            MappedSet<String,VersionID> offlineVersions = new MappedSet<String,VersionID>();
-            offlineVersions.put(name, vid);
-            Object obj = requestRestore(new MiscRequestRestoreReq(offlineVersions, req));
-            if(obj instanceof FailureRsp) {
-              FailureRsp rsp = (FailureRsp) obj;
-              buf.append("The request to restore the offline version also failed.\n"); 
-            }
-            else {
-              buf.append
-                ("However, a request has been submitted to restore the offline version " + 
-                 "so that it may be used once they have been brought back online.");
-            }
-	  
-            throw new PipelineException(buf.toString());
+        if(isOffline(timer, name, vid)) {
+          StringBuilder buf = new StringBuilder();
+          
+          buf.append
+            ("Unable to perform check-out because the checked-in version (" + vid + ") " + 
+             "is currently offline.\n\n");
+          
+          MappedSet<String,VersionID> offlineVersions = new MappedSet<String,VersionID>();
+          offlineVersions.put(name, vid);
+          Object obj = requestRestore(new MiscRequestRestoreReq(offlineVersions, req));
+          if(obj instanceof FailureRsp) {
+            FailureRsp rsp = (FailureRsp) obj;
+            buf.append("The request to restore the offline version also failed.\n"); 
           }
+          else {
+            buf.append
+              ("However, a request has been submitted to restore the offline version " + 
+               "so that it may be used once they have been brought back online.");
+          }
+	  
+          throw new PipelineException(buf.toString());
         }
 
         /* perform the check-out */ 
@@ -12670,16 +12667,8 @@ class MasterMgr
       try {
 	timer.resume();
 
-	/* check if the target version is currently offline */ 
-	boolean isOffline = false;
-	{
-          TreeSet<VersionID> offline = getOfflinedVersions(timer, name);
-          if((offline != null) && offline.contains(vid)) 
-            isOffline = true;
-	}
-	
 	/* abort if the target version is offline */ 
-	if(isOffline) {
+	if(isOffline(timer, name, vid)) {
 	  StringBuilder buf = new StringBuilder();
 	  buf.append
 	    ("Unable to lock node (" + name + ") to checked-in version (" + vid + ") " + 
@@ -13522,32 +13511,29 @@ class MasterMgr
 	timer.resume();	
 
 	/* check whether the checked-in version is currently online */ 
-	{
-          TreeSet<VersionID> offline = getOfflinedVersions(timer, name);
-          if((offline != null) && offline.contains(vid)) {
-            TreeSet<VersionID> vids = new TreeSet<VersionID>();
-            vids.add(vid);
-	    
-            TreeMap<String,TreeSet<VersionID>> vsns = 
+        if(isOffline(timer, name, vid)) {
+          TreeSet<VersionID> vids = new TreeSet<VersionID>();
+          vids.add(vid);
+	  
+          TreeMap<String,TreeSet<VersionID>> vsns = 
               new TreeMap<String,TreeSet<VersionID>>();
-            vsns.put(name, vids);
-	    
-            Object obj = requestRestore(new MiscRequestRestoreReq(vsns, req));
-            if(obj instanceof FailureRsp) {
-              FailureRsp rsp = (FailureRsp) obj;
-              throw new PipelineException
-                ("Unable to evolve to version (" + vid + ") of node (" + name + ") " +
-                 "because the version is currently offline.  The request to restore " + 
-                 "this version also failed:\n\n" + 
-                 rsp.getMessage());
-            }
-            else {
-              throw new PipelineException
-                ("Unable to evolve to version (" + vid + ") of node (" + name + ")  " + 
-                 "because the version is currently offline.  However, a request has " + 
-                 "been submitted to restore the version so that it may be used once " + 
-                 "it has been brought back online.");
-            }
+          vsns.put(name, vids);
+	  
+          Object obj = requestRestore(new MiscRequestRestoreReq(vsns, req));
+          if(obj instanceof FailureRsp) {
+            FailureRsp rsp = (FailureRsp) obj;
+            throw new PipelineException
+              ("Unable to evolve to version (" + vid + ") of node (" + name + ") " +
+               "because the version is currently offline.  The request to restore " + 
+               "this version also failed:\n\n" + 
+               rsp.getMessage());
+          }
+          else {
+            throw new PipelineException
+              ("Unable to evolve to version (" + vid + ") of node (" + name + ")  " + 
+               "because the version is currently offline.  However, a request has " + 
+               "been submitted to restore the version so that it may be used once " + 
+               "it has been brought back online.");
           }
         }
 	
