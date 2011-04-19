@@ -52,9 +52,6 @@ class CommandLineExecution
    * @param ex
    *   The Exception that was thrown.
    *   
-   * @param checkInStarted
-   *   Was the check-in operation started before this exception was thrown.
-   * 
    * @throws PipelineException
    *   If the Builder is not using its own logging facilities, it will throw
    *   a PipelineException containing the Full Message from whatever exception was

@@ -319,7 +319,7 @@ class BaseBuilderExecution
    *   The builder whose nodes need to be released.
    * 
    * @throws PipelineException
-   *   May be thrown depending on the behavior of {@link #handleException(Exception)}.
+   *   May be thrown depending on the behavior of {@link #handleException(Throwable)}.
    *   
    */
   protected void
