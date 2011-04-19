@@ -9503,7 +9503,7 @@ class MasterMgrClient
 	FileLock lock = chan.tryLock();
 	if(lock == null) 
 	  throw new PipelineException
-	    ("Unable to aquire lock for Glue file (" + file + ")!");
+	    ("Unable to acquire lock for Glue file (" + file + ")!");
 	
 	try {
 	  ByteBuffer buf = ByteBuffer.wrap(rsp.getContents().getBytes());

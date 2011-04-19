@@ -137,7 +137,7 @@ class JobMgr
     try {
       /* count the number of running jobs */ 
       int numJobs = 0;
-      timer.aquire();
+      timer.acquire();
       synchronized(pExecuteTasks) {
 	timer.resume();
 	for(ExecuteTask task : pExecuteTasks.values()) 
@@ -188,7 +188,7 @@ class JobMgr
   getNumProcessors() 
   {
     TaskTimer timer = new TaskTimer();
-    timer.aquire();
+    timer.acquire();
     try {
       timer.resume();
       int procs = NativeOS.getNumProcessors();
@@ -210,7 +210,7 @@ class JobMgr
   getTotalMemory() 
   {
     TaskTimer timer = new TaskTimer();
-    timer.aquire();
+    timer.acquire();
     try {
       timer.resume();
       long total = NativeOS.getTotalMemory();
@@ -232,7 +232,7 @@ class JobMgr
   getTotalDisk() 
   {
     TaskTimer timer = new TaskTimer();
-    timer.aquire();
+    timer.acquire();
     try {
       timer.resume();
       long disk = NativeFileSys.totalDiskSpace(PackageInfo.sTempPath.toFile());
@@ -295,7 +295,7 @@ class JobMgr
     }
 
     /* start the job execution task */ 
-    timer.aquire();
+    timer.acquire();
     synchronized(pExecuteTasks) {
       timer.resume();
       
@@ -325,7 +325,7 @@ class JobMgr
   ) 
   {
     TaskTimer timer = new TaskTimer("JobMgr.kill(): " + req.getJobID()); 
-    timer.aquire();
+    timer.acquire();
     ExecuteTask task = null;
     synchronized(pExecuteTasks) {
       timer.resume();
@@ -373,7 +373,7 @@ class JobMgr
   {
     TaskTimer timer = new TaskTimer(); 
     try {
-      timer.aquire();
+      timer.acquire();
       ExecuteTask task = null;
       synchronized(pExecuteTasks) {
 	timer.resume();
@@ -407,7 +407,7 @@ class JobMgr
 	
 	results = task.getResults();
 
-	timer.aquire();
+	timer.acquire();
 	synchronized(pExecuteTasks) {
 	  timer.resume();
 	  pExecuteTasks.remove(req.getJobID());
@@ -502,7 +502,7 @@ class JobMgr
               if(!live.contains(jobID)) {
                 boolean executing = false;
                 {
-                  timer.aquire();
+                  timer.acquire();
                   synchronized(pExecuteTasks) {
                     timer.resume();
                     executing = pExecuteTasks.containsKey(jobID);
@@ -698,7 +698,7 @@ class JobMgr
   {
     TaskTimer timer = new TaskTimer(); 
     try {
-      timer.aquire();
+      timer.acquire();
       ExecuteTask task = null;
       synchronized(pExecuteTasks) {
 	timer.resume();
@@ -772,7 +772,7 @@ class JobMgr
       File file = new File(pJobDir, req.getJobID() + "/stdout");
       FileMonitor fmon = lookupOrCreateFileMonitor(file, timer);
 
-      timer.aquire();
+      timer.acquire();
       synchronized(fmon) {
 	timer.resume();
 
@@ -808,7 +808,7 @@ class JobMgr
       File file = new File(pJobDir, req.getJobID() + "/stdout");
       FileMonitor fmon = lookupOrCreateFileMonitor(file, timer);
 
-      timer.aquire();
+      timer.acquire();
       synchronized(fmon) {
 	timer.resume();
 
@@ -869,7 +869,7 @@ class JobMgr
       File file = new File(pJobDir, req.getJobID() + "/stderr");
       FileMonitor fmon = lookupOrCreateFileMonitor(file, timer);
 
-      timer.aquire();
+      timer.acquire();
       synchronized(fmon) {
 	timer.resume();
 
@@ -905,7 +905,7 @@ class JobMgr
       File file = new File(pJobDir, req.getJobID() + "/stderr");
       FileMonitor fmon = lookupOrCreateFileMonitor(file, timer);
 
-      timer.aquire();
+      timer.acquire();
       synchronized(fmon) {
 	timer.resume();
 
@@ -959,7 +959,7 @@ class JobMgr
    TaskTimer timer
   ) 
   {
-    timer.aquire();
+    timer.acquire();
     synchronized(pFileMonitors) { 
       timer.resume();
       
@@ -983,14 +983,14 @@ class JobMgr
    TaskTimer timer
   ) 
   {
-    timer.aquire();
+    timer.acquire();
     synchronized(pFileMonitors) { 
       timer.resume();
       
       FileMonitor fmon = pFileMonitors.get(file);
       if(fmon != null) {
 	try {
-	  timer.aquire();
+	  timer.acquire();
 	  synchronized(fmon) {
 	    timer.resume();
 

@@ -108,7 +108,7 @@ class TaskTimer
    * Marks the start of an lock aquisition interval and the end of an active interval.
    */
   public void 
-  aquire() 
+  acquire() 
   {
     if(pStartWait != -1)
       throw new IllegalStateException(); 
@@ -118,6 +118,21 @@ class TaskTimer
       throw new IllegalStateException(); 
     pActiveDuration += System.currentTimeMillis() - pStartActive;
     pStartActive = -1;
+  }
+
+  /**
+   * Marks the start of an lock aquisition interval and the end of an active interval.
+   * 
+   * @deprecated
+   *   The method was unfortuneately misspelled but is now corrected.  This method exists, 
+   *   solely to allow code with the misspelled method name to continue to temporarily work.
+   *   All existing code should be changed to use the correctly spelled {@link #acquire}.
+   */
+  @Deprecated
+  public void 
+  aquire() 
+  {
+    acquire();
   }
 
   /**
@@ -223,7 +238,7 @@ class TaskTimer
 
 
   /**
-   * The total number of milliseconds waiting to aquire a lock.
+   * The total number of milliseconds waiting to acquire a lock.
    */
   private long  pWaitDuration;
 

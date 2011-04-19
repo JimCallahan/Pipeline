@@ -300,7 +300,7 @@ class FileMgr
   {
     TaskTimer timer = new TaskTimer("FileMgr.validateScratchDir()");
     
-    timer.aquire();
+    timer.acquire();
     synchronized(pMakeDirLock) { 
       timer.resume();	
 
@@ -379,7 +379,7 @@ class FileMgr
     String view   = req.getView();
 
     /* create the working area directory */ 
-    timer.aquire();
+    timer.acquire();
     synchronized(pMakeDirLock) { 
       timer.resume();	
 
@@ -450,7 +450,7 @@ class FileMgr
     String view   = req.getView();
 
     /* remove the working area directory */ 
-    timer.aquire();
+    timer.acquire();
     synchronized(pMakeDirLock) { 
       timer.resume();	
 
@@ -512,7 +512,7 @@ class FileMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     LoggedLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.acquireReadLock();
     try {
@@ -868,7 +868,7 @@ class FileMgr
       timer = new TaskTimer(buf.toString());
     }
 
-    timer.aquire();
+    timer.acquire();
     LoggedLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.acquireWriteLock();
     try {
@@ -898,7 +898,7 @@ class FileMgr
           rpath = nodeID.getCheckedInPath(rvid).toFile();
 	  rdir  = new File(pProdDir, rpath.getPath());
 
-	  timer.aquire();
+	  timer.acquire();
 	  synchronized(pMakeDirLock) { 
 	    timer.resume();
 
@@ -1410,7 +1410,7 @@ class FileMgr
       timer = new TaskTimer(buf.toString());
     }
 
-    timer.aquire();
+    timer.acquire();
     LoggedLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.acquireReadLock();
     try {
@@ -1427,7 +1427,7 @@ class FileMgr
 	  wpath = req.getNodeID().getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
 
-	  timer.aquire();
+	  timer.acquire();
 	  synchronized(pMakeDirLock) { 
 	    timer.resume();	
 
@@ -1662,7 +1662,7 @@ class FileMgr
   {
     TaskTimer timer = new TaskTimer("FileMgr.revert(): " + req.getNodeID());
 
-    timer.aquire();
+    timer.acquire();
     LoggedLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.acquireReadLock();
     try {
@@ -1679,7 +1679,7 @@ class FileMgr
 	  wpath = req.getNodeID().getWorkingParent().toFile();
 	  wdir  = new File(pProdDir, wpath.getPath());
 
-	  timer.aquire();
+	  timer.acquire();
 	  synchronized(pMakeDirLock) { 
 	    timer.resume();	
 
@@ -1885,7 +1885,7 @@ class FileMgr
     TaskTimer timer = 
       new TaskTimer("FileMgr.clone(): " + sourceID + " to " + targetID);
 
-    timer.aquire();
+    timer.acquire();
     try {
       validateScratchDirHelper();
 
@@ -2133,7 +2133,7 @@ class FileMgr
       timer = new TaskTimer(buf.toString());
     }
 
-    timer.aquire();
+    timer.acquire();
     try {
       validateScratchDirHelper();
 
@@ -2351,7 +2351,7 @@ class FileMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("FileMgr.deleteCheckedIn(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     LoggedLock checkedInLock = getCheckedInLock(name);
     checkedInLock.acquireWriteLock();
     try {
@@ -3283,7 +3283,7 @@ class FileMgr
       String name = vsn.getName();
       VersionID vid = vsn.getVersionID();
 
-      timer.aquire();
+      timer.acquire();
       LoggedLock checkedInLock = getCheckedInLock(name);
       checkedInLock.acquireWriteLock();
       try {
@@ -3295,7 +3295,7 @@ class FileMgr
 	  Path rpath = new Path("/repository/" + name + "/" + vid); 
 	  rdir = new Path(PackageInfo.sProdPath, rpath);
 
-	  timer.aquire();
+	  timer.acquire();
 	  synchronized(pMakeDirLock) { 
 	    timer.resume();
 
@@ -3436,7 +3436,7 @@ class FileMgr
       timer = new TaskTimer(buf.toString());
     }
 
-    timer.aquire(); 
+    timer.acquire(); 
     Object workingLock = getWorkingLock(req.getNodeID());
     try {
       synchronized(workingLock) {
@@ -3522,7 +3522,7 @@ class FileMgr
       timer = new TaskTimer(buf.toString());
     }
 
-    timer.aquire(); 
+    timer.acquire(); 
     Object workingLock = getWorkingLock(req.getNodeID());
     try {
       synchronized(workingLock) {
@@ -3701,7 +3701,7 @@ class FileMgr
 
     TaskTimer timer = new TaskTimer("FileMgr.archive: " + archiveName);
 
-    timer.aquire();
+    timer.acquire();
     Stack<LoggedLock> locks = new Stack<LoggedLock>();
     try {
       for(String name : fseqs.keySet()) {
@@ -3926,7 +3926,7 @@ class FileMgr
 
     TaskTimer timer = new TaskTimer("FileMgr.offline(): " + name + " (" + vid + ")");
     
-    timer.aquire();
+    timer.acquire();
     LoggedLock checkedInLock = getCheckedInLock(name);
     checkedInLock.acquireWriteLock();
     try {
@@ -4427,7 +4427,7 @@ class FileMgr
       File outFile = new File(tmpdir, "stdout");
       File errFile = new File(tmpdir, "stderr"); 
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pMakeDirLock) {
 	  timer.resume();
 
@@ -4615,7 +4615,7 @@ class FileMgr
 
     TaskTimer timer = new TaskTimer("FileMgr.restore: " + archiveName);
 
-    timer.aquire();
+    timer.acquire();
     LoggedLock checkedInLock = getCheckedInLock(name);
     checkedInLock.acquireWriteLock();
     try {
@@ -4815,7 +4815,7 @@ class FileMgr
 
     TaskTimer timer = new TaskTimer("FileMgr.removeExtractDir: " + archiveName);
 
-    timer.aquire();
+    timer.acquire();
     try {
       synchronized(pMakeDirLock) {
 	timer.resume();
@@ -4930,7 +4930,7 @@ class FileMgr
    ArrayList<File> files
   ) 
   {
-    timer.aquire();
+    timer.acquire();
     try {
       Object workingLock = getWorkingLock(id);
       synchronized(workingLock) {
@@ -5102,7 +5102,7 @@ class FileMgr
           active = false;
         }
         
-        timer.aquire();
+        timer.acquire();
         long millis = timer.getTotalDuration();
         timer.resume();        
 
@@ -5189,9 +5189,9 @@ class FileMgr
    * The per-node locks indexed by fully resolved node name. <P> 
    * 
    * These locks protect the files, symlinks and checksums associated with all checked-in 
-   * versions of each node. The per-node read-lock should be aquired for operations which 
+   * versions of each node. The per-node read-lock should be acquired for operations which 
    * will only access these checked-in file resources.  The per-node write-lock should be 
-   * aquired when creating new files, symlinks or checksums.
+   * acquired when creating new files, symlinks or checksums.
    */
   private TreeMap<String,LoggedLock>  pCheckedInLocks;
 

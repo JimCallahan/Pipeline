@@ -747,7 +747,7 @@ class PluginMgr
   {
     TaskTimer timer = new TaskTimer("PluginMgr.pushAdminPrivileges()");
 
-    timer.aquire();
+    timer.acquire();
     pAdminPrivileges.pushAdminPrivileges(timer, req);
     return new SuccessRsp(timer);
   }
@@ -833,7 +833,7 @@ class PluginMgr
           ("The backup directory (" + targetDir + ") is not valid!");
 
       /* make the backup tarball */ 
-      timer.aquire();
+      timer.acquire();
       pPluginLock.acquireWriteLock();
       try {
         timer.resume();
@@ -899,7 +899,7 @@ class PluginMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pPluginLock.acquireReadLock();
     try {
       timer.resume();
@@ -1000,7 +1000,7 @@ class PluginMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pPluginLock.acquireWriteLock();
     try {
       try {
@@ -1294,7 +1294,7 @@ class PluginMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pPluginLock.acquireReadLock();
     try {
       timer.resume();
@@ -1349,7 +1349,7 @@ class PluginMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     try {
       timer.resume();
       
@@ -1580,7 +1580,7 @@ class PluginMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pResourceLock.acquireWriteLock();
     try {
       long sessionID = pluginResource.getSessionID();
@@ -1656,7 +1656,7 @@ class PluginMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     try {
       timer.resume();
 

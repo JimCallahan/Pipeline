@@ -1520,7 +1520,7 @@ class MasterMgr
   /** 
    * Determine the revision numbers (if any) of the offlined versions of the given node.<P> 
    * 
-   * The onlineOffline read-lock at least should be aquired before calling this method.
+   * The onlineOffline read-lock at least should be acquired before calling this method.
    * 
    * @param timer
    *   The current operation timer.
@@ -1540,7 +1540,7 @@ class MasterMgr
     throws PipelineException 
   { 
     if(isOfflineCacheValid()) {
-      timer.aquire();
+      timer.acquire();
       synchronized(pOfflinedLock) {
         timer.resume();
 
@@ -1563,7 +1563,7 @@ class MasterMgr
         }
       }
 
-      timer.aquire();
+      timer.acquire();
       LoggedLock lock = getCheckedInLock(name);
       lock.acquireReadLock();
       try {
@@ -1592,7 +1592,7 @@ class MasterMgr
   /**
    * Whether the given version of a node is offline.<P> 
    * 
-   * The onlineOffline read-lock at least should be aquired before calling this method.
+   * The onlineOffline read-lock at least should be acquired before calling this method.
    * 
    * @param timer
    *   The current operation timer.
@@ -1634,7 +1634,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.pullAdminPrivileges()");
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       return pAdminPrivileges.getPullResponse(timer);
@@ -1656,7 +1656,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.getWorkGroups()");
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       return pAdminPrivileges.getWorkGroupsRsp(timer);
@@ -1696,7 +1696,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       pAdminPrivileges.setWorkGroupsFromReq(timer, req);
@@ -1730,7 +1730,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.getPrivileges()");
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       return pAdminPrivileges.getPrivilegesRsp(timer);
@@ -1760,7 +1760,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.editPrivileges()");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       pAdminPrivileges.editPrivilegesFromReq(timer, req);
@@ -1796,7 +1796,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.getPrivilegesDetails()");
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       return pAdminPrivileges.getPrivilegeDetailsRsp(timer, req);
@@ -2109,7 +2109,7 @@ class MasterMgr
 
     try {
       TrackedLock lock = null;
-      timer.aquire();
+      timer.acquire();
       synchronized(pNetworkLocks) {
         timer.resume();	
         
@@ -2149,7 +2149,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.tryLock(): " + name);
 
     TrackedLock lock = null;
-    timer.aquire();
+    timer.acquire();
     synchronized(pNetworkLocks) {
       timer.resume();	
       
@@ -2187,7 +2187,7 @@ class MasterMgr
 
     try {
       TrackedLock lock = null;
-      timer.aquire();
+      timer.acquire();
       synchronized(pNetworkLocks) {
         timer.resume();	
         
@@ -2233,7 +2233,7 @@ class MasterMgr
       
     try {
       TrackedLock lock = null;
-      timer.aquire();
+      timer.acquire();
       synchronized(pNetworkLocks) {
         timer.resume();	
         
@@ -2280,7 +2280,7 @@ class MasterMgr
 
     try {
       TrackedLock lock = null;
-      timer.aquire();
+      timer.acquire();
       synchronized(pNetworkLocks) {
         timer.resume();	
         
@@ -2314,7 +2314,7 @@ class MasterMgr
   {   
     TaskTimer timer = new TaskTimer();
     
-    timer.aquire();
+    timer.acquire();
     synchronized(pNetworkLocks) {
       timer.resume();	
       TreeMap<String,RequestInfo> result = new TreeMap<String,RequestInfo>();
@@ -2364,7 +2364,7 @@ class MasterMgr
   {    
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pDefaultToolsetLock) {
@@ -2400,7 +2400,7 @@ class MasterMgr
     String tname = req.getName();
     TaskTimer timer = new TaskTimer("MasterMgr.setDefaultToolsetName(): " + tname);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -2420,7 +2420,7 @@ class MasterMgr
 	     "Unix implementation!");
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pDefaultToolsetLock) {
 	timer.resume();	 
 	
@@ -2428,7 +2428,7 @@ class MasterMgr
 	writeDefaultToolset();
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pActiveToolsets) {
 	timer.resume();	 
 	
@@ -2460,7 +2460,7 @@ class MasterMgr
   {    
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pActiveToolsets) {
@@ -2498,7 +2498,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setActiveToolsetName(): " + tname + " [" + active + "]");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -2513,7 +2513,7 @@ class MasterMgr
             ("The default toolset (" + tname + ") cannot be made inactive!");
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pToolsets) {
 	timer.resume();
 	
@@ -2527,7 +2527,7 @@ class MasterMgr
 	     "Unix implementation!");
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pActiveToolsets) {
 	timer.resume();	 
 	
@@ -2577,7 +2577,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
@@ -2610,7 +2610,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
@@ -2672,7 +2672,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
@@ -2723,7 +2723,7 @@ class MasterMgr
   )
     throws PipelineException 
   {
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
@@ -2768,7 +2768,7 @@ class MasterMgr
   )
     throws PipelineException 
   {
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
@@ -2812,7 +2812,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     try {
       timer.resume();	
 
@@ -2863,7 +2863,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
@@ -2946,7 +2946,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsets) {
@@ -3013,7 +3013,7 @@ class MasterMgr
     
     /* lookup the packages */  
     Collection<PackageVersion> packages = new ArrayList<PackageVersion>();
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
@@ -3047,7 +3047,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -3126,7 +3126,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
@@ -3165,7 +3165,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
@@ -3208,7 +3208,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
@@ -3247,7 +3247,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolsetPackages) {
@@ -3360,7 +3360,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -3453,7 +3453,7 @@ class MasterMgr
     if(name == null) 
       return new FailureRsp(timer, "The toolset name cannot be (null)!");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -3461,7 +3461,7 @@ class MasterMgr
       TreeMap<PluginType,PluginMenuLayout> layouts = 
 	new TreeMap<PluginType,PluginMenuLayout>();
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pEditorMenuLayouts) {
 	timer.resume();	
 
@@ -3472,7 +3472,7 @@ class MasterMgr
 	  layouts.put(PluginType.Editor, new PluginMenuLayout());
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pComparatorMenuLayouts) {
 	timer.resume();	
 
@@ -3483,7 +3483,7 @@ class MasterMgr
 	  layouts.put(PluginType.Comparator, new PluginMenuLayout());
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pActionMenuLayouts) {
 	timer.resume();	
 
@@ -3494,7 +3494,7 @@ class MasterMgr
 	  layouts.put(PluginType.Action, new PluginMenuLayout());
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pToolMenuLayouts) {
 	timer.resume();	
 
@@ -3505,7 +3505,7 @@ class MasterMgr
 	  layouts.put(PluginType.Tool, new PluginMenuLayout());
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pArchiverMenuLayouts) {
 	timer.resume();	
 
@@ -3516,7 +3516,7 @@ class MasterMgr
 	  layouts.put(PluginType.Archiver, new PluginMenuLayout());
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pMasterExtMenuLayouts) {
 	timer.resume();	
 
@@ -3527,7 +3527,7 @@ class MasterMgr
 	  layouts.put(PluginType.MasterExt, new PluginMenuLayout());
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pQueueExtMenuLayouts) {
 	timer.resume();	
 
@@ -3538,7 +3538,7 @@ class MasterMgr
 	  layouts.put(PluginType.QueueExt, new PluginMenuLayout());
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pAnnotationMenuLayouts) {
 	timer.resume();	
 
@@ -3549,7 +3549,7 @@ class MasterMgr
 	  layouts.put(PluginType.Annotation, new PluginMenuLayout());
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pKeyChooserMenuLayouts) {
 	timer.resume();	
 
@@ -3560,7 +3560,7 @@ class MasterMgr
 	  layouts.put(PluginType.KeyChooser, new PluginMenuLayout());
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pBuilderCollectionMenuLayouts) {
         timer.resume(); 
 
@@ -3596,7 +3596,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -3606,7 +3606,7 @@ class MasterMgr
       TripleMap<String,VersionID,PluginType,PluginSet> allPlugins = 
 	new TripleMap<String,VersionID,PluginType,PluginSet>();
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageEditorPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3620,7 +3620,7 @@ class MasterMgr
 	}
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageComparatorPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3634,7 +3634,7 @@ class MasterMgr
 	}
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageActionPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3648,7 +3648,7 @@ class MasterMgr
 	}
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageToolPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3662,7 +3662,7 @@ class MasterMgr
 	}
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageArchiverPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3676,7 +3676,7 @@ class MasterMgr
 	}
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageMasterExtPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3690,7 +3690,7 @@ class MasterMgr
 	}
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageQueueExtPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3704,7 +3704,7 @@ class MasterMgr
 	}
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageAnnotationPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3718,7 +3718,7 @@ class MasterMgr
 	}
       }
 
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageKeyChooserPlugins) {
 	timer.resume();
 	for(String pname : packages.keySet()) {
@@ -3732,7 +3732,7 @@ class MasterMgr
 	}
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized(pPackageBuilderCollectionPlugins) {
         timer.resume();
         for(String pname : packages.keySet()) {
@@ -3776,7 +3776,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getEditorMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pEditorMenuLayouts) {
@@ -3820,7 +3820,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setEditorMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -3876,7 +3876,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -3905,7 +3905,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageEditorPlugins) {
 	  timer.resume();
 	  
@@ -3944,7 +3944,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageEditorPlugins) {
@@ -3980,7 +3980,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -4034,7 +4034,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getComparatorMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pComparatorMenuLayouts) {
@@ -4078,7 +4078,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setComparatorMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -4134,7 +4134,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -4163,7 +4163,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageComparatorPlugins) {
 	  timer.resume();
 	  
@@ -4202,7 +4202,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageComparatorPlugins) {
@@ -4238,7 +4238,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -4292,7 +4292,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getActionMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pActionMenuLayouts) {
@@ -4336,7 +4336,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setActionMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -4392,7 +4392,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -4421,7 +4421,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageActionPlugins) {
 	  timer.resume();
 	  
@@ -4460,7 +4460,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageActionPlugins) {
@@ -4496,7 +4496,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -4550,7 +4550,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getToolMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pToolMenuLayouts) {
@@ -4594,7 +4594,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setToolMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -4650,7 +4650,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -4679,7 +4679,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageToolPlugins) {
 	  timer.resume();
 	  
@@ -4718,7 +4718,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageToolPlugins) {
@@ -4754,7 +4754,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -4808,7 +4808,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getArchiverMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pArchiverMenuLayouts) {
@@ -4852,7 +4852,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setArchiverMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -4908,7 +4908,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -4937,7 +4937,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageArchiverPlugins) {
 	  timer.resume();
 	  
@@ -4976,7 +4976,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageArchiverPlugins) {
@@ -5012,7 +5012,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -5066,7 +5066,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getMasterExtMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pMasterExtMenuLayouts) {
@@ -5110,7 +5110,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setMasterExtMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -5166,7 +5166,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -5195,7 +5195,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageMasterExtPlugins) {
 	  timer.resume();
 	  
@@ -5234,7 +5234,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageMasterExtPlugins) {
@@ -5270,7 +5270,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -5324,7 +5324,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getQueueExtMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pQueueExtMenuLayouts) {
@@ -5368,7 +5368,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setQueueExtMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -5424,7 +5424,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -5453,7 +5453,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageQueueExtPlugins) {
 	  timer.resume();
 	  
@@ -5492,7 +5492,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageQueueExtPlugins) {
@@ -5528,7 +5528,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -5582,7 +5582,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getAnnotationMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pAnnotationMenuLayouts) {
@@ -5626,7 +5626,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setAnnotationMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -5682,7 +5682,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -5711,7 +5711,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageAnnotationPlugins) {
 	  timer.resume();
 	  
@@ -5750,7 +5750,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageAnnotationPlugins) {
@@ -5786,7 +5786,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -5840,7 +5840,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getKeyChooserMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pKeyChooserMenuLayouts) {
@@ -5884,7 +5884,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setKeyChooserMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -5940,7 +5940,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -5969,7 +5969,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pPackageKeyChooserPlugins) {
 	  timer.resume();
 	  
@@ -6008,7 +6008,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageKeyChooserPlugins) {
@@ -6044,7 +6044,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -6097,7 +6097,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getBuilderCollectionMenuLayout(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pBuilderCollectionMenuLayouts) {
@@ -6141,7 +6141,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setBuilderCollectionMenuLayout(): " + name);
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -6199,7 +6199,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
@@ -6228,7 +6228,7 @@ class MasterMgr
 
       PluginSet plugins = new PluginSet();
       {
-        timer.aquire();
+        timer.acquire();
         synchronized(pPackageBuilderCollectionPlugins) {
           timer.resume();
           
@@ -6267,7 +6267,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pPackageBuilderCollectionPlugins) {
@@ -6304,7 +6304,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
@@ -6353,7 +6353,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pMasterExtensions) {
@@ -6391,7 +6391,7 @@ class MasterMgr
        (timer, "Only a user with Master Admin privileges may remove a " + 
         "master extension configuration!");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pMasterExtensions) {
@@ -6439,7 +6439,7 @@ class MasterMgr
         (timer, "Only a user with Master Admin privileges may add or modify " + 
          "master extension configuration!");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pMasterExtensions) {
@@ -6545,7 +6545,7 @@ class MasterMgr
    MasterTestFactory factory
   ) 
   {
-    timer.aquire(); 
+    timer.acquire(); 
     synchronized(pMasterExtensions) {
       timer.resume();
 
@@ -6591,7 +6591,7 @@ class MasterMgr
     /* the enabled extensions which support the current test */ 
     LinkedList<BaseMasterExt> extensions = new LinkedList<BaseMasterExt>();
 
-    timer.aquire(); 
+    timer.acquire(); 
     synchronized(pMasterExtensions) {
       timer.resume();
 
@@ -6637,7 +6637,7 @@ class MasterMgr
    MasterTaskFactory factory
   ) 
   {
-    timer.aquire(); 
+    timer.acquire(); 
     synchronized(pMasterExtensions) {
       timer.resume();
 
@@ -6676,7 +6676,7 @@ class MasterMgr
    MasterTaskFactory factory
   ) 
   {
-    timer.aquire(); 
+    timer.acquire(); 
     synchronized(pMasterExtensions) {
       timer.resume();
 
@@ -6723,7 +6723,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSuffixEditors) {
@@ -6768,7 +6768,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSuffixEditors) {
@@ -6841,7 +6841,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.setSuffixEditors()");
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pSuffixEditors) {
@@ -6889,7 +6889,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -6952,7 +6952,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -7000,7 +7000,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    timer.aquire();
+    timer.acquire();
     synchronized(pWorkingAreaViews) {
       timer.resume();	
       
@@ -7071,7 +7071,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -7090,7 +7090,7 @@ class MasterMgr
       
       /* determine whether to abort early and/or remove the user as well */ 
       boolean removeUser = false;
-      timer.aquire();
+      timer.acquire();
       synchronized(pWorkingAreaViews) {
 	timer.resume();	
 
@@ -7121,7 +7121,7 @@ class MasterMgr
       }
 
       /* clean up the database dirs... */ 
-      timer.aquire();
+      timer.acquire();
       synchronized(pWorkingAreaViews) {
 	timer.resume();	
 	
@@ -7185,7 +7185,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pWorkingAreaViews) {
@@ -7277,7 +7277,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.getNodeNames(): [" + pattern + "]");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -7320,7 +7320,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -7360,7 +7360,7 @@ class MasterMgr
       return new FailureRsp
         (timer, "Only a user with Master Admin privileges may hide/show node paths!"); 
       
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -7396,7 +7396,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -7434,7 +7434,7 @@ class MasterMgr
     String name  = req.getNodeName();
     String aname = req.getAnnotationName(); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -7473,7 +7473,7 @@ class MasterMgr
     String name   = nodeID.getName(); 
     String aname  = req.getAnnotationName(); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getWorkingLock(nodeID);
     lock.acquireReadLock();
@@ -7522,7 +7522,7 @@ class MasterMgr
   ) 
     throws PipelineException 
   {
-    timer.aquire();
+    timer.acquire();
     LoggedLock lock = getAnnotationsLock(name); 
     lock.acquireReadLock();
     try {
@@ -7564,7 +7564,7 @@ class MasterMgr
 
     String name = req.getName();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -7602,7 +7602,7 @@ class MasterMgr
     NodeID nodeID = req.getNodeID();
     String name   = nodeID.getName(); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getWorkingLock(nodeID);
     lock.acquireReadLock();
@@ -7653,12 +7653,12 @@ class MasterMgr
     DoubleMap<NodeID, String, BaseAnnotation> toReturn = 
       new DoubleMap<NodeID, String, BaseAnnotation>();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     timer.resume();
     try {
       for (NodeID nodeID : nodeIDs) {
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getWorkingLock(nodeID);
         lock.acquireReadLock();
         try {
@@ -7711,7 +7711,7 @@ class MasterMgr
    )
      throws PipelineException
    {
-     timer.aquire();
+     timer.acquire();
      LoggedLock lock = getAnnotationsLock(name); 
      lock.acquireReadLock();
      try {
@@ -7754,7 +7754,7 @@ class MasterMgr
     String aname         = req.getAnnotationName();
     BaseAnnotation annot = req.getAnnotation();
     
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -7840,7 +7840,7 @@ class MasterMgr
         (timer, "The annotation plugin (" + annot.getName() + ") is not valid for the " + 
          AnnotationContext.PerNode + " context!");
 
-    timer.aquire();
+    timer.acquire();
 
     LoggedLock lock = getAnnotationsLock(name); 
     lock.acquireWriteLock();
@@ -7920,7 +7920,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getAnnotationsLock(name); 
     lock.acquireWriteLock();
@@ -8025,7 +8025,7 @@ class MasterMgr
     boolean ignorePrivileges
   )
   {
-    timer.aquire();
+    timer.acquire();
     LoggedLock lock = getAnnotationsLock(name); 
     lock.acquireWriteLock();
     try {
@@ -8123,7 +8123,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getWorkingNames(): " + author + "|" + view + " " + 
                     "[" + pattern + "]");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -8169,7 +8169,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getWorkingRootNames(): " + author + "|" + view);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -8177,7 +8177,7 @@ class MasterMgr
       TreeSet<String> roots = new TreeSet<String>(); 
 
       for(String name : pNodeTree.getMatchingWorkingNodes(author, view, null)) {
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getDownstreamLock(name);
         lock.acquireReadLock();
         try {
@@ -8221,7 +8221,7 @@ class MasterMgr
   {	 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getWorkingLock(req.getNodeID());
     lock.acquireReadLock();
@@ -8262,7 +8262,7 @@ class MasterMgr
     String view = req.getView(); 
     TreeSet<String> names = req.getNames();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -8271,7 +8271,7 @@ class MasterMgr
       for(String name : names) {
         NodeID nodeID = new NodeID(author, view, name); 
 
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getWorkingLock(nodeID);
         lock.acquireReadLock();
         try {
@@ -8340,7 +8340,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock workingLock = getWorkingLock(nodeID);
     workingLock.acquireWriteLock();
@@ -8393,7 +8393,7 @@ class MasterMgr
                 /* get the checked-in version */ 
                 NodeVersion vsn = null;
                 {
-                  timer.aquire();
+                  timer.acquire();
                   LoggedLock checkedInLock = getCheckedInLock(name);
                   checkedInLock.acquireReadLock();
                   try {
@@ -8491,7 +8491,7 @@ class MasterMgr
       return new FailureRsp
         (timer, "Only a user with Master Manager privileges may set the LastCTimeUpdate!"); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock workingLock = getWorkingLock(nodeID);
     workingLock.acquireWriteLock();
@@ -8559,7 +8559,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock targetLock = getWorkingLock(targetID);
     targetLock.acquireWriteLock();
@@ -8659,7 +8659,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock targetLock = getWorkingLock(targetID);
     targetLock.acquireWriteLock();
@@ -8754,7 +8754,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -8771,7 +8771,7 @@ class MasterMgr
 	addWorkingAreaForNode(nodeID);	
       }
 
-      timer.aquire();
+      timer.acquire();
       LoggedLock lock = getWorkingLock(nodeID);
       lock.acquireWriteLock();
       try {
@@ -8812,7 +8812,7 @@ class MasterMgr
 	return new SuccessRsp(timer);
       }
       catch(PipelineException ex) { 
-	timer.aquire();
+	timer.acquire();
 	pNodeTree.removeSecondaryWorkingNodeTreePath(nodeID, fseq);
 
 	return new FailureRsp(timer, ex.getMessage());
@@ -8859,7 +8859,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getWorkingLock(nodeID);
     lock.acquireWriteLock();
@@ -8901,7 +8901,7 @@ class MasterMgr
       pNodeTree.removeSecondaryWorkingNodeTreePath(nodeID, fseq);
       
       /* remove checksums for any obsolete files sequences */ 
-      timer.aquire();
+      timer.acquire();
       LoggedLock clock = getCheckSumLock(nodeID);
       clock.acquireWriteLock();
       try {
@@ -8991,7 +8991,7 @@ class MasterMgr
       }
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -9014,7 +9014,7 @@ class MasterMgr
       FileSeq primary = null;
       SortedSet<FileSeq> secondary = null;
       {
-	timer.aquire();
+	timer.acquire();
 	LoggedLock lock = getWorkingLock(id);
 	lock.acquireReadLock();
 	try {
@@ -9110,7 +9110,7 @@ class MasterMgr
 	sourceParams = new TreeMap<String,Collection<ActionParam>>();
 	secondaryParams = new TreeMap<String,TreeMap<FilePattern,Collection<ActionParam>>>();
 
-	timer.aquire();
+	timer.acquire();
 	LoggedLock downstreamLock = getDownstreamLock(id.getName());
 	downstreamLock.acquireWriteLock();
 	try {
@@ -9121,7 +9121,7 @@ class MasterMgr
             for(String target : dsl.getWorking(id)) {
               NodeID targetID = new NodeID(id, target);
               
-              timer.aquire();
+              timer.acquire();
               LoggedLock lock = getWorkingLock(targetID);
               lock.acquireReadLock();
               try {
@@ -9182,7 +9182,7 @@ class MasterMgr
       }
 
       {
-	timer.aquire();
+	timer.acquire();
 	LoggedLock lock = getWorkingLock(id);
 	lock.acquireWriteLock();
 	LoggedLock nlock = getWorkingLock(nid);
@@ -9291,7 +9291,7 @@ class MasterMgr
             /* retrieve and remove old cache */ 
             CheckSumCache ocache = null;
             {
-              timer.aquire();
+              timer.acquire();
               LoggedLock clock = getCheckSumLock(id);
               clock.acquireWriteLock();
               try {
@@ -9300,7 +9300,7 @@ class MasterMgr
                 CheckSumBundle cbundle = getCheckSumBundle(id);   
                 ocache = cbundle.getCache(); 
 
-                timer.aquire();
+                timer.acquire();
                 synchronized(pCheckSumBundles) {
                   timer.resume();
                   pCheckSumBundles.remove(id.getName(), id); 
@@ -9361,7 +9361,7 @@ class MasterMgr
               }
               
               /* update the save the checksum bundle to disk */ 
-              timer.aquire();
+              timer.acquire();
               LoggedLock clock = getCheckSumLock(nid);
               clock.acquireWriteLock();
               try {
@@ -9423,7 +9423,7 @@ class MasterMgr
 	      NodeID targetID = new NodeID(id, target);
 	      NodeMod targetMod = null;
 	      {
-		timer.aquire();
+		timer.acquire();
 		LoggedLock lock = getWorkingLock(targetID);
 		lock.acquireReadLock();
 		try {
@@ -9570,7 +9570,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getWorkingLock(nodeID);
     lock.acquireWriteLock(); 
@@ -9614,7 +9614,7 @@ class MasterMgr
       }
 
       /* remove obsolete frames from checksum cache */ 
-      timer.aquire();
+      timer.acquire();
       LoggedLock clock = getCheckSumLock(nodeID);
       clock.acquireWriteLock();
       try {
@@ -9682,7 +9682,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInNames(): [" + pattern + "]");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -9725,7 +9725,7 @@ class MasterMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInVersionIDs(): " + name);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getCheckedInLock(name);
     lock.acquireReadLock();
@@ -9765,14 +9765,14 @@ class MasterMgr
     TreeSet<String> names = req.getNames();
     TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInVersionIDs(): [multiple]");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
     
       MappedSet<String,VersionID> vids = new MappedSet<String,VersionID>();
       for(String name : names) {
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getCheckedInLock(name);
         lock.acquireReadLock();
         try {
@@ -9816,7 +9816,7 @@ class MasterMgr
     String name = req.getName();
     TaskTimer timer = new TaskTimer("MasterMgr.getIntermediateVersionIDs(): [mutiple]"); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getCheckedInLock(name);
     lock.acquireReadLock();
@@ -9861,14 +9861,14 @@ class MasterMgr
     TreeSet<String> names = req.getNames();
     TaskTimer timer = new TaskTimer("MasterMgr.getIntermediateVersionIDs(): [mutiple]");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
     
       MappedSet<String,VersionID> vids = new MappedSet<String,VersionID>();
       for(String name : names) {
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getCheckedInLock(name);
         lock.acquireReadLock();
         try {
@@ -9916,7 +9916,7 @@ class MasterMgr
     String name = req.getName();
     VersionID vid = req.getVersionID();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getCheckedInLock(name);
     lock.acquireReadLock();
@@ -9962,7 +9962,7 @@ class MasterMgr
   {	 
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -9973,7 +9973,7 @@ class MasterMgr
       MappedSet<String,VersionID> versions = req.getVersionIDs();
       for(String name : versions.keySet()) {
 
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getCheckedInLock(name);
         lock.acquireReadLock();
         try {
@@ -10025,7 +10025,7 @@ class MasterMgr
 
     String name = req.getName();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getCheckedInLock(name);
     lock.acquireReadLock();
@@ -10075,7 +10075,7 @@ class MasterMgr
   
     String name = req.getName();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getCheckedInLock(name);
     lock.acquireReadLock();
@@ -10118,7 +10118,7 @@ class MasterMgr
 
     TreeSet<String> names = req.getNames();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -10126,7 +10126,7 @@ class MasterMgr
       DoubleMap<String,VersionID,LogMessage> history = 
         new DoubleMap<String,VersionID,LogMessage>();
       for(String name : names) {
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getCheckedInLock(name);
         lock.acquireReadLock();
         try {
@@ -10172,7 +10172,7 @@ class MasterMgr
   
     String name = req.getName();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getCheckedInLock(name);
     lock.acquireReadLock();
@@ -10229,7 +10229,7 @@ class MasterMgr
   
     String name = req.getName();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getCheckedInLock(name);
     lock.acquireReadLock();
@@ -10285,14 +10285,14 @@ class MasterMgr
     String name   = req.getName();
     VersionID vid = req.getVersionID();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
 
       MappedSet<String,VersionID> dnodes = null;
       {
-	timer.aquire();
+	timer.acquire();
 	LoggedLock downstreamLock = getDownstreamLock(name);
 	downstreamLock.acquireReadLock();
 	try {
@@ -10312,7 +10312,7 @@ class MasterMgr
       if(dnodes != null) {
 	for(String dname : dnodes.keySet()) {
 
-	  timer.aquire();
+	  timer.acquire();
 	  LoggedLock lock = getCheckedInLock(dname);
 	  lock.acquireReadLock();
 	  try {
@@ -10371,7 +10371,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -10431,7 +10431,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -10458,7 +10458,7 @@ class MasterMgr
           boolean found = false;
 
           NodeID nodeID = new NodeID(author, view, name); 
-          timer.aquire();
+          timer.acquire();
           LoggedLock workingLock = getWorkingLock(nodeID);
           workingLock.acquireReadLock();
           LoggedLock checkedInLock = getCheckedInLock(name);
@@ -10584,7 +10584,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -10605,7 +10605,7 @@ class MasterMgr
           boolean found = false;
 
           NodeID nodeID = new NodeID(author, view, name); 
-          timer.aquire();
+          timer.acquire();
           LoggedLock workingLock = getWorkingLock(nodeID);
           workingLock.acquireReadLock();
           LoggedLock checkedInLock = getCheckedInLock(name);
@@ -10725,7 +10725,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -10753,7 +10753,7 @@ class MasterMgr
 	}
       }
       
-      timer.aquire();
+      timer.acquire();
       LoggedLock lock = getWorkingLock(nodeID);
       lock.acquireWriteLock();
       try {
@@ -10763,7 +10763,7 @@ class MasterMgr
 	writeWorkingVersion(nodeID, mod);	
 	
 	/* create a working bundle for the new working version */ 
-        timer.aquire();
+        timer.acquire();
 	synchronized(pWorkingBundles) {
           timer.resume();
 	  TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
@@ -10793,7 +10793,7 @@ class MasterMgr
 
         /* create an checksum cache for the new working version */ 
         {
-          timer.aquire();
+          timer.acquire();
           LoggedLock clock = getCheckSumLock(nodeID);
           clock.acquireWriteLock();
           try {
@@ -10861,7 +10861,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -10881,7 +10881,7 @@ class MasterMgr
 	  NodeLinks links = all.get(name);
 	  NodeID nodeID = new NodeID(author, view, name);
 	  
-	  timer.aquire();
+	  timer.acquire();
 	  LoggedLock lock = getWorkingLock(nodeID);
 	  lock.acquireReadLock(); 
 	  try {
@@ -11025,7 +11025,7 @@ class MasterMgr
 
     /* unlink the downstream working versions from the to be released working version */ 
     {
-      timer.aquire();
+      timer.acquire();
       LoggedLock downstreamLock = getDownstreamLock(name);
       downstreamLock.acquireWriteLock();
       try {
@@ -11053,7 +11053,7 @@ class MasterMgr
       }
     }
       
-    timer.aquire();
+    timer.acquire();
     LoggedLock lock = getWorkingLock(nodeID);
     lock.acquireWriteLock();
     try {
@@ -11069,7 +11069,7 @@ class MasterMgr
       killActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence());
 	
       /* remove the bundle */ 
-      timer.aquire();
+      timer.acquire();
       synchronized(pWorkingBundles) {
         timer.resume();
 	TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
@@ -11109,7 +11109,7 @@ class MasterMgr
       
       /* update the downstream links of this node */ 
       {
-	timer.aquire();	
+	timer.acquire();	
 	LoggedLock downstreamLock = getDownstreamLock(name);
 	downstreamLock.acquireWriteLock();
 	try {
@@ -11127,7 +11127,7 @@ class MasterMgr
       for(LinkMod link : mod.getSources()) {
 	String source = link.getName();
 	  
-	timer.aquire();	
+	timer.acquire();	
 	LoggedLock downstreamLock = getDownstreamLock(source);
 	downstreamLock.acquireWriteLock();
 	try {
@@ -11159,7 +11159,7 @@ class MasterMgr
       
       /* remove the checksum cache for the released working version */ 
       if(removeCheckSumCache) {
-        timer.aquire();
+        timer.acquire();
         LoggedLock clock = getCheckSumLock(nodeID);
         clock.acquireWriteLock();
         try {
@@ -11222,7 +11222,7 @@ class MasterMgr
       return new FailureRsp
         (timer, "Only a user with Master Admin privileges may delete nodes!"); 
 
-    timer.aquire();
+    timer.acquire();
     if(!pDatabaseLock.tryWriteLock(sDeleteTimeout)) {
       return new FailureRsp
         (timer, "Giving up after attempting to Delete node (" + name + ") for " + 
@@ -11418,7 +11418,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkIn(): " + nodeID);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -11436,7 +11436,7 @@ class MasterMgr
       {      
 	String name = nodeID.getName();
 
-	timer.aquire();
+	timer.acquire();
 	LoggedLock lock = getCheckedInLock(name);
 	lock.acquireReadLock();
 	try {
@@ -11495,7 +11495,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkOut(): " + nodeID);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	      
@@ -11545,7 +11545,7 @@ class MasterMgr
       }
 
       /* lock online/offline status of all required nodes */ 
-      timer.aquire();
+      timer.acquire();
       List<LoggedLock> onOffLocks = 
 	onlineOfflineReadLock(requiredVersions.keySet());
       try {
@@ -11719,7 +11719,7 @@ class MasterMgr
 	throw new IllegalStateException(); 
     }
 
-    timer.aquire();
+    timer.acquire();
     LoggedLock workingLock = getWorkingLock(nodeID);
     workingLock.acquireReadLock();
     LoggedLock checkedInLock = getCheckedInLock(name);
@@ -11942,7 +11942,7 @@ class MasterMgr
 	 "jobs associated with the node!");	      
     }
 
-    timer.aquire();
+    timer.acquire();
     LoggedLock workingLock = getWorkingLock(nodeID);
     workingLock.acquireWriteLock();
     LoggedLock checkedInLock = getCheckedInLock(name);
@@ -12152,7 +12152,7 @@ class MasterMgr
 	addWorkingNodeTreePath(nodeID, nwork.getPrimarySequence(), nwork.getSequences());
 
 	/* create a new working bundle */ 
-        timer.aquire();
+        timer.acquire();
 	synchronized(pWorkingBundles) {
           timer.resume();
 	  TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
@@ -12182,7 +12182,7 @@ class MasterMgr
 	  if(isLocked || !nwork.getSourceNames().contains(link.getName())) {
 	    String source = link.getName();
 	    
-	    timer.aquire();
+	    timer.acquire();
 	    LoggedLock downstreamLock = getDownstreamLock(source);
 	    downstreamLock.acquireWriteLock();  
 	    try {
@@ -12203,7 +12203,7 @@ class MasterMgr
 	for(LinkMod link : nwork.getSources()) {
 	  String lname = link.getName();
 	  
-	  timer.aquire();
+	  timer.acquire();
 	  LoggedLock downstreamLock = getDownstreamLock(lname);
 	  downstreamLock.acquireWriteLock();
 	  try {
@@ -12248,7 +12248,7 @@ class MasterMgr
         }
 
         /* update the save the checksum bundle to disk */ 
-        timer.aquire();
+        timer.acquire();
         LoggedLock clock = getCheckSumLock(nodeID);
         clock.acquireWriteLock();
         try { 
@@ -12306,7 +12306,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkOutSolo(): " + nodeID);
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	      
@@ -12319,7 +12319,7 @@ class MasterMgr
       /* determine the version to check-out */ 
       VersionID vid = req.getVersionID();
       if(vid == null) {
-        timer.aquire();  
+        timer.acquire();  
         LoggedLock checkedInLock = getCheckedInLock(name);
         checkedInLock.acquireReadLock();
         try {
@@ -12363,7 +12363,7 @@ class MasterMgr
       }
 
       /* lock online/offline status of the node */ 
-      timer.aquire();
+      timer.acquire();
       LoggedLock onOffLock = getOnlineOfflineLock(name);
       onOffLock.acquireReadLock();
       try {
@@ -12395,7 +12395,7 @@ class MasterMgr
 
         /* perform the check-out */ 
         {
-          timer.aquire();
+          timer.acquire();
           LoggedLock workingLock = getWorkingLock(nodeID);
           workingLock.acquireWriteLock();
           LoggedLock checkedInLock = getCheckedInLock(name);
@@ -12489,7 +12489,7 @@ class MasterMgr
                 (nodeID, nwork.getPrimarySequence(), nwork.getSequences());
 
               /* create a new working bundle */ 
-              timer.aquire();
+              timer.acquire();
               synchronized(pWorkingBundles) {
                 timer.resume();
                 TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
@@ -12519,7 +12519,7 @@ class MasterMgr
               for(LinkMod link : work.getSources()) {
                 String source = link.getName();
                 
-                timer.aquire();
+                timer.acquire();
                 LoggedLock downstreamLock = getDownstreamLock(source);
                 downstreamLock.acquireWriteLock();  
                 try {
@@ -12566,7 +12566,7 @@ class MasterMgr
               }
               
               /* update the save the checksum bundle to disk */ 
-              timer.aquire();
+              timer.acquire();
               LoggedLock clock = getCheckSumLock(nodeID);
               clock.acquireWriteLock();
               try { 
@@ -12647,7 +12647,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -12661,7 +12661,7 @@ class MasterMgr
       NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
 
       /* lock online/offline status of the node to lock */ 
-      timer.aquire();
+      timer.acquire();
       LoggedLock onOffLock = getOnlineOfflineLock(name);
       onOffLock.acquireReadLock();
       try {
@@ -12697,7 +12697,7 @@ class MasterMgr
 	}
 
 	/* lock the node */ 
-	timer.aquire();
+	timer.acquire();
 	LoggedLock workingLock = getWorkingLock(nodeID);
 	workingLock.acquireWriteLock();
 	LoggedLock checkedInLock = getCheckedInLock(name);
@@ -12824,7 +12824,7 @@ class MasterMgr
 	    addWorkingNodeTreePath(nodeID, nwork.getPrimarySequence(), nwork.getSequences());
 	  
 	    /* create a new working bundle */ 
-            timer.aquire();
+            timer.acquire();
 	    synchronized(pWorkingBundles) {
               timer.resume();
 	      TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
@@ -12848,7 +12848,7 @@ class MasterMgr
 	    for(LinkMod link : work.getSources()) {
 	      String source = link.getName();
 	      
-	      timer.aquire();
+	      timer.acquire();
 	      LoggedLock downstreamLock = getDownstreamLock(source);
 	      downstreamLock.acquireWriteLock();  
 	      try {
@@ -12893,7 +12893,7 @@ class MasterMgr
             }
 
             /* update the save the checksum bundle to disk */ 
-            timer.aquire();
+            timer.acquire();
             LoggedLock clock = getCheckSumLock(nodeID);
             clock.acquireWriteLock();
             try {
@@ -12970,7 +12970,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	      
@@ -12984,7 +12984,7 @@ class MasterMgr
          checked-in files instead of copies */ 
       boolean isLinked = false;
       {
-	timer.aquire(); 
+	timer.acquire(); 
 	LoggedLock lock = getWorkingLock(nodeID);
 	lock.acquireReadLock();
 	try {
@@ -13008,7 +13008,7 @@ class MasterMgr
       }
 
       /* lock online/offline status of the node */ 
-      timer.aquire();
+      timer.acquire();
       LoggedLock onOffLock = getOnlineOfflineLock(name);
       onOffLock.acquireReadLock();
       try {
@@ -13082,7 +13082,7 @@ class MasterMgr
           MappedSet<VersionID,String> vfiles = new MappedSet<VersionID,String>(files); 
           for(VersionID vid : vfiles.keySet()) {
 
-            timer.aquire();
+            timer.acquire();
             LoggedLock checkedInLock = getCheckedInLock(name);
             checkedInLock.acquireReadLock();
             try {
@@ -13122,7 +13122,7 @@ class MasterMgr
 
         /* update the save the checksum bundle to disk, 
              while setting the updated-in timestamps to match the reverted files */ 
-        timer.aquire();
+        timer.acquire();
         LoggedLock clock = getCheckSumLock(nodeID);
         clock.acquireWriteLock();
         try {
@@ -13222,7 +13222,7 @@ class MasterMgr
       }
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	      
@@ -13234,7 +13234,7 @@ class MasterMgr
 
       FileSeq sourceSeq = null;
       {
-	timer.aquire(); 
+	timer.acquire(); 
 	LoggedLock lock = getWorkingLock(sourceID);
 	lock.acquireReadLock();
 	try {
@@ -13266,7 +13266,7 @@ class MasterMgr
       FileSeq targetSeq = null;
       boolean writeable = true;
       {
-	timer.aquire(); 
+	timer.acquire(); 
 	LoggedLock lock = getWorkingLock(targetID);
 	lock.acquireReadLock();
 	try {
@@ -13359,7 +13359,7 @@ class MasterMgr
         /* get a deep copy of the source node's cache to avoid lock contention issues */ 
         CheckSumCache ocache = null;
         {
-          timer.aquire();
+          timer.acquire();
           LoggedLock clock = getCheckSumLock(sourceID);
           clock.acquireWriteLock();
           try {
@@ -13406,7 +13406,7 @@ class MasterMgr
 
         /* use them to initialize the target node's cache */ 
         {
-          timer.aquire();
+          timer.acquire();
           LoggedLock clock = getCheckSumLock(targetID);
           clock.acquireWriteLock();
           try {
@@ -13470,7 +13470,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -13482,7 +13482,7 @@ class MasterMgr
 
       /* verify the checked-in revision number */ 
       {
-	timer.aquire();
+	timer.acquire();
 	LoggedLock lock = getCheckedInLock(name);
 	lock.acquireReadLock();
 	try {
@@ -13504,7 +13504,7 @@ class MasterMgr
       }
 
       /* lock online/offline status of the node */ 
-      timer.aquire();
+      timer.acquire();
       LoggedLock onOffLock = getOnlineOfflineLock(name);
       onOffLock.acquireReadLock();
       try {
@@ -13538,7 +13538,7 @@ class MasterMgr
         }
 	
 	/* change the checked-in version number for the working version */ 
-	timer.aquire();
+	timer.acquire();
 	LoggedLock lock = getWorkingLock(nodeID);
 	lock.acquireWriteLock();
 	try {
@@ -13612,7 +13612,7 @@ class MasterMgr
     if(checksums.isEmpty()) 
       return new SuccessRsp(timer);    
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -13621,7 +13621,7 @@ class MasterMgr
         NodeID nodeID = entry.getKey();
         CheckSumCache qcache = entry.getValue();
         if(!qcache.isEmpty()) {
-          timer.aquire();
+          timer.acquire();
           LoggedLock clock = getCheckSumLock(nodeID);
           clock.acquireWriteLock();
           try {
@@ -13712,7 +13712,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -13735,7 +13735,7 @@ class MasterMgr
       for(NodeMod mod : nodes) {
         String nname = mod.getName();
 
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getAnnotationsLock(name); 
         lock.acquireReadLock();
         try {
@@ -13758,7 +13758,7 @@ class MasterMgr
       TripleMap<String,OsType,VersionID,PackageVersion> bundledPackages = 
         new TripleMap<String,OsType,VersionID,PackageVersion>();
       {
-        timer.aquire();
+        timer.acquire();
         synchronized(pToolsets) {
           timer.resume();
           
@@ -13777,7 +13777,7 @@ class MasterMgr
           }
         }
 
-	timer.aquire();
+	timer.acquire();
 	synchronized(pToolsetPackages) {
 	  timer.resume();
 	  
@@ -13973,7 +13973,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -14025,7 +14025,7 @@ class MasterMgr
           cparams.putValue(ckeys, view);
           ckeys.removeLast();
           
-          timer.aquire();
+          timer.acquire();
           synchronized(pDefaultToolsetLock) {
             timer.resume();	
             
@@ -14160,7 +14160,7 @@ class MasterMgr
       return new FailureRsp
         (timer, "Only a user with Master Admin privileges may extract site versions!"); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -14168,7 +14168,7 @@ class MasterMgr
       /* lookup the node version */ 
       NodeVersion ovsn = null;
       {
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getCheckedInLock(name);
         lock.acquireReadLock();
         try {
@@ -14261,7 +14261,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer(); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -14312,7 +14312,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer(); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -14335,7 +14335,7 @@ class MasterMgr
         String name = vsn.getName();
         VersionID vid = vsn.getVersionID();
 
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getCheckedInLock(name);
         lock.acquireReadLock();
         try {
@@ -14390,7 +14390,7 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer(); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -14413,7 +14413,7 @@ class MasterMgr
         String sname = link.getName();
         VersionID svid = link.getVersionID();
 
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getCheckedInLock(sname);
         lock.acquireReadLock();
         try {
@@ -14472,7 +14472,7 @@ class MasterMgr
       return new FailureRsp
         (timer, "Only a user with Master Admin privileges may insert site versions!"); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -14509,7 +14509,7 @@ class MasterMgr
 
       /* insert the version into the database */ 
       {
-        timer.aquire();
+        timer.acquire();
         LoggedLock lock = getCheckedInLock(name);
         lock.acquireWriteLock();
         try {
@@ -14535,7 +14535,7 @@ class MasterMgr
               String sname = link.getName();
               VersionID svid = link.getVersionID();
               
-              timer.aquire();
+              timer.acquire();
               LoggedLock slock = getCheckedInLock(sname);
               slock.acquireReadLock();
               try {
@@ -14606,7 +14606,7 @@ class MasterMgr
 	  for(LinkVersion link : vsn.getSources()) { 
 	    String lname = link.getName();
 
-	    timer.aquire();
+	    timer.acquire();
 	    LoggedLock downstreamLock = getDownstreamLock(lname);
 	    downstreamLock.acquireWriteLock();
 	    try {
@@ -14752,7 +14752,7 @@ class MasterMgr
    EditedNodeEvent event
   ) 
   {
-    timer.aquire();
+    timer.acquire();
     synchronized(pRunningEditors) {
       timer.resume();	
       
@@ -14784,7 +14784,7 @@ class MasterMgr
    long editID  
   ) 
   {
-    timer.aquire();
+    timer.acquire();
     synchronized(pRunningEditors) {
       timer.resume();	
       
@@ -14818,7 +14818,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     synchronized(pRunningEditors) {
       timer.resume();
     
@@ -14865,7 +14865,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -14915,7 +14915,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -15034,7 +15034,7 @@ class MasterMgr
         }
         
         /* single thread the status update and job submit process... */
-        timer.aquire();
+        timer.acquire();
         synchronized(pQueueSubmitLock) { 
           timer.resume();
 
@@ -16436,7 +16436,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     LoggedLock lock = getWorkingLock(nodeID);
     lock.acquireWriteLock();
@@ -16525,7 +16525,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -16539,7 +16539,7 @@ class MasterMgr
       boolean hasLimbo = false;
       TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
       
-      timer.aquire();
+      timer.acquire();
       LoggedLock lock = getWorkingLock(nodeID);
       lock.acquireReadLock();
       try {
@@ -16643,7 +16643,7 @@ class MasterMgr
 
       /* clear the checksum caches for the removed files */ 
       {
-        timer.aquire();
+        timer.acquire();
         LoggedLock clock = getCheckSumLock(nodeID);
         clock.acquireWriteLock();
         try {
@@ -16702,7 +16702,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.hasUnfinishedJobs(): " + author + "|" + view + " " + 
                     "[" + pattern + "]");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -16717,7 +16717,7 @@ class MasterMgr
           TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
           {
             NodeID nodeID = new NodeID(author, view, name); 
-            timer.aquire();
+            timer.acquire();
             LoggedLock lock = getWorkingLock(nodeID);
             lock.acquireReadLock();
             try {
@@ -16784,7 +16784,7 @@ class MasterMgr
       new TaskTimer("MasterMgr.getUnfinishedJobs(): " + author + "|" + view + 
                     "[" + pattern + "]");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -16801,7 +16801,7 @@ class MasterMgr
           TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
           {
             NodeID nodeID = new NodeID(author, view, name); 
-            timer.aquire();
+            timer.acquire();
             LoggedLock lock = getWorkingLock(nodeID);
             lock.acquireReadLock();
             try {
@@ -16960,7 +16960,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -16997,7 +16997,7 @@ class MasterMgr
       for(String name : matches) {
 	  
         /* lock online/offline status */ 
-        timer.aquire();
+        timer.acquire();
         LoggedLock onOffLock = getOnlineOfflineLock(name);
         onOffLock.acquireReadLock();
         try {
@@ -17007,7 +17007,7 @@ class MasterMgr
                excluding all versions which are intermediate */ 
 	  TreeMap<VersionID,Long> stamps = new TreeMap<VersionID,Long>();
 	  {
-	    timer.aquire();
+	    timer.acquire();
 	    LoggedLock lock = getCheckedInLock(name);
 	    lock.acquireReadLock();  
 	    try {
@@ -17038,7 +17038,7 @@ class MasterMgr
 	      int numArchives = 0;
 	      String lastArchive = null;
 	      {
-		timer.aquire();
+		timer.acquire();
 		synchronized(pArchivedIn) {
 		  timer.resume();
 		  
@@ -17061,7 +17061,7 @@ class MasterMgr
 		   checked-in version */ 
 		Long archived = null;
 		if(lastArchive != null) {
-		  timer.aquire();
+		  timer.acquire();
 		  synchronized(pArchivedOn) {
 		    timer.resume();
 		    archived = pArchivedOn.get(lastArchive);
@@ -17110,7 +17110,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -17124,7 +17124,7 @@ class MasterMgr
         /* compute the sizes of the files */ 
         {
           /* lock online/offline status */ 
-          timer.aquire();
+          timer.acquire();
           LoggedLock onOffLock = getOnlineOfflineLock(name);
           onOffLock.acquireReadLock();
           try {
@@ -17133,7 +17133,7 @@ class MasterMgr
             /* get the file sequences for each checked-in version of the node */ 
             MappedSet<VersionID,FileSeq> vfseqs = new MappedSet<VersionID,FileSeq>();
             { 
-              timer.aquire();
+              timer.acquire();
               LoggedLock lock = getCheckedInLock(name);
               lock.acquireReadLock(); 
               try {
@@ -17222,7 +17222,7 @@ class MasterMgr
         (timer, "Only a user with Master Admin privileges may create archives of " + 
          "checked-in versions!"); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -17240,7 +17240,7 @@ class MasterMgr
       MappedSet<String,VersionID> versions = req.getVersions();
 
       /* lock online/offline status of the nodes to be archived */ 
-      timer.aquire();
+      timer.acquire();
       List<LoggedLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
       try {
 	timer.resume();	
@@ -17267,7 +17267,7 @@ class MasterMgr
 	  long total = 0L;
 	  for(String name : versions.keySet()) {
 
-	    timer.aquire();
+	    timer.acquire();
 	    LoggedLock lock = getCheckedInLock(name);
 	    lock.acquireReadLock(); 
 	    try {
@@ -17329,7 +17329,7 @@ class MasterMgr
 	/* get the toolset environment */ 
 	String tname = req.getToolset();
 	if(tname == null) {
-          timer.aquire();
+          timer.acquire();
 	  synchronized(pDefaultToolsetLock) {
 	    timer.resume();	
 	    
@@ -17473,7 +17473,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -17513,7 +17513,7 @@ class MasterMgr
       }
       
       /* lock online/offline status */ 
-      timer.aquire();
+      timer.acquire();
       List<LoggedLock> onOffLocks = onlineOfflineReadLock(matches);
       try {
 	timer.resume();	
@@ -17526,7 +17526,7 @@ class MasterMgr
 	  /* get the revision numbers of the included versions */ 
 	  TreeSet<VersionID> vids = new TreeSet<VersionID>();
 	  {	    
-	    timer.aquire();
+	    timer.acquire();
 	    LoggedLock lock = getCheckedInLock(name);
 	    lock.acquireReadLock();  
 	    try {
@@ -17572,7 +17572,7 @@ class MasterMgr
 	    int numArchives = 0;
 	    String lastArchive = null;
 	    {
-	      timer.aquire();
+	      timer.acquire();
 	      synchronized(pArchivedIn) {
 		timer.resume();
 		
@@ -17594,7 +17594,7 @@ class MasterMgr
 	      /* get the timestamp of the latest archive containing the checked-in version */ 
 	      Long archived = null;
 	      if(lastArchive != null) {
-		timer.aquire();
+		timer.acquire();
 		synchronized(pArchivedOn) {
 		  timer.resume();
 		  archived = pArchivedOn.get(lastArchive);
@@ -17615,7 +17615,7 @@ class MasterMgr
 		  for(String view : views) {
 		    NodeID nodeID = new NodeID(author, view, name);
 		    
-		    timer.aquire();
+		    timer.acquire();
 		    LoggedLock lock = getWorkingLock(nodeID);
 		    lock.acquireReadLock();
 		    try {
@@ -17688,7 +17688,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -17696,7 +17696,7 @@ class MasterMgr
       String name = req.getName();
 
       /* lock online/offline status of the node */ 
-      timer.aquire();
+      timer.acquire();
       LoggedLock onOffLock = getOnlineOfflineLock(name);
       onOffLock.acquireReadLock();
       try {
@@ -17740,14 +17740,14 @@ class MasterMgr
 
     TreeSet<String> names = req.getNames();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
 
       MappedSet<String,VersionID> offlined = new MappedSet<String,VersionID>();
       for(String name : names) {
-        timer.aquire();
+        timer.acquire();
         LoggedLock onOffLock = getOnlineOfflineLock(name);
         onOffLock.acquireReadLock();
         try {
@@ -17798,7 +17798,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -17815,7 +17815,7 @@ class MasterMgr
         TreeSet<VersionID> toBeOfflined = entry.getValue(); 
 
         /* lock online/offline status */ 
-        timer.aquire();
+        timer.acquire();
         LoggedLock onOffLock = getOnlineOfflineLock(name);
         onOffLock.acquireReadLock();
         try {
@@ -17829,7 +17829,7 @@ class MasterMgr
           /* determine which files contribute the to offlined size */ 
           MappedSet<VersionID,File> contribute = new MappedSet<VersionID,File>();
           {
-            timer.aquire();
+            timer.acquire();
             LoggedLock lock = getCheckedInLock(name);
             lock.acquireReadLock(); 
             try {
@@ -17964,7 +17964,7 @@ class MasterMgr
       return new FailureRsp
         (timer, "Only a user with Master Admin privileges may offline checked-in versions!"); 
   
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       boolean cacheModified = false;
@@ -17977,7 +17977,7 @@ class MasterMgr
              "version cache has finished being rebuilt.");
 
         /* write lock online/offline status */ 
-        timer.aquire();
+        timer.acquire();
         List<LoggedLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
         try {
           timer.resume();	
@@ -17988,7 +17988,7 @@ class MasterMgr
 
           /* process each node */ 
           for(String name : versions.keySet()) {	
-            timer.aquire();
+            timer.acquire();
             ArrayList<LoggedLock> workingLocks = 
               new ArrayList<LoggedLock>();
             {
@@ -18257,7 +18257,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -18276,7 +18276,7 @@ class MasterMgr
         if(pattern != null) 
           pat = Pattern.compile(pattern);
         
-	timer.aquire();
+	timer.acquire();
 	synchronized(pOfflinedLock) {
 	  try {
 	    timer.resume();
@@ -18334,7 +18334,7 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }    
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       try {
@@ -18343,7 +18343,7 @@ class MasterMgr
         /* filter any versions which are not offline */ 
         TreeMap<String,TreeSet<VersionID>> vsns = new TreeMap<String,TreeSet<VersionID>>();
         {
-          timer.aquire();
+          timer.acquire();
           List<LoggedLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
           try {
             timer.resume();
@@ -18373,7 +18373,7 @@ class MasterMgr
         }
 
         /* add the requests, replacing any current requests for the same versions */ 
-        timer.aquire();
+        timer.acquire();
         synchronized(pRestoreReqs) {
           timer.resume();
 
@@ -18447,7 +18447,7 @@ class MasterMgr
       return new FailureRsp
 	(timer, "Only a user with Master Admin privileges may deny restore requests!");
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       try {
@@ -18504,7 +18504,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pRestoreReqs) {
@@ -18579,7 +18579,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
@@ -18589,7 +18589,7 @@ class MasterMgr
       /* get the names of all archives which contain any of the given versions */ 
       TreeSet<String> anames = new TreeSet<String>();
       {
-	timer.aquire();
+	timer.acquire();
 	synchronized(pArchivedIn) {
 	  timer.resume();
 
@@ -18710,7 +18710,7 @@ class MasterMgr
       return new FailureRsp
         (timer, "Only a user with Master Admin privileges may restore checked-in versions!"); 
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       boolean cacheModified = false;
@@ -18745,7 +18745,7 @@ class MasterMgr
         }
 
         /* write lock online/offline status */ 
-        timer.aquire();
+        timer.acquire();
         List<LoggedLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
         try {
           timer.resume();	
@@ -18758,7 +18758,7 @@ class MasterMgr
           long total = 0L;
           for(String name : versions.keySet()) {
 	  
-            timer.aquire();
+            timer.acquire();
             LoggedLock checkedInLock = getCheckedInLock(name);
             checkedInLock.acquireReadLock();  
             try {
@@ -18891,7 +18891,7 @@ class MasterMgr
           /* move the extracted files into the respository */ 
           for(String name : versions.keySet()) {
 
-            timer.aquire();
+            timer.acquire();
             LoggedLock checkedInLock = getCheckedInLock(name);
             checkedInLock.acquireReadLock();  
             try {
@@ -19066,7 +19066,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pArchivedOn) {
@@ -19092,7 +19092,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pRestoredOn) {
@@ -19219,7 +19219,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       synchronized(pArchivedIn) {
@@ -19268,7 +19268,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    timer.aquire();
+    timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();
@@ -19395,7 +19395,7 @@ class MasterMgr
       throw new PipelineException(buf.toString());
     }
     
-    timer.aquire();
+    timer.acquire();
     NodeID id = new NodeID(targetID, name);
     LoggedLock lock = getWorkingLock(id);
     lock.acquireReadLock();
@@ -19670,7 +19670,7 @@ class MasterMgr
     if(!ignoreAnnotations) {
       annotations = new TreeMap<String,BaseAnnotation>();
 
-      timer.aquire();
+      timer.acquire();
       LoggedLock lock = getAnnotationsLock(name); 
       lock.acquireReadLock();
       try {
@@ -19690,7 +19690,7 @@ class MasterMgr
       }   
     }
 
-    timer.aquire();
+    timer.acquire();
     LoggedLock workingLock = getWorkingLock(nodeID);
     if(!isLightweight && nodeOp.writesWorking()) 
       workingLock.acquireWriteLock();
@@ -20012,7 +20012,7 @@ class MasterMgr
               ArrayList<Long> jids   = new ArrayList<Long>();
               ArrayList<JobState> js = new ArrayList<JobState>();
               
-              timer.aquire();
+              timer.acquire();
               LoggedLock clock = getCheckSumLock(nodeID);
               clock.acquireWriteLock();
               try {
@@ -20105,7 +20105,7 @@ class MasterMgr
                 if(latest != null) 
                   latestCheckSums = latest.getCheckSums();
 
-                timer.aquire();
+                timer.acquire();
                 LoggedLock clock = getCheckSumLock(nodeID);
                 clock.acquireWriteLock();
                 try {
@@ -20928,7 +20928,7 @@ class MasterMgr
       {
         TreeSet<VersionID> vids = new TreeSet<VersionID>();
 
-        timer.aquire();      
+        timer.acquire();      
         String name = nodeID.getName();
         LoggedLock lock = getCheckedInLock(name);
         lock.acquireReadLock();
@@ -21025,7 +21025,7 @@ class MasterMgr
     /* get checked-in downstream links */ 
     TreeMap<VersionID,MappedSet<String,VersionID>> downstream = null;
     {
-      timer.aquire();
+      timer.acquire();
       LoggedLock lock = getDownstreamLock(name);
       lock.acquireReadLock();
       try {
@@ -21063,7 +21063,7 @@ class MasterMgr
 
     /* if no downstream versions are the latest version, then check to see if this one is */ 
     if(status == null) {
-      timer.aquire();
+      timer.acquire();
       LoggedLock lock = getCheckedInLock(name);
       lock.acquireReadLock();
       try {
@@ -21123,7 +21123,7 @@ class MasterMgr
     /* get working downstream links */ 
     TreeSet<String> links = null;
     {
-      timer.aquire();
+      timer.acquire();
       LoggedLock lock = getDownstreamLock(name);
       lock.acquireReadLock();
       try {
@@ -21220,7 +21220,7 @@ class MasterMgr
       return;
 
     /* add the current node */ 
-    timer.aquire();
+    timer.acquire();
     LoggedLock workingLock = getWorkingLock(nodeID);
     workingLock.acquireReadLock(); 
     try {
@@ -21381,7 +21381,7 @@ class MasterMgr
   /**
    * Aquire the read access to the online/offline locks of the given named nodes. <P> 
    * 
-   * Insures that the locks are aquired in the lexical order of the node names.  The returned
+   * Insures that the locks are acquired in the lexical order of the node names.  The returned
    * list of locks is in reverse lexical order to that the locks will be unlocked in exactly
    * the opposite order.
    * 
@@ -21411,7 +21411,7 @@ class MasterMgr
    * Release the read access to the given online/offline locks.
    * 
    * @param locks
-   *   The previously aquired read locks returned by the onlineOfflineReadLock() method.
+   *   The previously acquired read locks returned by the onlineOfflineReadLock() method.
    */ 
   private void 
   onlineOfflineReadUnlock
@@ -21426,7 +21426,7 @@ class MasterMgr
   /**
    * Aquire the write access to the online/offline locks of the given named nodes. <P> 
    * 
-   * Insures that the locks are aquired in the lexical order of the node names.  The returned
+   * Insures that the locks are acquired in the lexical order of the node names.  The returned
    * list of locks is in reverse lexical order to that the locks will be unlocked in exactly
    * the opposite order.
    * 
@@ -21456,7 +21456,7 @@ class MasterMgr
    * Release the write access to the given online/offline locks.
    * 
    * @param locks
-   *   The previously aquired read locks returned by the onlineOfflineWriteLock() method.
+   *   The previously acquired read locks returned by the onlineOfflineWriteLock() method.
    */ 
   private void 
   onlineOfflineWriteUnlock
@@ -21603,7 +21603,7 @@ class MasterMgr
    * Get the table of annotations for the node with the given name.
    *   
    * This method assumes that a read/write lock for the annotation has already been 
-   * aquired.
+   * acquired.
    * 
    * @param name 
    *   The fully resolved node name.
@@ -21648,7 +21648,7 @@ class MasterMgr
    * Get the table of checked-in bundles for the node with the given name.
    * 
    * This method assumes that a read/write lock for the checked-in version has already been 
-   * aquired.
+   * acquired.
    * 
    * @param name 
    *   The fully resolved node name.
@@ -21670,7 +21670,7 @@ class MasterMgr
    * Get the table of checked-in bundles for the node with the given name.
    * 
    * This method assumes that a read/write lock for the checked-in version has already been 
-   * aquired.
+   * acquired.
    * 
    * @param name 
    *   The fully resolved node name.
@@ -21720,7 +21720,7 @@ class MasterMgr
    * Get the working bundle with the given working version ID.
    * 
    * This method assumes that a read/write lock for the working version has already been 
-   * aquired.
+   * acquired.
    * 
    * @param nodeID 
    *   The unique working version identifier.
@@ -21739,7 +21739,7 @@ class MasterMgr
    * Get the working bundle with the given working version ID.
    * 
    * This method assumes that a read/write lock for the working version has already been 
-   * aquired.
+   * acquired.
    * 
    * @param nodeID 
    *   The unique working version identifier.
@@ -21804,7 +21804,7 @@ class MasterMgr
    * Get the checksum cache bundle with the given working version ID.
    * 
    * This method assumes that a read/write lock for the checksum cache has already been 
-   * aquired.
+   * acquired.
    * 
    * @param nodeID
    *   The unique working version identifier.
@@ -21823,7 +21823,7 @@ class MasterMgr
    * Get the checksum cache bundle with the given working version ID.
    * 
    * This method assumes that a read/write lock for the checksum cache has already been 
-   * aquired.
+   * acquired.
    * 
    * @param nodeID
    *   The unique working version identifier.
@@ -21879,7 +21879,7 @@ class MasterMgr
    * Get the downstream links cache for a node.
    * 
    * This method assumes that a read/write lock for the downstream links has already been 
-   * aquired.
+   * acquired.
    * 
    * @param name
    *   The fully resolved node name.
@@ -21970,14 +21970,14 @@ class MasterMgr
             break;
           }
           
-          tm.aquire();
+          tm.acquire();
           LoggedLock lock = getCheckedInLock(name);
           lock.acquireWriteLock();
           try {
             tm.resume();	
             
             TreeMap<VersionID,CheckedInBundle> checkedIn = null;
-            tm.aquire();
+            tm.acquire();
             synchronized(pCheckedInBundles) {
               tm.resume();	
               checkedIn = pCheckedInBundles.remove(name); 
@@ -22022,7 +22022,7 @@ class MasterMgr
             break;
           }
           
-          tm.aquire();
+          tm.acquire();
           LoggedLock workingLock = getWorkingLock(nodeID);
           workingLock.acquireWriteLock();
           try {
@@ -22030,7 +22030,7 @@ class MasterMgr
             
             String name = nodeID.getName();
             boolean found = false;
-            tm.aquire();
+            tm.acquire();
             synchronized(pWorkingBundles) {
               tm.resume();	
               TreeMap<NodeID,WorkingBundle> bundles = pWorkingBundles.get(name); 
@@ -22081,14 +22081,14 @@ class MasterMgr
             break;
           }
           
-          tm.aquire();
+          tm.acquire();
           LoggedLock clock = getCheckSumLock(nodeID);
           clock.acquireWriteLock();
           try {
             tm.resume();	
             
             boolean found = false;
-            tm.aquire();
+            tm.acquire();
             synchronized(pCheckSumBundles) {
               tm.resume();	
               CheckSumBundle bundle = pCheckSumBundles.remove(nodeID.getName(), nodeID);
@@ -22135,14 +22135,14 @@ class MasterMgr
             break;
           }
 
-          tm.aquire();
+          tm.acquire();
           LoggedLock clock = getAnnotationsLock(name);
           clock.acquireWriteLock();
           try {
             tm.resume();	
             
             boolean found = false;
-            tm.aquire();
+            tm.acquire();
             synchronized(pAnnotations) {
               tm.resume();	
               found = (pAnnotations.remove(name) != null); 
@@ -22700,7 +22700,7 @@ class MasterMgr
     try {
       TaskTimer tm = new TaskTimer("Database Backup Synchronized " + 
                                    "(" + (needsLock ? "locked" : "live") + ")");
-      tm.aquire();
+      tm.acquire();
       if(needsLock) {
         if(!pDatabaseLock.tryWriteLock(sBackupTimeout)) {
           LogMgr.getInstance().logAndFlush
@@ -24230,7 +24230,7 @@ class MasterMgr
 
     MappedLinkedList<Long,BaseNodeEvent> events = new MappedLinkedList<Long,BaseNodeEvent>();
 
-    timer.aquire();
+    timer.acquire();
     synchronized(pNodeEventFileLock) {
       timer.resume();
 
@@ -24519,7 +24519,7 @@ class MasterMgr
    * Write the node annotations to disk. <P> 
    * 
    * This method assumes that the write lock for the table of annotations for
-   * the node already been aquired.
+   * the node already been acquired.
    * 
    * @param name
    *   The fully resolved node name.
@@ -24586,7 +24586,7 @@ class MasterMgr
    * Read annotations for a node from disk. <P> 
    * 
    * This method assumes that the write lock for the annotations has already been 
-   * aquired.
+   * acquired.
    * 
    * @param name
    *   The fully resolved node name.
@@ -24644,7 +24644,7 @@ class MasterMgr
    * Write the checked-in version to disk. <P> 
    * 
    * This method assumes that the write lock for the table of checked-in versions for
-   * the node already been aquired.
+   * the node already been acquired.
    * 
    * @param vsn
    *   The checked-in version to write.
@@ -24667,7 +24667,7 @@ class MasterMgr
    * Write the checked-in version to disk. <P> 
    * 
    * This method assumes that the write lock for the table of checked-in versions for
-   * the node already been aquired.
+   * the node already been acquired.
    * 
    * @param vsn
    *   The checked-in version to write.
@@ -24737,7 +24737,7 @@ class MasterMgr
    * Read all of the checked-in versions of a node from disk. <P> 
    * 
    * This method assumes that the write lock for the checked-in version has already been 
-   * aquired.
+   * acquired.
    * 
    * @param name
    *   The fully resolved node name.
@@ -24838,7 +24838,7 @@ class MasterMgr
    * Write the working version to disk. <P> 
    * 
    * This method assumes that the write lock for the working version has already been 
-   * aquired.
+   * acquired.
    * 
    * @param id 
    *   The unique working version identifier.
@@ -24917,7 +24917,7 @@ class MasterMgr
    * Read the working version from disk. <P> 
    * 
    * This method assumes that the write lock for the working version has already been 
-   * aquired.
+   * acquired.
    * 
    * @param id 
    *   The unique working version identifier.
@@ -25016,7 +25016,7 @@ class MasterMgr
    * Write the checksum cache for files associated with the working version to disk. <P> 
    * 
    * This method assumes that the write lock for the checksum cache version has already been 
-   * aquired.
+   * acquired.
    * 
    * @param cache
    *   The checksum cache.
@@ -25075,7 +25075,7 @@ class MasterMgr
    * Read the checksum cache for files associated with the working version from disk. <P> 
    * 
    * This method assumes that the write lock for the checksum cache has already been 
-   * aquired.
+   * acquired.
    * 
    * @param nodeID 
    *   The unique working version identifier.
@@ -25117,7 +25117,7 @@ class MasterMgr
    * deprecated per-file binary checksum files. <P> 
    * 
    * This method assumes that the write lock for the checksum cache has already been 
-   * aquired.
+   * acquired.
    * 
    * @param nodeID 
    *   The unique working version identifier.
@@ -25185,7 +25185,7 @@ class MasterMgr
    * Remove the checksum cache for files associated with the working version to disk. <P> 
    * 
    * This method assumes that the write lock for the checksum cache has already been 
-   * aquired.
+   * acquired.
    * 
    * @param nodeID 
    *   The unique working version identifier.
@@ -25231,7 +25231,7 @@ class MasterMgr
    * Write the downstream links to disk (if any exist). <P> 
    * 
    * This method assumes that the write lock for the downstream links has already been 
-   * aquired.
+   * acquired.
    * 
    * @param links
    *   The downstream links to write.
@@ -25286,7 +25286,7 @@ class MasterMgr
    * Read the downstream links from disk. <P> 
    * 
    * This method assumes that the write lock for the downstream links has already been 
-   * aquired.
+   * acquired.
    * 
    * @param name 
    *   The fully resolved node name.
@@ -25335,7 +25335,7 @@ class MasterMgr
    * Remove the downstream link file. 
    * 
    * This method assumes that the write lock for the downstream links has already been 
-   * aquired.
+   * acquired.
    * 
    * @param name
    *   The name of the node who's downstream links are to be deleted. 
@@ -25518,7 +25518,7 @@ class MasterMgr
               NodeVersion vsn = table.get(vid).getVersion();
               
               for(LinkVersion link : vsn.getSources()) { 
-                timer.aquire();
+                timer.acquire();
                 synchronized(pDownstream) {
                   timer.resume();
                   
@@ -25535,7 +25535,7 @@ class MasterMgr
               pNodeTree.addCheckedInNodeTreePath(vsn);
               
               if(vsn.isIntermediate()) {
-                timer.aquire();
+                timer.acquire();
                 synchronized(pIntermediate) {
                   timer.resume();
                   
@@ -25759,7 +25759,7 @@ class MasterMgr
                 upgradeDeprecatedCheckSumCache(nodeID, mod); 
               
               for(LinkMod link : mod.getSources()) { 
-                timer.aquire();
+                timer.acquire();
                 synchronized(pDownstream) {
                   timer.resume();
                   
@@ -26217,7 +26217,7 @@ class MasterMgr
 	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
 
-              timer.aquire();
+              timer.acquire();
               LoggedLock clock = getCheckSumLock(nodeID);
               clock.acquireWriteLock();
               try {
@@ -26351,7 +26351,7 @@ class MasterMgr
 	  for(LinkVersion link : vsn.getSources()) { 
 	    String lname = link.getName();
 
-	    timer.aquire();
+	    timer.acquire();
 	    LoggedLock downstreamLock = getDownstreamLock(lname);
 	    downstreamLock.acquireWriteLock();
 	    try {
@@ -26937,7 +26937,7 @@ class MasterMgr
    * 
    * All operations which will access any data which is backed by the filesystem should 
    * be protected by this lock in read lock mode.  Any operation which require that the entire
-   * contents of the database remain constant during the operation should aquire the write
+   * contents of the database remain constant during the operation should acquire the write
    * mode lock. The scope of this lock should enclose all other locks for an operation. <P> 
    * 
    * This lock exists primary to support write-locked database backups and node deletion. <P> 
@@ -27081,9 +27081,9 @@ class MasterMgr
    * The per-node online/offline locks indexed by fully resolved node name. <P> 
    * 
    * These locks protect access to (and modification of) whether the versions of a node are 
-   * currently online.  The per-node read-lock should be aquired for operations which 
+   * currently online.  The per-node read-lock should be acquired for operations which 
    * require that the online/offline status not change during the operation.  The per-node 
-   * write-lock should be aquired when changing the online/offline status of versions of a 
+   * write-lock should be acquired when changing the online/offline status of versions of a 
    * node.
    */
   private TreeMap<String,LoggedLock>  pOnlineOfflineLocks;
@@ -27339,8 +27339,8 @@ class MasterMgr
    * The per-node locks indexed by fully resolved node name. <P> 
    * 
    * These locks protect the annotations for each node. The per-node read-lock should 
-   * be aquired for operations which will only access the table of annotations for a node. 
-   * The per-node write-lock should be aquired when adding new annotations, modifying or 
+   * be acquired for operations which will only access the table of annotations for a node. 
+   * The per-node write-lock should be acquired when adding new annotations, modifying or 
    * removing existing annotations for a node. 
    */
   private TreeMap<String,LoggedLock>  pAnnotationLocks;
@@ -27371,8 +27371,8 @@ class MasterMgr
    * The per-node locks indexed by fully resolved node name. <P> 
    * 
    * These locks protect the checked-in versions of each node. The per-node read-lock should 
-   * be aquired for operations which will only access the table of checked-in versions of a 
-   * node.  The per-node write-lock should be aquired when adding new checked-in versions to
+   * be acquired for operations which will only access the table of checked-in versions of a 
+   * node.  The per-node write-lock should be acquired when adding new checked-in versions to
    * the table of checked-in versions for a node.  No existing checked-in bundle entries in 
    * these tables should ever be modified.
    */
@@ -27405,8 +27405,8 @@ class MasterMgr
    * The per-working version locks indexed by working version node ID. <P> 
    * 
    * These locks protect the working version related information of nodes. The per-working
-   * version read-lock should be aquired for operations which will only access this 
-   * information. The per-working version write-lock should be aquired when creating new 
+   * version read-lock should be acquired for operations which will only access this 
+   * information. The per-working version write-lock should be acquired when creating new 
    * working versions, modifying the information associated with existing working versions 
    * or removing existing working versions.
    */
@@ -27440,7 +27440,7 @@ class MasterMgr
    * 
    * These locks protect the checksum caches for files associated with the working versions
    * of nodes. The per-working version read-lock should be acquired for operations which will 
-   * only access this information. The per-working version write-lock should be aquired when 
+   * only access this information. The per-working version write-lock should be acquired when 
    * creating new checksum caches, modifying the contents of the cache or removing existing 
    * caches. 
    */
@@ -27472,8 +27472,8 @@ class MasterMgr
    * The per-node downstream links locks indexed by fully resolved node name. <P> 
    * 
    * These locks protect the cached downstream links of each node. The per-node read-lock 
-   * should be aquired for operations which will only access the downstream links of a node.
-   * The per-node write-lock should be aquired when adding or removing links for a node.
+   * should be acquired for operations which will only access the downstream links of a node.
+   * The per-node write-lock should be acquired when adding or removing links for a node.
    */
   private TreeMap<String,LoggedLock>  pDownstreamLocks;
   

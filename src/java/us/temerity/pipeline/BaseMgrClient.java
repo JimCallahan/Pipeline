@@ -556,7 +556,7 @@ class BaseMgrClient
 	timer = new TaskTimer
           (pClientID + " Recv [" + pSocket.getInetAddress() + ":" + pPort + "] " + 
            kind.toString());
-	timer.aquire();
+	timer.acquire();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	   pClientID + " Send [" + pSocket.getInetAddress() + ":" + pPort + "]: " + 
@@ -643,7 +643,7 @@ class BaseMgrClient
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
 	timer = new TaskTimer("Recv [" + pSocket.getInetAddress() + ":" + pPort + "] " + 
 			      kind.toString());
-	timer.aquire();
+	timer.acquire();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	   "Send [" + pSocket.getInetAddress() + ":" + pPort + "]: " + kind.toString()); 

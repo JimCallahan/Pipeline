@@ -79,7 +79,7 @@ class UserBalanceInfo
     long endTime;
     double sampleDuration;
     
-    timer.aquire();
+    timer.acquire();
     synchronized (pJobChangesLock) {
       timer.resume();
       
@@ -93,14 +93,14 @@ class UserBalanceInfo
          "SampleStart: [" + startTime + "], SampleEnd: [" + endTime +"], " +
          "SampleDuration: [" + sampleDuration +"]");
       
-      timer.aquire();
+      timer.acquire();
       synchronized (pHostChangesLock) {
         timer.resume();
         hostChanges = pHostChanges;
         pHostChanges = new MappedLinkedList<String, HostChange>();
       }
       
-      timer.aquire();
+      timer.acquire();
       synchronized (pGroupChangesLock) {
         timer.resume();
         groupChanges = pGroupChanges;
@@ -316,7 +316,7 @@ class UserBalanceInfo
         slotWeight.put(userBalanceGroup, 1/totalSlots);
       }
       
-      tm.aquire();
+      tm.acquire();
       {
         pCurrentUsageLock.lock(); 
         tm.resume();

@@ -2014,7 +2014,7 @@ class MasterMgrServer
               
               if(objOut != null) {
                 TaskTimer timer = new TaskTimer();
-                timer.aquire();
+                timer.acquire();
                 objOut.writeObject(new FailureRsp(timer, msg));
                 objOut.flush(); 
               }

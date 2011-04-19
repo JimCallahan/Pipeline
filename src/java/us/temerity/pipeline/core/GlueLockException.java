@@ -8,7 +8,7 @@ package us.temerity.pipeline.core;
 
 /**
  * Indicates that one of the methods of {@link LockedGlueFile LockedGlueFile} was unable
- * to aquire a file lock.
+ * to acquire a file lock.
  */
 public
 class GlueLockException

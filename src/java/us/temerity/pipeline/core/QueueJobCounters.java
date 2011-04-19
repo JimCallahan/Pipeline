@@ -58,7 +58,7 @@ class QueueJobCounters
     SortedSet<Long> jobIDs = group.getJobIDs();
     Counters counters = new Counters(jobIDs.size());
       
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByGroup) {
       timer.resume();
       
@@ -69,7 +69,7 @@ class QueueJobCounters
            "counts table!");
     }
     
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByJob) {
       timer.resume();
       
@@ -92,7 +92,7 @@ class QueueJobCounters
    QueueJobGroup group
   ) 
   {
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByGroup) {
       timer.resume();	
       pCountersByGroup.remove(group.getGroupID());
@@ -109,7 +109,7 @@ class QueueJobCounters
    Set<Long> jobIDs
   ) 
   {
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByJob) {
       timer.resume();
 
@@ -144,7 +144,7 @@ class QueueJobCounters
   ) 
   {
     Counters counters = null;
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByJob) {
       timer.resume();
       counters = pCountersByJob.get(info.getJobID());
@@ -170,7 +170,7 @@ class QueueJobCounters
   ) 
   {
     Counters counters = null;
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByJob) {
       timer.resume();
       counters = pCountersByJob.get(jobID);
@@ -206,7 +206,7 @@ class QueueJobCounters
   ) 
   {
     Counters counters = null;
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByJob) {
       timer.resume();
       counters = pCountersByJob.get(jobID);
@@ -241,7 +241,7 @@ class QueueJobCounters
   ) 
   {
     Counters counters = null;
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByGroup) {
       timer.resume();
       counters = pCountersByGroup.get(jobGroupID);
@@ -271,7 +271,7 @@ class QueueJobCounters
   ) 
   {
     Counters counters = null;
-    timer.aquire();
+    timer.acquire();
     synchronized(pCountersByGroup) {
       timer.resume();
       counters = pCountersByGroup.get(groupID);

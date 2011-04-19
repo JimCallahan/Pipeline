@@ -48,7 +48,7 @@ class LockedGlueFile
       FileChannel chan = new RandomAccessFile(file, "rw").getChannel();
       FileLock lock = chan.tryLock();
       if(lock == null) 
-	throw new GlueLockException("Unable to aquire lock for Glue file (" + file + ")!");
+	throw new GlueLockException("Unable to acquire lock for Glue file (" + file + ")!");
 
       try {
 	long size = chan.size();
@@ -115,7 +115,7 @@ class LockedGlueFile
       FileChannel chan = new RandomAccessFile(file, "rw").getChannel();
       FileLock lock = chan.tryLock();
       if(lock == null) 
-	throw new GlueLockException("Unable to aquire lock for Glue file (" + file + ")!");
+	throw new GlueLockException("Unable to acquire lock for Glue file (" + file + ")!");
 
       try {
         String text = GlueEncoderImpl.encodeString(title, obj);

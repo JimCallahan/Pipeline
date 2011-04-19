@@ -144,7 +144,7 @@ class TestReadWriteLockApp
     ) 
     {
      //  System.out.print(pTitle + "Thread [" + Thread.currentThread().getId() + 
-// 		       "] waited for (" + wait + " msec) to aquire the lock.\n");
+// 		       "] waited for (" + wait + " msec) to acquire the lock.\n");
 
       pTotalWait += wait;
       pMaxWait = Math.max(pMaxWait, wait);
