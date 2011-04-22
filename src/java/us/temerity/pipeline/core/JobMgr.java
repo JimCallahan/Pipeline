@@ -427,11 +427,14 @@ class JobMgr
             results = (QueueJobResults) GlueDecoderImpl.decodeFile("Results", rfile);
           }	
           catch(GlueException ex) {
-            throw new PipelineException(ex);
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               ex.getMessage() + "\n" 
+               "Treating Job as Failed.");
           }
         }
         
-	else {
+	if(results == null) {
           /* nothing is known, so fabricate some failure results */ 
           results = new QueueJobResults(666);
 
