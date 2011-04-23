@@ -429,7 +429,7 @@ class JobMgr
           catch(GlueException ex) {
             LogMgr.getInstance().log
               (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-               ex.getMessage() + "\n" 
+               ex.getMessage() + "\n" +
                "Treating Job as Failed.");
           }
         }
