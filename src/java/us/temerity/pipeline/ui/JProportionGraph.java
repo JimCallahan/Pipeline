@@ -30,6 +30,8 @@ class JProportionGraph
   JProportionGraph()
   {
     super();
+
+    setName("JobStatesTableCellRenderer");  
   }
 
 
@@ -158,19 +160,18 @@ class JProportionGraph
       int wk;
       for(wk=0; wk<ws.length; wk++) {
 	gfx.setColor(pColors[wk]);
-	gfx.fill(new Rectangle(left, 1, ws[wk], height));
+	gfx.fill(new Rectangle(left, 0, ws[wk], height));
 	left += ws[wk];
       }
     }
 
-    if (pLabel != null) {
+    if(pLabel != null) {
       gfx.setColor(Color.white);
       Font font = gfx.getFont();
       FontRenderContext frc = gfx.getFontRenderContext();
-      Rectangle2D bounds = font.getStringBounds(pLabel, frc);
-//      int rX = (width - (int) bounds.getWidth())/2;
-      int rY = (height - (int) bounds.getHeight()/2);
-      gfx.drawString(pLabel, 8, rY);
+      TextLayout layout = new TextLayout(pLabel, font, frc);
+      Rectangle2D bounds = layout.getBounds();
+      layout.draw(gfx, 8, height - Math.round(((float) bounds.getHeight()) / 2.0f) + 1);
     }
   }
 

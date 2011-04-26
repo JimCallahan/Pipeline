@@ -52,6 +52,7 @@ class FileMgrDirectClient
   ) 
   {
     pFileMgr = new FileMgr(false, fileStatDir, checksumDir);
+    pOpNotifier = new DirectOpNotifier();
   }
 
 
@@ -691,7 +692,7 @@ class FileMgrDirectClient
   {
     FilePackNodesReq req = new FilePackNodesReq(bundle);
 
-    Object obj = pFileMgr.packNodes(req);
+    Object obj = pFileMgr.packNodes(req, pOpNotifier);
     if(obj instanceof FilePackNodesRsp) {
       FilePackNodesRsp rsp = (FilePackNodesRsp) obj;
       return rsp.getPath();
@@ -761,7 +762,7 @@ class FileMgrDirectClient
     FileUnpackNodesReq req = 
       new FileUnpackNodesReq(bundlePath, bundle, author, view, skipUnpack);
     
-    Object obj = pFileMgr.unpackNodes(req);
+    Object obj = pFileMgr.unpackNodes(req, pOpNotifier);
     handleSimpleResponse(obj);    
   }
 
@@ -1002,7 +1003,7 @@ class FileMgrDirectClient
     FileArchiveReq req = 
       new FileArchiveReq(name, fseqs, archiver, env, dryRunResults != null);
 
-    Object obj = pFileMgr.archive(req);
+    Object obj = pFileMgr.archive(req, pOpNotifier);
     if(obj instanceof FileArchiverRsp) {
       FileArchiverRsp rsp = (FileArchiverRsp) obj;
       if(dryRunResults != null) 
@@ -1196,7 +1197,7 @@ class FileMgrDirectClient
       new FileExtractReq(archiveName, stamp, fseqs, checkSums, archiver, env, size, 
                          dryRunResults != null);
 
-    Object obj = pFileMgr.extract(req);
+    Object obj = pFileMgr.extract(req, pOpNotifier);
     if(obj instanceof FileArchiverRsp) {
       FileArchiverRsp rsp = (FileArchiverRsp) obj;
       if(dryRunResults != null) 
@@ -1251,7 +1252,8 @@ class FileMgrDirectClient
   ) 
     throws PipelineException 
   {
-    FileRestoreReq req = new FileRestoreReq(archiveName, stamp, name, vid, symlinks, targets);
+    FileRestoreReq req = 
+      new FileRestoreReq(archiveName, stamp, name, vid, symlinks, targets);
 
     Object obj = pFileMgr.restore(req);
     handleSimpleResponse(obj);
@@ -1279,6 +1281,45 @@ class FileMgrDirectClient
 
     Object obj = pFileMgr.extractCleanup(req);
     handleSimpleResponse(obj);    
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  O P E R A T I O N   M O N I T O R I N G                                               */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Add a operation progress monitor.
+   * 
+   * @returns
+   *   The unique ID used to remove the monitor.
+   */
+  public synchronized long 
+  addMonitor
+  (
+   OpMonitorable monitor
+  ) 
+  {
+    return pOpNotifier.addMonitor(monitor);
+  }
+  
+  /**
+   * Remove an operation progress monitor.
+   * 
+   * @param monitorID
+   *   The unique ID of the monitor.
+   * 
+   * @returns
+   *   The removed monitor or <CODE>null</CODE> if none exists.
+   */
+  public synchronized OpMonitorable
+  removeMonitor
+  (
+   long monitorID
+  ) 
+  {
+    return pOpNotifier.removeMonitor(monitorID);
   }
 
 
@@ -1338,5 +1379,10 @@ class FileMgrDirectClient
    */ 
   private FileMgr  pFileMgr;   
 
+
+  /**
+   * The direct operation notifier.
+   */
+  private DirectOpNotifier  pOpNotifier;
 }
 

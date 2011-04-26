@@ -1038,6 +1038,7 @@ class JRestoreDialog
       synchronized(pUpdateLock) {
         TreeMap<String,TreeSet<VersionID>> versions = pVersions.get(aname);
         long opID = master.beginDialogOp("Restoring from: " + aname); 
+        long monitorID = client.addMonitor(new DialogOpMonitor(opID));
         try {
           client.restore(aname, versions, pArchiver, pToolset);
         }
@@ -1055,8 +1056,9 @@ class JRestoreDialog
           return;
         }
         finally {
+          master.endDialogOp(opID, "Restored.");
+          client.removeMonitor(monitorID); 
           master.releaseMasterMgrClient(client);
-          master.endDialogOp(opID, "Done.");
         }
 	
         RemoveTask task = new RemoveTask(versions);

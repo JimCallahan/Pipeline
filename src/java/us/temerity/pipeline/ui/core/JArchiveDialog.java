@@ -529,6 +529,7 @@ class JArchiveDialog
       
       MasterMgrClient client = master.acquireMasterMgrClient();
       long opID = master.beginDialogOp("Searching for Candidate Versions...");
+      long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
         info = client.archiveQuery(pPattern, pMaxArchives);
       }
@@ -536,8 +537,9 @@ class JArchiveDialog
         showErrorDialog(ex);
       }
       finally {
+        master.endDialogOp(opID, "Archive Search Complete.");
+        client.removeMonitor(monitorID); 
         master.releaseMasterMgrClient(client);
-        master.endDialogOp(opID, "Done.");
       }
 	
       UpdateTask task = new UpdateTask(info);
@@ -604,9 +606,11 @@ class JArchiveDialog
     {
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
+      long monitorID = -1L;
       try {
         DoubleMap<String,VersionID,Long> data = null;
         long opID = master.beginDialogOp("Calculating File Sizes...");
+        monitorID = client.addMonitor(new DialogOpMonitor(opID));
         try {
           data = client.getArchivedSizes(pVersions);
         }
@@ -614,7 +618,7 @@ class JArchiveDialog
           showErrorDialog(ex);
         }
         finally {
-          master.endDialogOp(opID, "Done.");
+          master.endDialogOp(opID, "File Sizes Calculated.");
         }
   	
         /* merge existing and new sizes */ 
@@ -638,6 +642,7 @@ class JArchiveDialog
         }
       }
       finally {
+        client.removeMonitor(monitorID); 
         master.releaseMasterMgrClient(client);
       }
     }
@@ -725,6 +730,7 @@ class JArchiveDialog
         DoubleMap<String,VersionID,Long> versionSizes = null;
         {
           long opID = master.beginDialogOp("Assigning Versions to Archives...");
+          long monitorID = client.addMonitor(new DialogOpMonitor(opID));
           try {
             versionSizes = client.getArchivedSizes(pVersions);
           }
@@ -732,7 +738,8 @@ class JArchiveDialog
             showErrorDialog(ex);
           }
           finally {
-            master.endDialogOp(opID, "Done.");
+            master.endDialogOp(opID, "Versions Assigned.");
+            client.removeMonitor(monitorID); 
           }
         }
   	
@@ -820,6 +827,7 @@ class JArchiveDialog
           }
           else {  
             long opID = master.beginDialogOp();
+            long monitorID = client.addMonitor(new DialogOpMonitor(opID));
             int lastIdx = 0;
             try {
               for(Integer idx : archives.keySet()) {
@@ -839,7 +847,8 @@ class JArchiveDialog
               return;
             }
             finally {
-              master.endDialogOp(opID, "Done.");
+              master.endDialogOp(opID, "Archived.");
+              client.removeMonitor(monitorID); 
             }
               
             RemoveAllTask task = new RemoveAllTask();
@@ -975,6 +984,7 @@ class JArchiveDialog
         String archiveName = null;
         String msg = ("Archiving Volume (" + (pIndex+1) + " of " + pArchives.size() + ")...");
         long opID = master.beginDialogOp(msg); 
+        long monitorID = client.addMonitor(new DialogOpMonitor(opID));
         try {
           archiveName = client.archive(pPrefix, versions, pArchiver, pToolset);
         }
@@ -988,7 +998,8 @@ class JArchiveDialog
           return;
         }
         finally {
-          master.endDialogOp(opID, "Done.");
+          master.endDialogOp(opID, "Archived.");
+          client.removeMonitor(monitorID); 
         }
 
         SwingUtilities.invokeLater(new RemoveTask(versions));

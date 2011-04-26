@@ -926,5 +926,37 @@ interface FileMgrClient
   ) 
     throws PipelineException;
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  O P E R A T I O N   M O N I T O R I N G                                               */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Add a operation progress monitor.
+   * 
+   * @returns
+   *   The unique ID used to remove the monitor.
+   */
+  public long 
+  addMonitor
+  (
+   OpMonitorable monitor
+  );
+  
+  /**
+   * Remove an operation progress monitor.
+   * 
+   * @param monitorID
+   *   The unique ID of the monitor.
+   * 
+   * @returns
+   *   The removed monitor or <CODE>null</CODE> if none exists.
+   */
+  public OpMonitorable
+  removeMonitor
+  (
+   long monitorID
+  );
 }
 

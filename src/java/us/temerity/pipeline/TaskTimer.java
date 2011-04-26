@@ -45,8 +45,6 @@ class TaskTimer
    String title
   ) 
   {
-    if(title == null) 
-      throw new IllegalArgumentException("The task title cannot (null)!");
     pTitle = title;
 
     pStartWait   = -1;
@@ -56,7 +54,62 @@ class TaskTimer
     pActiveDuration = 0;
   }
 
-  
+  /**
+   * Copy constructor. <P> 
+   * 
+   * The newly created copy will accumilate all currently running wait/active timers into 
+   * the total durations and reset the timers.
+   * 
+   * @param timer
+   *   The timer to copy.
+   */
+  public
+  TaskTimer
+  (
+   TaskTimer timer
+  ) 
+  {
+    if(timer == null) 
+      throw new IllegalArgumentException("The timer cannot (null)!");
+
+    pTitle = timer.getTitle();
+
+    pWaitDuration = timer.pWaitDuration;
+    if(timer.pStartWait > 0) 
+      pWaitDuration += System.currentTimeMillis() - timer.pStartWait;
+
+    pActiveDuration = timer.pActiveDuration;
+    if(timer.pStartActive > 0) 
+      pActiveDuration += System.currentTimeMillis() - timer.pStartActive;
+
+    pStartWait   = -1;
+    pStartActive = -1; 
+  }
+
+  /**
+   * Copy constructor. <P> 
+   * 
+   * The newly created copy will accumilate all currently running wait/active timers into 
+   * the total durations and reset the timers.
+   * 
+   * @param timer
+   *   The timer to copy.
+   *
+   * @param title
+   *   A replacement task title.
+   */
+  public
+  TaskTimer
+  (
+   TaskTimer timer, 
+   String title
+  ) 
+  {
+    this(timer); 
+    pTitle = title; 
+  }
+
+    
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -72,7 +125,7 @@ class TaskTimer
   }
   
   /**
-   * Get the total number of milliseconds waiting on the aquisition of locks.
+   * Get the total number of milliseconds waiting on the acquisition of locks.
    */
   public long
   getWaitDuration() 
@@ -105,7 +158,7 @@ class TaskTimer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Marks the start of an lock aquisition interval and the end of an active interval.
+   * Marks the start of an lock acquisition interval and the end of an active interval.
    */
   public void 
   acquire() 
@@ -121,7 +174,7 @@ class TaskTimer
   }
 
   /**
-   * Marks the start of an lock aquisition interval and the end of an active interval.
+   * Marks the start of an lock acquisition interval and the end of an active interval.
    * 
    * @deprecated
    *   The method was unfortuneately misspelled but is now corrected.  This method exists, 
@@ -136,7 +189,7 @@ class TaskTimer
   }
 
   /**
-   * Marks the start of an active interval and the end of a lock aquisition interval.
+   * Marks the start of an active interval and the end of a lock acquisition interval.
    */
   public void 
   resume() 
@@ -206,6 +259,49 @@ class TaskTimer
       return stats;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   */ 
+//   private void 
+//   writeObject
+//   (
+//    java.io.ObjectOutputStream out
+//   )
+//     throws IOException
+//   {
+//     out.writeObject(pTitle);
+//     out.writeObject(pStartWait);
+//     out.writeObject(pStartActive);
+//     out.writeObject(pWaitDuration);
+//     out.writeObject(pActiveDuration);
+    
+//     System.out.println("WRITE: " + this);
+//   }
+
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   */ 
+//   private void 
+//   readObject
+//   (
+//     java.io.ObjectInputStream in
+//   )
+//     throws IOException, ClassNotFoundException
+//   {
+//     pTitle          = (String) in.readObject();
+//     pStartWait      = (Long) in.readObject();
+//     pStartActive    = (Long) in.readObject();
+//     pWaitDuration   = (Long) in.readObject();
+//     pActiveDuration = (Long) in.readObject();
+
+//     System.out.println("READ: " + this);
+//   }
+ 
 
 
   /*----------------------------------------------------------------------------------------*/

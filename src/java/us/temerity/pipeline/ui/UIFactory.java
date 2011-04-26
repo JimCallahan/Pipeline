@@ -847,7 +847,8 @@ class UIFactory
   }
 
   /**
-   * Create a new editable text field with a directory browser button used to set the path. <P> 
+   * Create a new editable text field with a directory browser button used to set the path.
+   * <P> 
    * 
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
@@ -1215,6 +1216,28 @@ class UIFactory
 
     return field;
   }  
+
+  /**
+   * Create a new progress field. 
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   */ 
+  public static JProgressField
+  createProgressField
+  (
+   int width
+  ) 
+  {
+    JProgressField field = new JProgressField();
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    return field;
+  }
 
   /**
    * Create a new Tuple2i field. <P> 

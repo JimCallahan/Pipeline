@@ -211,9 +211,6 @@ class JJobListCellRenderer
     JobState.Paused, JobState.Preempted, JobState.Queued
   };
   
-
-//  private static final Border sNormalBorder = BorderFactory.createEmptyBorder(2, 0, 2, 0);
-  
   private static final Border sNormalBorder = 
     BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0), 
                                        BorderFactory.createLineBorder(Color.black));

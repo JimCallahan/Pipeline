@@ -515,8 +515,9 @@ class JOfflineDialog
     {
       UIMaster master = UIMaster.getInstance();
       ArrayList<OfflineInfo> info = null;
-      long opID = master.beginDialogOp("Searching for Candidate Versions..."); 
       MasterMgrClient client = master.acquireMasterMgrClient();
+      long opID = master.beginDialogOp("Searching for Candidate Versions..."); 
+      long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
         info = client.offlineQuery(pPattern, pExcludeLatest, pMinArchives, pUnusedOnly);
       }
@@ -524,8 +525,9 @@ class JOfflineDialog
         showErrorDialog(ex);
       }
       finally {
+        master.endDialogOp(opID, "Offline Search Complete.");
+        client.removeMonitor(monitorID); 
         master.releaseMasterMgrClient(client);
-        master.endDialogOp(opID, "Done.");
       }
 	
       UpdateTask task = new UpdateTask(info);
@@ -594,6 +596,7 @@ class JOfflineDialog
       MasterMgrClient client = master.acquireMasterMgrClient();
       DoubleMap<String,VersionID,Long> data = null;
       long opID = master.beginDialogOp("Calculating File Sizes..."); 
+      long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
         data = client.getOfflineSizes(pVersions);
       }
@@ -601,8 +604,9 @@ class JOfflineDialog
         showErrorDialog(ex);
       }
       finally {
+        master.endDialogOp(opID, "File Sizes Calculated.");
+        client.removeMonitor(monitorID); 
         master.releaseMasterMgrClient(client);
-        master.endDialogOp(opID, "Done.");
       }
 	
       /* add versions without sizes */ 
@@ -690,6 +694,7 @@ class JOfflineDialog
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
       long opID = master.beginDialogOp("Offlining Checked-In Versions..."); 
+      long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
         client.offline(pVersions); 
       }
@@ -698,8 +703,9 @@ class JOfflineDialog
         return;
       }
       finally {
+        master.endDialogOp(opID, "Offlined.");
+        client.removeMonitor(monitorID); 
         master.releaseMasterMgrClient(client);
-        master.endDialogOp(opID, "Done.");
       }
       
       RemoveAllTask task = new RemoveAllTask();

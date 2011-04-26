@@ -84,6 +84,9 @@ class BaseMgrClient
     if(clientID == null)
       throw new IllegalArgumentException("The client ID cannot be (null)!");
     pClientID = clientID;
+
+    pOpMonitors = new TreeMap<Long,OpMonitorable>();
+    pNextOpMonitorID = 0L;
   }
 
 
@@ -470,6 +473,51 @@ class BaseMgrClient
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*  O P E R A T I O N   M O N I T O R I N G                                               */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Add a operation progress monitor.
+   * 
+   * @returns
+   *   The unique ID used to remove the monitor.
+   */
+  public synchronized long 
+  addMonitor
+  (
+   OpMonitorable monitor
+  ) 
+  {
+    if(monitor == null) 
+      throw new IllegalArgumentException("The operation monitor cannot be (null)!"); 
+
+    long opID = pNextOpMonitorID++;
+    pOpMonitors.put(opID, monitor);
+
+    return opID;
+  }
+  
+  /**
+   * Remove an operation progress monitor.
+   * 
+   * @param monitorID
+   *   The unique ID of the monitor.
+   * 
+   * @returns
+   *   The removed monitor or <CODE>null</CODE> if none exists.
+   */
+  public synchronized OpMonitorable
+  removeMonitor
+  (
+   long monitorID
+  ) 
+  {
+    return pOpMonitors.remove(monitorID);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
@@ -484,6 +532,30 @@ class BaseMgrClient
     throws IOException
   {
     return new ObjectInputStream(in);
+  }
+
+   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update all of the operation monitors.
+   * 
+   * @param timer
+   *   The current operation execution timer.
+   * 
+   * @param percentage
+   *   An update of the estimated percentage complete or 
+   *   <CODE>null</CODE> if no estimate is available.
+   */
+  private synchronized void 
+  updateMonitors
+  (
+   TaskTimer timer, 
+   Float percentage 
+  )
+  {
+    for(OpMonitorable monitor : pOpMonitors.values()) 
+      monitor.update(timer, percentage); 
   }
 
   
@@ -571,9 +643,23 @@ class BaseMgrClient
 	objOut.writeObject(req);
       objOut.flush(); 
 
-      InputStream in  = pSocket.getInputStream();
-      ObjectInput objIn  = getObjectInput(in); 
-      Object rsp = objIn.readObject();
+      InputStream in = pSocket.getInputStream();
+      ObjectInput objIn = getObjectInput(in); 
+
+      Object rsp = null;
+      while(true) {
+        rsp = objIn.readObject();
+        if(!(rsp instanceof NotifyRsp)) {
+          if(rsp instanceof TimedRsp) {
+            TimedRsp t = (TimedRsp) rsp;
+            updateMonitors(new TaskTimer(t.getTimer(), null), 1.0f);
+          }
+          break;
+        }
+
+        NotifyRsp p = (NotifyRsp) rsp;
+        updateMonitors(p.getTimer(), p.getPercentage());
+      }
 
       if(timer != null) {
 	timer.resume();
@@ -659,11 +745,11 @@ class BaseMgrClient
 
       pSocket.setSoTimeout(rspTimeout);
 
-      InputStream in  = pSocket.getInputStream();
+      InputStream in = pSocket.getInputStream();
       ObjectInput objIn = getObjectInput(in); 
       
       Object rsp = null;
-      while(rsp == null) {
+      while(true) {
 	try {
 	  rsp = objIn.readObject();
 	}
@@ -677,6 +763,19 @@ class BaseMgrClient
 	    throw ex;
           }
 	}
+
+        if(rsp != null) {
+          if(!(rsp instanceof NotifyRsp)) {
+            if(rsp instanceof TimedRsp) {
+              TimedRsp t = (TimedRsp) rsp;
+              updateMonitors(new TaskTimer(t.getTimer(), null), 1.0f);
+            }
+            break;
+          }
+
+          NotifyRsp p = (NotifyRsp) rsp;
+          updateMonitors(p.getTimer(), p.getPercentage());
+        }
       }
 
       if(timer != null) {
@@ -825,6 +924,19 @@ class BaseMgrClient
    * This can be used by a BaseMgrServer to restrict access to certain clients.
    */
   private String pClientID;
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A table of named operation monitors.
+   */
+  private TreeMap<Long,OpMonitorable> pOpMonitors;
+ 
+  /**
+   * The unique ID to give the next monitor added.
+   */ 
+  private long pNextOpMonitorID;
 
 }
 

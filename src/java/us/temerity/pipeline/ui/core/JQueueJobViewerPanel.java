@@ -3571,6 +3571,7 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        long monitorID = client.addMonitor(new PanelOpMonitor(pGroupID));
         QueueMgrClient queue = master.acquireQueueMgrClient();
         LinkedList<QueueJobGroup> allGroups = new LinkedList<QueueJobGroup>();
 	try {
@@ -3617,9 +3618,10 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
+          client.removeMonitor(monitorID); 
 	  master.releaseMasterMgrClient(client);
 	  master.releaseQueueMgrClient(queue);
-	  master.endPanelOp(pGroupID, "Done.");
+	  master.endPanelOp(pGroupID, "Jobs Submitted.");
 	  master.monitorJobGroups(allGroups);
 	}
 

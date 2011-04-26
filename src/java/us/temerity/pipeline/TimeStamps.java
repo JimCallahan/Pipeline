@@ -128,7 +128,8 @@ class TimeStamps
     double s = ((double) time) / ((double) sSecond); 
 
     if(interval > sYear) 
-      return String.format("%1$dyrs %2$dmons %3$ddays %4$dh %5$dm %6$.1fs", y, n, d, h, m, s); 
+      return String.format("%1$dyrs %2$dmons %3$ddays %4$dh %5$dm %6$.1fs", 
+                           y, n, d, h, m, s); 
     else if(interval > sMonth) 
       return String.format("%1$dmons %2$ddays %3$dh %4$dm %5$.1fs", n, d, h, m, s); 
     else if(interval > sDay) 

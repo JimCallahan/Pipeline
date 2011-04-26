@@ -1342,6 +1342,7 @@ class JFileSeqPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pParent.getGroupID(), "Submitting Jobs to the Queue...")) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        long monitorID = client.addMonitor(new PanelOpMonitor(pParent.getGroupID()));
 	try {
 	  LinkedList<QueueJobGroup> groups = 
 	    client.submitJobs(pParent.getAuthor(), pParent.getView(), 
@@ -1356,8 +1357,9 @@ class JFileSeqPanel
 	  return;
 	}
 	finally {
+	  master.endPanelOp(pParent.getGroupID(), "Jobs Submitted.");
+          client.removeMonitor(monitorID); 
 	  master.releaseMasterMgrClient(client);
-	  master.endPanelOp(pParent.getGroupID(), "Done.");
 	}
 
 	pParent.updatePanels();

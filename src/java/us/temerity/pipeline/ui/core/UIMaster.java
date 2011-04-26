@@ -4749,9 +4749,37 @@ class UIMaster
    String msg 
   )
   {
+    updateDialogOp(opID, msg, null, null);
+  }
+
+  /**
+   * Update the operation message in mid-operation.
+   * 
+   * @param opID
+   *   A unique handle for this operation. 
+   * 
+   * @param msg
+   *   A short message describing the operation.
+   * 
+   * @param timingMsg
+   *   A short message describing the amount of time the operation has been or is expected
+   *   to be running or <CODE>null</CODE> if no timing information is known.
+   * 
+   * @param percentage
+   *   The completion percentage [0.0, 1.0] if known or <CODE>null</CODE> if unknown.
+   */ 
+  public void
+  updateDialogOp
+  (
+   long opID,
+   String msg , 
+   String timingMsg, 
+   Float percentage
+  )
+  {
     OpLogger logger = pOpLoggers.get(opID);
     if(logger != null) 
-      logger.updateOp(msg);
+      logger.updateOp(msg, timingMsg, percentage);
   }
 
   /**
@@ -4869,13 +4897,41 @@ class UIMaster
    *   The index of the update channel.
    * 
    * @param msg
-   *   A short message describing the operation.
+   *   A message describing the operation.
    */ 
   public void
   updatePanelOp
   (
    int channel,
    String msg
+  )
+  {
+    updatePanelOp(channel, msg, null, null);
+  }
+
+  /**
+   * Update the operation message in mid-operation.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param msg
+   *   A message describing the operation.
+   * 
+   * @param timingMsg
+   *   A short message describing the amount of time the operation has been or is expected
+   *   to be running or <CODE>null</CODE> if no timing information is known.
+   * 
+   * @param percentage
+   *   The completion percentage [0.0, 1.0] if known or <CODE>null</CODE> if unknown.
+   */ 
+  public void
+  updatePanelOp
+  (
+   int channel,
+   String msg, 
+   String timingMsg, 
+   Float percentage
   )
   {
     if((channel < 1) || (channel > 9))
@@ -4888,7 +4944,7 @@ class UIMaster
     }  
 
     if(logger != null) 
-      logger.updateOp(msg);
+      logger.updateOp(msg, timingMsg, percentage);
   }
 
 
@@ -4904,7 +4960,7 @@ class UIMaster
    int channel
   ) 
   {
-    endPanelOp(channel, "");
+    endPanelOp(channel, null);
   }
 
   /**
@@ -5805,7 +5861,7 @@ class UIMaster
       hbox.add(Box.createRigidArea(new Dimension(4, 0)));
       
       {
-        JTextField field = UIFactory.createTextField(null, 30, JLabel.LEFT);
+        JProgressField field = UIFactory.createProgressField(30);
         pProgressField = field;
 	
         hbox.add(field);
@@ -5842,7 +5898,10 @@ class UIMaster
      String msg
     )
     {
-      pMessage = msg;
+      pMessage    = msg;
+      pTimingMsg  = null;
+      pPercentage = null;
+
       pTimer = new TaskTimer();
       pIsRunning = true;
       SwingUtilities.invokeLater(new BeginOpsTask(this));
@@ -5857,11 +5916,28 @@ class UIMaster
      String msg
     )
     {
+      updateOp(msg, null, null);
+    }
+
+    /**
+     * Update the operation message in mid-operation.
+     */ 
+    public synchronized void 
+    updateOp
+    (
+     String msg, 
+     String timingMsg, 
+     Float percentage
+    )
+    {
       if((pOpLock != null) && !pOpLock.isLocked())
         throw new IllegalStateException
           ("Somehow an update message was given when the channel was NOT locked!"); 
 
-      pMessage = msg;
+      pMessage    = msg;
+      pTimingMsg  = timingMsg; 
+      pPercentage = percentage; 
+
       SwingUtilities.invokeLater(new UpdateOpsTask(this));
     }
 
@@ -5874,14 +5950,15 @@ class UIMaster
      String msg
     )
     {
+      pMessage = msg;
       if(pTimer != null) {
         pTimer.suspend();
-        pMessage = 
-          (msg + "   (" + TimeStamps.formatInterval(pTimer.getActiveDuration()) + ")");
+        pTimingMsg  = "Total " + TimeStamps.formatInterval(pTimer.getActiveDuration());
       }
       else {
-        pMessage = msg;
+        pTimingMsg = null;
       }
+      pPercentage = 1.0f;
       
       pIsRunning = false;
       
@@ -5912,7 +5989,7 @@ class UIMaster
     beginUI()
     {
       pProgressLight.setIcon(sProgressRunningIcons[pChannel]); 
-      pProgressField.setText(pMessage);
+      pProgressField.update(pMessage, pTimingMsg, pPercentage);
       
       if(!pProgressBox.isVisible()) {
         pNoProgressBox.setVisible(false); 
@@ -5931,7 +6008,7 @@ class UIMaster
     public synchronized void 
     updateUI()
     {
-      pProgressField.setText(pMessage);
+      pProgressField.update(pMessage, pTimingMsg, pPercentage);
       pProgressPanel.repaint();
     }
 
@@ -5944,7 +6021,7 @@ class UIMaster
           panel.postPanelOp();
       }
 
-      pProgressField.setText(pMessage); 
+      pProgressField.update(pMessage, pTimingMsg, pPercentage);
       pProgressLight.setIcon(sProgressFinishedIcons[pChannel]); 
 
       if(!pIsRunning) {
@@ -5962,7 +6039,7 @@ class UIMaster
         else 
           pProgressPanel.remove(pProgressBox); 
 
-	pProgressPanel.revalidate();
+        pProgressPanel.revalidate();
 	pProgressPanel.repaint();
       }
     }
@@ -5970,12 +6047,14 @@ class UIMaster
     private int           pChannel;
     private ReentrantLock pOpLock; 
     private String        pMessage; 
+    private String        pTimingMsg;
+    private Float         pPercentage;
     private TaskTimer     pTimer;
     private boolean       pIsRunning;
 
-    private Box        pProgressBox;                                
-    private JLabel     pProgressLight;
-    private JTextField pProgressField;
+    private Box             pProgressBox;                                
+    private JLabel          pProgressLight;
+    private JProgressField  pProgressField;
   }
 
   /**
@@ -7112,6 +7191,7 @@ class UIMaster
       boolean errors = false;
 
       MasterMgrClient client = acquireMasterMgrClient();
+      long monitorID = client.addMonitor(new PanelOpMonitor(pChannel));
       LinkedList<QueueJobGroup> allGroups = new LinkedList<QueueJobGroup>();
       if(beginPanelOp(pChannel)) {
 	try {
@@ -7132,8 +7212,9 @@ class UIMaster
           }            
 	}
 	finally {
+	  endPanelOp(pChannel, "Job Submitted.");
+          client.removeMonitor(monitorID); 
 	  releaseMasterMgrClient(client);
-	  endPanelOp(pChannel, "Done.");
 	  if (!allGroups.isEmpty())
 	    monitorJobGroups(allGroups);
 	}

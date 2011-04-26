@@ -2010,7 +2010,7 @@
 
   <style id="JobStatesTableCellRenderer">
     <imagePainter path="EditableValuePanel.png"
-                  sourceInsets="3 3 3 3"/>
+                  sourceInsets="2 2 2 2"/>
     <insets top="1" bottom="1" right="1" left="1"/>
   </style>
   <bind style="JobStatesTableCellRenderer" type="name" key="JobStatesTableCellRenderer"/>

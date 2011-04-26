@@ -2436,6 +2436,9 @@ class FileMgr
    * @param req 
    *   The pack nodes request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   *
    * @return
    *   <CODE>FilePackNodesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to create the node bundle.
@@ -2443,7 +2446,8 @@ class FileMgr
   public Object
   packNodes
   (
-   FilePackNodesReq req
+   FilePackNodesReq req,
+   OpNotifiable opn 
   ) 
   {
     NodeBundle bundle = req.getBundle();
@@ -2452,6 +2456,8 @@ class FileMgr
     TaskTimer timer = new TaskTimer("FileMgr.packNodes(): " + rootID);
     
     try {
+      opn.notify(timer, "Packing Nodes...");
+
       /* determine the name of the node bundle and GLUE file containing the metadata */ 
       String bname = null;
       Path jarPath = null;
@@ -2488,7 +2494,9 @@ class FileMgr
           throw new PipelineException(ex);
         }
       }
-      
+
+      opn.notify(timer, "Packing Data Files...");
+
       /* create the node bundle JAR file */ 
       { 
 	Map<String,String> jenv = PackageInfo.getJavaEnvironment();
@@ -2543,13 +2551,17 @@ class FileMgr
                  "PackNodes", "jar", preOpts, args, jenv, workPath.toFile());
           
 	    try {
+              opn.setTotalSteps(procs.size());
+
 	      for(SubProcessLight proc : procs) {
                 proc.start();
                 proc.join();
                 if(!proc.wasSuccessful()) 
                   throw new PipelineException
                     ("Unable to append files to node bundle (" + jarPath + "):\n\n" + 
-                     "  " + proc.getStdErr());	
+                     "  " + proc.getStdErr());
+
+                opn.step(timer, "Packing Data Files...");
               }
             }
             catch(InterruptedException ex) {
@@ -2687,6 +2699,9 @@ class FileMgr
    * @param req 
    *   The extract bundle request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to unpack the node bundle files.
@@ -2694,7 +2709,8 @@ class FileMgr
   public Object
   unpackNodes
   ( 
-   FileUnpackNodesReq req
+   FileUnpackNodesReq req,
+   OpNotifiable opn 
   ) 
   {
     Path jarPath = req.getPath();
@@ -2736,6 +2752,8 @@ class FileMgr
           }
         }
       }
+
+      opn.notify(timer, "Unpacking Data Files..."); 
 
       /* make any previously existing files associated with nodes with enabled actions
            writable so that there won't be permissions errors when unpacking */ 
@@ -2792,6 +2810,8 @@ class FileMgr
                jenv, workPath.toFile());
 
           try {
+            opn.setTotalSteps(procs.size());
+
             for(SubProcessLight proc : procs) {
               proc.start();
               proc.join();
@@ -2799,6 +2819,8 @@ class FileMgr
                 throw new PipelineException
                   ("Unable to unpack node bundle (" + jarPath + "):\n\n" + 
                    "  " + proc.getStdErr());	
+
+              opn.step(timer, "Unpacking Data Files...");
             }
           }
           catch(InterruptedException ex) {
@@ -2807,6 +2829,8 @@ class FileMgr
           }
         }
       }
+
+      opn.step(timer, "Touching Data Files...");
 
       /* touch the files in depth first order */
       {
@@ -2839,6 +2863,8 @@ class FileMgr
           }
         }
       }
+
+      opn.step(timer, "Setting File Permissions...");
 
       /* make all unpacked files associated with nodes with enabled actions read-only */ 
       {
@@ -2874,6 +2900,8 @@ class FileMgr
           }
         }
       }
+
+      opn.step(timer, "Cleaning Up...");
 
       /* delete unpacked node bundle metadata GLUE file */ 
       {
@@ -3683,6 +3711,9 @@ class FileMgr
    * @param req 
    *   The archive request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to remove the checked-in version files.
@@ -3690,7 +3721,8 @@ class FileMgr
   public Object
   archive
   (
-   FileArchiveReq req
+   FileArchiveReq req,
+   OpNotifiable opn 
   ) 
   { 
     String archiveName = req.getArchiveName();	
@@ -3711,6 +3743,8 @@ class FileMgr
       }
       timer.resume();
 
+      opn.notify(timer, "Running Archiver..."); 
+
       /* determine the names of the files to archive */ 
       TreeSet<File> files = new TreeSet<File>();
       for(String name : fseqs.keySet()) {
@@ -3724,6 +3758,9 @@ class FileMgr
 	}
       }
 
+      /* set the number of files to be processed */ 
+      opn.setTotalSteps(files.size());     
+      
       /* create temporary directories and files */ 
       File dir = new File(pScratchDir, "archive/" + archiveName);
       File scratch = new File(dir, "scratch");
@@ -3746,34 +3783,50 @@ class FileMgr
       if(dryrun) 
         return new FileArchiverRsp(timer, null, proc.getDryRunInfo()); 
 
-      /* run the archiver */ 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Finer,
-	 "Creating archive volume (" + archiveName + ") using archiver plugin " + 
-	 "(" + archiver.getName() + ")."); 
-      {
-	proc.start();
+      /* create monitors for the output files */ 
+      FileMonitor outMonitor = new FileMonitor(outFile);
+      FileMonitor errMonitor = new FileMonitor(errFile);
+      try {
 
-	int cycles = 0; 
-	while(proc.isAlive()) {
-	  try {
-	    proc.join(15000);
-	    cycles++;
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException(ex);
-	  }
-	  
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	     "Process for archive volume (" + archiveName + "): " + 
-	     "WAITING for (" + cycles + ") loops...");
-	}
-	
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	   "Process for archive volume (" + archiveName + "): " + 
-	   "COMPLETED after (" + cycles + ") loops...");
+        /* run the archiver */ 
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+           "Creating archive volume (" + archiveName + ") using archiver plugin " + 
+           "(" + archiver.getName() + ")."); 
+        {
+          proc.start();
+          
+          int cycles = 0; 
+          while(proc.isAlive()) {
+            try {
+              proc.join(500);
+              cycles++;
+            }
+            catch(InterruptedException ex) {
+              throw new PipelineException(ex);
+            }
+            
+            /* monitor the output so far... (for progress reporting purposes) */ 
+            archiver.archiveMonitor(outMonitor, errMonitor, timer, opn);
+
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+               "Process for archive volume (" + archiveName + "): " + 
+               "WAITING for (" + cycles + ") loops...");
+          }
+          
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+             "Process for archive volume (" + archiveName + "): " + 
+             "COMPLETED after (" + cycles + ") loops...");
+        }
+
+        /* monitor the final output */ 
+        archiver.archiveMonitor(outMonitor, errMonitor, timer, opn);
+      }
+      finally {
+        outMonitor.close();
+        errMonitor.close();
       }
 
       /* report the contents of the generated STDERR file as the failure message */ 
@@ -4374,6 +4427,9 @@ class FileMgr
    * @param req 
    *   The extract request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return
    *   <CODE>FileArchiverRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable extract the files.
@@ -4381,7 +4437,8 @@ class FileMgr
   public Object
   extract
   (
-   FileExtractReq req
+   FileExtractReq req,
+   OpNotifiable opn 
   ) 
   {
     String archiveName = req.getArchiveName();	
@@ -4407,7 +4464,9 @@ class FileMgr
 	     "the production directory (" + pProdDir + ") to restore the " + 
 	     "archive volume (" + archiveName + ")!");
       }
-      
+
+      opn.notify(timer, "Running Archiver..."); 
+
       /* determine the names of the files to extract */ 
       TreeSet<File> files = new TreeSet<File>();
       for(String name : fseqs.keySet()) {
@@ -4420,6 +4479,9 @@ class FileMgr
 	  }
 	}
       }
+
+      /* set the number of files to be processed */ 
+      opn.setTotalSteps(files.size());     
 
       /* create temporary directories and files */ 
       File tmpdir = new File(pScratchDir, "restore/" + archiveName + "-" + stamp);
@@ -4455,34 +4517,50 @@ class FileMgr
         if(dryrun) 
           return new FileArchiverRsp(timer, null, proc.getDryRunInfo()); 
 
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
-	   "Restoring archive volume (" + archiveName + ") using archiver plugin " + 
-	   "(" + archiver.getName() + ").");
+        /* create monitors for the output files */ 
+        FileMonitor outMonitor = new FileMonitor(outFile);
+        FileMonitor errMonitor = new FileMonitor(errFile);
+        try {
+
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+             "Restoring archive volume (" + archiveName + ") using archiver plugin " + 
+             "(" + archiver.getName() + ").");
 	
-	proc.start();
+          proc.start();
 	
-	int cycles = 0; 
-	while(proc.isAlive()) {
-	  try {
-	    proc.join(15000);
-	    cycles++;
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException(ex);
-	  }
-	  
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	     "Process for archive volume (" + archiveName + "): " + 
+          int cycles = 0; 
+          while(proc.isAlive()) {
+            try {
+              proc.join(500);
+              cycles++;
+            }
+            catch(InterruptedException ex) {
+              throw new PipelineException(ex);
+            }
+            
+            /* monitor the output so far... (for progress reporting purposes) */ 
+            archiver.restoreMonitor(outMonitor, errMonitor, timer, opn);
+
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+               "Process for archive volume (" + archiveName + "): " + 
 	       "WAITING for (" + cycles + ") loops...");
-	}
-	
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	   "Process for archive volume (" + archiveName + "): " + 
-	   "COMPLETED after (" + cycles + ") loops...");
-     
+          }
+          
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+             "Process for archive volume (" + archiveName + "): " + 
+             "COMPLETED after (" + cycles + ") loops...");
+
+          /* monitor the final output */ 
+          archiver.restoreMonitor(outMonitor, errMonitor, timer, opn);
+        }
+        finally {
+          outMonitor.close();
+          errMonitor.close();
+        }
+        
 	
 	/* report the contents of the generated STDERR file as the failure message */ 
 	if(!proc.wasSuccessful()) {
@@ -4539,6 +4617,9 @@ class FileMgr
       
       /* verify that all files where restored and that their checksums are correct */ 
       { 
+        /* set the number of files to be processed */ 
+        opn.setTotalSteps(files.size());     
+
         for(String name : fseqs.keySet()) {
           TreeMap<VersionID,TreeSet<FileSeq>> vsnSeqs = fseqs.get(name);
           for(VersionID vid : vsnSeqs.keySet()) {
@@ -4564,7 +4645,9 @@ class FileMgr
                 }
                 catch(IOException ex) {
                   throw new PipelineException(ex); 
-                }
+                } 
+
+                opn.step(timer, "Checked: " + file);
               }
             }
 	  }
@@ -4663,6 +4746,7 @@ class FileMgr
 	}
       }
       
+
       /* move restored files into the repository */ 
       if(!symlinks.isEmpty()) {
 	{

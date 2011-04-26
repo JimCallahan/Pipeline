@@ -475,13 +475,11 @@ class PanelUpdater
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp(pGroupID)) {
       MasterMgrClient mclient = master.acquireMasterMgrClient();
+      long monitorID = mclient.addMonitor(new PanelOpMonitor(pGroupID));
       QueueMgrClient qclient  = master.acquireQueueMgrClient();
       try {
 	
 	/* clear client caches */
-//        LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Finest, 
-//          "Invalidating UI Cache with ID (" + pGroupID + ")");
-
         master.getUICache(pGroupID).invalidateCaches();
 	
 	WorkGroups wgroups = null;
@@ -904,8 +902,9 @@ class PanelUpdater
       }
       finally {
         master.releaseQueueMgrClient(qclient);
+	master.endPanelOp(pGroupID, success ? "Updated." : "Failed!");
+        mclient.removeMonitor(monitorID); 
         master.releaseMasterMgrClient(mclient);
-	master.endPanelOp(pGroupID, success ? "Done." : "Failed!");
       }
     }
 

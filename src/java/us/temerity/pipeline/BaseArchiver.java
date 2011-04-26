@@ -588,6 +588,94 @@ class BaseArchiver
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   M O N I T O R I N G                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Monitor the progress of the the archive operation by parsing the STDOUT/STDERR files
+   * generated and reporting back to the MasterMgrClient any progress messages and/or 
+   * reports of completion percentage.<P> 
+   * 
+   * This method is called at regular intervals while the archive operation is in progress.
+   * The default implementation does nothing.  Subclasses should override this method to 
+   * record the line number of the last lines of each STDOUT/STDERR files processed so that 
+   * only new lines need to be read with the {@link FileMonitor#getLines} method. <P> 
+   * 
+   * The operation progress notifier instance {@link OpNotifiable} will have been initialized
+   * by the server to set the number of operation steps to equal the number of fils being 
+   * archived (see {@link OpNotifiable#setTotalSteps}).  Subclass implementors of this method
+   * need only to call {@link OpNotifiable#step} to report progress.
+   *
+   * @param output 
+   *   The STDOUT file monitor.
+   * 
+   * @param error
+   *   The STDERR file monitor.
+   * 
+   * @param timer
+   *   The archive operation timer supplied by the MasterMgr server.
+   * 
+   * @param opn
+   *   The operation progress notifier.  
+   * 
+   * @throws PipelineException
+   *   If the archive opertion should be aborted early in response to STDOUT/STDERR output.
+   */ 
+  public void 
+  archiveMonitor
+  (
+   FileMonitor output, 
+   FileMonitor error, 
+   TaskTimer timer, 
+   OpNotifiable opn
+  )
+    throws PipelineException
+  {}
+
+  /**
+   * Monitor the progress of the the restore operation by parsing the STDOUT/STDERR files
+   * generated and reporting back to the MasterMgrClient any progress messages and/or 
+   * reports of completion percentage.<P> 
+   * 
+   * This method is called at regular intervals while the restore operation is in progress.
+   * The default implementation does nothing.  Subclasses should override this method to 
+   * record the line number of the last lines of each STDOUT/STDERR files processed so that 
+   * only new lines need to be read with the {@link FileMonitor#getLines} method. <P> 
+   * 
+   * The operation progress notifier instance {@link OpNotifiable} will have been initialized
+   * by the server to set the number of operation steps to equal the number of fils being 
+   * restored (see {@link OpNotifiable#setTotalSteps}).  Subclass implementors of this method
+   * need only to call {@link OpNotifiable#step} to report progress.
+   *
+   * @param output 
+   *   The STDOUT file monitor.
+   * 
+   * @param error
+   *   The STDERR file monitor.
+   * 
+   * @param timer
+   *   The restore operation timer supplied by the MasterMgr server.
+   * 
+   * @param opn
+   *   The operation progress notifier.  
+   * 
+   * @throws PipelineException
+   *   If the restore opertion should be aborted early in response to STDOUT/STDERR output.
+   */ 
+  public void 
+  restoreMonitor
+  (
+   FileMonitor output, 
+   FileMonitor error, 
+   TaskTimer timer, 
+   OpNotifiable opn
+  )
+    throws PipelineException
+  {}
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   M I S C   F I L E   U T I L S                                                        */
   /*----------------------------------------------------------------------------------------*/
 

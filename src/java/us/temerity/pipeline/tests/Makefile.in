@@ -365,7 +365,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                    VersionID \
 
 
-           TESTS = SubProcess
+           TESTS = TaskTimer
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS)) 
 

@@ -309,7 +309,8 @@ class MasterMgrServer
 
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
-	  
+          OpNotifiable opn    = new NetOpNotifier(objOut);
+          
 	  if(isFirst())
 	    verifyConnection(obj, objOut);
 	  else {
@@ -457,6 +458,7 @@ class MasterMgrServer
                   objOut.flush(); 
                 }
                 break;
+
 
               /*-- TOOLSETS --------------------------------------------------------------*/
               case GetDefaultToolsetName:
@@ -1198,6 +1200,7 @@ class MasterMgrServer
                 }
                 break;
 	   
+
               /*-- ANNOTATIONS -----------------------------------------------------------*/
               case GetAnnotation:
                 {
@@ -1266,6 +1269,7 @@ class MasterMgrServer
                   objOut.flush(); 
                 }
                 break;
+
 
               /*-- WORKING VERSIONS ------------------------------------------------------*/
               case GetWorkingNames:
@@ -1460,18 +1464,18 @@ class MasterMgrServer
 
 	    
               /*-- NODE STATUS -----------------------------------------------------------*/
-              case Status:
+              case Status: 
                 {
                   NodeStatusReq req = (NodeStatusReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.status(req));
+                  objOut.writeObject(pMasterMgr.status(req, opn));
                   objOut.flush(); 
                 }
                 break;
 
-              case MultiStatus:
+              case MultiStatus: 
                 {
                   NodeMultiStatusReq req = (NodeMultiStatusReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.multiStatus(req));
+                  objOut.writeObject(pMasterMgr.multiStatus(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -1497,7 +1501,7 @@ class MasterMgrServer
               case Release:
                 {
                   NodeReleaseReq req = (NodeReleaseReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.release(req));
+                  objOut.writeObject(pMasterMgr.release(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -1537,7 +1541,7 @@ class MasterMgrServer
               case CheckIn:
                 {
                   NodeCheckInReq req = (NodeCheckInReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.checkIn(req));
+                  objOut.writeObject(pMasterMgr.checkIn(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -1545,7 +1549,7 @@ class MasterMgrServer
               case CheckOut:
                 {
                   NodeCheckOutReq req = (NodeCheckOutReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.checkOut(req));
+                  objOut.writeObject(pMasterMgr.checkOut(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -1590,6 +1594,7 @@ class MasterMgrServer
                 }
                 break;
 
+
               /*-- CHECKSUMS ---------------------------------------------------------------*/
               case UpdateCheckSums: 
                 {
@@ -1599,11 +1604,12 @@ class MasterMgrServer
                 }
                 break;
 
+
               /*-- NODE BUNDLES ----------------------------------------------------------*/
-              case Pack:
+              case Pack: 
                 {
                   NodePackReq req = (NodePackReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.packNodes(req));
+                  objOut.writeObject(pMasterMgr.packNodes(req, opn)); 
                   objOut.flush(); 
                 }
                 break;
@@ -1619,10 +1625,11 @@ class MasterMgrServer
               case Unpack:
                 {
                   NodeUnpackReq req = (NodeUnpackReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.unpackNodes(req));
+                  objOut.writeObject(pMasterMgr.unpackNodes(req, opn));
                   objOut.flush(); 
                 }
                 break;
+
 
               /*-- SITE VERSIONS ---------------------------------------------------------*/
               case ExtractSiteVersion:
@@ -1665,6 +1672,7 @@ class MasterMgrServer
                   objOut.flush(); 
                 }
                 break;
+
 
               /*-- NODE EVENTS -----------------------------------------------------------*/
               case GetEvents: 
@@ -1739,11 +1747,12 @@ class MasterMgrServer
                 }
                 break;
 	   
+
               /*-- JOBS ------------------------------------------------------------------*/
-              case SubmitJobs: 
+              case SubmitJobs:
                 {
                   NodeSubmitJobsReq req = (NodeSubmitJobsReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.submitJobs(req));
+                  objOut.writeObject(pMasterMgr.submitJobs(req, opn));
                   objOut.flush(); 
                 }
                 break;  
@@ -1751,7 +1760,7 @@ class MasterMgrServer
               case ResubmitJobs: 
                 {
                   NodeResubmitJobsReq req = (NodeResubmitJobsReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.resubmitJobs(req));
+                  objOut.writeObject(pMasterMgr.resubmitJobs(req, opn));
                   objOut.flush(); 
                 }
                 break;  
@@ -1792,11 +1801,12 @@ class MasterMgrServer
                 }
                 break;  
 
+
               /*-- ARCHIVE ---------------------------------------------------------------*/
               case ArchiveQuery: 
                 {
                   MiscArchiveQueryReq req = (MiscArchiveQueryReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.archiveQuery(req));
+                  objOut.writeObject(pMasterMgr.archiveQuery(req, opn));
                   objOut.flush(); 
                 }
                 break;  
@@ -1804,7 +1814,7 @@ class MasterMgrServer
               case GetArchivedSizes:
                 {
                   MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getArchivedSizes(req));
+                  objOut.writeObject(pMasterMgr.getArchivedSizes(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -1812,16 +1822,17 @@ class MasterMgrServer
               case Archive: 
                 {
                   MiscArchiveReq req = (MiscArchiveReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.archive(req));
+                  objOut.writeObject(pMasterMgr.archive(req, opn));
                   objOut.flush(); 
                 }
                 break;  
 
+
               /*-- OFFLINE ---------------------------------------------------------------*/
-              case OfflineQuery: 
+              case OfflineQuery:
                 {
                   MiscOfflineQueryReq req = (MiscOfflineQueryReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.offlineQuery(req));
+                  objOut.writeObject(pMasterMgr.offlineQuery(req, opn));
                   objOut.flush(); 
                 }
                 break;  
@@ -1842,10 +1853,10 @@ class MasterMgrServer
                 }
                 break;
 
-              case GetOfflineSizes:
+              case GetOfflineSizes: 
                 {
                   MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getOfflineSizes(req));
+                  objOut.writeObject(pMasterMgr.getOfflineSizes(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -1853,7 +1864,7 @@ class MasterMgrServer
               case Offline: 
                 {
                   MiscOfflineReq req = (MiscOfflineReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.offline(req));
+                  objOut.writeObject(pMasterMgr.offline(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -1902,7 +1913,7 @@ class MasterMgrServer
               case Restore: 
                 {
                   MiscRestoreReq req = (MiscRestoreReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.restore(req));
+                  objOut.writeObject(pMasterMgr.restore(req, opn));
                   objOut.flush(); 
                 }
                 break;    
@@ -1950,7 +1961,7 @@ class MasterMgrServer
                 }
                 break;    
 
-              case GetArchive: 
+              case GetArchive:
                 {
                   MiscGetArchiveReq req = (MiscGetArchiveReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getArchive(req));

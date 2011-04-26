@@ -224,6 +224,7 @@ class FileMgrServer
 	  
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
+          OpNotifiable opn    = new NetOpNotifier(objOut);
 
 	  if(isFirst())
 	    verifyConnection(obj, objOut);
@@ -386,7 +387,7 @@ class FileMgrServer
               case PackNodes:
                 {
                   FilePackNodesReq req = (FilePackNodesReq) objIn.readObject();
-                  objOut.writeObject(pFileMgr.packNodes(req));
+                  objOut.writeObject(pFileMgr.packNodes(req, opn));
                   objOut.flush(); 
                 }
                 break;  
@@ -402,7 +403,7 @@ class FileMgrServer
               case UnpackNodes:
                 {
                   FileUnpackNodesReq req = (FileUnpackNodesReq) objIn.readObject();
-                  objOut.writeObject(pFileMgr.unpackNodes(req));
+                  objOut.writeObject(pFileMgr.unpackNodes(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -446,7 +447,7 @@ class FileMgrServer
               case Archive:
                 {
                   FileArchiveReq req = (FileArchiveReq) objIn.readObject();
-                  objOut.writeObject(pFileMgr.archive(req));
+                  objOut.writeObject(pFileMgr.archive(req, opn));
                   objOut.flush(); 
                 }
                 break;
@@ -488,7 +489,7 @@ class FileMgrServer
               case Extract:
                 {
                   FileExtractReq req = (FileExtractReq) objIn.readObject();
-                  objOut.writeObject(pFileMgr.extract(req));
+                  objOut.writeObject(pFileMgr.extract(req, opn));
                   objOut.flush(); 
                 }
                 break;

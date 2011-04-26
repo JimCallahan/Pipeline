@@ -10358,6 +10358,9 @@ class MasterMgr
    * 
    * @param req 
    *   The node status request.
+   * 
+   * @param opn
+   *   The operation progress notifier.
    *
    * @return
    *   <CODE>NodeStatusRsp</CODE> if successful or 
@@ -10366,7 +10369,8 @@ class MasterMgr
   public Object
   status
   ( 
-   NodeStatusReq req 
+   NodeStatusReq req,   
+   OpNotifiable opn
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -10378,7 +10382,7 @@ class MasterMgr
       
       NodeOp nodeOp = null;
       if(!req.getLightweight()) 
-        nodeOp = new NodeOp();
+        nodeOp = new StatusNodeOp(opn);
 
       NodeID nodeID = req.getNodeID();
       DownstreamMode dmode = req.getDownstreamMode();
@@ -10418,6 +10422,9 @@ class MasterMgr
    * 
    * @param req 
    *   The node status request.
+   * 
+   * @param opn
+   *   The operation progress notifier.
    *
    * @return
    *   <CODE>NodeStatusRsp</CODE> if successful or 
@@ -10426,7 +10433,8 @@ class MasterMgr
   public Object
   multiStatus
   ( 
-   NodeMultiStatusReq req 
+   NodeMultiStatusReq req,   
+   OpNotifiable opn
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -10513,7 +10521,8 @@ class MasterMgr
           boolean isRoot = foundRoots.contains(name);
           NodeID nodeID = new NodeID(author, view, name);
           DownstreamMode dm = isRoot ? dmode : DownstreamMode.None;
-          NodeStatus status = performNodeOperation(new NodeOp(), nodeID, dm, cache, timer);
+          NodeStatus status = 
+            performNodeOperation(new StatusNodeOp(opn), nodeID, dm, cache, timer);
 
           /* if its also one of the root nodes, add the original node status to the results */
           if(isRoot) 
@@ -10835,6 +10844,9 @@ class MasterMgr
    * @param req 
    *   The node release request.
    *
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to release the working version.
@@ -10842,7 +10854,8 @@ class MasterMgr
   public Object
   release
   (
-   NodeReleaseReq req
+   NodeReleaseReq req, 
+   OpNotifiable opn
   ) 
   {
     String author = req.getAuthor();
@@ -10851,7 +10864,7 @@ class MasterMgr
     boolean removeFiles = req.removeFiles();
 
     TaskTimer timer = new TaskTimer("MasterMgr.release()");
-    
+
     /* pre-op tests */
     ReleaseExtFactory factory = new ReleaseExtFactory(author, view, nodeNames, removeFiles);
     try {
@@ -10870,6 +10883,8 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may release nodes in working " + 
 	   "areas owned by another user!");
+
+      opn.notify(timer, "Validating Nodes..."); 
 
       /* determine the link relationships between the nodes being released */ 
       TreeMap<String,NodeLinks> all = new TreeMap<String,NodeLinks>();
@@ -10906,6 +10921,9 @@ class MasterMgr
 	}
       }
       
+      /* estimate the number of individual node releases */ 
+      opn.setTotalSteps(all.size());
+
       /* get the initial tree roots */ 
       TreeSet<String> roots = new TreeSet<String>();
       for(String name : all.keySet()) {
@@ -10935,6 +10953,8 @@ class MasterMgr
 	}
 	
 	roots.remove(name);
+
+        opn.step(timer, "Released: " + name); 
       }
       
       if(!failures.isEmpty()) {
@@ -11404,6 +11424,9 @@ class MasterMgr
    * @param req 
    *   The node check-in request.
    *
+   * @param opn
+   *   The operation progress notifier.
+   *
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to the check-in the nodes.
@@ -11411,7 +11434,8 @@ class MasterMgr
   public Object
   checkIn
   ( 
-   NodeCheckInReq req 
+   NodeCheckInReq req, 
+   OpNotifiable opn
   ) 
   {
     NodeID nodeID = req.getNodeID();
@@ -11458,7 +11482,7 @@ class MasterMgr
       }
 
       /* check-in the tree of nodes */ 
-      performNodeOperation(new NodeCheckInOp(req, rootVersionID), nodeID, timer);
+      performNodeOperation(new NodeCheckInOp(req, rootVersionID, opn), nodeID, timer);
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -11480,6 +11504,9 @@ class MasterMgr
    * @param req 
    *   The node check-out request.
    *
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or
    *   <CODE>GetUnfinishedJobsForNodesRsp</CODE> if running jobs prevent the check-out or 
@@ -11488,7 +11515,8 @@ class MasterMgr
   public Object
   checkOut
   ( 
-   NodeCheckOutReq req 
+   NodeCheckOutReq req, 
+   OpNotifiable opn
   ) 
   {
     NodeID nodeID = req.getNodeID();
@@ -11498,17 +11526,22 @@ class MasterMgr
     timer.acquire();
     pDatabaseLock.acquireReadLock();
     try {
-      timer.resume();	      
+      timer.resume();	
 
       if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may check-out nodes owned by " + 
 	   "another user!");
 
+      opn.notify(timer, "Validating Nodes..."); 
+
       /* get the current status of the nodes */ 
       TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
       performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false, true, 
 			    new LinkedList<String>(), table, timer);
+
+      /* estimate the number of individual node check-outs */ 
+      opn.setTotalSteps(table.size());
 
       /* determine all checked-in versions required by the check-out operation */ 
       TreeMap<String,TreeSet<VersionID>> requiredVersions = 
@@ -11607,12 +11640,12 @@ class MasterMgr
 	boolean anyExtTests = hasAnyExtensionTests(timer, factory); 
 	boolean anyExtTasks = hasAnyExtensionTasks(timer, factory); 
 
-	/* check-out the nodes */ 
-	performCheckOut
+	/* check-out the nodes */      
+      	performCheckOut
 	  (true, nodeID, req.getVersionID(), false, anyExtTests, anyExtTasks, 
 	   req.getMode(), req.getMethod(), 
 	   table, new LinkedList<String>(), new TreeSet<String>(), 
-	   new TreeSet<String>(), timer);
+	   new TreeSet<String>(), timer, opn);
       }
       finally {
 	onlineOfflineReadUnlock(onOffLocks);
@@ -11883,6 +11916,9 @@ class MasterMgr
    * @param timer
    *   The shared task timer for this operation.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @throws PipelineException 
    *   If unable to perform the check-out operation.
    */
@@ -11901,7 +11937,8 @@ class MasterMgr
    LinkedList<String> branch, 
    TreeSet<String> seen, 
    TreeSet<String> dirty, 
-   TaskTimer timer   
+   TaskTimer timer, 
+   OpNotifiable opn 
   ) 
     throws PipelineException 
   {
@@ -12103,7 +12140,7 @@ class MasterMgr
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
 	  performCheckOut(false, lnodeID, link.getVersionID(), link.isLocked(), 
 			  hasExtTests, hasExtTasks, 
-			  mode, checkOutMethod, stable, branch, seen, dirty, timer);
+			  mode, checkOutMethod, stable, branch, seen, dirty, timer, opn);
 	  
 	  /* if any of the upstream nodes are dirty, 
   	     mark this node as dirty and make sure it isn't frozen */ 
@@ -12275,6 +12312,8 @@ class MasterMgr
     finally {
       checkedInLock.releaseReadLock();  
       workingLock.releaseWriteLock();
+
+      opn.step(timer, "Checked-Out: " + name); 
     }
 
     /* pop the current node off of the end of the branch */ 
@@ -13663,13 +13702,13 @@ class MasterMgr
    * Create a new node bundle (JAR achive) by packing up a tree of nodes from a working 
    * area rooted at the given node.<P> 
    *
-   * If successful, this will create a new node bundle containing the node properties, links
-   * and associated working area data files for the entire tree of nodes rooted at the given
-   * node.  The node bundle will contain full copies of all files associated with these nodes
-   * regardless of whether they where checked-out modifiable, frozen or locked within the 
-   * current working area.  All node metadata, including detailed information about the
-   * toolsets and toolset packages required, will be written to a GLUE file included in the
-   * node bundle. <P> 
+   * If successful, this will create a new node bundle containing the node properties, 
+   * links and associated working area data files for the entire tree of nodes rooted at 
+   * the given node.  The node bundle will contain full copies of all files associated 
+   * with these nodes regardless of whether they where checked-out modifiable, frozen or 
+   * locked within the current working area.  All node metadata, including detailed 
+   * information about the toolsets and toolset packages required, will be written to a 
+   * GLUE file included in the node bundle. <P> 
    * 
    * The node bundle will always be written into the root directory of the working area 
    * containing the root node of the node tree being packed into the archive.  The name of
@@ -13688,6 +13727,9 @@ class MasterMgr
    * @param req 
    *   The pack request.
    *
+   * @param opn
+   *   The operation progress notifier.
+   *
    * @return
    *   <CODE>NodePackRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to create the node JAR archive.
@@ -13695,7 +13737,8 @@ class MasterMgr
   public Object
   packNodes
   ( 
-   NodePackReq req 
+   NodePackReq req , 
+   OpNotifiable opn
   ) 
   {
     NodeID nodeID = req.getNodeID();
@@ -13721,6 +13764,8 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may create a node JAR archive " + 
            "containing nodes from a working areas owned by another user!");
+
+      opn.notify(timer, "Validating Nodes..."); 
 
       /* get the current status of the root node */ 
       NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
@@ -13810,10 +13855,12 @@ class MasterMgr
         }
 
         FileMgrClient fclient = acquireFileMgrClient();
+        long monitorID = fclient.addMonitor(new RelayOpMonitor(opn));
         try {
           nodeArchive = fclient.packNodes(bundle);
         }
         finally {
+          fclient.removeMonitor(monitorID); 
           releaseFileMgrClient(fclient);
         }
       }
@@ -13936,6 +13983,9 @@ class MasterMgr
    * @param req 
    *   The extract bundle request.
    *
+   * @param opn
+   *   The operation progress notifier.
+   *
    * @return
    *   <CODE>NodeUnpackReq</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to unpack the nodes from the node bundle.
@@ -13943,7 +13993,8 @@ class MasterMgr
   public Object
   unpackNodes
   ( 
-   NodeUnpackReq req 
+   NodeUnpackReq req, 
+   OpNotifiable opn
   ) 
   {
     Path bundlePath = req.getPath();
@@ -13990,6 +14041,8 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may unpack a node bundle " +
            "into a working area owned by another user!");
+
+      opn.notify(timer, "Extracting Nodes..."); 
 
       /* make sure the working area exists */ 
       createWorkingAreaHelper(timer, author, view);
@@ -14044,6 +14097,8 @@ class MasterMgr
           ckeys.removeLast(); 
         }
         
+        opn.notify(timer, "Creating Local Nodes..."); 
+
         BuilderInformation info = new BuilderInformation(null, false, false, false, cparams);
         MasterMgrClient mclient = new MasterMgrClient();  // MAKE THIS DIRECT!!
 
@@ -14096,10 +14151,12 @@ class MasterMgr
 
       /* unpack the node data files */ 
       FileMgrClient fclient = acquireFileMgrClient();
+      long monitorID = fclient.addMonitor(new RelayOpMonitor(opn));
       try {
         fclient.unpackNodes(bundlePath, bundle, author, view, skipUnpack); 
       }
       finally {
+        fclient.removeMonitor(monitorID); 
         releaseFileMgrClient(fclient);
       }
       
@@ -14853,6 +14910,9 @@ class MasterMgr
    * @param req 
    *   The submit jobs request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return 
    *   <CODE>NodeSubmitJobsRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to submit the jobs.
@@ -14860,7 +14920,8 @@ class MasterMgr
   public Object
   submitJobs
   ( 
-   NodeSubmitJobsReq req
+   NodeSubmitJobsReq req, 
+   OpNotifiable opn 
   )
   {
     TaskTimer timer = new TaskTimer();
@@ -14880,7 +14941,7 @@ class MasterMgr
          req.getBatchSize(), req.getPriority(), req.getRampUp(),
          req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
          req.getSelectionKeys(), req.getLicenseKeys(), req.getHardwareKeys(), 
-         timer);
+         timer, opn);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -14903,6 +14964,9 @@ class MasterMgr
    * @param req 
    *   The submit jobs request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return 
    *   <CODE>NodeSubmitJobsRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to submit the jobs.
@@ -14910,7 +14974,8 @@ class MasterMgr
   public Object
   resubmitJobs
   ( 
-   NodeResubmitJobsReq req
+   NodeResubmitJobsReq req, 
+   OpNotifiable opn 
   )
   {
     TaskTimer timer = new TaskTimer();
@@ -14931,7 +14996,7 @@ class MasterMgr
          req.getBatchSize(), req.getPriority(), req.getRampUp(),
          req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
          req.getSelectionKeys(), req.getLicenseKeys(), req.getHardwareKeys(), 
-         timer);
+         timer, opn);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -14945,8 +15010,8 @@ class MasterMgr
    * Common code used by {@link #submitJobs submitJobs} and {@link #resubmitJobs resubmitJobs}
    * methods to submit a single job group.
    * 
-   * @param status
-   *   The status of the tree of nodes. 
+   * @param rootNodeID
+   *   The unique ID of the root node of the submission.
    * 
    * @param indices
    *   The file sequence indices of the files to regenerate or 
@@ -14967,6 +15032,16 @@ class MasterMgr
    * @param rampUp
    *   Overrides the ramp-up interval (in seconds) for the job.
    * 
+   * @param maxLoad
+   *   Overrides the maximum system load allowed on an eligible host.
+   * 
+   * @param minMemory 
+   *   Overrides the minimum amount of free memory (in bytes) required on an eligible host.
+   * 
+   * @param minDisk 
+   *   Overrides the minimum amount of free temporary local disk space (in bytes) required 
+   *   on an eligible host.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
@@ -14975,11 +15050,15 @@ class MasterMgr
    *   Overrides the set of license keys required by them job associated with the root 
    *   node of the job submission.
    * 
-   * @param assocRoots
-   *   The names of nodes encountered on the upstream side of an Association link.
+   * @param hardwareKeys 
+   *   Overrides the set of hardware keys required by the job associated with the root 
+   *   node of the job submission.
    * 
    * @param timer
    *   The task timer.
+   * 
+   * @param opn
+   *   The operation progress notifier.
    * 
    * @return 
    *   The <CODE>NodeSubmitJobsRsp</CODE> for the newly created job groups.
@@ -14999,7 +15078,8 @@ class MasterMgr
    Set<String> selectionKeys,
    Set<String> licenseKeys,
    Set<String> hardwareKeys,
-   TaskTimer timer 
+   TaskTimer timer, 
+   OpNotifiable opn 
   )
     throws PipelineException 
   {
@@ -15039,8 +15119,18 @@ class MasterMgr
           timer.resume();
 
           /* get the current status of the root submit node */ 
-          NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
-        
+          NodeStatus status = null;
+          {
+            TreeMap<String,NodeStatus> cache = new TreeMap<String,NodeStatus>();
+            status = performNodeOperation(new StatusNodeOp(opn), nodeID, DownstreamMode.None, 
+                                          cache, timer); 
+            
+            /* set the number of nodes being processed */ 
+            opn.setTotalSteps(cache.size());
+          }
+
+          opn.notify(timer, "Submitting Jobs..."); 
+
           /* compute file indices if not already specified */ 
           if(indices == null) {
             indices = new TreeSet<Integer>();  
@@ -15152,16 +15242,26 @@ class MasterMgr
    * @param rampUp
    *   Overrides the ramp-up interval (in seconds) for the job.
    * 
+   * @param maxLoad
+   *   Overrides the maximum system load allowed on an eligible host.
+   * 
+   * @param minMemory 
+   *   Overrides the minimum amount of free memory (in bytes) required on an eligible host.
+   * 
+   * @param minDisk 
+   *   Overrides the minimum amount of free temporary local disk space (in bytes) required 
+   *   on an eligible host.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
    * 
    * @param licenseKeys 
-   *   Overrides the set of license keys required by them job associated with the root 
+   *   Overrides the set of license keys required by the job associated with the root 
    *   node of the job submission.
    * 
    * @param hardwareKeys 
-   *   Overrides the set of hardware keys required by them job associated with the root 
+   *   Overrides the set of hardware keys required by the job associated with the root 
    *   node of the job submission.
    * 
    * @param timeStamp
@@ -15178,6 +15278,9 @@ class MasterMgr
    * 
    * @param assocRoots
    *   The names of nodes encountered on the upstream side of an Association link.
+   * 
+   * @param exceptions
+   *   The set of exception thrown during job submission.
    * 
    * @param timer
    *   The task timer.
@@ -15340,6 +15443,16 @@ class MasterMgr
    * @param rampUp
    *   Overrides the ramp-up interval (in seconds) for the job.
    * 
+   * @param maxLoad
+   *   Overrides the maximum system load allowed on an eligible host.
+   * 
+   * @param minMemory 
+   *   Overrides the minimum amount of free memory (in bytes) required on an eligible host.
+   * 
+   * @param minDisk 
+   *   Overrides the minimum amount of free temporary local disk space (in bytes) required 
+   *   on an eligible host.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
@@ -15381,6 +15494,9 @@ class MasterMgr
    * @param assocRoots
    *   The names of nodes encountered on the upstream side of an Association link.
    *
+   * @param exceptions
+   *   The set of exception thrown during job submission.
+   * 
    * @param timer
    *   The task timer.
    */
@@ -16948,6 +17064,9 @@ class MasterMgr
    * @param req 
    *   The query request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return 
    *   <CODE>MiscArchiveQueryRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to perform the query.
@@ -16955,7 +17074,8 @@ class MasterMgr
   public Object
   archiveQuery
   (
-   MiscArchiveQueryReq req
+   MiscArchiveQueryReq req, 
+   OpNotifiable opn 
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -16978,6 +17098,8 @@ class MasterMgr
 	  ("The maximum number of archive volumes containing the checked-in version " +
 	   "(" + maxArchives + ") must be positive!");
 
+      opn.notify(timer, "Pattern Search..."); 
+
       /* get the node names which match the pattern */ 
       TreeSet<String> matches = null;
       try {
@@ -16992,7 +17114,11 @@ class MasterMgr
 	  (timer, "Illegal Node Name Pattern:\n\n" + ex.getMessage());
       }
       
+      /* set the number of individual nodes to be queried */ 
+      opn.setTotalSteps(matches.size());
+
       /* process the matching nodes */ 
+      long cnt = 0L;
       ArrayList<ArchiveInfo> archiveInfo = new ArrayList<ArchiveInfo>();
       for(String name : matches) {
 	  
@@ -17078,7 +17204,12 @@ class MasterMgr
 	}
         finally {
           onOffLock.releaseReadLock();
-        }  
+        }
+  
+        long batch = 10L;
+        if((cnt % batch) == 0L) 
+          opn.steps(timer, "Queried: " + name, batch); 
+        cnt++;
       }
 
       return new MiscArchiveQueryRsp(timer, archiveInfo);
@@ -17098,6 +17229,9 @@ class MasterMgr
    * @param req
    *   The file sizes request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return
    *   <CODE>MiscGetArchiveSizesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
@@ -17105,7 +17239,8 @@ class MasterMgr
   public Object
   getArchivedSizes
   (
-   MiscGetSizesReq req
+   MiscGetSizesReq req, 
+   OpNotifiable opn 
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17114,6 +17249,9 @@ class MasterMgr
     pDatabaseLock.acquireReadLock();
     try {
       timer.resume();	
+
+      /* set the number of nodes to be processed */ 
+      opn.setTotalSteps(req.getVersions().size());      
 
       /* process the nodes */ 
       DoubleMap<String,VersionID,Long> sizes = new DoubleMap<String,VersionID,Long>();
@@ -17171,6 +17309,8 @@ class MasterMgr
             onOffLock.releaseReadLock();
           }
         }
+
+        opn.step(timer, "Sized: " + name); 
       }
 
       return new MiscGetSizesRsp(timer, sizes);
@@ -17191,6 +17331,9 @@ class MasterMgr
    * @param req 
    *   The archive request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return 
    *   <CODE>MiscArchiveRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to archive the files.
@@ -17198,7 +17341,8 @@ class MasterMgr
   public Object
   archive
   (
-   MiscArchiveReq req
+   MiscArchiveReq req, 
+   OpNotifiable opn 
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17232,11 +17376,12 @@ class MasterMgr
           ("The Archive operation will not be available until the offlined node " +
            "version cache has finished being rebuilt.");
 
+      opn.notify(timer, "Validating Nodes..."); 
+
       /* the archiver plugin to use */ 
       BaseArchiver archiver = req.getArchiver();
 
       /* the checked-in node versions */ 
-      //TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
       MappedSet<String,VersionID> versions = req.getVersions();
 
       /* lock online/offline status of the nodes to be archived */ 
@@ -17252,7 +17397,7 @@ class MasterMgr
 	{
 	  /* recheck the sizes of the versions */ 
 	  {
-	    Object obj = getArchivedSizes(new MiscGetSizesReq(versions));
+	    Object obj = getArchivedSizes(new MiscGetSizesReq(versions), opn);
 	    if(obj instanceof FailureRsp) {
 	      FailureRsp rsp = (FailureRsp) obj;
 	      throw new PipelineException(rsp.getMessage());	
@@ -17369,6 +17514,7 @@ class MasterMgr
 	  String output = null;
 	  {
 	    FileMgrClient fclient = acquireFileMgrClient();
+            long monitorID = fclient.addMonitor(new RelayOpMonitor(opn));
 	    try {
               StringBuilder dryRunResults = null;
               if(req.isDryRun()) 
@@ -17380,6 +17526,7 @@ class MasterMgr
                 return new MiscArchiveRsp(timer, archiveName, dryRunResults.toString()); 
 	    }
 	    finally {
+              fclient.removeMonitor(monitorID); 
 	      releaseFileMgrClient(fclient);
 	    }
 	  }
@@ -17461,6 +17608,9 @@ class MasterMgr
    * @param req 
    *   The query request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return 
    *   <CODE>MiscOfflineQueryRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to perform the query.
@@ -17468,7 +17618,8 @@ class MasterMgr
   public Object
   offlineQuery
   (
-   MiscOfflineQueryReq req
+   MiscOfflineQueryReq req, 
+   OpNotifiable opn 
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17498,6 +17649,8 @@ class MasterMgr
 	  ("The minimum number of archive volumes containing the checked-in version " +
 	   "(" + minArchives + ") cannot be negative!");
 
+      opn.notify(timer, "Pattern Search..."); 
+
       /* get the node names which match the pattern */ 
       TreeSet<String> matches = null;
       try {
@@ -17512,6 +17665,9 @@ class MasterMgr
 	  ("Illegal Node Name Pattern:\n\n" + ex.getMessage());
       }
       
+      /* set the number of individual nodes to be queried */ 
+      opn.setTotalSteps(matches.size());
+
       /* lock online/offline status */ 
       timer.acquire();
       List<LoggedLock> onOffLocks = onlineOfflineReadLock(matches);
@@ -17519,6 +17675,7 @@ class MasterMgr
 	timer.resume();	
 
 	/* process the matching nodes */ 
+        long cnt = 0L;
 	ArrayList<OfflineInfo> offlineInfo = new ArrayList<OfflineInfo>();
 	VersionID latestID = null;
 	for(String name : matches) {
@@ -17653,7 +17810,12 @@ class MasterMgr
 		offlineInfo.add(info);
 	      }
 	    }
-	  }	
+	  }
+
+          long batch = 10L;
+          if((cnt % batch) == 0L) 
+            opn.steps(timer, "Queried: " + name, batch); 
+          cnt++;
 	}
 
 	return new MiscOfflineQueryRsp(timer, offlineInfo);
@@ -17786,6 +17948,9 @@ class MasterMgr
    * @param req
    *   The file sizes request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return
    *   <CODE>MiscGetOfflineSizesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
@@ -17793,7 +17958,8 @@ class MasterMgr
   public Object
   getOfflineSizes
   (
-   MiscGetSizesReq req
+   MiscGetSizesReq req, 
+   OpNotifiable opn 
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17807,6 +17973,9 @@ class MasterMgr
         throw new PipelineException 
           ("The GetOfflineSizes operation will not be available until the offlined node " +
            "version cache has finished being rebuilt.");
+
+      /* set the number of nodes to be processed */ 
+      opn.setTotalSteps(req.getVersions().size());    
 
       /* process the nodes */ 
       DoubleMap<String,VersionID,Long> sizes = new DoubleMap<String,VersionID,Long>();
@@ -17909,6 +18078,8 @@ class MasterMgr
         finally {
           onOffLock.releaseReadLock();
         }
+
+        opn.step(timer, "Sized: " + name); 
       }
 
       return new MiscGetSizesRsp(timer, sizes);
@@ -17937,6 +18108,9 @@ class MasterMgr
    * @param req 
    *   The offline request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to remove the files.
@@ -17944,7 +18118,8 @@ class MasterMgr
   public Object
   offline
   (
-   MiscOfflineReq req
+   MiscOfflineReq req, 
+   OpNotifiable opn 
   ) 
   {
     MappedSet<String,VersionID> versions = req.getVersions();
@@ -17975,6 +18150,14 @@ class MasterMgr
           throw new PipelineException 
             ("The Offline operation will not be available until the offlined node " +
              "version cache has finished being rebuilt.");
+
+        /* set the number of node versions to be processed */ 
+        {
+          long steps = 0L;
+          for(TreeSet<VersionID> vids : versions.values()) 
+            steps += vids.size();
+          opn.setTotalSteps(steps);    
+        }
 
         /* write lock online/offline status */ 
         timer.acquire();
@@ -18051,24 +18234,25 @@ class MasterMgr
 
                   /* make sure it is not being referenced by an existing working version */ 
                   {
-                    TreeMap<String,TreeSet<String>> views = pNodeTree.getViewsContaining(name);
+                    TreeMap<String,TreeSet<String>> views = 
+                      pNodeTree.getViewsContaining(name);
                     for(String author : views.keySet()) {
                       for(String view : views.get(author)) {
                         NodeID nodeID = new NodeID(author, view, name);
                         NodeMod mod = getWorkingBundle(nodeID, false).getVersion();
                         if(vid.equals(mod.getWorkingID())) 
                           throw new PipelineException
-                            ("The checked-in version (" + vid + ") of node (" + name + ") " + 
-                             "cannot be offlined because a working version currently exists " + 
-                             "which references the checked-in version in the working area " + 
-                             "(" + view + ") owned by user (" + author + ")!");
+                            ("The checked-in version (" + vid + ") of node (" + name + ") " +
+                             "cannot be offlined because a working version currently " + 
+                             "exists which references the checked-in version in the " + 
+                             "working area (" + view + ") owned by user (" + author + ")!");
 		  
                         if(vid.equals(checkedIn.lastKey())) 
                           throw new PipelineException
                             ("The latest checked-in version (" + vid + ") of node " + 
                              "(" + name + ") cannot be offlined because a working version " + 
-                             "currently exists in the working area (" + view + ") owned by " + 
-                             "user (" + author + ")!");
+                             "currently exists in the working area (" + view + ") owned " + 
+                             "by user (" + author + ")!");
                       }
                     }
                   }
@@ -18147,6 +18331,8 @@ class MasterMgr
                     }
                   }
                 }
+
+                opn.step(timer, "Offlined: " + name + " (v" + vid + ")"); 
               }
             }
             finally {
@@ -18675,6 +18861,9 @@ class MasterMgr
    * @param req
    *   The request.
    * 
+   * @param opn
+   *   The operation progress notifier.
+   * 
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to find the archive.
@@ -18682,7 +18871,8 @@ class MasterMgr
   public Object
   restore
   (
-   MiscRestoreReq req
+   MiscRestoreReq req, 
+   OpNotifiable opn 
   ) 
   {
     long stamp = System.currentTimeMillis();
@@ -18721,6 +18911,8 @@ class MasterMgr
           throw new PipelineException 
             ("The Restore operation will not be available until the offlined node " +
              "version cache has finished being rebuilt.");
+
+        opn.notify(timer, "Validating Nodes..."); 
 
         /* get the archive volume manifest */ 
         ArchiveVolume vol = readArchive(archiveName);
@@ -18769,8 +18961,8 @@ class MasterMgr
               for(VersionID vid : versions.get(name)) {
                 if(!vol.contains(name, vid)) 
                   throw new PipelineException
-                    ("The checked-in version (" + vid + ") of node (" + name + ") cannot be " +
-                     "restored because it is not contained in the archive volume " + 
+                    ("The checked-in version (" + vid + ") of node (" + name + ") cannot " + 
+                     "be restored because it is not contained in the archive volume " + 
                      "(" + archiveName + ")!");
                 total += vol.getSize(name, vid);
 	      
@@ -18843,6 +19035,7 @@ class MasterMgr
             String output = null;
             {
               FileMgrClient fclient = acquireFileMgrClient();
+              long monitorID = fclient.addMonitor(new RelayOpMonitor(opn));
               try {
                 StringBuilder dryRunResults = null;
                 if(req.isDryRun()) 
@@ -18855,6 +19048,7 @@ class MasterMgr
                   return new DryRunRsp(timer, dryRunResults.toString()); 
               }
               finally {
+                fclient.removeMonitor(monitorID); 
                 releaseFileMgrClient(fclient);
               }
             }
@@ -18887,7 +19081,15 @@ class MasterMgr
               stamps.add(now);
             }
           }
-      
+                
+          /* set the number of node versions to be processed */ 
+          {
+            long steps = 0L;
+            for(TreeSet<VersionID> vids : versions.values()) 
+              steps += vids.size();
+            opn.setTotalSteps(steps);    
+          }
+
           /* move the extracted files into the respository */ 
           for(String name : versions.keySet()) {
 
@@ -18985,6 +19187,8 @@ class MasterMgr
                       rr.restored(archiveName);
                   }
                 }
+
+                opn.step(timer, "Restored: " + name + " (v" + vid + ")"); 
               }
             }
             finally {
@@ -26010,11 +26214,65 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The heavyweight client notifying status operation.
+   */
+  private
+  class StatusNodeOp
+    extends NodeOp
+  {  
+    /** 
+     * Construct a new operation.
+     */
+    public
+    StatusNodeOp
+    (
+     OpNotifiable opn
+    ) 
+    {
+      super();
+
+      pOpNotifier = opn;
+    }
+
+    /**
+     * Perform the status operation on the given node.
+     * 
+     * @param status 
+     *   The pre-operation status of the node. 
+     * 
+     * @param timer
+     *   The shared task timer for this operation.
+     * 
+     * @throws PipelineException 
+     *   If unable to perform the operation.
+     */ 
+    @Override
+    public void 
+    perform
+    (
+     NodeStatus status, 
+     TaskTimer timer
+    )
+      throws PipelineException
+    {
+      pOpNotifier.notify(timer, "Status: " + status.getName()); 
+    }
+
+    /**
+     * The operation progress notifier.
+     */
+    protected OpNotifiable pOpNotifier; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The node check-in operation. <P>
    */
   public 
   class NodeCheckInOp
-    extends NodeOp
+    extends StatusNodeOp
   {  
     /** 
      * Construct a new check-in operation.
@@ -26023,10 +26281,11 @@ class MasterMgr
     NodeCheckInOp
     ( 
      NodeCheckInReq req, 
-     VersionID rootVersionID
+     VersionID rootVersionID, 
+     OpNotifiable opn
     ) 
     {
-      super();
+      super(opn);
       
       pRequest       = req;
       pRootVersionID = rootVersionID; 
@@ -26371,6 +26630,8 @@ class MasterMgr
 	  /* post-op tasks */  
 	  if(pHasExtTasks) 
 	    startExtensionTasks(timer, new CheckInExtFactory(new NodeVersion(vsn)));
+
+          pOpNotifier.notify(timer, "Checked-In: " + name);
 	}
       }
     }
