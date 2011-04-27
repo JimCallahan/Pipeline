@@ -3,11 +3,13 @@
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.misc.*;
 import us.temerity.pipeline.message.simple.*;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   M G R   C L I E N T                                                          */
@@ -16,7 +18,7 @@ import java.util.*;
 /**
  * The common base class of all manager clients.
  */
-public
+public 
 class BaseMgrClient
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -85,11 +87,13 @@ class BaseMgrClient
       throw new IllegalArgumentException("The client ID cannot be (null)!");
     pClientID = clientID;
 
+    pSessionID = new AtomicLong(-1L);
+
     pOpMonitors = new TreeMap<Long,OpMonitorable>();
     pNextOpMonitorID = 0L;
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*  A C C E S S                                                                           */
@@ -232,27 +236,56 @@ class BaseMgrClient
 
         InputStream in = pSocket.getInputStream();
         ObjectInput objIn = getObjectInput(in); 
-        Object rsp = objIn.readObject();
 
-        pSocket.setSoTimeout(0);
+        try {
+          /* make sure the server accepts the connection */ 
+          {
+            Object rsp = objIn.readObject();
+            
+            String serverRsp = "The server's response is not an instance of String.  " +
+              "The server is not following protocol.";
+            if(rsp instanceof String) 
+              serverRsp = (String) rsp;
+            
+            /* The server will send back OK if all is well, else the return String will
+               be an error message.  The client side no longer performs a check of the 
+               server's Pipeline release version. */
+            if(!serverRsp.equals("OK")) {
+              disconnect();
+              throw new PipelineException(getServerDownMessage() + "\n" + serverRsp);
+            }
+            
+            if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Net, LogMgr.Level.Fine,
+                 "Connection Opened: " + pSocket.getInetAddress() + ":" + pPort); 
+            }
+          }
 
-        String serverRsp = "The server's response is not an instance of String.  " +
-          "The server is not following protocol.";
-        if(rsp instanceof String) 
-          serverRsp = (String) rsp;
+          /* get the client's unique connection identifier */ 
+          {
+            Object rsp = objIn.readObject();
+            Long sid = null;
+            if(rsp instanceof Long) 
+              sid = (Long) rsp; 
 
-        /* The server will send back OK if all is well, else the return String will
-             be an error message.  The client side no longer performs a check of the server's 
-             Pipeline release version. */
-        if(!serverRsp.equals("OK")) {
-          disconnect();
-          throw new PipelineException(getServerDownMessage() + "\n" + serverRsp);
+            if(sid != null) 
+              pSessionID.set(sid); 
+            else 
+              throw new PipelineException
+                (getServerDownMessage() + "\n" +
+                 "Server failed to send the connection ID!");
+            
+            if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Net, LogMgr.Level.Finest,
+                 "Session ID Assigned [" + sid + "]: " + 
+                 pSocket.getInetAddress() + ":" + pPort); 
+            }
+          }
         }
-
-        if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
-          LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Net, LogMgr.Level.Fine,
-             "Connection Opened: " + pSocket.getInetAddress() + ":" + pPort); 
+        finally {
+          pSocket.setSoTimeout(0);
         }
       }
     }
@@ -366,6 +399,8 @@ class BaseMgrClient
   public synchronized void 
   disconnect() 
   {
+    pSessionID.set(-1L);
+
     if(pSocket == null)
       return;
 
@@ -391,6 +426,54 @@ class BaseMgrClient
     finally {
       pSocket = null;
     }
+  }
+
+  /**
+   * Cancel any currently running request initiated from this client instance. <P> 
+   * 
+   * Most long duration operations on the server will check for cancellation at key points
+   * in their execution and throw a PipelineException if cancelled.  All except the most
+   * lightweight operations will also check for cancellation at the start of execution
+   * and abort the operation entirely with a PipelineException if cancelled.<P> 
+   * 
+   * Note that unlink most other network client methods, this method is not synchronized
+   * and is thread safe.  This allows it to be called from another thread while one of the 
+   * usual server operation methods is blocking. 
+   * 
+   * @throws PipelineException
+   *   If this network client does not support operation cancellation. 
+   */
+  public void 
+  cancel() 
+    throws PipelineException 
+  {
+    long sid = pSessionID.get();
+    if(sid < 0L) 
+      return;
+
+    BaseMgrClient client = createCancelClient();
+    try {
+      client.verifyConnection();
+      MiscCancelReq req = new MiscCancelReq(sid);
+      Object obj = client.performTransaction(MasterRequest.Cancel, req);
+      client.handleSimpleResponse(obj);    
+    }
+    finally {
+      client.disconnect();
+    }
+  }
+
+  /**
+   * Create a client connection suitable for cancelling operations from this client.<P> 
+   *
+   * Subclasses should override this to return an instance of themselves connected to 
+   * the same server.
+   */
+  protected BaseMgrClient
+  createCancelClient()
+    throws PipelineException 
+  {
+    throw new PipelineException("This client does not support cancelling requests!");
   }
 
   /**
@@ -925,6 +1008,11 @@ class BaseMgrClient
    */
   private String pClientID;
  
+  /**
+   * A unique ID for the connection session with the server.
+   */ 
+  private AtomicLong pSessionID; 
+
 
   /*----------------------------------------------------------------------------------------*/
 

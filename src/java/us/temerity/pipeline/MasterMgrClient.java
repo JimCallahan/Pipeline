@@ -77,6 +77,15 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Create a client connection suitable for cancelling operations from this client.
+   */
+  protected BaseMgrClient
+  createCancelClient()
+  {
+    return new MasterMgrClient();
+  }
+
+  /**
    * Order the server to refuse any further requests and then to exit as soon as all
    * currently pending requests have be completed.
    * 

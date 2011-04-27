@@ -221,8 +221,11 @@ class MasterMgr
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
-   * @param controls
+   * @param runtime
    *   The runtime controls.
+   * 
+   * @param session
+   *   The session controls.
    * 
    * @throws PipelineException 
    *   If unable to properly initialize the manager.
@@ -235,7 +238,8 @@ class MasterMgr
    int nodeWriterThreads, 
    boolean preserveOfflinedCache, 
    boolean internalFileMgr, 
-   MasterControls controls
+   MasterControls runtime, 
+   SessionControls session
   )
     throws PipelineException 
   { 
@@ -270,8 +274,10 @@ class MasterMgr
       pRestoreCleanupInterval = new AtomicLong();
       pBackupSyncInterval     = new AtomicLong();
 
-      setRuntimeControlsHelper(controls);
+      setRuntimeControlsHelper(runtime);
     }
+
+    pSessionControls = session;
 
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
@@ -302,7 +308,7 @@ class MasterMgr
       /* initialize the internal file manager instance */ 
       if(pInternalFileMgr) {
 	pFileMgrDirectClient = 
-          new FileMgrDirectClient(controls.getFileStatDir(), controls.getCheckSumDir());
+          new FileMgrDirectClient(runtime.getFileStatDir(), runtime.getCheckSumDir());
       }
       /* make a connection to the remote file manager */ 
       else {
@@ -8944,6 +8950,9 @@ class MasterMgr
    * 
    * @param req 
    *   The node rename request.
+   * 
+   * @param sessionID
+   *   The unique network connection session ID.
    *
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
@@ -8952,7 +8961,8 @@ class MasterMgr
   public Object
   rename
   (
-   NodeRenameReq req
+   NodeRenameReq req, 
+   long sessionID
   ) 
   {
     NodeID id   = req.getNodeID();
@@ -9086,11 +9096,11 @@ class MasterMgr
       }
       
       
-      /* Get the status of the node before the rename so we can reapply it after the
+      /* get the status of the node before the rename so we can reapply it after the
          rename is complete.  */
       boolean updateTimeStamps = false;
       {
-        NodeStatus oldStatus = performNodeOperation(new NodeOp(), id, timer);
+        NodeStatus oldStatus = performNodeOperation(new NodeOp(), id, timer, sessionID);
         OverallQueueState qstate = oldStatus.getHeavyDetails().getOverallQueueState();
         if (qstate == OverallQueueState.Dubious || qstate == OverallQueueState.Stale)
           updateTimeStamps = true;
@@ -10361,6 +10371,9 @@ class MasterMgr
    * 
    * @param opn
    *   The operation progress notifier.
+   * 
+   * @param sessionID
+   *   The unique network connection session ID.
    *
    * @return
    *   <CODE>NodeStatusRsp</CODE> if successful or 
@@ -10370,7 +10383,8 @@ class MasterMgr
   status
   ( 
    NodeStatusReq req,   
-   OpNotifiable opn
+   OpNotifiable opn, 
+   long sessionID
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -10387,7 +10401,7 @@ class MasterMgr
       NodeID nodeID = req.getNodeID();
       DownstreamMode dmode = req.getDownstreamMode();
 
-      NodeStatus root = performNodeOperation(nodeOp, nodeID, dmode, timer);
+      NodeStatus root = performNodeOperation(nodeOp, nodeID, dmode, timer, sessionID);
 
       return new NodeStatusRsp(timer, nodeID, root);
     }
@@ -10425,6 +10439,9 @@ class MasterMgr
    * 
    * @param opn
    *   The operation progress notifier.
+   * 
+   * @param sessionID
+   *   The unique network connection session ID.
    *
    * @return
    *   <CODE>NodeStatusRsp</CODE> if successful or 
@@ -10434,7 +10451,8 @@ class MasterMgr
   multiStatus
   ( 
    NodeMultiStatusReq req,   
-   OpNotifiable opn
+   OpNotifiable opn, 
+   long sessionID
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -10522,7 +10540,7 @@ class MasterMgr
           NodeID nodeID = new NodeID(author, view, name);
           DownstreamMode dm = isRoot ? dmode : DownstreamMode.None;
           NodeStatus status = 
-            performNodeOperation(new StatusNodeOp(opn), nodeID, dm, cache, timer);
+            performNodeOperation(new StatusNodeOp(opn), nodeID, dm, cache, timer, sessionID);
 
           /* if its also one of the root nodes, add the original node status to the results */
           if(isRoot) 
@@ -10538,7 +10556,8 @@ class MasterMgr
         for(String name : foundRoots) {
           if(!foundHeavy.contains(name)) {
             NodeID nodeID = new NodeID(author, view, name);
-            NodeStatus status = performNodeOperation(null, nodeID, dmode, cache, timer);
+            NodeStatus status = 
+              performNodeOperation(null, nodeID, dmode, cache, timer, sessionID);
 
             /* add the original node status to the results */
             results.put(name, status);  
@@ -10847,6 +10866,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to release the working version.
@@ -10855,7 +10877,8 @@ class MasterMgr
   release
   (
    NodeReleaseReq req, 
-   OpNotifiable opn
+   OpNotifiable opn, 
+   long sessionID 
   ) 
   {
     String author = req.getAuthor();
@@ -10955,6 +10978,7 @@ class MasterMgr
 	roots.remove(name);
 
         opn.step(timer, "Released: " + name); 
+        checkForCancellation(sessionID);
       }
       
       if(!failures.isEmpty()) {
@@ -10968,10 +10992,12 @@ class MasterMgr
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
       
-      /* Removes the annotations. This is here because you want this to run after 
-       * the post tasks have started in case it throws an error and aborts this
-       * method.  If it does throw an error, it will be reported to the user as
-       * an actual error, even though all that failed was the annotation removal. 
+      /* Removes the annotations from released Pending working versions.
+       *
+       * This is here because you want this to run after the post tasks have started 
+       * in case it throws an error and aborts this method.  If it does throw an error, 
+       * it will be reported to the user as an actual error, even though all that failed 
+       * was the annotation removal. 
        */
       {
         TreeMap<String, FailureRsp> errors = new TreeMap<String, FailureRsp>();
@@ -11426,6 +11452,9 @@ class MasterMgr
    *
    * @param opn
    *   The operation progress notifier.
+   * 
+   * @param sessionID
+   *   The unique network connection session ID.
    *
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
@@ -11435,7 +11464,8 @@ class MasterMgr
   checkIn
   ( 
    NodeCheckInReq req, 
-   OpNotifiable opn
+   OpNotifiable opn, 
+   long sessionID
   ) 
   {
     NodeID nodeID = req.getNodeID();
@@ -11482,7 +11512,8 @@ class MasterMgr
       }
 
       /* check-in the tree of nodes */ 
-      performNodeOperation(new NodeCheckInOp(req, rootVersionID, opn), nodeID, timer);
+      performNodeOperation(new NodeCheckInOp(req, rootVersionID, opn), nodeID, 
+                           timer, sessionID);
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -11507,6 +11538,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or
    *   <CODE>GetUnfinishedJobsForNodesRsp</CODE> if running jobs prevent the check-out or 
@@ -11516,7 +11550,8 @@ class MasterMgr
   checkOut
   ( 
    NodeCheckOutReq req, 
-   OpNotifiable opn
+   OpNotifiable opn, 
+   long sessionID
   ) 
   {
     NodeID nodeID = req.getNodeID();
@@ -11538,7 +11573,7 @@ class MasterMgr
       /* get the current status of the nodes */ 
       TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
       performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false, true, 
-			    new LinkedList<String>(), table, timer);
+			    new LinkedList<String>(), table, timer, sessionID);
 
       /* estimate the number of individual node check-outs */ 
       opn.setTotalSteps(table.size());
@@ -11550,7 +11585,7 @@ class MasterMgr
 	collectRequiredVersions
 	  (true, nodeID, req.getVersionID(), false, req.getMode(), req.getMethod(), 
 	   table, requiredVersions, new LinkedList<String>(), new TreeSet<String>(), 
-	   timer);
+	   timer, sessionID);
       }
 
       /* make sure no unfinished jobs associated with either the current upstream nodes, 
@@ -11645,7 +11680,7 @@ class MasterMgr
 	  (true, nodeID, req.getVersionID(), false, anyExtTests, anyExtTasks, 
 	   req.getMode(), req.getMethod(), 
 	   table, new LinkedList<String>(), new TreeSet<String>(), 
-	   new TreeSet<String>(), timer, opn);
+	   new TreeSet<String>(), timer, opn, sessionID);
       }
       finally {
 	onlineOfflineReadUnlock(onOffLocks);
@@ -11705,6 +11740,9 @@ class MasterMgr
    * @param timer
    *   The shared task timer for this operation.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @throws PipelineException 
    *   If unable to perform the check-out operation.
    */
@@ -11721,7 +11759,8 @@ class MasterMgr
    TreeMap<String,TreeSet<VersionID>> requiredVersions, 
    LinkedList<String> branch, 
    TreeSet<String> seen, 
-   TaskTimer timer   
+   TaskTimer timer,
+   long sessionID
   ) 
     throws PipelineException 
   {
@@ -11743,7 +11782,7 @@ class MasterMgr
       NodeStatus status = stable.get(name);
       if(status == null) {
 	performUpstreamNodeOp(new NodeOp(), nodeID, isLocked, true, 
-			      new LinkedList<String>(), stable, timer);
+			      new LinkedList<String>(), stable, timer, sessionID);
 	status = stable.get(name);
       }
 
@@ -11845,7 +11884,7 @@ class MasterMgr
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
 	  collectRequiredVersions(false, lnodeID, link.getVersionID(), link.isLocked(), 
 				  mode, checkOutMethod, 
-				  stable, requiredVersions, branch, seen, timer);
+				  stable, requiredVersions, branch, seen, timer, sessionID);
 	}
       }
 
@@ -11919,6 +11958,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @throws PipelineException 
    *   If unable to perform the check-out operation.
    */
@@ -11938,11 +11980,15 @@ class MasterMgr
    TreeSet<String> seen, 
    TreeSet<String> dirty, 
    TaskTimer timer, 
-   OpNotifiable opn 
+   OpNotifiable opn, 
+   long sessionID 
   ) 
     throws PipelineException 
   {
     String name = nodeID.getName();
+
+    /* check for cancellation */
+    checkForCancellation(sessionID);
 
     /* check for circularity */ 
     checkBranchForCircularity(name, branch);
@@ -11960,7 +12006,7 @@ class MasterMgr
       NodeStatus status = stable.get(name);
       if(status == null) {
 	performUpstreamNodeOp(new NodeOp(), nodeID, isLocked, true,
-			      new LinkedList<String>(), stable, timer);
+			      new LinkedList<String>(), stable, timer, sessionID);
 	status = stable.get(name);
       }
 
@@ -12140,7 +12186,8 @@ class MasterMgr
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
 	  performCheckOut(false, lnodeID, link.getVersionID(), link.isLocked(), 
 			  hasExtTests, hasExtTasks, 
-			  mode, checkOutMethod, stable, branch, seen, dirty, timer, opn);
+			  mode, checkOutMethod, stable, branch, seen, dirty, 
+                          timer, opn, sessionID);
 	  
 	  /* if any of the upstream nodes are dirty, 
   	     mark this node as dirty and make sure it isn't frozen */ 
@@ -12660,6 +12707,9 @@ class MasterMgr
    * 
    * @param req 
    *   The node lock request.
+   * 
+   * @param sessionID
+   *   The unique network connection session ID.
    *
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
@@ -12668,7 +12718,8 @@ class MasterMgr
   public Object
   lock
   ( 
-   NodeLockReq req 
+   NodeLockReq req, 
+   long sessionID
   ) 
   {
     NodeID nodeID = req.getNodeID();
@@ -12697,7 +12748,7 @@ class MasterMgr
 	   "areas owned by another user!");
 
       /* get the current status of the node being locked */ 
-      NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
+      NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer, sessionID);
 
       /* lock online/offline status of the node to lock */ 
       timer.acquire();
@@ -13729,6 +13780,9 @@ class MasterMgr
    *
    * @param opn
    *   The operation progress notifier.
+   * 
+   * @param sessionID
+   *   The unique network connection session ID.
    *
    * @return
    *   <CODE>NodePackRsp</CODE> if successful or 
@@ -13737,8 +13791,9 @@ class MasterMgr
   public Object
   packNodes
   ( 
-   NodePackReq req , 
-   OpNotifiable opn
+   NodePackReq req, 
+   OpNotifiable opn, 
+   long sessionID
   ) 
   {
     NodeID nodeID = req.getNodeID();
@@ -13768,7 +13823,7 @@ class MasterMgr
       opn.notify(timer, "Validating Nodes..."); 
 
       /* get the current status of the root node */ 
-      NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
+      NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer, sessionID);
       
       /* collecting validated working versions in the order they should be unpacked */ 
       LinkedList<NodeMod> nodes = new LinkedList<NodeMod>();
@@ -13985,6 +14040,9 @@ class MasterMgr
    *
    * @param opn
    *   The operation progress notifier.
+   * 
+   * @param sessionID
+   *   The unique network connection session ID.
    *
    * @return
    *   <CODE>NodeUnpackReq</CODE> if successful or 
@@ -13994,7 +14052,8 @@ class MasterMgr
   unpackNodes
   ( 
    NodeUnpackReq req, 
-   OpNotifiable opn
+   OpNotifiable opn, 
+   long sessionID
   ) 
   {
     Path bundlePath = req.getPath();
@@ -14132,7 +14191,7 @@ class MasterMgr
       skipUnpack.addAll(unconformed);
       if(!unconformed.isEmpty()) {
         NodeID rootID = new NodeID(author, view, bundle.getRootNodeID().getName());
-        NodeStatus status = performNodeOperation(null, rootID, timer);
+        NodeStatus status = performNodeOperation(null, rootID, timer, sessionID);
         for(NodeMod mod : bundle.getWorkingVersions()) {
           if((mod.getAction() != null) && mod.isActionEnabled()) {
             String nname = mod.getName();
@@ -14913,6 +14972,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   <CODE>NodeSubmitJobsRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to submit the jobs.
@@ -14921,7 +14983,8 @@ class MasterMgr
   submitJobs
   ( 
    NodeSubmitJobsReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn, 
+   long sessionID
   )
   {
     TaskTimer timer = new TaskTimer();
@@ -14941,7 +15004,7 @@ class MasterMgr
          req.getBatchSize(), req.getPriority(), req.getRampUp(),
          req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
          req.getSelectionKeys(), req.getLicenseKeys(), req.getHardwareKeys(), 
-         timer, opn);
+         timer, opn, sessionID);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -14967,6 +15030,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   <CODE>NodeSubmitJobsRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to submit the jobs.
@@ -14975,7 +15041,8 @@ class MasterMgr
   resubmitJobs
   ( 
    NodeResubmitJobsReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn, 
+   long sessionID
   )
   {
     TaskTimer timer = new TaskTimer();
@@ -14996,7 +15063,7 @@ class MasterMgr
          req.getBatchSize(), req.getPriority(), req.getRampUp(),
          req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
          req.getSelectionKeys(), req.getLicenseKeys(), req.getHardwareKeys(), 
-         timer, opn);
+         timer, opn, sessionID);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -15060,6 +15127,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   The <CODE>NodeSubmitJobsRsp</CODE> for the newly created job groups.
    */ 
@@ -15079,7 +15149,8 @@ class MasterMgr
    Set<String> licenseKeys,
    Set<String> hardwareKeys,
    TaskTimer timer, 
-   OpNotifiable opn 
+   OpNotifiable opn, 
+   long sessionID   
   )
     throws PipelineException 
   {
@@ -15123,7 +15194,7 @@ class MasterMgr
           {
             TreeMap<String,NodeStatus> cache = new TreeMap<String,NodeStatus>();
             status = performNodeOperation(new StatusNodeOp(opn), nodeID, DownstreamMode.None, 
-                                          cache, timer); 
+                                          cache, timer, sessionID); 
             
             /* set the number of nodes being processed */ 
             opn.setTotalSteps(cache.size());
@@ -17067,6 +17138,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   <CODE>MiscArchiveQueryRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to perform the query.
@@ -17075,7 +17149,8 @@ class MasterMgr
   archiveQuery
   (
    MiscArchiveQueryReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn,
+   long sessionID
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17207,8 +17282,10 @@ class MasterMgr
         }
   
         long batch = 10L;
-        if((cnt % batch) == 0L) 
+        if((cnt % batch) == 0L) {
           opn.steps(timer, "Queried: " + name, batch); 
+          checkForCancellation(sessionID);
+        }
         cnt++;
       }
 
@@ -17232,6 +17309,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
    * @return
    *   <CODE>MiscGetArchiveSizesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
@@ -17240,7 +17320,8 @@ class MasterMgr
   getArchivedSizes
   (
    MiscGetSizesReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn,
+   long sessionID
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17311,6 +17392,7 @@ class MasterMgr
         }
 
         opn.step(timer, "Sized: " + name); 
+        checkForCancellation(sessionID);
       }
 
       return new MiscGetSizesRsp(timer, sizes);
@@ -17334,6 +17416,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   <CODE>MiscArchiveRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to archive the files.
@@ -17342,7 +17427,8 @@ class MasterMgr
   archive
   (
    MiscArchiveReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn,
+   long sessionID
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17397,7 +17483,7 @@ class MasterMgr
 	{
 	  /* recheck the sizes of the versions */ 
 	  {
-	    Object obj = getArchivedSizes(new MiscGetSizesReq(versions), opn);
+	    Object obj = getArchivedSizes(new MiscGetSizesReq(versions), opn, sessionID);
 	    if(obj instanceof FailureRsp) {
 	      FailureRsp rsp = (FailureRsp) obj;
 	      throw new PipelineException(rsp.getMessage());	
@@ -17411,6 +17497,8 @@ class MasterMgr
 	  /* make sure the versions exist, are not offline and are not intermediate */ 
 	  long total = 0L;
 	  for(String name : versions.keySet()) {
+
+            checkForCancellation(sessionID);
 
 	    timer.acquire();
 	    LoggedLock lock = getCheckedInLock(name);
@@ -17508,6 +17596,8 @@ class MasterMgr
 	  return new FailureRsp(timer, ex.getMessage());
 	}
 
+        checkForCancellation(sessionID);
+
 	/* create the archive volume by runing the archiver plugin and save any 
 	   STDOUT output */
 	{
@@ -17532,8 +17622,7 @@ class MasterMgr
 	  }
 	  
 	  if(output != null) {
-	    File file = new File(pNodeDir, 
-				 "archives/output/archive/" + archiveName);
+	    File file = new File(pNodeDir, "archives/output/archive/" + archiveName);
 	    try {
 	      FileWriter out = new FileWriter(file);
 	      out.write(output);
@@ -17611,6 +17700,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   <CODE>MiscOfflineQueryRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to perform the query.
@@ -17619,7 +17711,8 @@ class MasterMgr
   offlineQuery
   (
    MiscOfflineQueryReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn, 
+   long sessionID
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -17813,8 +17906,10 @@ class MasterMgr
 	  }
 
           long batch = 10L;
-          if((cnt % batch) == 0L) 
+          if((cnt % batch) == 0L) {
             opn.steps(timer, "Queried: " + name, batch); 
+            checkForCancellation(sessionID);
+          }
           cnt++;
 	}
 
@@ -17951,6 +18046,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
    * @return
    *   <CODE>MiscGetOfflineSizesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
@@ -17959,7 +18057,8 @@ class MasterMgr
   getOfflineSizes
   (
    MiscGetSizesReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn,
+   long sessionID
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -18079,7 +18178,8 @@ class MasterMgr
           onOffLock.releaseReadLock();
         }
 
-        opn.step(timer, "Sized: " + name); 
+        opn.step(timer, "Sized: " + name);
+        checkForCancellation(sessionID);
       }
 
       return new MiscGetSizesRsp(timer, sizes);
@@ -18111,6 +18211,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to remove the files.
@@ -18119,7 +18222,8 @@ class MasterMgr
   offline
   (
    MiscOfflineReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn,
+   long sessionID
   ) 
   {
     MappedSet<String,VersionID> versions = req.getVersions();
@@ -18172,6 +18276,7 @@ class MasterMgr
           /* process each node */ 
           for(String name : versions.keySet()) {	
             timer.acquire();
+
             ArrayList<LoggedLock> workingLocks = 
               new ArrayList<LoggedLock>();
             {
@@ -18333,6 +18438,7 @@ class MasterMgr
                 }
 
                 opn.step(timer, "Offlined: " + name + " (v" + vid + ")"); 
+                checkForCancellation(sessionID);
               }
             }
             finally {
@@ -18864,6 +18970,9 @@ class MasterMgr
    * @param opn
    *   The operation progress notifier.
    * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to find the archive.
@@ -18872,7 +18981,8 @@ class MasterMgr
   restore
   (
    MiscRestoreReq req, 
-   OpNotifiable opn 
+   OpNotifiable opn,
+   long sessionID
   ) 
   {
     long stamp = System.currentTimeMillis();
@@ -19028,6 +19138,8 @@ class MasterMgr
           catch(PipelineException ex) {
             return new FailureRsp(timer, ex.getMessage());
           }
+
+          checkForCancellation(sessionID);
 
           /* extract the versions from the archive volume by running the archiver plugin and 
              save any STDOUT output */
@@ -19189,6 +19301,7 @@ class MasterMgr
                 }
 
                 opn.step(timer, "Restored: " + name + " (v" + vid + ")"); 
+                checkForCancellation(sessionID);
               }
             }
             finally {
@@ -19669,6 +19782,30 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Check to see if the current network connection session has received a cancellation
+   * request.
+   * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
+   * @throws PipelineException
+   *   If the operation should be cancelled.
+   */ 
+  private void 
+  checkForCancellation
+  (
+   Long sessionID
+  )
+    throws PipelineException
+  {
+    if((sessionID != null) && pSessionControls.isCancelled(sessionID)) 
+      throw new PipelineException("Operation cancelled!");        
+  }
+      
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Recursively perfrorm a node status based operation on the tree of nodes rooted at the 
    * given working version. <P> 
    * 
@@ -19688,6 +19825,9 @@ class MasterMgr
    * @param timer
    *   The shared task timer for this operation.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   The root of the node status tree corresponding to the given working version.
    * 
@@ -19699,11 +19839,12 @@ class MasterMgr
   (
    NodeOp nodeOp, 
    NodeID nodeID,
-   TaskTimer timer
+   TaskTimer timer, 
+   Long sessionID
   ) 
     throws PipelineException
   {
-    return performNodeOperation(nodeOp, nodeID, DownstreamMode.None, timer);
+    return performNodeOperation(nodeOp, nodeID, DownstreamMode.None, timer, sessionID);
   }
 
   /**
@@ -19727,6 +19868,9 @@ class MasterMgr
    * @param timer
    *   The shared task timer for this operation.
    * 
+   * @param sessionID
+   *   The unique network connection session ID.
+   * 
    * @return 
    *   The root of the node status tree corresponding to the given working version.
    * 
@@ -19739,12 +19883,13 @@ class MasterMgr
    NodeOp nodeOp, 
    NodeID nodeID,
    DownstreamMode dmode, 
-   TaskTimer timer
+   TaskTimer timer, 
+   Long sessionID
   ) 
     throws PipelineException
   {
     TreeMap<String,NodeStatus> cache = new TreeMap<String,NodeStatus>();
-    return performNodeOperation(nodeOp, nodeID, dmode, cache, timer); 
+    return performNodeOperation(nodeOp, nodeID, dmode, cache, timer, sessionID); 
   }
 
   /**
@@ -19784,14 +19929,16 @@ class MasterMgr
    NodeID nodeID,
    DownstreamMode dmode, 
    TreeMap<String,NodeStatus> cache,
-   TaskTimer timer
+   TaskTimer timer,
+   Long sessionID
   ) 
     throws PipelineException
   {
     NodeStatus root = null;
     {
       performUpstreamNodeOp(nodeOp, nodeID, false, false, 
-                            new LinkedList<String>(), cache, timer);
+                            new LinkedList<String>(), cache, 
+                            timer, sessionID);
 
       root = cache.get(nodeID.getName());
       if(root == null)
@@ -19839,10 +19986,13 @@ class MasterMgr
    * @param timer
    *   The shared task timer for this operation.
    * 
+   * @param sessionID 
+   *   The unique network connection session ID.
+   * 
    * @throws PipelineException 
    *   If unable to perform the node operation.
    */ 
-  @SuppressWarnings("null")
+  //@SuppressWarnings("null")
   private void 
   performUpstreamNodeOp
   (
@@ -19852,12 +20002,17 @@ class MasterMgr
    boolean ignoreAnnotations, 
    LinkedList<String> branch, 
    TreeMap<String,NodeStatus> table, 
-   TaskTimer timer
+   TaskTimer timer,
+   Long sessionID
   ) 
     throws PipelineException
   {
     String name = nodeID.getName();
     boolean isLightweight = (nodeOp == null);
+
+    /* check for cancellation */
+    if(!isLightweight) 
+      checkForCancellation(sessionID);
 
     /* check for circularity */ 
     checkBranchForCircularity(name, branch);
@@ -20034,7 +20189,7 @@ class MasterMgr
 	    NodeID lnodeID = new NodeID(nodeID, link.getName());
 	    
 	    performUpstreamNodeOp(nodeOp, lnodeID, link.isLocked(), ignoreAnnotations, 
-                                  branch, table, timer);
+                                  branch, table, timer, sessionID);
 	    NodeStatus lstatus = table.get(link.getName());
 	    
 	    status.addSource(lstatus);
@@ -20049,7 +20204,7 @@ class MasterMgr
 	    NodeID lnodeID = new NodeID(nodeID, link.getName());
 	    
 	    performUpstreamNodeOp(nodeOp, lnodeID, false, ignoreAnnotations, 
-                                  branch, table, timer);
+                                  branch, table, timer, sessionID);
 	    NodeStatus lstatus = table.get(link.getName());
 	    
 	    status.addSource(lstatus);
@@ -27218,9 +27373,13 @@ class MasterMgr
   private static final long  sBackupTimeout = 900000L;   /* 15-minutes */ 
 
 
-
   /*----------------------------------------------------------------------------------------*/
  
+  /**
+   * Communicates network connection session related status with the MasterMgrSever.
+   */ 
+  private SessionControls pSessionControls;
+
   /**
    * The file system directory creation lock.
    */

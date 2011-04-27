@@ -6714,6 +6714,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Renaming Node...")) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        master.setPanelOpCancelClient(pGroupID, client); 
 	try {
 	  client.rename(pAuthor, pView, oname, pPattern, pRenameFiles);
 	}
@@ -7006,6 +7007,7 @@ class JNodeViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
+      master.setPanelOpCancelClient(pGroupID, client); 
       long monitorID = client.addMonitor(new PanelOpMonitor(pGroupID));
       try {
         if(master.beginPanelOp(pGroupID, "Releasing Nodes...")) {
@@ -7363,6 +7365,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        master.setPanelOpCancelClient(pGroupID, client); 
         long monitorID = client.addMonitor(new PanelOpMonitor(pGroupID));
 	try {
 	  for(String name : pNames) {
@@ -7418,6 +7421,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        master.setPanelOpCancelClient(pGroupID, client); 
         long monitorID = client.addMonitor(new PanelOpMonitor(pGroupID));
 	try {
           StringBuilder errors = new StringBuilder();
@@ -7527,6 +7531,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        master.setPanelOpCancelClient(pGroupID, client); 
 	try {
           StringBuilder errors = new StringBuilder();
 	  for(String name : pVersions.keySet()) {
@@ -7640,6 +7645,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Packing Bundle for: " + pNodeID.getName())) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        master.setPanelOpCancelClient(pGroupID, client); 
         long monitorID = client.addMonitor(new PanelOpMonitor(pGroupID));
 	try {
 	  Path bundlePath = client.packNodes(pNodeID); 
@@ -7742,6 +7748,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Unpacking Bundle: " + pBundlePath)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        master.setPanelOpCancelClient(pGroupID, client); 
         long monitorID = client.addMonitor(new PanelOpMonitor(pGroupID));
  	try {
           client.unpackNodes(pBundlePath, pAuthor, pView, 

@@ -517,6 +517,7 @@ class JOfflineDialog
       ArrayList<OfflineInfo> info = null;
       MasterMgrClient client = master.acquireMasterMgrClient();
       long opID = master.beginDialogOp("Searching for Candidate Versions..."); 
+      master.setDialogOpCancelClient(opID, client); 
       long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
         info = client.offlineQuery(pPattern, pExcludeLatest, pMinArchives, pUnusedOnly);
@@ -596,6 +597,7 @@ class JOfflineDialog
       MasterMgrClient client = master.acquireMasterMgrClient();
       DoubleMap<String,VersionID,Long> data = null;
       long opID = master.beginDialogOp("Calculating File Sizes..."); 
+      master.setDialogOpCancelClient(opID, client); 
       long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
         data = client.getOfflineSizes(pVersions);
@@ -694,6 +696,7 @@ class JOfflineDialog
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.acquireMasterMgrClient();
       long opID = master.beginDialogOp("Offlining Checked-In Versions..."); 
+      master.setDialogOpCancelClient(opID, client); 
       long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
         client.offline(pVersions); 

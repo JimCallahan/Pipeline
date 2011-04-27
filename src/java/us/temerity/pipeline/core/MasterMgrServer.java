@@ -58,7 +58,7 @@ class MasterMgrServer
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
-   * @param controls
+   * @param runtime
    *   The runtime controls.
    * 
    * @throws PipelineException 
@@ -73,20 +73,20 @@ class MasterMgrServer
    int nodeWriterThreads, 
    boolean preserveOfflinedCache, 
    boolean internalFileMgr,
-   MasterControls controls
+   MasterControls runtime
   )
     throws PipelineException 
   { 
     super("MasterMgrServer");
 
     pTimer = new TaskTimer();
+    pSessionControls = new SessionControls();
+    pTasks = new TreeSet<HandlerTask>();
 
     pMasterApp = app;
-
     pMasterMgr = new MasterMgr(rebuildCache, nodeReaderThreads, nodeWriterThreads, 
-                               preserveOfflinedCache, internalFileMgr, controls); 
-
-    pTasks = new TreeSet<HandlerTask>();
+                               preserveOfflinedCache, internalFileMgr, runtime, 
+                               pSessionControls); 
   }
 
   
@@ -1171,8 +1171,10 @@ class MasterMgrServer
               case GetNodeNames:
                 {
                   NodeGetNodeNamesReq req = (NodeGetNodeNamesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getNodeNames(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getNodeNames(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1276,16 +1278,20 @@ class MasterMgrServer
                 {
                   NodeWorkingAreaPatternReq req = 
                     (NodeWorkingAreaPatternReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getWorkingNames(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getWorkingNames(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case GetWorkingRootNames:
                 {
                   NodeWorkingAreaReq req = (NodeWorkingAreaReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getWorkingRootNames(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getWorkingRootNames(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1308,8 +1314,10 @@ class MasterMgrServer
               case ModifyProperties:
                 {
                   NodeModifyPropertiesReq req = (NodeModifyPropertiesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.modifyProperties(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.modifyProperties(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1325,32 +1333,40 @@ class MasterMgrServer
               case Link:
                 {
                   NodeLinkReq req = (NodeLinkReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.link(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.link(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Unlink:
                 {
                   NodeUnlinkReq req = (NodeUnlinkReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.unlink(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.unlink(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case AddSecondary:
                 {
                   NodeAddSecondaryReq req = (NodeAddSecondaryReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.addSecondary(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.addSecondary(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case RemoveSecondary:
                 {
                   NodeRemoveSecondaryReq req = (NodeRemoveSecondaryReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.removeSecondary(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.removeSecondary(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1359,8 +1375,10 @@ class MasterMgrServer
               case GetCheckedInNames:
                 {
                   NodeGetNodeNamesReq req = (NodeGetNodeNamesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getCheckedInNames(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getCheckedInNames(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
             
@@ -1424,24 +1442,30 @@ class MasterMgrServer
               case GetHistory:
                 {
                   NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getHistory(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getHistory(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case GetMultiHistory:
                 {
                   NodeGetByNamesReq req = (NodeGetByNamesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getMultiHistory(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getMultiHistory(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case GetCheckedInFileNovelty:
                 {
                   NodeGetByNameReq req = (NodeGetByNameReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getCheckedInFileNovelty(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getCheckedInFileNovelty(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1467,24 +1491,30 @@ class MasterMgrServer
               case Status: 
                 {
                   NodeStatusReq req = (NodeStatusReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.status(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.status(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case MultiStatus: 
                 {
                   NodeMultiStatusReq req = (NodeMultiStatusReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.multiStatus(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.multiStatus(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case DownstreamStatus:
                 {
                   NodeDownstreamStatusReq req = (NodeDownstreamStatusReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.downstreamStatus(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.downstreamStatus(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1493,104 +1523,130 @@ class MasterMgrServer
               case Register:
                 {
                   NodeRegisterReq req = (NodeRegisterReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.register(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.register(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 	    
               case Release:
                 {
                   NodeReleaseReq req = (NodeReleaseReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.release(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.release(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Delete:
                 {
                   NodeDeleteReq req = (NodeDeleteReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.delete(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.delete(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 	    
               case RemoveFiles: 
                 {
                   NodeRemoveFilesReq req = (NodeRemoveFilesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.removeFiles(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.removeFiles(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Rename:
                 {
                   NodeRenameReq req = (NodeRenameReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.rename(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.rename(req, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Renumber:
                 {
                   NodeRenumberReq req = (NodeRenumberReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.renumber(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.renumber(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case CheckIn:
                 {
                   NodeCheckInReq req = (NodeCheckInReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.checkIn(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.checkIn(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 	    
               case CheckOut:
                 {
                   NodeCheckOutReq req = (NodeCheckOutReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.checkOut(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.checkOut(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case CheckOutSolo:
                 {
                   NodeCheckOutSoloReq req = (NodeCheckOutSoloReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.checkOutSolo(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.checkOutSolo(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Lock:
                 {
                   NodeLockReq req = (NodeLockReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.lock(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.lock(req, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case RevertFiles:
                 {
                   NodeRevertFilesReq req = (NodeRevertFilesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.revertFiles(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.revertFiles(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case CloneFiles:
                 {
                   NodeCloneFilesReq req = (NodeCloneFilesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.cloneFiles(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.cloneFiles(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Evolve:
                 {
                   NodeEvolveReq req = (NodeEvolveReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.evolve(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.evolve(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1609,24 +1665,30 @@ class MasterMgrServer
               case Pack: 
                 {
                   NodePackReq req = (NodePackReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.packNodes(req, opn)); 
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.packNodes(req, opn, getSessionID())); 
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case ExtractBundle:
                 {
                   NodeExtractBundleReq req = (NodeExtractBundleReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.extractBundle(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.extractBundle(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Unpack:
                 {
                   NodeUnpackReq req = (NodeUnpackReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.unpackNodes(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.unpackNodes(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1636,40 +1698,50 @@ class MasterMgrServer
                 {
                   NodeExtractSiteVersionReq req = 
                     (NodeExtractSiteVersionReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.extractSiteVersion(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.extractSiteVersion(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case LookupSiteVersion:
                 {
                   NodeSiteVersionReq req = (NodeSiteVersionReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.lookupSiteVersion(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.lookupSiteVersion(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case IsSiteVersionInserted:
                 {
                   NodeSiteVersionReq req = (NodeSiteVersionReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.isSiteVersionInserted(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.isSiteVersionInserted(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case GetMissingSiteVersionRefs:
                 {
                   NodeSiteVersionReq req = (NodeSiteVersionReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getMissingSiteVersionRefs(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getMissingSiteVersionRefs(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case InsertSiteVersion:
                 {
                   NodeSiteVersionReq req = (NodeSiteVersionReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.insertSiteVersion(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.insertSiteVersion(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1678,8 +1750,10 @@ class MasterMgrServer
               case GetEvents: 
                 {
                   NodeGetEventsReq req = (NodeGetEventsReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getNodeEvents(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getNodeEvents(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;    
 
@@ -1752,24 +1826,30 @@ class MasterMgrServer
               case SubmitJobs:
                 {
                   NodeSubmitJobsReq req = (NodeSubmitJobsReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.submitJobs(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.submitJobs(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;  
 
               case ResubmitJobs: 
                 {
                   NodeResubmitJobsReq req = (NodeResubmitJobsReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.resubmitJobs(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.resubmitJobs(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;  
 
               case Vouch: 
                 {
                   NodeVouchReq req = (NodeVouchReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.vouch(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.vouch(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1777,8 +1857,10 @@ class MasterMgrServer
                 {
                   NodeWorkingAreaPatternReq req = 
                     (NodeWorkingAreaPatternReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.hasUnfinishedJobs(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.hasUnfinishedJobs(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1786,8 +1868,10 @@ class MasterMgrServer
                 {
                   NodeWorkingAreaPatternReq req = 
                     (NodeWorkingAreaPatternReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getUnfinishedJobs(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getUnfinishedJobs(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1796,8 +1880,10 @@ class MasterMgrServer
               case BackupDatabase: 
                 {
                   MiscBackupDatabaseReq req = (MiscBackupDatabaseReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.backupDatabase(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.backupDatabase(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;  
 
@@ -1806,24 +1892,30 @@ class MasterMgrServer
               case ArchiveQuery: 
                 {
                   MiscArchiveQueryReq req = (MiscArchiveQueryReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.archiveQuery(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.archiveQuery(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;  
 
               case GetArchivedSizes:
                 {
                   MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getArchivedSizes(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getArchivedSizes(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 	    
               case Archive: 
                 {
                   MiscArchiveReq req = (MiscArchiveReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.archive(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.archive(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;  
 
@@ -1832,8 +1924,10 @@ class MasterMgrServer
               case OfflineQuery:
                 {
                   MiscOfflineQueryReq req = (MiscOfflineQueryReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.offlineQuery(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.offlineQuery(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;  
 
@@ -1856,16 +1950,20 @@ class MasterMgrServer
               case GetOfflineSizes: 
                 {
                   MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getOfflineSizes(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getOfflineSizes(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Offline: 
                 {
                   MiscOfflineReq req = (MiscOfflineReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.offline(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.offline(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
@@ -1874,8 +1972,10 @@ class MasterMgrServer
               case RestoreQuery: 
                 {
                   MiscRestoreQueryReq req = (MiscRestoreQueryReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.restoreQuery(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.restoreQuery(req));
+                    objOut.flush(); 
+                  }
                 }
                 break; 
 
@@ -1905,30 +2005,34 @@ class MasterMgrServer
               case GetRestoreSizes:
                 {
                   MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getRestoreSizes(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getRestoreSizes(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 
               case Restore: 
                 {
                   MiscRestoreReq req = (MiscRestoreReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.restore(req, opn));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.restore(req, opn, getSessionID()));
+                    objOut.flush(); 
+                  }
                 }
                 break;    
 
 
               /*-- ARCHIVE VOLUMES -------------------------------------------------------*/
               case GetArchivedOn:
-                {
+                if(notCancelled(pSessionControls, kind, objOut)) {
                   objOut.writeObject(pMasterMgr.getArchivedOn());
                   objOut.flush(); 
                 }
                 break;
 
               case GetRestoredOn:
-                {
+                if(notCancelled(pSessionControls, kind, objOut)) {
                   objOut.writeObject(pMasterMgr.getRestoredOn());
                   objOut.flush(); 
                 }
@@ -1938,8 +2042,10 @@ class MasterMgrServer
                 {
                   MiscGetArchivedOutputReq req = 
                     (MiscGetArchivedOutputReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getArchivedOutput(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getArchivedOutput(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 	      
@@ -1947,8 +2053,10 @@ class MasterMgrServer
                 {
                   MiscGetRestoredOutputReq req = 
                     (MiscGetRestoredOutputReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getRestoredOutput(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getRestoredOutput(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;
 	      
@@ -1956,16 +2064,20 @@ class MasterMgrServer
                 {
                   MiscGetArchivesContainingReq req = 
                     (MiscGetArchivesContainingReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getArchivesContaining(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getArchivesContaining(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;    
 
               case GetArchive:
                 {
                   MiscGetArchiveReq req = (MiscGetArchiveReq) objIn.readObject();
-                  objOut.writeObject(pMasterMgr.getArchive(req));
-                  objOut.flush(); 
+                  if(notCancelled(pSessionControls, kind, objOut)) {
+                    objOut.writeObject(pMasterMgr.getArchive(req));
+                    objOut.flush(); 
+                  }
                 }
                 break;    
 
@@ -1990,6 +2102,13 @@ class MasterMgrServer
 
               case Disconnect:
 		disconnect();
+                break;
+
+              case Cancel:
+                {
+                  MiscCancelReq req = (MiscCancelReq) objIn.readObject();
+                  handleCancellation(req, pSessionControls, objOut);
+                }
                 break;
 
               case ShutdownOptions:
@@ -2294,6 +2413,11 @@ class MasterMgrServer
    * The shared master manager. 
    */
   private MasterMgr  pMasterMgr;
+
+  /**
+   * Communicates network connection session related status with the MasterMgr.
+   */ 
+  private SessionControls pSessionControls;
 
   /**
    * The set of currently running tasks.

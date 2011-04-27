@@ -591,6 +591,11 @@ enum QueueRequest
   Disconnect,
 
   /**
+   * Cancel any currently running request initiated from this client instance.
+   */
+  Cancel,
+
+  /**
    * An instance of {@link QueueShutdownOptionsReq} is next.
    */
   ShutdownOptions, 

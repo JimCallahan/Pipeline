@@ -74,6 +74,11 @@ enum PluginRequest
   Disconnect,
 
   /**
+   * Cancel any currently running request initiated from this client instance.
+   */
+  Cancel,
+
+  /**
    * Order the server to refuse any further requests and then to exit as soon as all
    * currently pending requests have be completed.
    */

@@ -1094,6 +1094,11 @@ enum MasterRequest
   Disconnect,
 
   /**
+   * Cancel any currently running request initiated from this client instance.
+   */
+  Cancel,
+
+  /**
    * An instance of {@link MiscShutdownOptionsReq} is next.
    */
   ShutdownOptions, 

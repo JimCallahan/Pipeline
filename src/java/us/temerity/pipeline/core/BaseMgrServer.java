@@ -4,6 +4,8 @@ package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.message.misc.*;
+import us.temerity.pipeline.message.simple.*;
 
 import java.io.*;
 import java.nio.*;
@@ -198,9 +200,60 @@ class BaseMgrServer
       }
 
       objOut.writeObject(pServerRsp);
+      objOut.writeObject(getSessionID());
       objOut.flush();
 
       pFirst = false;
+    }
+
+    /**
+     * Handle the request to cancel the current (or next) operation.
+     */ 
+    protected void 
+    handleCancellation
+    (
+     MiscCancelReq req, 
+     SessionControls session, 
+     ObjectOutput objOut
+    ) 
+      throws IOException
+    {
+      long sid = req.getSessionID();
+      TaskTimer timer = new TaskTimer("MasterMgr.cancel(): " + sid);
+      session.cancel(sid);
+
+      objOut.writeObject(new SuccessRsp(timer));
+      objOut.flush(); 
+    }
+
+    /**
+     * Whether the next operation is allow to proceed (isn't cancelled).<P> 
+     * 
+     * Handles sending the FailureRsp back to the client if a cancellation happens.
+     */
+    protected boolean 
+    notCancelled
+    (
+     SessionControls session, 
+     MasterRequest kind, 
+     ObjectOutput objOut
+    )
+      throws IOException
+    {
+      if(!session.isCancelled(getSessionID()))
+        return true;
+
+      TaskTimer timer = new TaskTimer("Request Cancelled: " + getSessionID());
+      objOut.writeObject(new FailureRsp(timer, kind + " Cancelled!"));
+      objOut.flush(); 
+
+      return false;
+    }
+
+    protected long 
+    getSessionID()
+    {
+      return pHandlerID;
     }
 
     protected boolean
@@ -281,6 +334,7 @@ class BaseMgrServer
    * A counter used to give each incomming connection a unique ID. 
    */
   private AtomicLong  pNextHandlerID;
+
 
 }
 

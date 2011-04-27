@@ -529,9 +529,10 @@ class JArchiveDialog
       
       MasterMgrClient client = master.acquireMasterMgrClient();
       long opID = master.beginDialogOp("Searching for Candidate Versions...");
+      master.setDialogOpCancelClient(opID, client); 
       long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
-        info = client.archiveQuery(pPattern, pMaxArchives);
+        info = client.archiveQuery(pPattern, pMaxArchives);  
       }
       catch(PipelineException ex) {
         showErrorDialog(ex);
@@ -610,6 +611,7 @@ class JArchiveDialog
       try {
         DoubleMap<String,VersionID,Long> data = null;
         long opID = master.beginDialogOp("Calculating File Sizes...");
+        master.setDialogOpCancelClient(opID, client); 
         monitorID = client.addMonitor(new DialogOpMonitor(opID));
         try {
           data = client.getArchivedSizes(pVersions);
@@ -827,6 +829,7 @@ class JArchiveDialog
           }
           else {  
             long opID = master.beginDialogOp();
+            master.setDialogOpCancelClient(opID, client); 
             long monitorID = client.addMonitor(new DialogOpMonitor(opID));
             int lastIdx = 0;
             try {
@@ -984,6 +987,7 @@ class JArchiveDialog
         String archiveName = null;
         String msg = ("Archiving Volume (" + (pIndex+1) + " of " + pArchives.size() + ")...");
         long opID = master.beginDialogOp(msg); 
+        master.setDialogOpCancelClient(opID, client); 
         long monitorID = client.addMonitor(new DialogOpMonitor(opID));
         try {
           archiveName = client.archive(pPrefix, versions, pArchiver, pToolset);

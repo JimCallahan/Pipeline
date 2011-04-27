@@ -3571,6 +3571,7 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
+        master.setPanelOpCancelClient(pGroupID, client); 
         long monitorID = client.addMonitor(new PanelOpMonitor(pGroupID));
         QueueMgrClient queue = master.acquireQueueMgrClient();
         LinkedList<QueueJobGroup> allGroups = new LinkedList<QueueJobGroup>();

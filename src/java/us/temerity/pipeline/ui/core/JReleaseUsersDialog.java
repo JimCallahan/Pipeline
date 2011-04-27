@@ -221,6 +221,8 @@ class  JReleaseUsersDialog
       UIMaster master = UIMaster.getInstance();       
       long opID = master.beginDialogOp("Releasing User Nodes and Working Areas...");
       MasterMgrClient client = master.acquireMasterMgrClient();
+      master.setDialogOpCancelClient(opID, client); 
+      long monitorID = client.addMonitor(new DialogOpMonitor(opID));
       try {
         for(String author : pNodes.keySet()) {
           for(String view : pNodes.keySet(author)) {
@@ -237,8 +239,9 @@ class  JReleaseUsersDialog
         return;
       }
       finally {
-        master.releaseMasterMgrClient(client);
         master.endDialogOp(opID, "Done.");
+        client.removeMonitor(monitorID); 
+        master.releaseMasterMgrClient(client);
       }
 
       UpdateTask task = new UpdateTask();

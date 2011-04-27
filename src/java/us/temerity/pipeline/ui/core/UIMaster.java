@@ -4777,9 +4777,38 @@ class UIMaster
    Float percentage
   )
   {
-    OpLogger logger = pOpLoggers.get(opID);
+    OpLogger logger = null;
+    synchronized(pOpLoggers) {
+      logger = pOpLoggers.get(opID);
+    }
+
     if(logger != null) 
       logger.updateOp(msg, timingMsg, percentage);
+  }
+
+  /**
+   * Set the network client being used to perform the operation to allow cancellation.
+   * 
+   * @param opID
+   *   A unique handle for this operation. 
+   * 
+   * @param mclient
+   *   The Master Manager network client. 
+   */ 
+  public void 
+  setDialogOpCancelClient
+  (
+   long opID,
+   MasterMgrClient mclient
+  )
+  {
+    OpLogger logger = null;
+    synchronized(pOpLoggers) {
+      logger = pOpLoggers.get(opID);
+    }
+
+    if(logger != null) 
+      logger.setCancelClient(mclient); 
   }
 
   /**
@@ -4947,6 +4976,34 @@ class UIMaster
       logger.updateOp(msg, timingMsg, percentage);
   }
 
+  /**
+   * Set the network client being used to perform the operation to allow cancellation.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param mclient
+   *   The Master Manager network client. 
+   */ 
+  public void 
+  setPanelOpCancelClient
+  (
+   int channel,
+   MasterMgrClient mclient
+  )
+  {
+    if((channel < 1) || (channel > 9))
+      throw new IllegalArgumentException
+        ("The panel channel must be in the range 1-9 inclusive."); 
+
+    OpLogger logger = null;
+    synchronized(pOpLoggers) {
+      logger = pOpLoggers.get((long) channel);
+    }  
+
+    if(logger != null) 
+      logger.setCancelClient(mclient); 
+  }
 
   /**
    * Release the panel operation lock. <P>
@@ -5810,6 +5867,7 @@ class UIMaster
   
   private 
   class OpLogger
+    implements MouseListener, ActionListener
   {
     /** 
      * Create a new non-blocking dialog operation logger.
@@ -5840,36 +5898,56 @@ class UIMaster
         pOpLock = new ReentrantLock();
       pChannel = channel;
 
-      Box hbox = new Box(BoxLayout.X_AXIS);   
-      pProgressBox = hbox; 
-      hbox.setVisible(false);
-      
-      hbox.add(Box.createRigidArea(new Dimension(6, 0)));
-      
+      /* initialize the popup menus */ 
       {
-        JLabel label = new JLabel(sProgressFinishedIcons[channel]);
-        pProgressLight = label;
-	
-        Dimension size = new Dimension(19, 19);
-        label.setMinimumSize(size);
-        label.setMaximumSize(size);
-        label.setPreferredSize(size);
-	
-        hbox.add(label);
+	pPopup = new JPopupMenu();
+
+	JMenuItem item = new JMenuItem("Cancel ");
+	pCancelItem = item;
+	item.setActionCommand("cancel");
+	item.addActionListener(this);
+
+	pPopup.add(item);
       }
-      
-      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-      
+
+      /* initialize progress panel */ 
       {
-        JProgressField field = UIFactory.createProgressField(30);
-        pProgressField = field;
-	
-        hbox.add(field);
+        Box hbox = new Box(BoxLayout.X_AXIS);   
+        pProgressBox = hbox; 
+        hbox.setVisible(false);
+        
+        hbox.add(Box.createRigidArea(new Dimension(6, 0)));
+        
+        {
+          JLabel label = new JLabel(sProgressFinishedIcons[channel]);
+          pProgressLight = label;
+          
+          Dimension size = new Dimension(19, 19);
+          label.setMinimumSize(size);
+          label.setMaximumSize(size);
+          label.setPreferredSize(size);
+          
+          label.addMouseListener(this); 
+
+          hbox.add(label);
+        }
+        
+        hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+        
+        {
+          JProgressField field = UIFactory.createProgressField(30);
+          pProgressField = field;
+          
+          field.addMouseListener(this); 
+
+          hbox.add(field);
+        }
+      
+        hbox.add(Box.createRigidArea(new Dimension(6, 0)));
+        
+        pProgressPanel.add(hbox);
+        pProgressPanel.addMouseListener(this); 
       }
-      
-      hbox.add(Box.createRigidArea(new Dimension(6, 0)));
-      
-      pProgressPanel.add(hbox);
     }
 
 
@@ -5942,6 +6020,36 @@ class UIMaster
     }
 
     /**
+     * Set the network client used to cancel the current operation.
+     */ 
+    public synchronized void 
+    setCancelClient
+    (
+     MasterMgrClient client
+    ) 
+    {
+      pCancelMClient = client;
+    }
+
+    /**
+     * Trigger the cancellation the current operation.
+     */ 
+    public synchronized void 
+    cancelOp() 
+    {
+      if(pCancelMClient == null) 
+        return;
+      
+      try {
+        pCancelMClient.cancel();
+      }
+      catch(PipelineException ex) {
+      }
+
+      SwingUtilities.invokeLater(new CancelOpsTask(this));
+    }
+
+    /**
      * Mark the end of a logged operation displaying the given message.
      */ 
     public synchronized void 
@@ -5959,7 +6067,9 @@ class UIMaster
         pTimingMsg = null;
       }
       pPercentage = 1.0f;
-      
+
+      pCancelMClient = null;
+
       pIsRunning = false;
       
       try {
@@ -6013,6 +6123,13 @@ class UIMaster
     }
 
     public synchronized void 
+    cancelUI()
+    {
+      pProgressField.update("Operation Cancelled!", null, null);
+      pProgressPanel.repaint();
+    }
+
+    public synchronized void 
     endUI() 
     {
       if(pChannel > 0) {
@@ -6043,6 +6160,92 @@ class UIMaster
 	pProgressPanel.repaint();
       }
     }
+
+    private synchronized void 
+    updateMenu() 
+    {
+      pCancelItem.setEnabled(pCancelMClient != null);
+    }
+
+
+    /*-- MOUSE LISTENER METHODS ------------------------------------------------------------*/
+
+    /**
+     * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+     */ 
+    public void 
+    mouseClicked(MouseEvent e) {}
+  
+    /**
+     * Invoked when the mouse enters a component. 
+     */
+    public void 
+    mouseEntered(MouseEvent e) {}
+
+    /**
+     * Invoked when the mouse exits a component. 
+     */ 
+    public void 
+    mouseExited(MouseEvent e) {}
+
+    /**
+     * Invoked when a mouse button has been pressed on a component. 
+     */
+    public void 
+    mousePressed
+    (
+     MouseEvent e
+    ) 
+    {
+      int mods = e.getModifiersEx();
+      switch(e.getButton()) {
+      case MouseEvent.BUTTON3:
+        {
+          int on1  = (InputEvent.BUTTON3_DOWN_MASK);
+
+          int off1 = (InputEvent.BUTTON1_DOWN_MASK | 
+                      InputEvent.BUTTON2_DOWN_MASK | 
+                      InputEvent.SHIFT_DOWN_MASK |
+                      InputEvent.ALT_DOWN_MASK |
+                      InputEvent.CTRL_DOWN_MASK);
+
+          /* BUTTON3: popup menus */ 
+          if((mods & (on1 | off1)) == on1) {    
+            updateMenu();
+            pPopup.show(e.getComponent(), e.getX(), e.getY());
+          }
+          else {
+            if(UIFactory.getBeepPreference())
+              Toolkit.getDefaultToolkit().beep();
+          }
+        }
+      }
+    }
+
+    /**
+     * Invoked when a mouse button has been released on a component. 
+     */ 
+    public void 
+    mouseReleased(MouseEvent e) {}
+
+
+    /*-- ACTION LISTENER METHODS -----------------------------------------------------------*/
+
+    /** 
+     * Invoked when an action occurs. 
+     */ 
+    @Override
+    public void 
+    actionPerformed
+    (
+     ActionEvent e
+    ) 
+    {
+      String cmd = e.getActionCommand();
+      if(cmd.equals("cancel")) 
+        cancelOp();
+    }
+
      
     private int           pChannel;
     private ReentrantLock pOpLock; 
@@ -6055,6 +6258,11 @@ class UIMaster
     private Box             pProgressBox;                                
     private JLabel          pProgressLight;
     private JProgressField  pProgressField;
+
+    private MasterMgrClient pCancelMClient; 
+
+    private JMenuItem   pCancelItem;
+    private JPopupMenu  pPopup;
   }
 
   /**
@@ -6100,7 +6308,7 @@ class UIMaster
     }
   }
 
-  /* 
+  /**
    * Update the operation message.
    */ 
   private
@@ -6120,6 +6328,29 @@ class UIMaster
     run() 
     {
       pLogger.updateUI();
+    }
+  }
+
+  /**
+   * Cancel the operation message.
+   */ 
+  private
+  class CancelOpsTask
+    extends BaseOpsTask
+  { 
+    CancelOpsTask
+    ( 
+     OpLogger logger 
+    ) 
+    {
+      super("Cancel", logger);
+    }
+
+    @Override
+    public void 
+    run() 
+    {
+      pLogger.cancelUI();
     }
   }
 
@@ -7191,6 +7422,7 @@ class UIMaster
       boolean errors = false;
 
       MasterMgrClient client = acquireMasterMgrClient();
+      setPanelOpCancelClient(pChannel, client); 
       long monitorID = client.addMonitor(new PanelOpMonitor(pChannel));
       LinkedList<QueueJobGroup> allGroups = new LinkedList<QueueJobGroup>();
       if(beginPanelOp(pChannel)) {

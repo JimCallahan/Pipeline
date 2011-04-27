@@ -475,6 +475,7 @@ class PanelUpdater
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp(pGroupID)) {
       MasterMgrClient mclient = master.acquireMasterMgrClient();
+      master.setPanelOpCancelClient(pGroupID, mclient); 
       long monitorID = mclient.addMonitor(new PanelOpMonitor(pGroupID));
       QueueMgrClient qclient  = master.acquireQueueMgrClient();
       try {
