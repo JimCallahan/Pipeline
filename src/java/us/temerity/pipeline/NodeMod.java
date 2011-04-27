@@ -1906,7 +1906,7 @@ class NodeMod
 
   /** 
    * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
-   * modification of this working version's properties which invalidate the up-to-date 
+   * modification of this working version's sources which invalidate the up-to-date 
    * status of the files associated with the node.
    */
   private long  pLastCriticalSourceMod;
