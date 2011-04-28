@@ -321,24 +321,24 @@ win-rpm: clean-win-rpm RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686
 RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plwin-@CUSTOMER@-@VERSION@.spec
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  UPDATING: skink"
+	@echo "  UPDATING: win7"
 	@echo "-----------------------------------------------------------------------------"
 	rm -rf DEST/plwin
 	rsync -av --exclude-from=$(top_srcdir)/config/excluded --delete \
-          $(top_srcdir)/ skink:$(WIN_SRC_DIR)
+          $(top_srcdir)/ win7:$(WIN_SRC_DIR)
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  BUILDING (x86): skink"
+	@echo "  BUILDING (x86): win7"
 	@echo "-----------------------------------------------------------------------------"
-	ssh skink "source .bash_profile; $(MAKE) -C $(WIN32_BUILD_DIR) all"
-	rsync -av skink:$(WIN32_BUILD_DIR)/DEST/plwin DEST
-	rsync -v skink:$(WIN32_BUILD_DIR)/../../JobMgr.msi \
+	ssh win7 "source .bash_profile; $(MAKE) -C $(WIN32_BUILD_DIR) all"
+	rsync -av win7:$(WIN32_BUILD_DIR)/DEST/plwin DEST
+	rsync -v win7:$(WIN32_BUILD_DIR)/../../JobMgr.msi \
           JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@-x86.msi
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  BUILDING (x86_64): skink"
+	@echo "  BUILDING (x86_64): win7"
 	@echo "-----------------------------------------------------------------------------"
-	ssh skink "source .bash_profile; $(MAKE) -C $(WIN64_BUILD_DIR) all"
-	rsync -av skink:$(WIN64_BUILD_DIR)/DEST/plwin DEST
-	rsync -v skink:$(WIN64_BUILD_DIR)/../../JobMgr.msi \
+	ssh win7 "source .bash_profile; $(MAKE) -C $(WIN64_BUILD_DIR) all"
+	rsync -av win7:$(WIN64_BUILD_DIR)/DEST/plwin DEST
+	rsync -v win7:$(WIN64_BUILD_DIR)/../../JobMgr.msi \
           JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@-x86_64.msi
 	@echo "-----------------------------------------------------------------------------"
 	@echo "  PACKAGING..."
