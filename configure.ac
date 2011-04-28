@@ -334,7 +334,7 @@ case "$NATIVE_OSTYPE" in
     JAVA_PATH=$PATH;;
 
   (MacOS) 
-    JAVA_PATH=/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Commands;;
+    JAVA_PATH=/System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands;;
 esac
   
 AC_PATH_PROG(JAVA,    java,    java,    $JAVA_PATH)
@@ -1357,7 +1357,7 @@ AC_SUBST(CLIENT_JAVA_RUNTIME)
 CLIENT_JAVA_RUNTIME="";
 
 AC_SUBST(MAC_JAVA_RUNTIME)
-MAC_JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Commands/java"
+MAC_JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands/java"
 
 AC_SUBST(WIN_JAVA_RUNTIME)
 WIN_JAVA_RUNTIME="${WIN_JAVA_HOME}/bin/java"
@@ -1438,7 +1438,7 @@ case "$NATIVE_OSTYPE" in
     LOCAL_JAVA_LIBS="$UNIX_LOCAL_JAVA_LIBS";;
 
   (MacOS) 
-    JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Commands/java";
+    JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands/java";
     CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
     PIPELINE_LATEST_JAR="$MAC_ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";
