@@ -5517,6 +5517,17 @@ class UIMaster
     run() 
     {  
       try {
+        /* put the version number on the splash screen, if there is one... */ 
+        {
+          SplashScreen splash = SplashScreen.getSplashScreen();
+          if(splash != null) {
+            Graphics2D gfx = splash.createGraphics();
+            gfx.setColor(Color.WHITE);
+            gfx.drawString(PackageInfo.sVersion, 158, 110);
+            splash.update();
+          }
+        }
+
 	Path base = PackageInfo.getSettingsPath();
 
 	/* create an intial layout (if none exists) and make it the default */ 

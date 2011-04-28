@@ -188,6 +188,11 @@ class TextureLoader
       }
     }
     
+    /* initialize the splash screen */ 
+    pSplash = SplashScreen.getSplashScreen();
+    if(pSplash != null) 
+      pSplashGraphics = pSplash.createGraphics();
+
     /* initiate the OpenGL display update which will load the textures */ 
     if(pRootFrame != null) {
       pRootFrame.setVisible(true);
@@ -263,26 +268,40 @@ class TextureLoader
     try {
       TextureMgr mgr = TextureMgr.getInstance();
 
-      for(String tex : pTextures32) 
-        mgr.verifyTexture(gl, tex, 32);
-      
-      for(String tex : pTextures64) 
-        mgr.verifyTexture(gl, tex, 64);
+      int done = 0;
+      int total = pTextures32.size() + pTextures64.size() + 
+                  pIcons21.size() + pFontChars.size();
 
-      for(String tex : pIcons21) 
+      drawSplashProgress(total, done++);
+
+      for(String tex : pTextures32) {
+        mgr.verifyTexture(gl, tex, 32);
+        drawSplashProgress(total, done++);
+      }
+      
+      for(String tex : pTextures64) {
+        mgr.verifyTexture(gl, tex, 64);
+        drawSplashProgress(total, done++);
+      }
+
+      for(String tex : pIcons21) {
         mgr.verifyIcon21(tex);
+        drawSplashProgress(total, done++);
+      }
       
       mgr.cacheIconColors(); 
       mgr.rebuildNodeIcons();  
       mgr.rebuildExtraNodeIcons();  
       mgr.rebuildJobIcons();  
-      
+
       {
         Integer[] fontDLs = new Integer[sMaxChars];
         for(char code : pFontChars) {
           fontDLs[code] = 
             new Integer(mgr.loadCharacterTexture(gl, PackageInfo.sGLFont, code));
+          drawSplashProgress(total, done++);
         }
+
         mgr.setFontTextures(PackageInfo.sGLFont, fontDLs); 
       }
 
@@ -297,6 +316,26 @@ class TextureLoader
     }
   }
    
+  private void 
+  drawSplashProgress
+  (
+   int total, 
+   int done 
+  ) 
+  {
+    if((pSplash == null) || (pSplashGraphics == null)) 
+      return; 
+
+    float percentage = ((float) done) / ((float) total);
+    
+    pSplashGraphics.setPaintMode();
+
+    pSplashGraphics.setColor(new Color(13, 125, 126));
+    pSplashGraphics.fillRect(12, 122, (int)(percentage * 394.0), 10);
+    
+    pSplash.update();
+  }
+
   /**
    * Called by the drawable during the first repaint after the component has been resized.
    */ 
@@ -336,8 +375,7 @@ class TextureLoader
   class UpdateTask
     extends Thread
   { 
-    UpdateTask
-    () 
+    UpdateTask() 
     {
       super("TextureLoader:UpdateTask");
     }
@@ -377,6 +415,12 @@ class TextureLoader
    */ 
   private JFrame pRootFrame; 
   private JPanel pCardPanel; 
+
+  /**
+   * The splash screen and its graphics context.
+   */
+  private SplashScreen pSplash;
+  private Graphics2D   pSplashGraphics;
 
   /**
    * The thread to start once all textures have been loaded.
