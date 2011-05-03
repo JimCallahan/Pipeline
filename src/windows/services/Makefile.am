@@ -36,9 +36,9 @@ $(SERVICE_DESIGNER).src: $(SERVICE_DESIGNER).src.in $(top_builddir)/config.statu
 
 JobMgr.msi: FORCE $(SERVICE_DESIGNER) VisualStudioCompile.class
 	cat $(abs_builddir)/$(SERVICE_DESIGNER) \
-        | unix2dos --u2d > $(srcdir)/$(SERVICE_DESIGNER)
+        | unix2dos > $(srcdir)/$(SERVICE_DESIGNER)
 	cat $(abs_builddir)/$(INSTALLER_DESIGNER) \
-        | unix2dos --u2d > $(srcdir)/$(INSTALLER_DESIGNER)
+        | unix2dos > $(srcdir)/$(INSTALLER_DESIGNER)
 	java VisualStudioCompile \
           "C:\cygwin$(WIN_SRCDIR)\JobMgr\JobMgr.sln" /Rebuild Debug
 	rm -f $(srcdir)/$(SERVICE_DESIGNER) $(srcdir)/$(INSTALLER_DESIGNER)
