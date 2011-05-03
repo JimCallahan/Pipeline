@@ -2313,7 +2313,6 @@ AC_CONFIG_FILES([
   src/unix/Makefile
   src/unix/icons/Makefile
   src/unix/splash/Makefile
-  src/unix/splash/Splash.nk
 
   studios/Makefile  
 
