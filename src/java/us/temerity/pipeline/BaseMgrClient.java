@@ -285,7 +285,8 @@ class BaseMgrClient
           }
         }
         finally {
-          pSocket.setSoTimeout(0);
+          if(pSocket != null) 
+            pSocket.setSoTimeout(0);
         }
       }
     }
