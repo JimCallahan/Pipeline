@@ -78,8 +78,19 @@ class TextureLoader
       }
     }
 
+    /* initialize the splash screen */ 
+    pSplash = SplashScreen.getSplashScreen();
+    if(pSplash != null) {
+      try {
+        pSplashGraphics = pSplash.createGraphics();
+      }
+      catch(IllegalStateException ex) {
+        // silently ignore, the splash window is already closed...
+      }
+    }
+ 
     /* othersiwise, create a visible window during the load... */ 
-    if(pDrawable == null) {
+    if(pDrawable == null) {  
       JFrame frame = new JFrame("plui");
       pRootFrame = frame;
 
@@ -92,7 +103,8 @@ class TextureLoader
         pCardPanel = new JPanel(new CardLayout());
 
         {
-          JLabel label = new JLabel(sTexturesSplashIcon); 
+          JProgressLabel label = new JProgressLabel(); 
+          pProgressLabel = label;
           pCardPanel.add(label, "Splash");
         }
 
@@ -188,11 +200,6 @@ class TextureLoader
       }
     }
     
-    /* initialize the splash screen */ 
-    pSplash = SplashScreen.getSplashScreen();
-    if(pSplash != null) 
-      pSplashGraphics = pSplash.createGraphics();
-
     /* initiate the OpenGL display update which will load the textures */ 
     if(pRootFrame != null) {
       pRootFrame.setVisible(true);
@@ -272,21 +279,21 @@ class TextureLoader
       int total = pTextures32.size() + pTextures64.size() + 
                   pIcons21.size() + pFontChars.size();
 
-      drawSplashProgress(total, done++);
+      updateSplashProgress(total, done++);
 
       for(String tex : pTextures32) {
         mgr.verifyTexture(gl, tex, 32);
-        drawSplashProgress(total, done++);
+        updateSplashProgress(total, done++);
       }
       
       for(String tex : pTextures64) {
         mgr.verifyTexture(gl, tex, 64);
-        drawSplashProgress(total, done++);
+        updateSplashProgress(total, done++);
       }
 
       for(String tex : pIcons21) {
         mgr.verifyIcon21(tex);
-        drawSplashProgress(total, done++);
+        updateSplashProgress(total, done++);
       }
       
       mgr.cacheIconColors(); 
@@ -299,7 +306,7 @@ class TextureLoader
         for(char code : pFontChars) {
           fontDLs[code] = 
             new Integer(mgr.loadCharacterTexture(gl, PackageInfo.sGLFont, code));
-          drawSplashProgress(total, done++);
+          updateSplashProgress(total, done++);
         }
 
         mgr.setFontTextures(PackageInfo.sGLFont, fontDLs); 
@@ -317,23 +324,50 @@ class TextureLoader
   }
    
   private void 
+  updateSplashProgress
+  (
+   int total, 
+   int done
+  ) 
+  {
+    if(pSplashGraphics != null) {
+      drawSplashProgress(total, done, pSplashGraphics);
+
+      if(pSplash != null) {
+        try {
+          pSplash.update();
+        }
+        catch(IllegalStateException ex) {
+          // silently ignore, the splash window is already closed...
+        }
+      }
+    }
+
+    if(pProgressLabel != null) 
+      pProgressLabel.setProgress(total, done);
+  }
+
+  private void 
   drawSplashProgress
   (
    int total, 
-   int done 
+   int done, 
+   Graphics g
   ) 
   {
-    if((pSplash == null) || (pSplashGraphics == null)) 
-      return; 
+    if(g == null) 
+      return;
 
     float percentage = ((float) done) / ((float) total);
     
-    pSplashGraphics.setPaintMode();
+    g.setPaintMode();
 
-    pSplashGraphics.setColor(new Color(13, 125, 126));
-    pSplashGraphics.fillRect(12, 122, (int)(percentage * 394.0), 10);
-    
-    pSplash.update();
+    g.setColor(Color.WHITE);
+    g.drawString(PackageInfo.sVersion, 158, 110);
+
+    g.setColor(Color.WHITE);
+    //g.setColor(new Color(13, 125, 126));
+    g.fillRect(12, 122, (int)(percentage * 394.0), 10);
   }
 
   /**
@@ -368,9 +402,6 @@ class TextureLoader
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * 
-   */ 
   private
   class UpdateTask
     extends Thread
@@ -387,6 +418,46 @@ class TextureLoader
     }
   }
 
+  private 
+  class JProgressLabel
+    extends JLabel
+  {
+    public 
+    JProgressLabel() 
+    {
+      super(sTexturesSplashIcon);
+    }
+
+    public void 
+    setProgress
+    (
+     int total, 
+     int done
+    ) 
+    {
+      pTotal = total;
+      pDone  = done;
+      Graphics g = pProgressLabel.getGraphics(); 
+      drawSplashProgress(pTotal, pDone, g);       
+    }
+
+//     protected void 
+//     paintComponent
+//     (
+//      Graphics g
+//     )
+//     {
+//       super.paintComponent(g);
+//       //drawSplashProgress(pTotal, pDone, g);       
+//     }
+
+    private static final long serialVersionUID = -6124398218219177414L;
+
+    private int pTotal;
+    private int pDone;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -397,7 +468,7 @@ class TextureLoader
   private static final int sMaxChars = 128;
 
   private static final Icon sTexturesSplashIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TexturesSplash.png"));
+    new ImageIcon(LookAndFeelLoader.class.getResource("Splash.png"));
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -417,10 +488,15 @@ class TextureLoader
   private JPanel pCardPanel; 
 
   /**
-   * The splash screen and its graphics context.
+   * Shows loading progress when the onscreen OpenGL window is required.
+   */ 
+  private JProgressLabel pProgressLabel;
+
+  /**
+   * The splash screen and its graphics context for showing loading progress.
    */
-  private SplashScreen pSplash;
-  private Graphics2D   pSplashGraphics;
+  private SplashScreen   pSplash;
+  private Graphics       pSplashGraphics;
 
   /**
    * The thread to start once all textures have been loaded.
