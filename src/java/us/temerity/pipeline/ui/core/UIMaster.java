@@ -5521,9 +5521,12 @@ class UIMaster
         {
           SplashScreen splash = SplashScreen.getSplashScreen();
           if(splash != null) {
-            Graphics2D gfx = splash.createGraphics();
-            gfx.setColor(Color.WHITE);
-            gfx.drawString(PackageInfo.sVersion, 158, 110);
+            Graphics2D g = splash.createGraphics();
+            g.setPaintMode();
+            g.setColor(new Color(15, 90, 88));
+            g.fillRect(156, 99, 136, 13);
+            g.setColor(Color.WHITE);
+            g.drawString(PackageInfo.sVersion, 158, 110);
             splash.update();
           }
         }

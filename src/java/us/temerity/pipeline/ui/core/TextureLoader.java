@@ -361,12 +361,11 @@ class TextureLoader
     float percentage = ((float) done) / ((float) total);
     
     g.setPaintMode();
-
+    g.setColor(new Color(15, 90, 88));
+    g.fillRect(156, 99, 136, 13);
     g.setColor(Color.WHITE);
     g.drawString(PackageInfo.sVersion, 158, 110);
-
     g.setColor(Color.WHITE);
-    //g.setColor(new Color(13, 125, 126));
     g.fillRect(12, 122, (int)(percentage * 394.0), 10);
   }
 
@@ -440,16 +439,6 @@ class TextureLoader
       Graphics g = pProgressLabel.getGraphics(); 
       drawSplashProgress(pTotal, pDone, g);       
     }
-
-//     protected void 
-//     paintComponent
-//     (
-//      Graphics g
-//     )
-//     {
-//       super.paintComponent(g);
-//       //drawSplashProgress(pTotal, pDone, g);       
-//     }
 
     private static final long serialVersionUID = -6124398218219177414L;
 
