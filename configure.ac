@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.6.3b1)
+AM_INIT_AUTOMAKE(Pipeline, 2.6.3)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
