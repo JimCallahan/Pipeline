@@ -14419,48 +14419,28 @@ class QueueMgr
       switch(pHostOsType) {
       case Windows:
         {
+          Path wparent = agenda.getNodeID().getWorkingParent();
+
           Path dpath = null;
-          for(String comp : agenda.getNodeID().getWorkingParent().getComponents()) 
+          for(String comp : wparent.getComponents()) 
             dpath = (dpath == null) ? new Path("..") : new Path(dpath, new Path("..")); 
           dpath = new Path(new Path(dpath, "target"), Long.toString(jobID)); 
+                    
+          ArrayList<Path> targets = new ArrayList<Path>();
+          targets.addAll(agenda.getPrimaryTarget().getPaths());
+          for(FileSeq fseq : agenda.getSecondaryTargets()) 
+            targets.addAll(fseq.getPaths());
           
-          ArrayList<String> targets = new ArrayList<String>();
-          {
-            for(Path target : agenda.getPrimaryTarget().getPaths()) {
-              Path path = new Path(dpath, target); 
-              targets.add(path.toOsString()); 
-            }
-            
-            for(FileSeq fseq : agenda.getSecondaryTargets()) {
-              for(Path target : fseq.getPaths()) {
-                Path path = new Path(dpath, target); 
-                targets.add(path.toOsString()); 
-              }
-            }
-          }
-
-          for(String target : targets) {
-            ArrayList<String> args = new ArrayList<String>();
-            args.add("-s");
-            args.add(target);
-            args.add(".");
-
-            SubProcessLight proc = 
-              new SubProcessLight(agenda.getNodeID().getAuthor(), 
-                                  "WinTarget-Symlink", "ln", args, env, wpath.toFile());
+          for(Path target : targets) {
             try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to create a symbolic link to the Windows target file " + 
-                   "(" + target + ") for the job (" + jobID + "):\n\n" + 
-		   proc.getStdErr());
+              Path p = new Path(dpath, target);
+              Path l = new Path(wparent, target);
+              NativeFileSys.symlink(p.toFile(), l.toFile());
             }
-            catch(InterruptedException ex) {
+            catch(IOException ex) {
               throw new PipelineException
-                ("Interrupted while creating a symbolic link to the Windows target file " + 
-                 "(" + target + ") for the job (" + jobID + ")!"); 
+                ("Unable to create a symbolic link to the Windows target file " + 
+                 "(" + target + ") for the job (" + jobID + ")!");              
             }
           }
         }
