@@ -12713,6 +12713,7 @@ class MasterMgr
    *
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>GetUnfinishedJobsForNodesRsp</CODE> if running jobs prevent the lock or 
    *   <CODE>FailureRsp</CODE> if unable to the lock the node.
    */ 
   public Object
@@ -12749,6 +12750,25 @@ class MasterMgr
 
       /* get the current status of the node being locked */ 
       NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer, sessionID);
+
+      /* make sure that no downstream nodes have unfinished jobs associated with them */
+      {
+        TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
+        getDownstreamWorkingSeqs(nodeID, fseqs, timer);
+        
+ 	if(!fseqs.isEmpty()) {
+          QueueMgrControlClient qclient = acquireQueueMgrClient();
+          try {
+            MappedSet<String,Long> jobIDs = 
+              qclient.getUnfinishedJobsForNodes(nodeID.getAuthor(), nodeID.getView(), fseqs);
+            if(!jobIDs.isEmpty()) 
+              return new QueueGetUnfinishedJobsForNodesRsp(timer, jobIDs);
+          }
+          finally {
+            releaseQueueMgrClient(qclient);
+          }
+ 	}
+      }
 
       /* lock online/offline status of the node to lock */ 
       timer.acquire();

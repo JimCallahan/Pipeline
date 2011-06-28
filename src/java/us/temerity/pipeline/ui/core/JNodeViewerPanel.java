@@ -7537,7 +7537,15 @@ class JNodeViewerPanel
 	  for(String name : pVersions.keySet()) {
             try {
               master.updatePanelOp(pGroupID, "Locking: " + name);
-              client.lock(pAuthor, pView, name, pVersions.get(name));
+
+              TreeMap<String,TreeSet<Long>> jobIDs = 
+                client.lock(pAuthor, pView, name, pVersions.get(name));
+
+              if((jobIDs != null) && !jobIDs.isEmpty()) {
+                ShowUnfinishedJobsTask task = new ShowUnfinishedJobsTask(name, jobIDs);
+                SwingUtilities.invokeLater(task);
+                return;
+              }              
             }
             catch(PipelineException ex) {
               if(errors.length() > 0) 

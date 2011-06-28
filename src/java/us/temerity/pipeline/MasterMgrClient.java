@@ -6756,10 +6756,14 @@ class MasterMgrClient
    *   The revision number of the checked-in version to which the working version is 
    *   being locked.
    * 
+   * @return 
+   *   The unfinished job IDs indexed by node name if aborted or 
+   *   <CODE>null</CODE> if successful.
+   * 
    * @throws PipelineException
    *   If unable to lock the nodes.
    */ 
-  public synchronized void
+  public synchronized MappedSet<String,Long> 
   lock
   ( 
    String author, 
@@ -6769,7 +6773,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    lock(new NodeID(author, view, name), vid);
+    return lock(new NodeID(author, view, name), vid);
   } 
 
   /** 
@@ -6788,10 +6792,14 @@ class MasterMgrClient
    *   The revision number of the checked-in version to which the working version is 
    *   being locked.
    * 
+   * @return 
+   *   The unfinished job IDs indexed by node name if aborted or 
+   *   <CODE>null</CODE> if successful.
+   * 
    * @throws PipelineException
    *   If unable to lock the nodes.
    */ 
-  public synchronized void
+  public synchronized MappedSet<String,Long> 
   lock
   ( 
    NodeID nodeID,
@@ -6804,7 +6812,17 @@ class MasterMgrClient
     NodeLockReq req = new NodeLockReq(nodeID, vid);
 
     Object obj = performLongTransaction(MasterRequest.Lock, req, 15000, 60000);  
-    handleSimpleResponse(obj);
+    if(obj instanceof QueueGetUnfinishedJobsForNodesRsp) {
+      QueueGetUnfinishedJobsForNodesRsp rsp = (QueueGetUnfinishedJobsForNodesRsp) obj;
+      return rsp.getJobIDs();
+    }
+    else if(obj instanceof SuccessRsp) {
+      return null;
+    }
+    else {
+      handleFailure(obj);
+      return null;        
+    } 
   } 
 
 
