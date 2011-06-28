@@ -14431,18 +14431,40 @@ class QueueMgr
           for(FileSeq fseq : agenda.getSecondaryTargets()) 
             targets.addAll(fseq.getPaths());
           
-          for(Path target : targets) {
-            try {
-              Path p = new Path(dpath, target);
-              Path l = new Path(wparent, target);
-              NativeFileSys.symlink(p.toFile(), l.toFile());
-            }
-            catch(IOException ex) {
-              throw new PipelineException
-                ("Unable to create a symbolic link to the Windows target file " + 
-                 "(" + target + ") for the job (" + jobID + ")!");              
-            }
+          ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--symbolic");
+	  preOpts.add("--force");
+
+          ArrayList<String> args = new ArrayList<String>();
+          for(Path tp : targets) {
+            Path p = new Path(dpath, tp);
+            args.add(p.toOsString());
           }
+
+	  ArrayList<String> postOpts = new ArrayList<String>();
+	  postOpts.add(".");
+
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	    (agenda.getNodeID().getAuthor(), 
+	     "WinTarget-Links", "ln", preOpts, args, postOpts, env, wpath.toFile());
+
+	  try {
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to create symbolic links to the Windows temporary target " + 
+                   "directory for the job (" + jobID + "):\n\n" +
+		   proc.getStdErr());
+	    }	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while creating symbolic links to the Windows temporary target " + 
+               "directory for the job (" + jobID + ")!");
+	  }
         }
       }
     }
