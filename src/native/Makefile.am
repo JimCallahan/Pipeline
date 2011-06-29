@@ -26,11 +26,11 @@ libNative_so_LDADD = \
 if IS_MAC_OS
 
 libNative_so_CXXFLAGS = \
-  -isysroot @MAC_SDK@ \
+  -isysroot @MAC_SDK@ -mmacosx-version-min=@MAC_MIN_VERSION@ \
   -arch ppc -arch i386 -arch x86_64
 
 libNative_so_LDFLAGS  = \
-  -Wl,-syslibroot,@MAC_SDK@ \
+  -Wl,-syslibroot,@MAC_SDK@ -mmacosx-version-min=@MAC_MIN_VERSION@ \
   -arch ppc -arch i386 -arch x86_64 \
   @JNI_LDFLAGS@
 
