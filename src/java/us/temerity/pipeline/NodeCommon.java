@@ -116,7 +116,7 @@ class NodeCommon
    Integer batchSize 
   ) 
   {
-    super(name);
+    super((new Path(name)).toString());
 
     init(primary, secondary, isIntermediate,  
 	 toolset, editor, action, isActionEnabled, jobReqs, overflow, execution, batchSize);
@@ -162,7 +162,7 @@ class NodeCommon
    BaseEditor editor
   ) 
   {
-    super(name);
+    super((new Path(name)).toString());
 
     init(primary, secondary, isIntermediate, 
 	 toolset, editor, null, false, null, null, null, null);
