@@ -88,7 +88,7 @@ fi
 win_support=`java -classpath $plsrcdir/plconfig/CryptoApp.jar CryptoApp $plprofile --lookup WinSupport`
 if [ "x$win_support" == "xtrue" ]
 then
-  WIN_HOSTNAME=skink
+  WIN_HOSTNAME=win7
 
   echo 
   echo "-------------------------------------------------------------------------------------"
