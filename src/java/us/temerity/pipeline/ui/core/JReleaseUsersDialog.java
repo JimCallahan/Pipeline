@@ -230,8 +230,11 @@ class  JReleaseUsersDialog
             if((names != null) && !names.isEmpty()) 
               client.release(author, view, names, true); 
             
-            client.removeWorkingArea(author, view);
+            if(!view.equals("default"))
+               client.removeWorkingArea(author, view);
           }
+
+          client.removeWorkingArea(author, "default");
         }
       }
       catch(PipelineException ex) {
