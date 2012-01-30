@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Temerity Software")]
 [assembly: AssemblyProduct("JobMgr")]
-[assembly: AssemblyCopyright("Copyright ©  Temerity Software 2010")]
+[assembly: AssemblyCopyright("Copyright © 2002-20012 Temerity Software")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

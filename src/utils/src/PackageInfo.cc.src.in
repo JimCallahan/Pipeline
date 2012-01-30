@@ -88,7 +88,7 @@ const char* PackageInfo::sDocsDir = "@ROOT_INST_DIR@/share/docs";
  * The copyright notice for Pipeline. 
  */
 const char* PackageInfo::sCopyright = 
-"Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Temerity Software, Inc.\n";
+"Copyright (c) 2002-2012 Temerity Software, Inc.\n";
 
 
 /**
