@@ -100,7 +100,8 @@ else
 endif
 
 
-RPMBUILD = /bin/bash @RPM_ROOT@/rpmbuild-helper
+# RPMBUILD = /bin/bash @RPM_ROOT@/rpmbuild-helper
+RPMBUILD = rpmbuild --rcfile=rpmrc --define='_topdir @RPM_ROOT@'
 
 
 MAC_SRC_DIR = \
