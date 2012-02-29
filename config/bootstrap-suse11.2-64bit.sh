@@ -88,7 +88,7 @@ fi
 win_support=`java -classpath $plsrcdir/plconfig/CryptoApp.jar CryptoApp $plprofile --lookup WinSupport`
 if [ "x$win_support" == "xtrue" ]
 then
-  WIN_HOSTNAME=win7
+  WIN_HOSTNAME=raptor
 
   echo 
   echo "-------------------------------------------------------------------------------------"
@@ -97,7 +97,7 @@ then
 
   time \
   rsync -av --exclude-from=$plsrcdir/config/excluded --delete-excluded \
-    $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code-$customer/src/pipeline
+    $plsrcdir/ $WIN_HOSTNAME:/home/Jim/code-$customer/src/pipeline
 
   time \
   ssh $WIN_HOSTNAME "source .bash_profile; \

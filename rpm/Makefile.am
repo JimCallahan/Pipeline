@@ -111,10 +111,10 @@ MAC_BUILD_DIR = \
   $(patsubst @BUILD_USER_HOME@/%,/Users/@BUILD_USER@/%,@RPM_ROOT@)
 
 WIN_SRC_DIR = \
-  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code-@CUSTOMER@/%,@top_srcdir@)
+  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/Jim/code-@CUSTOMER@/%,@top_srcdir@)
 
 WIN_BUILD_DIR = \
-  $(patsubst @BUILD_USER_HOME@/%,/home/@BUILD_USER@/%,@RPM_ROOT@)
+  $(patsubst @BUILD_USER_HOME@/%,/home/Jim/%,@RPM_ROOT@)
 
 WIN32_BUILD_DIR = $(patsubst %/debug/rpm,%/debug-x86/rpm,$(WIN_BUILD_DIR))
 WIN64_BUILD_DIR = $(patsubst %/debug/rpm,%/debug-x86_64/rpm,$(WIN_BUILD_DIR))
@@ -322,24 +322,24 @@ win-rpm: clean-win-rpm RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686
 RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plwin-@CUSTOMER@-@VERSION@.spec
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  UPDATING: win7"
+	@echo "  UPDATING: raptor"
 	@echo "-----------------------------------------------------------------------------"
 	rm -rf DEST/plwin
 	rsync -av --exclude-from=$(top_srcdir)/config/excluded --delete \
-          $(top_srcdir)/ win7:$(WIN_SRC_DIR)
+          $(top_srcdir)/ raptor:$(WIN_SRC_DIR)
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  BUILDING (x86): win7"
+	@echo "  BUILDING (x86): raptor"
 	@echo "-----------------------------------------------------------------------------"
-	ssh win7 "source .bash_profile; $(MAKE) -C $(WIN32_BUILD_DIR) all"
-	rsync -av win7:$(WIN32_BUILD_DIR)/DEST/plwin DEST
-	rsync -v win7:$(WIN32_BUILD_DIR)/../../JobMgr.msi \
+	ssh raptor "source .bash_profile; $(MAKE) -C $(WIN32_BUILD_DIR) all"
+	rsync -av raptor:$(WIN32_BUILD_DIR)/DEST/plwin DEST
+	rsync -v raptor:$(WIN32_BUILD_DIR)/../../JobMgr.msi \
           JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@-x86.msi
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  BUILDING (x86_64): win7"
+	@echo "  BUILDING (x86_64): raptor"
 	@echo "-----------------------------------------------------------------------------"
-	ssh win7 "source .bash_profile; $(MAKE) -C $(WIN64_BUILD_DIR) all"
-	rsync -av win7:$(WIN64_BUILD_DIR)/DEST/plwin DEST
-	rsync -v win7:$(WIN64_BUILD_DIR)/../../JobMgr.msi \
+	ssh raptor "source .bash_profile; $(MAKE) -C $(WIN64_BUILD_DIR) all"
+	rsync -av raptor:$(WIN64_BUILD_DIR)/DEST/plwin DEST
+	rsync -v raptor:$(WIN64_BUILD_DIR)/../../JobMgr.msi \
           JobMgr-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@-x86_64.msi
 	@echo "-----------------------------------------------------------------------------"
 	@echo "  PACKAGING..."
